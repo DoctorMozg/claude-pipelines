@@ -71,6 +71,17 @@ For each function/block that was added or modified:
 1. DRY — no duplicated logic
 1. Appropriate logging at decision points
 
+## Confidence Scoring
+
+After completing Steps 3-6, **re-evaluate each issue** before including it. For each finding, ask:
+
+- Could surrounding code, framework guarantees, or the type system already prevent this?
+- Is this a genuine bug/risk, or a stylistic preference?
+- Would 3 out of 3 senior engineers agree this needs fixing?
+- Is the evidence concrete (specific code path) or speculative?
+
+Assign a confidence score (0-100). **Drop any issue scoring below 80.** Include the score in the output.
+
 ## Output Format
 
 ```markdown
@@ -84,6 +95,7 @@ For each function/block that was added or modified:
 ### 1. <Issue title>
 - **File**: `path/to/file.ext:line_number`
 - **Category**: Bug | Security | Missing Feature | Integration
+- **Confidence**: <score>/100
 - **Description**: <What's wrong>
 - **Impact**: <What breaks or could break>
 - **Fix**: <Specific fix>
@@ -93,6 +105,7 @@ For each function/block that was added or modified:
 ### 1. <Issue title>
 - **File**: `path/to/file.ext:line_number`
 - **Category**: Quality | Convention | Performance
+- **Confidence**: <score>/100
 - **Description**: <What's wrong>
 - **Fix**: <Specific fix>
 
@@ -111,7 +124,7 @@ For each function/block that was added or modified:
 
 **PASS** if:
 
-- No critical issues
+- No critical issues (≥80 confidence)
 - All work units implemented per plan
 - No security vulnerabilities
 - No logic bugs in new code
@@ -123,3 +136,13 @@ For each function/block that was added or modified:
 - Work units from the plan not implemented
 - Integration points missing (registrations, exports, etc.)
 - Resource leaks or error handling gaps in critical paths
+
+## Common False Positives — Do NOT Flag These
+
+- **Missing null check when the type system guarantees non-null.**
+- **"Missing error handling" on framework-managed code** (the framework catches exceptions).
+- **Flagging "magic numbers" obvious from context** (`timeout: 30000`, HTTP status codes).
+- **Performance concerns in code that runs once** (startup, migration, CLI).
+- **Missing validation inside internal functions.** Validate at boundaries, not between trusted components.
+- **Suggesting patterns when the code is clear and correct.** Don't recommend Strategy for a 5-line function.
+- **Flagging "unauthorized additions" for minor helpers** that clearly support a planned work unit (utils, type definitions, constants).

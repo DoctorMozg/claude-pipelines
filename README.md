@@ -16,10 +16,11 @@ claude plugin install mz-dev-base
 
 ## Available Plugins
 
-| Plugin        | Description                                                                            | Version |
-| ------------- | -------------------------------------------------------------------------------------- | ------- |
-| `mz-dev-base` | Essential development agents, skills, and context-aware rules for coding workflows     | 0.1.0   |
-| `mz-dev-pipe` | Full development pipeline — autonomous coding, reviewing, testing, and research agents | 0.1.0   |
+| Plugin            | Description                                                                                           | Version |
+| ----------------- | ----------------------------------------------------------------------------------------------------- | ------- |
+| `mz-dev-base`     | Essential development agents, skills, and context-aware rules for coding workflows                    | 0.2.0   |
+| `mz-dev-pipe`     | Full development pipeline — autonomous coding, reviewing, testing, and research agents                | 0.2.0   |
+| `mz-biz-outreach` | Business outreach pipeline — company discovery, review scanning, contact enrichment, outreach reports | 0.2.0   |
 
 ## Inspiration / Sources
 

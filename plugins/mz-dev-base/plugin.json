@@ -58,5 +58,5 @@
   "description": "Essential development agents, skills, and context-aware rules for coding workflows",
   "license": "MIT",
   "name": "mz-dev-base",
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

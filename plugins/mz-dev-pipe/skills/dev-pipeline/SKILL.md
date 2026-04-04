@@ -21,27 +21,18 @@ You receive a task description and autonomously research, plan, implement, revie
 
 ## Phase Overview
 
-```
-┌─────────┐    ┌──────┐    ┌─────────────┐    ┌──────────┐    ┌──────┐
-│ Research │───▶│ Plan │───▶│ Plan Review │───▶│ Approval │───▶│ Code │
-└─────────┘    └──────┘    │  (loop ≤3)  │    │  (user)  │    │(par) │
-                           └─────────────┘    └──────────┘    └──┬───┘
-                                                                 │
-┌──────────────┐    ┌──────────┐    ┌─────────────┐             │
-│ Completeness │◀───│ Optimize │◀───│ Final Code  │             │
-│   Check      │    │          │    │   Review    │             │
-└──────┬───────┘    └──────────┘    └──────┬──────┘             │
-       │                                   │                    │
-       │              ┌─────────────┐    ┌─┴───────────┐  ┌────▼───────┐
-       │              │ Test Review │◀───│ Lint & Test │◀─│Code Review │
-       │              │ (parallel)  │    │    Run      │  │ (loop ≤3)  │
-       │              │ (loop ≤3)   │───▶└─────────────┘  └────────────┘
-       │              └─────────────┘
-       │ FAIL: restart from appropriate phase
-       │ PASS: done
-       ▼
-     DONE
-```
+1. **Research** — `pipeline-researcher` gathers context about the codebase and domain
+1. **Plan** — `pipeline-planner` creates a detailed implementation plan with parallel work units
+1. **Plan Review** (loop, max 3) — `pipeline-plan-reviewer` reviews the plan; if issues found, planner revises
+1. **User Approval** — present the plan to the user via AskUserQuestion; wait for approval
+1. **Code** (parallel) — `pipeline-coder` agents implement work units in parallel
+1. **Code Review** (loop, max 3) — `pipeline-code-reviewer` reviews; if issues found, coder fixes and re-review
+1. **Lint & Test Run** — run project linters, formatters, and test suite
+1. **Test Writing** — `pipeline-test-writer` creates tests for the implementation
+1. **Test Review** (loop, max 3) — `pipeline-test-coverage-reviewer` and `pipeline-test-quality-reviewer` review in parallel; if gaps found, test-writer fixes
+1. **Final Code Review** — one last `pipeline-code-reviewer` pass on everything
+1. **Optimize** — `pipeline-optimizer` cleans dead code, debug artifacts, duplication
+1. **Completeness Check** — `pipeline-completeness-checker` verifies all requirements met; if FAIL, restarts from the appropriate phase
 
 ______________________________________________________________________
 

@@ -83,7 +83,30 @@ Simplify without changing behavior:
 - Functions that just wrap another function with no added value
 - Unused function parameters (verify no caller passes that argument positionally)
 
-### 6. Consistency
+### 6. Readability & Clarity
+
+Improve how the code reads without changing what it does:
+
+- Rename unclear variables/functions that require mental decoding (`d`, `tmp2`, `processIt`, `doStuff`)
+- Replace nested ternaries with `if/else` or `switch` — clarity beats brevity
+- Break dense one-liners into explicit multi-line equivalents when they require re-reading to understand
+- Consolidate related logic that is scattered across a function
+- Remove redundant comments that describe obvious code (`i += 1  # increment i`). Preserve comments that explain *why*.
+- Avoid creating "clever" code — if a construct requires a reader to pause and decode, simplify it
+
+**Balance**: Don't over-simplify. Don't combine too many concerns into one function to reduce line count. Don't remove helpful abstractions that improve organization. If the original code is clear and correct, leave it alone.
+
+### 7. Project Standards Compliance
+
+Check the modified code against project conventions:
+
+- Read the project's `CLAUDE.md` and `.claude/rules/` files if they exist
+- Verify naming conventions match the project's established patterns
+- Verify import style matches the rest of the codebase
+- Verify error handling follows the project's pattern (exceptions vs error codes vs Result types)
+- Only apply conventions that are clearly established — don't invent new ones
+
+### 8. Consistency
 
 Fix inconsistencies within the changed code:
 
@@ -141,6 +164,10 @@ After per-file optimization:
 
 ### Complexity Reduced
 - `file.ext:line` — simplified nested conditional to early return
+
+### Readability Improved
+- `file.ext:line` — renamed `d` → `document_count` for clarity
+- `file.ext:line` — replaced nested ternary with if/else
 
 ### Consistency Fixed
 - `file.ext` — standardized naming to match project convention

@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "name": "mozg-pipelines",
   "owner": {
@@ -21,7 +21,7 @@
       ],
       "name": "mz-dev-base",
       "source": "./plugins/mz-dev-base",
-      "version": "0.1.0"
+      "version": "0.2.0"
     },
     {
       "category": "development",
@@ -37,7 +37,22 @@
       ],
       "name": "mz-dev-pipe",
       "source": "./plugins/mz-dev-pipe",
-      "version": "0.1.0"
+      "version": "0.2.0"
+    },
+    {
+      "category": "business",
+      "description": "Business outreach and lead generation intelligence \u2014 discovers companies, scans reviews, enriches contacts, produces outreach reports",
+      "keywords": [
+        "outreach",
+        "lead-generation",
+        "business-intelligence",
+        "company-research",
+        "reviews",
+        "contacts"
+      ],
+      "name": "mz-biz-outreach",
+      "source": "./plugins/mz-biz-outreach",
+      "version": "0.2.0"
     }
   ]
 }

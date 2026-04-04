@@ -27,11 +27,27 @@ All file writes to `.mz/reviews/` must use `$MAIN_REPO/.mz/reviews/` as the targ
 
 ## Review Process
 
+### Phase 0 — Eligibility Check
+
+Before doing any deep analysis, quickly determine if this PR should be reviewed at all.
+
+1. **Fetch PR state**:
+   ```
+   gh pr view <URL> --json state,isDraft,additions,deletions,reviews,author
+   ```
+1. **Skip the review** (report why and exit) if ANY of these are true:
+   - PR is **closed** or **merged**
+   - PR is a **draft**
+   - PR has **zero changed lines** (additions + deletions = 0)
+   - The authenticated user (`gh api user --jq '.login'`) is the **PR author** (self-review — skip unless explicitly requested)
+   - PR already has an **approving review from the authenticated user** in the `reviews` list
+1. If skipping, write a short note to the report path explaining why and exit.
+
 ### Phase 1 — Gather Context
 
 1. **Resolve the main repo path** using the command above. Store it for all report I/O.
 1. **Parse the PR identifier** from the provided URL or short form.
-   2b. **Identify the reviewing user**: run `gh api user --jq '.login'` to get the authenticated username. Use this to detect direct mentions (@username) in PR discussions.
+1. **Identify the reviewing user**: run `gh api user --jq '.login'` to get the authenticated username. Use this to detect direct mentions (@username) in PR discussions.
 1. **Fetch PR metadata** using `gh`:
    ```
    gh pr view <URL> --json title,body,author,baseRefName,headRefName,state,labels,number,url
@@ -96,6 +112,32 @@ Only flag issues you are confident about after tracing the logic. For each poten
 
 When a changed file touches a complex or unfamiliar domain (e.g., cryptography, financial calculations, specific protocol implementations), delegate to the **researcher** agent to verify correctness of the approach.
 
+### Phase 2.5 — Confidence Scoring
+
+Before cross-referencing, filter out likely false positives. For each issue found in Phase 2, launch a **haiku** scoring agent (batch all issues into one call) with this prompt:
+
+```
+You are a false-positive filter for code review findings. For each issue below,
+score your confidence (0-100) that it is a REAL, ACTIONABLE problem — not a
+false positive, style preference, or something already handled by the framework.
+
+Consider:
+- Could surrounding code, framework guarantees, or type system already prevent this?
+- Is this a genuine bug/risk, or a reviewer's stylistic preference?
+- Would 3 out of 3 senior engineers agree this needs fixing?
+- Is the evidence concrete (specific code path) or speculative?
+
+For each issue, respond with:
+- Issue number
+- Confidence score (0-100)
+- One sentence justification
+
+Issues to score:
+<list all issues with their file, line, description, and relevant code snippet>
+```
+
+**Threshold**: Drop any issue scoring below **80**. Keep the confidence score in the report for transparency.
+
 ### Phase 3 — Cross-Reference Existing Feedback
 
 Before finalizing your findings:
@@ -159,6 +201,7 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 #### 1. <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
 - **Category**: Bug | Security | Architecture | Performance
+- **Confidence**: <score>/100
 - **Comment**: <2-3 concise sentences describing the problem>
 - **Suggested fix**: <Brief solving route, if applicable>
 
@@ -169,6 +212,7 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 #### 1. <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
 - **Category**: Maintainability | Architecture | Performance
+- **Confidence**: <score>/100
 - **Comment**: <2-3 concise sentences>
 - **Suggested fix**: <Brief solving route, if applicable>
 
@@ -178,6 +222,7 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
 #### 1. <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
+- **Confidence**: <score>/100
 - **Comment**: <2-3 concise sentences>
 
 ## Discussions Needing Your Attention
@@ -285,3 +330,17 @@ When previous reports exist, include this section after "Existing Review Threads
 - **Respect existing discussions.** If reviewers already debated a point and reached consensus, don't re-litigate it unless you have new information.
 - **Be constructive.** Every issue should include a path forward, not just a complaint.
 - **Omit empty sections.** If there are no Critical issues, don't include an empty Critical section.
+
+## Common False Positives — Do NOT Flag These
+
+These patterns look like issues but almost never are. If you find yourself flagging one, reconsider:
+
+- **Missing null check when the type system guarantees non-null.** If TypeScript strict mode is on, or the value comes from a required field — the check is unnecessary.
+- **"Missing error handling" on framework-managed code.** Express middleware, FastAPI dependency injection, Spring controllers — the framework catches and handles exceptions. Don't demand try/catch around every call.
+- **Suggesting defensive copies of data that never leaves the module.** If a mutable object is used locally and not exposed, cloning it is waste.
+- **Flagging "magic numbers" that are obvious from context.** `timeout: 30000` (30s), `maxRetries: 3`, HTTP status codes — these don't need named constants.
+- **"This could throw" on standard library calls that don't throw in practice.** `JSON.parse` on data you just serialized, `parseInt` on a validated numeric string.
+- **Suggesting async/parallel for operations that are already fast.** Don't suggest parallelizing two 1ms database lookups.
+- **Performance concerns in code that runs once** (startup, migration, CLI command). Optimize hot paths, not cold ones.
+- **Flagging missing input validation inside private/internal functions.** Validation belongs at system boundaries, not between trusted internal components.
+- **"Consider using X pattern" when the current code is clear and correct.** A working 5-line function doesn't need a Strategy pattern.
