@@ -5,7 +5,7 @@ A public plugin repository for [Claude Code](https://claude.com/claude-code). Im
 ## Installation
 
 ```bash
-claude plugin marketplace add drmozg/claude-mozg-pipelines
+claude plugin marketplace add DoctorMozg/claude-pipelines
 ```
 
 Then install individual plugins:
