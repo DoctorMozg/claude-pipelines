@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "description": "Collection of Claude Code plugins - agents and skills for development workflows",
+    "version": "0.1.0"
+  },
+  "name": "mozg-pipelines",
+  "owner": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
+  "plugins": [
+    {
+      "category": "development",
+      "description": "Essential development agents, rules, and skills for everyday coding workflows",
+      "keywords": [
+        "code-review",
+        "rules",
+        "coding-standards",
+        "changelog",
+        "init"
+      ],
+      "name": "mz-dev-base",
+      "source": "./plugins/mz-dev-base",
+      "version": "0.1.0"
+    },
+    {
+      "category": "development",
+      "description": "Full development pipeline \u2014 autonomous coding, reviewing, testing, and research agents with orchestrating skills",
+      "keywords": [
+        "pipeline",
+        "code-review",
+        "testing",
+        "research",
+        "planning",
+        "pr-review",
+        "autonomous"
+      ],
+      "name": "mz-dev-pipe",
+      "source": "./plugins/mz-dev-pipe",
+      "version": "0.1.0"
+    }
+  ]
+}

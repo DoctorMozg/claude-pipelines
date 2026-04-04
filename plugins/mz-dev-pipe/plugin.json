@@ -1,0 +1,72 @@
+{
+  "contents": {
+    "agents": [
+      {
+        "description": "Reviews implementation code for the dev-pipeline skill. Catches bugs, security issues, missed requirements, and convention violations",
+        "file": "agents/pipeline-code-reviewer.md",
+        "name": "pipeline-code-reviewer"
+      },
+      {
+        "description": "Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes",
+        "file": "agents/pipeline-coder.md",
+        "name": "pipeline-coder"
+      },
+      {
+        "description": "Final quality gate \u2014 verifies the task is 100% complete by checking implementation against requirements, plan, and all review feedback",
+        "file": "agents/pipeline-completeness-checker.md",
+        "name": "pipeline-completeness-checker"
+      },
+      {
+        "description": "Cleans and optimizes code after implementation is complete. Removes dead code, debug artifacts, unused imports, and duplicated logic",
+        "file": "agents/pipeline-optimizer.md",
+        "name": "pipeline-optimizer"
+      },
+      {
+        "description": "Critically reviews implementation plans. Catches missing integration points, incorrect parallelism, and architectural issues",
+        "file": "agents/pipeline-plan-reviewer.md",
+        "name": "pipeline-plan-reviewer"
+      },
+      {
+        "description": "Creates detailed, parallelizable implementation plans. Breaks tasks into independent work units with clear file paths and dependencies",
+        "file": "agents/pipeline-planner.md",
+        "name": "pipeline-planner"
+      },
+      {
+        "description": "Explores codebases and researches domains. Gathers context about project structure, patterns, conventions, and external domain knowledge",
+        "file": "agents/pipeline-researcher.md",
+        "name": "pipeline-researcher"
+      },
+      {
+        "description": "Reviews test coverage completeness. Identifies untested functions, missing code paths, and gaps in edge case coverage",
+        "file": "agents/pipeline-test-coverage-reviewer.md",
+        "name": "pipeline-test-coverage-reviewer"
+      },
+      {
+        "description": "Reviews test quality. Evaluates whether tests are meaningful, independent, well-structured, and would catch real regressions",
+        "file": "agents/pipeline-test-quality-reviewer.md",
+        "name": "pipeline-test-quality-reviewer"
+      },
+      {
+        "description": "Writes comprehensive tests \u2014 unit tests, edge case tests, and integration tests following project conventions",
+        "file": "agents/pipeline-test-writer.md",
+        "name": "pipeline-test-writer"
+      }
+    ],
+    "skills": [
+      {
+        "description": "Full autonomous development pipeline \u2014 research, plan, code, review, test \u2014 with multi-agent orchestration",
+        "directory": "skills/dev-pipeline",
+        "name": "dev-pipeline"
+      },
+      {
+        "description": "Polishes existing code to meet specific completion criteria \u2014 runs tests, iterates fixes with review, optimizes code",
+        "directory": "skills/polish-pipeline",
+        "name": "polish-pipeline"
+      }
+    ]
+  },
+  "description": "Full development pipeline \u2014 autonomous coding, reviewing, testing, and research agents with orchestrating skills",
+  "license": "MIT",
+  "name": "mz-dev-pipe",
+  "version": "0.1.0"
+}
