@@ -1,6 +1,8 @@
 ---
 name: review-pr
 description: Deep-review a GitHub pull request for bugs, architecture issues, and maintainability. Provide a PR URL or owner/repo#number as argument.
+argument-hint: <PR URL or owner/repo#number>
+allowed-tools: Agent, Bash, Read
 ---
 
 # Review PR

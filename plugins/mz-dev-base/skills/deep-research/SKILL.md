@@ -1,6 +1,8 @@
 ---
 name: deep-research
 description: Deep multi-agent research on any topic. Splits the topic into domains, dispatches parallel researcher agents that each scan 20-100 web pages, then synthesizes findings into a comprehensive report. Provide a topic as the argument.
+argument-hint: <topic or research question>
+allowed-tools: Agent, Bash, Read, Write
 ---
 
 # Deep Research

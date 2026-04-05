@@ -1,6 +1,8 @@
 ---
 name: scan-prs
 description: Scan GitHub repositories for PRs needing your attention and produce a prioritized daily report. Provide repository list as argument.
+argument-hint: '[owner/repo1, owner/repo2, ...]'
+allowed-tools: Agent, Bash, Read
 ---
 
 # Scan PRs

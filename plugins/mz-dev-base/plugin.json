@@ -1,62 +1,6 @@
 {
-  "contents": {
-    "agents": [
-      {
-        "description": "Reviews code for bugs, security issues, and maintainability problems",
-        "file": "agents/code-reviewer.md",
-        "name": "code-reviewer"
-      },
-      {
-        "description": "Reviews the current git branch against its base for bugs, architecture issues, missing functionality, and test coverage",
-        "file": "agents/branch-reviewer.md",
-        "name": "branch-reviewer"
-      },
-      {
-        "description": "Deep PR reviewer \u2014 reads GitHub PR diff/comments, checks out code in isolated worktree, reviews for bugs and architecture issues",
-        "file": "agents/pr-reviewer.md",
-        "name": "pr-reviewer"
-      },
-      {
-        "description": "Scans GitHub repositories for PRs needing attention, dispatches pr-reviewer agents for top-5 priority PRs, produces daily report",
-        "file": "agents/pr-scanner.md",
-        "name": "pr-scanner"
-      },
-      {
-        "description": "Comprehensive research agent for investigating topics across multiple sources, synthesizing findings into actionable insights",
-        "file": "agents/researcher.md",
-        "name": "researcher"
-      }
-    ],
-    "skills": [
-      {
-        "description": "Detects project context and installs relevant coding rules to .claude/rules/ or ~/.claude/rules/",
-        "directory": "skills/init-rules",
-        "name": "init-rules"
-      },
-      {
-        "description": "Review all changes on the current branch against main \u2014 finds bugs, checks architecture, tests, and consistency",
-        "directory": "skills/review-branch",
-        "name": "review-branch"
-      },
-      {
-        "description": "Deep-review a GitHub pull request for bugs, architecture issues, and maintainability",
-        "directory": "skills/review-pr",
-        "name": "review-pr"
-      },
-      {
-        "description": "Scan GitHub repositories for PRs needing your attention and produce a prioritized daily report",
-        "directory": "skills/scan-prs",
-        "name": "scan-prs"
-      },
-      {
-        "description": "Deep multi-agent research \u2014 splits topic into domains, dispatches parallel researchers scanning 20-100 pages each, synthesizes report",
-        "directory": "skills/deep-research",
-        "name": "deep-research"
-      }
-    ]
-  },
   "description": "Essential development agents, skills, and context-aware rules for coding workflows",
   "license": "MIT",
   "name": "mz-dev-base",
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

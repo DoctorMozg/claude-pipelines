@@ -1,7 +1,7 @@
 ---
 name: outreach-scanner
 description: Scans companies against review and reputation platforms (Glassdoor, Trustpilot, Indeed, Google Business) for scores, sentiment, and public perception signals. Used by the lead-pipeline skill.
-tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
+tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
 ---

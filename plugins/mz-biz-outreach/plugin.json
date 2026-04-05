@@ -1,67 +1,6 @@
 {
-  "contents": {
-    "agents": [
-      {
-        "description": "Analyzes an outreach goal and defines target company profile, search criteria, scoring weights, and outreach angles",
-        "file": "agents/outreach-strategist.md",
-        "name": "outreach-strategist"
-      },
-      {
-        "description": "Researches and identifies the best business directories, startup hubs, and aggregator platforms for a given region and sector",
-        "file": "agents/outreach-source-researcher.md",
-        "name": "outreach-source-researcher"
-      },
-      {
-        "description": "Discovers companies from a specific business directory or data source, extracts structured company metadata",
-        "file": "agents/outreach-scout.md",
-        "name": "outreach-scout"
-      },
-      {
-        "description": "Scans companies against review platforms (Glassdoor, Trustpilot, Indeed, Google Business) for reputation signals and sentiment",
-        "file": "agents/outreach-scanner.md",
-        "name": "outreach-scanner"
-      },
-      {
-        "description": "Orchestrates enrichment phase \u2014 dispatches contact, news, growth, and tech agents per company, merges results",
-        "file": "agents/outreach-enrichment-orchestrator.md",
-        "name": "outreach-enrichment-orchestrator"
-      },
-      {
-        "description": "Finds contact information for a company \u2014 emails, phones, key decision-makers with LinkedIn profiles",
-        "file": "agents/outreach-contact-finder.md",
-        "name": "outreach-contact-finder"
-      },
-      {
-        "description": "Finds recent news, press releases, funding rounds, and partnerships for a company to surface timing signals",
-        "file": "agents/outreach-news-finder.md",
-        "name": "outreach-news-finder"
-      },
-      {
-        "description": "Analyzes a company's growth signals \u2014 job postings, hiring patterns, team size, funding, and growth trajectory",
-        "file": "agents/outreach-growth-analyst.md",
-        "name": "outreach-growth-analyst"
-      },
-      {
-        "description": "Analyzes a company's technology stack, engineering maturity, open-source presence, and tech decision-makers",
-        "file": "agents/outreach-tech-analyst.md",
-        "name": "outreach-tech-analyst"
-      },
-      {
-        "description": "Synthesizes all outreach intelligence into a scored, prioritized report with contact points and recommended outreach approaches",
-        "file": "agents/outreach-reporter.md",
-        "name": "outreach-reporter"
-      }
-    ],
-    "skills": [
-      {
-        "description": "Full autonomous outreach pipeline \u2014 discovers sources, scouts companies, scans reviews, enriches contacts, produces intelligence report",
-        "directory": "skills/lead-pipeline",
-        "name": "lead-pipeline"
-      }
-    ]
-  },
   "description": "Business outreach and lead generation intelligence \u2014 multi-agent pipeline for company discovery, reputation scanning, contact enrichment, and outreach strategy",
   "license": "MIT",
   "name": "mz-biz-outreach",
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
