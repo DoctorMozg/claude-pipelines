@@ -18,6 +18,16 @@ This repository is a public plugin registry for Claude Code. It provides agents,
 1. Add agent/rule/skill files in their respective subdirectories
 1. Register the plugin in `.claude-plugin/marketplace.json`
 
+## Bumping Versions
+
+Use the repo-root helper script to bump all version fields in one shot (all `plugins/*/plugin.json`, `.claude-plugin/marketplace.json` `metadata.version` + per-plugin entries, and the `README.md` version column). Do not hand-edit version strings across files — they must stay in sync.
+
+```bash
+./set_versions.sh 0.3.0
+```
+
+The argument must be semver (`MAJOR.MINOR.PATCH`).
+
 ## Agent Format
 
 ```yaml
