@@ -1,7 +1,7 @@
 ---
 name: dev-review-and-fix
 description: Multi-lens bug and improvement hunter — researches the codebase across correctness / security / performance / maintainability / reliability lenses, ranks findings, gets user approval, then dispatches parallel coders and reviewers to fix them. Optional argument to focus scope or lenses.
-argument-hint: [optional focus — e.g. "concurrency bugs", audit src/auth, security review]
+argument-hint: [scope:branch|global|working] [optional focus — e.g. "concurrency bugs", "audit src/auth", "security review"]
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -18,6 +18,20 @@ You orchestrate a multi-agent codebase audit. You run parallel researchers acros
   - **Combined**: `"security audit of src/auth/"` — both
 
 If the argument is ambiguous (no recognized lens keywords and no valid path), ask the user via AskUserQuestion. Never guess.
+
+## Scope Parameter
+
+Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing lens keywords and scope hints.
+
+| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
+| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
+| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply roam-mode exclusions (vendored, generated, lock files, test files, >5000 LOC).                                                                              |
+| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
+
+**Default** (no `scope:` parameter): use the existing scope detection logic (path-like tokens → expand, no path tokens → roam).
+
+The `scope:` parameter controls **which files** are scanned. The remaining argument text controls **which lenses** run. They are orthogonal. Example: `scope:branch "security"` → security lens on branch-changed files only.
 
 ## Core Principles
 

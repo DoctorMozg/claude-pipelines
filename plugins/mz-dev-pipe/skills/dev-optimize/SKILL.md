@@ -1,7 +1,7 @@
 ---
 name: dev-optimize
 description: Map-reduce optimization pipeline — scans a scope, builds an import graph, dispatches parallel optimizers (1-6) with mirrored reviewers, iterates on rejections. Provide scope as the argument.
-argument-hint: <scope: glob, directory, git range, or free-text description>
+argument-hint: [scope:branch|global|working] <scope: glob, directory, git range, or free-text description>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -18,6 +18,20 @@ You orchestrate a multi-agent optimization pass over existing code. You take a s
   - **Free-text description**: `"the authentication module"` (interpreted by a researcher agent)
 
 Auto-detect the form. If ambiguous or empty, ask the user to clarify — do not guess.
+
+## Scope Parameter
+
+Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before applying the detection logic above.
+
+| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
+| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
+| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, files >5000 LOC).                                                                                     |
+| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
+
+**Default** (no `scope:` parameter): use the existing scope detection logic (glob / directory / git range / free-text).
+
+If `scope:` is given alongside an explicit scope argument (e.g., `scope:branch "src/auth/"`), the `scope:` parameter provides the file list and the explicit argument acts as an additional filter (intersection).
 
 ## Core Principles
 

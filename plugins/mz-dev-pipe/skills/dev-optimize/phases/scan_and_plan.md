@@ -22,7 +22,9 @@ ______________________________________________________________________
 
 ### 1.1 Resolve scope
 
-Detect the form of `$ARGUMENTS` and resolve it to a concrete file list:
+**If a `scope:` parameter was extracted by the SKILL.md orchestrator** (branch / global / working), its git commands have already produced a concrete file list. Use that list directly, applying standard exclusions (vendored, generated, lock files, >5000 LOC). If an explicit scope argument was also given (e.g., `scope:branch "src/auth/"`), intersect the two — keep only files that appear in both the scope-parameter list and the explicit scope expansion.
+
+**If no `scope:` parameter was given**, detect the form of `$ARGUMENTS` and resolve it to a concrete file list:
 
 | Form                  | Detection                                | Resolution                                                |
 | --------------------- | ---------------------------------------- | --------------------------------------------------------- |

@@ -25,7 +25,9 @@ ______________________________________________________________________
 
 ### 1.1 Parse the argument
 
-Split the argument into tokens and classify each token:
+**Step 0 — Scope parameter**: if the SKILL.md orchestrator extracted a `scope:` parameter (branch / global / working), its git commands have already produced a concrete file list. That list becomes the scope filter — skip the scope-resolution table in 1.2 and go straight to 1.3 (lens selection). Only classify the remaining argument text (after `scope:` removal) for lens keywords.
+
+**Step 1 — Token classification**: split the remaining argument into tokens and classify each:
 
 - **Path-like** — matches a glob pattern, looks like a directory (contains `/`, matches an actual directory on disk), or matches `refA..refB` for git ranges
 - **Lens keyword** — matches the table below
@@ -33,6 +35,10 @@ Split the argument into tokens and classify each token:
 - **Unknown** — doesn't match anything recognizable
 
 ### 1.2 Resolve scope filter
+
+**If a `scope:` parameter was given**: the file list is already resolved. Apply roam-mode exclusions to it and skip the table below.
+
+**If no `scope:` parameter was given**: resolve based on token types:
 
 | Token type found             | Scope resolution                                                                          |
 | ---------------------------- | ----------------------------------------------------------------------------------------- |

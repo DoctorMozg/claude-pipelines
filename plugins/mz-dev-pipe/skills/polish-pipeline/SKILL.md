@@ -1,7 +1,7 @@
 ---
 name: polish-pipeline
 description: Polishes existing code to meet specific completion criteria — runs tests, iterates fixes with review, optimizes code. Provide criteria as the argument.
-argument-hint: <completion criteria — what must pass, what must be fixed, what must work>
+argument-hint: [scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -20,6 +20,22 @@ You are an orchestrator that takes existing code and polishes it until it meets 
 
 If empty, ask the user what needs to be polished.
 
+## Scope Parameter
+
+Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing completion criteria.
+
+| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
+| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
+| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, files >5000 LOC).                                                                                     |
+| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
+
+**Default** (no `scope:` parameter): all files in the project are eligible for edits (existing behavior).
+
+The `scope:` parameter controls **which files agents may edit**. It does NOT restrict verification — tests and linters always run on the full project to catch regressions. The criteria determine **what to verify**; the scope determines **where fixes may be applied**.
+
+Example: `scope:branch "all tests pass"` → only edit files changed on this branch, but run the full test suite to verify.
+
 ## Constants
 
 - **MAX_FIX_ITERATIONS**: 5 — max code-test-review cycles before escalating
@@ -30,9 +46,15 @@ ______________________________________________________________________
 
 ## Phase 0: Setup
 
-### 0.1 Parse criteria
+### 0.1 Resolve scope
 
-Break the input into a checklist of discrete, verifiable criteria. Each criterion must be something you can check programmatically or by reading code.
+If a `scope:` parameter was extracted, resolve it to a concrete file list using the git commands from the Scope Parameter table. Save the list to `.mz/task/<task_name>/scope_files.txt` (one path per line). This list constrains which files coder and optimizer agents may edit in later phases.
+
+If no `scope:` parameter was given, skip this step — all project files are eligible.
+
+### 0.2 Parse criteria
+
+Break the remaining input into a checklist of discrete, verifiable criteria. Each criterion must be something you can check programmatically or by reading code.
 
 Example input: "All tests pass, pre-commit clean, no debug prints in src/"
 → Criteria:
@@ -41,11 +63,11 @@ Example input: "All tests pass, pre-commit clean, no debug prints in src/"
 1. Pre-commit hooks pass
 1. No `print()` statements in `src/` (excluding intentional logging)
 
-### 0.2 Derive task name
+### 0.3 Derive task name
 
 Short snake_case name (max 30 chars) from the criteria summary.
 
-### 0.3 Create task directory and state
+### 0.4 Create task directory and state
 
 ```bash
 mkdir -p .mz/task/<task_name>
@@ -65,7 +87,7 @@ Write `.mz/task/<task_name>/state.md`:
   ...
 ```
 
-### 0.4 Create task tracking
+### 0.5 Create task tracking
 
 Use TaskCreate for each pipeline phase.
 
@@ -231,11 +253,16 @@ You are fixing specific issues in existing code.
 ## Research Context (if available)
 Read .mz/task/<task_name>/research.md if it exists for root cause analysis.
 
+## Scope constraint
+<If scope was set, include: "You may ONLY edit files listed in .mz/task/<task_name>/scope_files.txt. If a fix requires editing a file outside this list, report it as a blocker instead of editing it.">
+<If no scope: omit this section>
+
 ## Instructions
 1. Read the failing files and related code BEFORE making changes
 2. Fix ONLY the specific issues listed — do not refactor or improve other code
 3. Do not touch code unrelated to the failures
-4. After fixing, list all files you modified
+4. If a scope constraint is set, do not edit files outside it
+5. After fixing, list all files you modified
 
 Focus on making the criteria pass. Nothing more.
 ```
@@ -329,6 +356,7 @@ Read .mz/task/<task_name>/state.md for the list of all files modified during thi
 Also check git diff to see all changes.
 
 ONLY optimize files that were modified during this task. Do not touch other files.
+<If scope was set: "Additionally, you may ONLY edit files listed in .mz/task/<task_name>/scope_files.txt. Even if you modified a file outside scope during a prior phase, do not optimize it.">
 
 Work through your full optimization checklist:
 1. Debug artifacts (print statements, commented-out code, TODOs)
