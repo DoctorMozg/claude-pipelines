@@ -33,7 +33,7 @@ Spawn the `branch-reviewer` agent with the following prompt:
 Review the current branch against <base-branch>.
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
 Use researcher agents for domain research if the implementation topic is complex.
-Save the report to .mz/reviews/ in the repo root.
+Save the report to .mz/reviews/ using the naming convention: review_branch_<YYYY_MM_DD>_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```
 
 Use `subagent_type: "branch-reviewer"` and run it in the foreground so the result is available.

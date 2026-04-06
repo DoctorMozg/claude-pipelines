@@ -145,13 +145,14 @@ Before flagging anything here, read existing similar code in the repository to e
 Generate a markdown report saved to:
 
 ```
-$REPO_ROOT/.mz/reviews/<DATE>_branch_<BRANCH_SLUG>.md
+$REPO_ROOT/.mz/reviews/review_branch_<YYYY_MM_DD>_<BRANCH_SLUG><_vN>.md
 ```
 
 Where:
 
-- `<DATE>` is today's date in `YYYY-MM-DD` format
+- `<YYYY_MM_DD>` is today's date
 - `<BRANCH_SLUG>` is the branch name slugified (slashes to hyphens, lowercase, max 60 chars)
+- `<_vN>` is appended only if a report with the same base name already exists (`_v2`, `_v3`, etc.)
 
 ## Report Format
 

@@ -153,14 +153,16 @@ Before finalizing your findings:
 Generate a markdown report with the structure below and save it to the **main repo** (not the worktree):
 
 ```
-$MAIN_REPO/.mz/reviews/<DATE>_<PR_NAME>.md
+$MAIN_REPO/.mz/reviews/review_pr_<YYYY_MM_DD>_<owner>_<repo>_<pr_number><_vN>.md
 ```
 
 Where:
 
 - `$MAIN_REPO` is the main repository path resolved in Phase 1
-- `<DATE>` is today's date in `YYYY-MM-DD` format
-- `<PR_NAME>` is the PR title slugified (lowercase, spaces to hyphens, special chars removed, max 60 chars)
+- `<YYYY_MM_DD>` is today's date
+- `<owner>_<repo>` is the repository owner and name (lowercase, e.g., `anthropics_claude_code`)
+- `<pr_number>` is the PR number (e.g., `123`)
+- `<_vN>` is appended only if a report with the same base name already exists (`_v2`, `_v3`, etc.)
 
 Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 

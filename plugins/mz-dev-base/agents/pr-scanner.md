@@ -1,6 +1,6 @@
 ---
 name: pr-scanner
-description: Scans a list of GitHub repositories for PRs needing user attention (review requested, mentioned, assigned, own PRs with changes requested), dispatches pr-reviewer agents for top-5 priority PRs, and produces a consolidated daily report at .mz/reviews/<date>_REPORT.md. Provide repository list as the prompt.
+description: Scans a list of GitHub repositories for PRs needing user attention (review requested, mentioned, assigned, own PRs with changes requested), dispatches pr-reviewer agents for top-5 priority PRs, and produces a consolidated daily report in .mz/reviews/. Provide repository list as the prompt.
 tools: Read, Write, Bash, Glob, Grep, Agent(pr-reviewer)
 model: opus
 effort: high
@@ -153,10 +153,10 @@ Skip dispatching for PRs where:
 Generate the report in the **main repo**:
 
 ```
-$MAIN_REPO/.mz/reviews/<YYYY-MM-DD>_REPORT.md
+$MAIN_REPO/.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_slugs>.md
 ```
 
-If this file already exists, **overwrite it** — only one daily consolidated report should exist per date.
+Where `<repo_slugs>` is a short snake_case summary of the scanned repos (e.g., `anthropics_claude_code`, or `multi_repo` if > 2). Append `_v2`, `_v3` etc. if a report with the same base name already exists.
 
 Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 

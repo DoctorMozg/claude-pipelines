@@ -36,7 +36,16 @@ The `scope:` parameter controls **which files** to analyze. The remaining argume
 
 Extract `output:<path>` from `$ARGUMENTS` if present. This is where the final report will be written.
 
-**Default** (no `output:` parameter): `.mz/reports/<task_name>.md`
+**Default** (no `output:` parameter): `.mz/reports/explain_<YYYY_MM_DD>_<report_name>.md`
+
+Report file naming convention: `<skill_type>_<YYYY_MM_DD>_<detailed_name><_vN>.md`
+
+- `skill_type`: `explain`
+- `YYYY_MM_DD`: current date
+- `detailed_name`: snake_case descriptive name derived from scope + question (e.g., `src_auth_token_refresh`, `payment_flow`, `branch_changes`)
+- `_vN`: version suffix only if a report with the same base name already exists in `.mz/reports/` (check with Glob before writing — append `_v2`, `_v3`, etc.)
+
+Examples: `explain_2026_04_06_src_auth_token_refresh.md`, `explain_2026_04_06_branch_websocket_logic.md`, `explain_2026_04_06_payment_flow_v2.md`
 
 ## Constants
 

@@ -25,4 +25,4 @@ If no argument is provided, detect the current repository from `gh repo view --j
 1. Launch the `pr-scanner` agent with the repository list as the prompt.
 1. The agent scans for PRs where you are requested for review, mentioned, assigned, or have changes requested on your own PRs.
 1. It dispatches `pr-reviewer` agents for the top-5 priority PRs.
-1. After completion, display the path to the consolidated report at `.mz/reviews/<date>_REPORT.md`.
+1. After completion, display the path to the consolidated report at `.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).

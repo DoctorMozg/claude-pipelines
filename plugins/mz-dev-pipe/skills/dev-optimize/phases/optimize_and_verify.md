@@ -27,24 +27,19 @@ Spawn N `pipeline-optimizer` agents (model: **opus**) in a **single message** us
 Each optimizer's prompt:
 
 ```
-You are optimizing one chunk of a larger scoped optimization pass.
+You are optimizing one chunk of a scoped optimization pass.
 
 ## Chunk: <chunk name>
+Files: <exact file list>
 
-## Files in your scope
-<exact file list for this chunk>
-
-## Context
-Read .mz/task/<task_name>/scan.md for the full chunking breakdown and cross-chunk dependency warnings.
-Read .mz/task/<task_name>/baseline.md for the pre-optimization test/lint state.
+Read .mz/task/<task_name>/scan.md for chunking breakdown and cross-chunk warnings.
+Read .mz/task/<task_name>/baseline.md for pre-optimization test/lint state.
 
 ## Rules
-1. Work through your full optimization checklist on the files in your chunk.
-2. **Strict within-chunk ownership**: you OWN the files listed above. Prefer to edit only these files.
-3. **Cross-chunk / out-of-scope exception**: if an optimization in your chunk requires editing a file that is (a) listed in another chunk or (b) entirely outside the dev-optimize scope — to keep the code compiling and passing tests — you MAY edit that file. You MUST report such edits explicitly in a "Cross-Scope Edits" section at the end of your report, including the reason the edit was necessary.
-4. **Behavior preservation**: never change test-observable behavior. If in doubt, don't touch it.
-5. **Grep before removing**: verify any "dead code" is actually unreferenced across the entire project, not just within your chunk. Check imports, string references, dynamic dispatch, config files, and test files.
-6. Report all changes in the standard pipeline-optimizer format, plus the "Cross-Scope Edits" section.
+1. Work through your full optimization checklist on these files.
+2. OWN the files above. If you MUST edit a file in another chunk or outside scope to keep code compiling, report it in a "Cross-Scope Edits" section with the reason.
+3. Never change test-observable behavior.
+4. Grep before removing — verify "dead code" is unreferenced across the full project.
 ```
 
 **If this is a rejection re-run** (iteration > 0, dispatched for rejected chunks only): include in the prompt the specific reviewer feedback for this chunk from `review_<iteration-1>.md`, and instruct the optimizer to address that feedback while preserving any changes that were already approved.
@@ -112,27 +107,20 @@ Set `fix_attempt = 0`.
 1. Dispatch a `pipeline-coder` agent (model: **opus**) with:
 
 ```
-A regression was introduced during code optimization. Fix it while preserving as much of the optimization as possible.
-
-## Original Task
-Optimization pass on <scope>.
+A regression was introduced during code optimization. Fix it while preserving the optimization.
 
 ## Regression
 <failing test output, lint errors>
 
 ## Suspected Cause
-The following optimizer report contains the changes most likely responsible:
-<optimization report excerpt for the suspect chunk>
-
-Read .mz/task/<task_name>/optimization_<iteration>.md for the full report.
+<optimization report excerpt for suspect chunk>
+Read .mz/task/<task_name>/optimization_<iteration>.md for full report.
 
 ## Instructions
-1. Read the failing tests and the modified files to understand the break.
-2. Identify the minimal change needed to restore green state.
-3. Prefer adjusting the optimization so it still preserves behavior over reverting it entirely.
-4. If the optimization is fundamentally unsafe, revert ONLY that specific change and document why.
-5. Do not introduce NEW optimizations. Your job is regression repair only.
-6. Report what you changed and why.
+1. Read failing tests and modified files to understand the break
+2. Prefer adjusting the optimization to preserve behavior over full revert
+3. If optimization is fundamentally unsafe, revert ONLY that specific change
+4. No NEW optimizations — regression repair only
 ```
 
 4. Re-run tests and linters.

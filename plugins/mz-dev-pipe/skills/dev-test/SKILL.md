@@ -248,7 +248,16 @@ Compile all results into a single comprehensive report.
 
 **See `phases/checks.md` → Phase 6** for the full report template.
 
-Write the report to `.mz/reports/<task_name>.md`. Update state to `completed`. Present a summary to the user.
+Write the report to `.mz/reports/` using the naming convention below. Update state to `completed`. Present a summary to the user with the report path.
+
+**Report file naming**: `<skill_type>_<YYYY_MM_DD>_<detailed_name><_vN>.md`
+
+- `skill_type`: `test`
+- `YYYY_MM_DD`: current date
+- `detailed_name`: snake_case descriptive name derived from scope (e.g., `branch_changes`, `src_auth`, `full_project`)
+- `_vN`: version suffix only if a report with the same base name already exists in `.mz/reports/` (check with Glob before writing — append `_v2`, `_v3`, etc.)
+
+Examples: `test_2026_04_06_branch_changes.md`, `test_2026_04_06_src_auth.md`, `test_2026_04_06_full_project_v2.md`
 
 ______________________________________________________________________
 

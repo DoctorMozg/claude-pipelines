@@ -117,6 +117,36 @@ Write `.mz/task/<task_name>/scope.md`:
 
 ## Ask-user events
 - <any AskUserQuestion raised during parse, with user's answer>
+
+## Findings Output Format
+
+Each researcher saves to `.mz/task/<task_name>/findings_<lens>.md` using this structure:
+
+### Finding N
+- **File**: path/to/file:line
+- **Severity**: critical | high | medium | low
+- **Confidence**: high | medium | low
+- **Category**: <sub-category within the lens>
+- **Description**: <one-paragraph explanation>
+- **Evidence**: <code snippet or grep output>
+- **Proposed fix**: <how to fix, or "needs investigation">
+- **Cross-references**: <other interacting files>
+
+### Lens summary
+- Files scanned: N
+- Findings by severity: critical=X, high=Y, medium=Z, low=W
+- Skipped files (reason): <list>
+
+## Severity Scale
+- critical: data loss, security breach, or crash on common paths
+- high: wrong results or crash on specific conditions
+- medium: incorrect behavior in edge cases
+- low: style/clarity issues that could mask future bugs
+
+## Confidence Scale
+- high: verified by reading the full code path
+- medium: pattern matches known bug class but callers not fully traced
+- low: suspicious pattern that may be intentional
 ```
 
 Update state file phase to `scope_selected` and record lens count.
@@ -129,34 +159,7 @@ ______________________________________________________________________
 
 ### 2.1 Dispatch researchers
 
-Spawn N `pipeline-researcher` agents (model: **sonnet**) in a **single message** using parallel tool calls — one per selected lens. Each researcher reads `.mz/task/<task_name>/scope.md` for the file list and runs its lens-specific analysis.
-
-Each researcher must output to `.mz/task/<task_name>/findings_<lens>.md` in this structured format:
-
-```markdown
-# Lens: <lens name>
-
-## Findings
-
-### Finding 1
-- **File**: path/to/file:line
-- **Severity**: critical | high | medium | low
-- **Confidence**: high | medium | low
-- **Category**: <sub-category within the lens>
-- **Description**: <one-paragraph explanation of the problem>
-- **Evidence**: <code snippet or grep output supporting the claim>
-- **Proposed fix**: <one-paragraph description of how to fix it, or "needs investigation">
-- **Cross-references**: <other files that interact with this code, if relevant>
-
-### Finding 2
-...
-
-## Lens summary
-- Files scanned: N
-- Findings by severity: critical=X, high=Y, medium=Z, low=W
-- Skipped files (reason): <list>
-- Lens notes: <anything the researcher wants to flag beyond individual findings>
-```
+Spawn N `pipeline-researcher` agents (model: **sonnet**) in a **single message** using parallel tool calls — one per selected lens. Each researcher reads `.mz/task/<task_name>/scope.md` for the file list, severity/confidence scales, and output format.
 
 ### 2.2 Lens-specific prompts
 
@@ -165,137 +168,108 @@ Each researcher must output to `.mz/task/<task_name>/findings_<lens>.md` in this
 ```
 You are the CORRECTNESS lens of a multi-lens codebase audit.
 
-## Scope
-Read .mz/task/<task_name>/scope.md for the exact file list.
+Read .mz/task/<task_name>/scope.md for the file list, severity/confidence scales, and output format.
 
-## What to find
-Read each file and look for:
-1. Off-by-one errors (array indexing, loop bounds, slice/substring arithmetic)
-2. Null / None / undefined handling gaps (missing guards before dereference)
-3. Race conditions (unsynchronized shared state, check-then-act patterns)
-4. Incorrect error handling (caught and ignored, wrong exception types, silent failures)
-5. Resource leaks (files, sockets, locks, contexts not released on all paths)
-6. Type confusion (implicit conversions, mixed units, stringly-typed state)
-7. Logic bugs (inverted conditions, wrong operator, copy-paste errors between similar blocks)
-8. Concurrency / async issues (missing await, unresolved promises, deadlocks)
+Read each scoped file. Look for:
+- Off-by-one errors (indexing, loop bounds, slice arithmetic)
+- Null/None/undefined handling gaps (missing guards before dereference)
+- Race conditions (unsynchronized shared state, check-then-act)
+- Incorrect error handling (caught-and-ignored, wrong exception types, silent failures)
+- Resource leaks (files, sockets, locks not released on all paths)
+- Type confusion (implicit conversions, mixed units, stringly-typed state)
+- Logic bugs (inverted conditions, wrong operator, copy-paste between similar blocks)
+- Concurrency/async issues (missing await, unresolved promises, deadlocks)
 
-## Rules
-1. Only report findings you can point to with file:line.
-2. Assign severity:
-   - critical: causes data loss, security breach, or crash in common paths
-   - high: causes wrong results or crashes in specific conditions
-   - medium: causes incorrect behavior in edge cases
-   - low: style/clarity issues that could mask future bugs
-3. Assign confidence:
-   - high: you've verified the bug path by reading the code fully
-   - medium: pattern matches a known bug class but you haven't traced every caller
-   - low: suspicious pattern that may be intentional
-4. For each finding, propose a concrete fix (not "add more tests").
-5. Cross-reference callers when the finding affects an API.
+For each finding, propose a concrete fix. Cross-reference callers for API-affecting issues.
 
-Output format: see findings file template. Save to .mz/task/<task_name>/findings_correctness.md.
+Save to .mz/task/<task_name>/findings_correctness.md.
 ```
 
-**Security researcher**:
+**Security researcher** (`pipeline-researcher`, model: sonnet):
 
 ```
 You are the SECURITY lens of a multi-lens codebase audit.
 
-## Scope
-Read .mz/task/<task_name>/scope.md for the exact file list.
+Read .mz/task/<task_name>/scope.md for the file list, severity/confidence scales, and output format.
 
-## What to find
-1. Input validation gaps — untrusted input reaching queries, shell, eval, filesystem, redirects
-2. Injection vectors — SQL, NoSQL, command, LDAP, XPath, template
-3. Authentication / authorization flaws — missing checks, broken access control, IDOR
-4. Cryptography misuse — weak algos, hardcoded IVs, predictable secrets, wrong mode
-5. Hardcoded secrets — API keys, passwords, tokens in source or config
-6. XSS / CSRF in web code — unescaped output, missing token validation
-7. Path traversal — unchecked user-controlled file paths
-8. Insecure deserialization — pickle, yaml.load, unsafe constructors
-9. Information disclosure — verbose errors, debug endpoints, stack traces in responses
-10. Dependency risks — known-vulnerable patterns visible in the code
+Read each scoped file. Look for:
+- Input validation gaps (untrusted input reaching queries, shell, eval, filesystem, redirects)
+- Injection vectors (SQL, NoSQL, command, LDAP, XPath, template)
+- Auth/authz flaws (missing checks, broken access control, IDOR)
+- Cryptography misuse (weak algos, hardcoded IVs, predictable secrets)
+- Hardcoded secrets (API keys, passwords, tokens in source/config) — flag as CRITICAL
+- XSS/CSRF in web code (unescaped output, missing token validation)
+- Path traversal (unchecked user-controlled file paths)
+- Insecure deserialization (pickle, yaml.load, unsafe constructors)
+- Information disclosure (verbose errors, debug endpoints, stack traces in responses)
 
-## Rules
-Same severity and confidence rules as the correctness lens.
-For any hardcoded secret, flag as CRITICAL regardless of exploitability.
-
-Save findings to .mz/task/<task_name>/findings_security.md.
+Save to .mz/task/<task_name>/findings_security.md.
 ```
 
-**Performance researcher**:
+**Performance researcher** (`pipeline-researcher`, model: sonnet):
 
 ```
 You are the PERFORMANCE lens of a multi-lens codebase audit.
 
-## Scope
-Read .mz/task/<task_name>/scope.md for the exact file list.
+Read .mz/task/<task_name>/scope.md for the file list, severity/confidence scales, and output format.
 
-## What to find
-1. N+1 query patterns (loop with per-iteration DB/API call)
-2. Unnecessary work inside hot loops (repeated computation, allocations)
-3. Quadratic algorithms on data that can grow
-4. Memory leaks / unbounded growth (caches without eviction, subscribers without cleanup)
-5. Blocking I/O on async paths
-6. Missing batching / pagination on large data operations
-7. Redundant work across call sites that could be memoized or cached
-8. Expensive operations on initialization / startup that block request handling
+Read each scoped file. Look for:
+- N+1 query patterns (loop with per-iteration DB/API call)
+- Unnecessary work inside hot loops (repeated computation, allocations)
+- Quadratic algorithms on growable data
+- Memory leaks / unbounded growth (caches without eviction, subscribers without cleanup)
+- Blocking I/O on async paths
+- Missing batching/pagination on large data operations
+- Redundant work across call sites that could be memoized
+- Expensive operations blocking startup/request handling
 
-## Rules
-Severity is driven by hot-path likelihood: critical = on every request; high = on common operations; medium = on occasional paths; low = micro-optimizations.
-Do NOT propose changes that require new dependencies or major refactors — mark those as "needs investigation".
+Severity by hot-path likelihood: critical = every request, high = common ops, medium = occasional, low = micro-optimization. Mark changes requiring new deps or major refactors as "needs investigation".
 
-Save findings to .mz/task/<task_name>/findings_performance.md.
+Save to .mz/task/<task_name>/findings_performance.md.
 ```
 
-**Maintainability researcher**:
+**Maintainability researcher** (`pipeline-researcher`, model: sonnet):
 
 ```
 You are the MAINTAINABILITY lens of a multi-lens codebase audit.
 
-## Scope
-Read .mz/task/<task_name>/scope.md for the exact file list.
+Read .mz/task/<task_name>/scope.md for the file list, severity/confidence scales, and output format.
 
-## What to find
-1. Code duplication (same logic in 3+ places, good candidates for extraction)
-2. Functions > 100 lines or cyclomatic complexity > 15
-3. Files > 1000 lines that mix concerns
-4. Unclear names (single letters outside tight scopes, abbreviations, misleading names)
-5. Missing docstrings / comments on public APIs
-6. Dead code (unused functions, classes, branches — verify with grep)
-7. Inconsistent patterns within the same module (mixed error handling styles, etc.)
-8. Magic numbers / strings that should be named constants
+Read each scoped file. Look for:
+- Code duplication (same logic in 3+ places, extraction candidates)
+- Functions >100 lines or cyclomatic complexity >15
+- Files >1000 lines mixing concerns
+- Unclear names (single letters outside tight scopes, abbreviations, misleading)
+- Missing docstrings/comments on public APIs
+- Dead code (unused functions, classes, branches — verify with grep)
+- Inconsistent patterns within the same module
+- Magic numbers/strings that should be named constants
 
-## Rules
-Severity should reflect cost-of-maintenance, not aesthetic preference.
-Do NOT flag style issues already covered by the project's formatter — those are not findings.
+Severity reflects cost-of-maintenance, not aesthetic preference. Do NOT flag style issues covered by the project's formatter.
 
-Save findings to .mz/task/<task_name>/findings_maintainability.md.
+Save to .mz/task/<task_name>/findings_maintainability.md.
 ```
 
-**Reliability researcher**:
+**Reliability researcher** (`pipeline-researcher`, model: sonnet):
 
 ```
 You are the RELIABILITY lens of a multi-lens codebase audit.
 
-## Scope
-Read .mz/task/<task_name>/scope.md for the exact file list.
+Read .mz/task/<task_name>/scope.md for the file list, severity/confidence scales, and output format.
 
-## What to find
-1. Missing error handling on external calls (network, filesystem, subprocess)
-2. No retry / timeout on flaky operations
-3. No fallback on graceful-degradation paths
-4. Exceptions that escape where they shouldn't (into event loops, into UI threads)
-5. Unhandled edge cases visible in the code (empty input, max size, overflow)
-6. Tight coupling to external services without circuit breakers
-7. Silent failures (catch blocks that log-and-continue where they should propagate)
-8. Missing input bounds (max size, max depth, max count) that could cause OOM or runaway
+Read each scoped file. Look for:
+- Missing error handling on external calls (network, filesystem, subprocess)
+- No retry/timeout on flaky operations
+- No fallback on graceful-degradation paths
+- Exceptions escaping where they shouldn't (event loops, UI threads)
+- Unhandled edge cases (empty input, max size, overflow)
+- Tight coupling to external services without circuit breakers
+- Silent failures (catch blocks that log-and-continue where they should propagate)
+- Missing input bounds (max size, max depth, max count) causing OOM/runaway
 
-## Rules
-Same severity and confidence rules.
 For every finding, specify the failure scenario ("when X happens, Y breaks").
 
-Save findings to .mz/task/<task_name>/findings_reliability.md.
+Save to .mz/task/<task_name>/findings_reliability.md.
 ```
 
 Update state file phase to `researched` and record how many findings each lens produced.
