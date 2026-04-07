@@ -123,7 +123,7 @@ ______________________________________________________________________
 
 ## Phase 2.5: User Approval Gate
 
-After Phases 1 and 2 complete, **this orchestrator** (not a subagent) must present an **optimization plan** to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
 The optimization plan must include:
 
@@ -134,6 +134,8 @@ The optimization plan must include:
 1. **Baseline status**: tests PASS/FAIL, lint CLEAN/WARNINGS/ERRORS
 1. **Risks flagged**: files the researcher marked as high-coupling, tests that were already failing, chunks likely to require cross-chunk edits
 
+**If baseline was RED** (tests already failing OR lint errors): include that prominently in the plan and ask the user explicitly whether to proceed, abort, or run `polish` first. Do not default to proceeding on a red baseline.
+
 Use AskUserQuestion with:
 
 ```
@@ -141,14 +143,15 @@ The optimization plan is ready. Please review and approve:
 
 <plan contents>
 
-Reply 'approve' to proceed, or provide feedback for changes (e.g. exclude a file, adjust chunking, change chunk count).
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes
+(e.g. exclude a file, adjust chunking, change chunk count).
 ```
 
-**If the user provides feedback**: apply the changes (re-chunk, exclude files, etc.), overwrite `scan.md` and the in-memory plan, and re-present. Do not run a separate plan-review agent — the user's word is final.
+**Response handling**:
 
-**If baseline was RED** (tests already failing OR lint errors before Phase 3): include that prominently in the plan and ask the user explicitly whether to proceed, abort, or run `polish` first. Do not default to proceeding on a red baseline.
-
-Update state file phase to `plan_approved`.
+- **"approve"** → update state to `plan_approved`, proceed to Phase 3.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → apply changes (re-chunk, exclude files, etc.), overwrite `scan.md` and the in-memory plan, then return to this gate and re-present **via AskUserQuestion** using the same format. The user's word is final — do not run a plan-review agent. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
 ______________________________________________________________________
 

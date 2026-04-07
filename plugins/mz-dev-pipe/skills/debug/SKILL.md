@@ -101,7 +101,9 @@ ______________________________________________________________________
 
 ## Phase 2.5: User Approval Gate
 
-After diagnosis completes, present to the user via AskUserQuestion:
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+Use AskUserQuestion with:
 
 ```
 Bug investigation complete. Review the diagnosis before I proceed:
@@ -121,11 +123,14 @@ Bug investigation complete. Review the diagnosis before I proceed:
 ## External Context
 <domain research findings — omit if none>
 
-Reply 'approve' to proceed with regression test + fix, or provide feedback.
+Reply 'approve' to proceed with regression test + fix, 'reject' to abort, or provide feedback.
 ```
 
-- **"approve"**: read `phases/fix_and_verify.md`, proceed to Phase 3.
-- **Feedback**: re-run diagnosis (Phase 2) incorporating the user's input.
+**Response handling**:
+
+- **"approve"** → read `phases/fix_and_verify.md`, proceed to Phase 3.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → re-run diagnosis (Phase 2) incorporating the user's input, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
 ______________________________________________________________________
 

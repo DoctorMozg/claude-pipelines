@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.8.0"
+    "version": "0.9.0"
   },
   "name": "mozg-pipelines",
   "owner": {
@@ -21,7 +21,7 @@
       ],
       "name": "mz-dev-base",
       "source": "./plugins/mz-dev-base",
-      "version": "0.8.0"
+      "version": "0.9.0"
     },
     {
       "category": "development",
@@ -37,7 +37,7 @@
       ],
       "name": "mz-dev-pipe",
       "source": "./plugins/mz-dev-pipe",
-      "version": "0.8.0"
+      "version": "0.9.0"
     },
     {
       "category": "business",
@@ -52,7 +52,7 @@
       ],
       "name": "mz-biz-outreach",
       "source": "./plugins/mz-biz-outreach",
-      "version": "0.8.0"
+      "version": "0.9.0"
     }
   ]
 }

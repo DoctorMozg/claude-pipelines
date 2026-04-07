@@ -148,7 +148,7 @@ ______________________________________________________________________
 
 ## Phase 3.5: User Approval Gate
 
-After Phase 3, **this orchestrator** (not a subagent) must present the ranked findings to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
 Present:
 
@@ -170,14 +170,17 @@ Reply 'approve' to proceed with fixes, 'reject' to abort, or provide feedback fo
 
 **Response handling**:
 
-- **"approve"** → proceed to Phase 4
-- **"reject" with no guidance** → update state to `aborted_by_user` and exit
-- **Free-text feedback** — three sub-cases:
-  - *Drop/adjust specific findings* → remove them from the plan and re-present (no re-research)
-  - *Scope or lens changes* → return to Phase 1 with the adjusted parameters (re-research)
-  - *Unclear feedback* → ask a follow-up question; do not guess the intent
+- **"approve"** → update state to `plan_approved`, proceed to Phase 4.
 
-Update state file phase to `plan_approved`.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+
+- **Feedback** — three sub-cases:
+
+  - *Drop/adjust specific findings* → remove them from the plan, then return to this gate and re-present **via AskUserQuestion** using the same format (no re-research).
+  - *Scope or lens changes* → return to Phase 1 with the adjusted parameters (re-research), then return to this gate with updated findings.
+  - *Unclear feedback* → ask a follow-up question; do not guess the intent.
+
+  This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
 
 ______________________________________________________________________
 

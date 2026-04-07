@@ -1,9 +1,9 @@
 ---
-name: deep-research
+
+## name: deep-research
 description: Deep multi-agent research on any topic. Splits the topic into domains, dispatches parallel researcher agents that each scan 20-100 web pages, then synthesizes findings into a comprehensive report. Provide a topic as the argument.
-argument-hint: <topic or research question>
+argument-hint: 
 allowed-tools: Agent, Bash, Read, Write
----
 
 # Deep Research
 
@@ -32,7 +32,24 @@ Example for "State of WebAssembly in 2026":
 - **Ecosystem** — package managers, frameworks, developer tools
 - **Production usage** — companies using WASM in production, case studies
 
-Present the decomposition to the user and wait for approval before proceeding.
+**This orchestrator** (not a subagent) must present the decomposition to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+Use AskUserQuestion with:
+
+```
+Research decomposition ready. Please review:
+
+<numbered list of subtopics with descriptions>
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback
+(e.g. "add a subtopic on X", "merge topics 2 and 4", "drop topic 3").
+```
+
+**Response handling**:
+
+- **"approve"** → proceed to Step 2 (dispatch researchers).
+- **"reject"** → stop. Do not proceed.
+- **Feedback** → adjust the decomposition accordingly, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never dispatch researchers without explicit approval.
 
 ### 2. Dispatch parallel researcher agents
 
@@ -67,9 +84,9 @@ IMPORTANT: Launch ALL researcher agents in a single message using parallel tool 
 After all agents complete:
 
 1. **Read all agent outputs** carefully.
-1. **Cross-reference between subtopics** — identify findings that appear in multiple agents' results (higher confidence) and contradictions between them.
-1. **Identify emergent patterns** — themes that span multiple subtopics but that no single agent would see.
-1. **Assess overall coverage** — note gaps where agents couldn't find information.
+2. **Cross-reference between subtopics** — identify findings that appear in multiple agents' results (higher confidence) and contradictions between them.
+3. **Identify emergent patterns** — themes that span multiple subtopics but that no single agent would see.
+4. **Assess overall coverage** — note gaps where agents couldn't find information.
 
 ### 4. Write the report
 
@@ -100,7 +117,8 @@ Highlight surprising findings, strong consensus points, and key uncertainties.
 
 ---
 
-### <Subtopic 2>
+### \<Subtopic 2>
+
 ...
 
 ## Cross-Cutting Themes
@@ -124,6 +142,7 @@ What could not be determined from available sources. Suggestions for further inv
 ## All Sources
 
 Deduplicated list of all URLs consulted across all agents, grouped by subtopic.
+
 ```
 
 ### 5. Report to user
@@ -134,3 +153,5 @@ Display:
 - Total number of sources consulted
 - Number of subtopics covered
 - Top 3-5 most significant findings as a preview
+
+```

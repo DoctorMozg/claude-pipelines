@@ -88,7 +88,7 @@ Generate a detailed plan, run the plan-review loop, then get user approval.
 
 ### 2.3 User approval gate
 
-After the plan passes review, **this orchestrator** must present the plan to the user interactively. Do not delegate this step to a subagent — it requires AskUserQuestion.
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
 Use AskUserQuestion with:
 
@@ -97,12 +97,14 @@ The implementation plan is ready and passed review. Please review and approve:
 
 <contents of plan.md>
 
-Reply 'approve' to proceed, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
-If the user provides feedback instead of approving, spawn `pipeline-planner` again with the feedback, overwrite `plan.md`, and re-present. Do NOT re-run the plan review loop after user feedback — the user's word is final.
+**Response handling**:
 
-Update state file phase to `plan_approved`.
+- **"approve"** → update state to `plan_approved`, proceed to Phase 3.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → spawn `pipeline-planner` again with the feedback, overwrite `plan.md`, then return to this gate and re-present **via AskUserQuestion** using the same format. Do NOT re-run the plan review loop — the user's word is final. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
 ______________________________________________________________________
 
