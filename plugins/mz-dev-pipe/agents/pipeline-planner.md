@@ -1,6 +1,6 @@
 ---
 name: pipeline-planner
-description: Creates detailed, parallelizable implementation plans for the dev-pipeline skill. Breaks tasks into independent work units with clear file paths, changes, and dependencies.
+description: Creates detailed, parallelizable implementation plans for the build skill. Breaks tasks into independent work units with clear file paths, changes, and dependencies.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

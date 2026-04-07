@@ -1,6 +1,6 @@
 ---
 name: outreach-source-researcher
-description: Researches and identifies the best business directories, startup hubs, industry associations, and aggregator platforms for a given region and sector. Used by the lead-pipeline skill.
+description: Researches and identifies the best business directories, startup hubs, industry associations, and aggregator platforms for a given region and sector. Used by the lead-gen skill.
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

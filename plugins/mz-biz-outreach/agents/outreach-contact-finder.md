@@ -1,6 +1,6 @@
 ---
 name: outreach-contact-finder
-description: Finds contact information for companies — email addresses, phone numbers, key decision-makers with LinkedIn profiles, and social media presence. Used by the lead-pipeline skill.
+description: Finds contact information for companies — email addresses, phone numbers, key decision-makers with LinkedIn profiles, and social media presence. Used by the lead-gen skill.
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

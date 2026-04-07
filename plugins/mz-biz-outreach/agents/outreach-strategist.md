@@ -1,6 +1,6 @@
 ---
 name: outreach-strategist
-description: Analyzes an outreach goal and defines target company profile, search criteria, key signals to look for, scoring weights, and outreach angles. Used by the lead-pipeline skill as the first phase.
+description: Analyzes an outreach goal and defines target company profile, search criteria, key signals to look for, scoring weights, and outreach angles. Used by the lead-gen skill as the first phase.
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: opus
 effort: high

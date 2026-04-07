@@ -1,6 +1,6 @@
 ---
 name: outreach-growth-analyst
-description: Analyzes a company's growth signals — job postings, hiring patterns, team size, and growth trajectory. Used by the lead-pipeline skill.
+description: Analyzes a company's growth signals — job postings, hiring patterns, team size, and growth trajectory. Used by the lead-gen skill.
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

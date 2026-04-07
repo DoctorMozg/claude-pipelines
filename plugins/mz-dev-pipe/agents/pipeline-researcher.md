@@ -1,6 +1,6 @@
 ---
 name: pipeline-researcher
-description: Explores codebases and researches domains for the dev-pipeline skill. Gathers context about project structure, patterns, conventions, and external domain knowledge needed for implementation planning.
+description: Explores codebases and researches domains for the mz-dev-pipe plugin. Gathers context about project structure, patterns, conventions, and external domain knowledge needed for implementation planning.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 model: sonnet
 effort: high

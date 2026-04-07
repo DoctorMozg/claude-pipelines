@@ -1,6 +1,6 @@
 ---
 name: pipeline-completeness-checker
-description: Final quality gate for the dev-pipeline skill. Verifies the task is 100% complete by checking implementation against requirements, plan, and all review feedback. Can trigger pipeline restart from any phase.
+description: Final quality gate for the build skill. Verifies the task is 100% complete by checking implementation against requirements, plan, and all review feedback. Can trigger pipeline restart from any phase.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

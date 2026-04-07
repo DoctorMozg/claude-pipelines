@@ -1,6 +1,6 @@
 ---
 name: pipeline-code-reviewer
-description: Reviews implementation code for the dev-pipeline skill. Catches bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly.
+description: Reviews implementation code for the mz-dev-pipe plugin. Catches bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

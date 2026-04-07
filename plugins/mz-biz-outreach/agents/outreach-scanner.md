@@ -1,6 +1,6 @@
 ---
 name: outreach-scanner
-description: Scans a single company against review and reputation platforms (Glassdoor, Trustpilot, Indeed, Google Business) for scores, sentiment, and public perception. Updates the company's JSON file in place. Used by the lead-pipeline skill.
+description: Scans a single company against review and reputation platforms (Glassdoor, Trustpilot, Indeed, Google Business) for scores, sentiment, and public perception. Updates the company's JSON file in place. Used by the lead-gen skill.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

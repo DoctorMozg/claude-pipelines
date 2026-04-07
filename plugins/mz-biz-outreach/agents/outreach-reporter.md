@@ -1,6 +1,6 @@
 ---
 name: outreach-reporter
-description: Synthesizes all company cards into a scored executive summary report with market patterns, ranked lead table, and references to individual company dossier cards. Used by the lead-pipeline skill.
+description: Synthesizes all company cards into a scored executive summary report with market patterns, ranked lead table, and references to individual company dossier cards. Used by the lead-gen skill.
 tools: Read, Write, Bash, Glob, Grep
 model: opus
 effort: high
