@@ -1,13 +1,14 @@
 # Phases 1-2: Research and Planning
 
-Full detail for the research and planning phases of the build skill. Covers gathering context, generating a detailed implementation plan, running the plan-review loop, and obtaining user approval.
+Full detail for the research and planning phases of the build skill. Covers gathering codebase context, assessing feasibility and comparing approaches, optional domain research, generating a detailed plan, running the plan-review loop, and obtaining user approval.
 
 ## Contents
 
 - [Phase 1: Research](#phase-1-research)
   - 1.1 Codebase exploration
-  - 1.2 Domain research (if needed)
-  - 1.3 Save research
+  - 1.2 Feasibility & approach analysis
+  - 1.3 Domain research (if needed)
+  - 1.4 Save research
 - [Phase 2: Planning](#phase-2-planning)
   - 2.1 Generate plan
   - 2.2 Plan review loop
@@ -17,7 +18,7 @@ ______________________________________________________________________
 
 ## Phase 1: Research
 
-**Goal**: Gather context about the codebase and domain to inform planning.
+**Goal**: Gather codebase context, assess feasibility, compare implementation approaches, and optionally research external domain knowledge.
 
 ### 1.1 Codebase exploration
 
@@ -34,14 +35,48 @@ Focus on:
 4. Existing tests and how they're structured
 5. Build system, lint commands, test commands
 6. Reusable components and utilities
+7. Architectural constraints that could limit implementation options
+8. Integration points — where new code must connect to existing systems
 
 Report structured findings per the agent's output format.
 Save nothing — just report findings.
 ```
 
-### 1.2 Domain research (if needed)
+### 1.2 Feasibility & approach analysis
 
-If the task involves external APIs, protocols, libraries, or domain knowledge that isn't obvious from the codebase, spawn a second `pipeline-researcher` agent (model: **sonnet**) with:
+Spawn a `pipeline-researcher` agent (model: **sonnet**) with:
+
+```
+Assess feasibility and compare implementation approaches for this task:
+<task description>
+
+Use WebSearch and WebFetch to research how others solve similar problems.
+
+Deliver:
+1. **Feasibility assessment** — Is this achievable within the project's current architecture?
+   What are the hard constraints (language limitations, framework restrictions, dependency conflicts)?
+   Are there blockers that would require architectural changes first?
+
+2. **Approach comparison** — Identify 2-3 viable implementation approaches. For each:
+   - Brief description (2-3 sentences)
+   - Pros (what makes it good)
+   - Cons (what makes it risky or costly)
+   - Complexity estimate (low / medium / high)
+   - Fits existing patterns? (yes / partially / requires new pattern)
+
+3. **Recommended approach** — Pick one and explain why. Reference which pros outweigh which cons.
+
+4. **Risks and unknowns** — What could go wrong? What needs further investigation during planning?
+
+If web search yields relevant comparisons, best practices, or cautionary tales, include them with source URLs.
+Report concise findings. No fluff.
+```
+
+Run 1.1 and 1.2 **in parallel** — they are independent.
+
+### 1.3 Domain research (if needed)
+
+If the task involves external APIs, protocols, libraries, or domain knowledge that isn't obvious from the codebase, spawn a third `pipeline-researcher` agent (model: **sonnet**) with:
 
 ```
 Research the external domain knowledge needed for this task:
@@ -57,11 +92,25 @@ Use WebSearch and WebFetch to find:
 Report concise, actionable findings. No fluff.
 ```
 
-Run 1.1 and 1.2 **in parallel** if both are needed.
+**Parallel dispatch**: if domain research is obviously needed (task mentions specific APIs, protocols, or libraries), dispatch 1.1, 1.2, and 1.3 all in parallel. If unclear, dispatch 1.1 and 1.2 first, then decide on 1.3 from their results.
 
-### 1.3 Save research
+### 1.4 Save research
 
-Write combined findings to `.mz/task/<task_name>/research.md`.
+Write combined findings to `.mz/task/<task_name>/research.md`. Structure:
+
+```markdown
+# Research: <task summary>
+
+## Codebase Context
+<findings from 1.1>
+
+## Feasibility & Approaches
+<findings from 1.2 — including the recommended approach>
+
+## Domain Research
+<findings from 1.3, or "Not needed — no external dependencies">
+```
+
 Update state file phase to `research_complete`.
 
 ______________________________________________________________________
@@ -78,18 +127,19 @@ Spawn a `pipeline-planner` agent (model: **opus**) with:
 You are planning the implementation of this task:
 <task description>
 
-Read the research file at .mz/task/<task_name>/research.md for codebase and domain context.
+Read the research file at .mz/task/<task_name>/research.md for codebase context, feasibility analysis, and the recommended approach.
 
 Create a detailed implementation plan with:
 
-1. **Summary** — What we're building and why
-2. **Work Units** — Break the implementation into independent, parallelizable units where possible. Each unit should specify:
+1. **Chosen Approach** — Which approach from the research you're building on and why. If you deviate from the recommended approach, explain the reasoning. List alternatives considered (from research) so the user can evaluate the choice.
+2. **Summary** — What we're building and why
+3. **Work Units** — Break the implementation into independent, parallelizable units where possible. Each unit should specify:
    - Files to create or modify (with paths)
    - What changes to make (specific enough for a developer to implement without guessing)
    - Dependencies on other work units (if any)
-3. **Test Strategy** — What tests to write, what to cover, edge cases
-4. **Risk Assessment** — What could go wrong, what to watch out for
-5. **Verification Criteria** — How we know the task is truly complete
+4. **Test Strategy** — What tests to write, what to cover, edge cases
+5. **Risk Assessment** — What could go wrong, what to watch out for. Address risks identified in the feasibility analysis.
+6. **Verification Criteria** — How we know the task is truly complete
 
 Mark each work unit as either PARALLEL (can run simultaneously with others) or SEQUENTIAL (depends on prior units).
 Be specific about file paths and function signatures. Vague plans waste time.
@@ -111,12 +161,13 @@ Review this implementation plan for the task: <task description>
 Read the plan at .mz/task/<task_name>/plan.md and the research at .mz/task/<task_name>/research.md.
 
 Evaluate:
-1. **Completeness** — Does it cover all aspects of the task? Missing pieces?
-2. **Correctness** — Are the proposed changes technically sound?
-3. **Architecture** — Does it fit the existing codebase patterns? Any anti-patterns?
-4. **Parallelizability** — Are work units properly split for parallel execution?
-5. **Testability** — Is the test strategy comprehensive? Missing edge cases?
-6. **Risk** — Are risks properly identified? Missing any?
+1. **Feasibility** — Is the chosen approach achievable? Does it respect the constraints identified in research? If the plan deviates from the recommended approach, is the reasoning sound?
+2. **Completeness** — Does it cover all aspects of the task? Missing pieces?
+3. **Correctness** — Are the proposed changes technically sound?
+4. **Architecture** — Does it fit the existing codebase patterns? Any anti-patterns?
+5. **Parallelizability** — Are work units properly split for parallel execution?
+6. **Testability** — Is the test strategy comprehensive? Missing edge cases?
+7. **Risk** — Are risks properly identified? Does it address risks from the feasibility analysis?
 
 Output a structured review:
 - **VERDICT**: PASS or FAIL

@@ -72,9 +72,9 @@ ______________________________________________________________________
 
 ## Phase 1: Research
 
-Gather codebase and (if needed) domain context in parallel.
+Gather codebase context, assess feasibility, compare 2-3 implementation approaches, and optionally research external domain knowledge — all in parallel.
 
-**See `phases/research_and_planning.md` → Phase 1** for full dispatch detail on `pipeline-researcher` (codebase exploration + optional domain research) and the `.mz/task/<task_name>/research.md` artifact.
+**See `phases/research_and_planning.md` → Phase 1** for full dispatch detail on `pipeline-researcher` agents (codebase exploration, feasibility & approach analysis, optional domain research) and the `.mz/task/<task_name>/research.md` artifact.
 
 After completion, update state file phase to `research_complete`.
 
