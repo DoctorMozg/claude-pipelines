@@ -4,6 +4,7 @@ description: Cleans and optimizes code after implementation is functionally comp
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: high
+maxTurns: 60
 ---
 
 # Pipeline Optimizer Agent

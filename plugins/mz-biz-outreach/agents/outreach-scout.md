@@ -4,6 +4,7 @@ description: Discovers companies from a specific business directory or data sour
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 40
 ---
 
 # Outreach Scout Agent

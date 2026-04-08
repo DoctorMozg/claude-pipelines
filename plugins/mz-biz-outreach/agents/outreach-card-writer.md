@@ -4,6 +4,7 @@ description: Reads a single company's enriched JSON and writes a comprehensive m
 tools: Read, Write, Glob
 model: sonnet
 effort: high
+maxTurns: 50
 ---
 
 # Outreach Card Writer Agent

@@ -1,6 +1,6 @@
 ---
 name: lead-gen
-description: Full autonomous outreach pipeline — analyzes goal, discovers sources, scouts companies, scans reputations, enriches with contacts/news/growth/tech data, scores leads, writes per-company dossier cards, and produces an executive summary report. Provide a target description as the argument.
+description: ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients". Full autonomous outreach pipeline — analyzes goal, discovers sources, scouts companies, scans reputations, enriches with contacts/news/growth/tech data, scores leads, writes dossier cards, and produces an executive summary. Provide a target description as the argument.
 argument-hint: <target description> [sector:filter] [limit:N]
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, WebFetch, WebSearch
 ---

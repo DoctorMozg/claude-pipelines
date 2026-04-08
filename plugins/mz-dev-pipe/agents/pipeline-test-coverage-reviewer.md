@@ -1,9 +1,10 @@
 ---
 name: pipeline-test-coverage-reviewer
-description: Reviews test coverage completeness for the mz-dev-pipe plugin. Identifies untested functions, missing code paths, and gaps in edge case coverage.
+description: Reviews test coverage completeness. Identifies untested functions, missing code paths, and gaps in edge case coverage.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: medium
+maxTurns: 25
 ---
 
 # Pipeline Test Coverage Reviewer Agent

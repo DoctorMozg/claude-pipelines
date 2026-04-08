@@ -4,6 +4,7 @@ description: Scans a list of GitHub repositories for PRs needing user attention 
 tools: Read, Write, Bash, Glob, Grep, Agent(pr-reviewer)
 model: opus
 effort: high
+maxTurns: 50
 ---
 
 # PR Scanner Agent

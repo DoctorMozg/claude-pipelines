@@ -1,6 +1,6 @@
 ---
 name: scan-prs
-description: Scan GitHub repositories for PRs needing your attention and produce a prioritized daily report. Provide repository list as argument.
+description: ALWAYS invoke when the user wants to check which PRs need attention across repositories. Triggers: "scan PRs", "check PRs", "what PRs need attention", "PR inbox", "daily PR report". Scans GitHub repositories for PRs needing review and produces a prioritized daily report. Provide repository list as argument.
 argument-hint: '[owner/repo1, owner/repo2, ...]'
 allowed-tools: Agent, Bash, Read
 ---

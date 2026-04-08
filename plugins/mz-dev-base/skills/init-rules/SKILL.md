@@ -1,6 +1,6 @@
 ---
 name: init-rules
-description: Initialize development rules for your project or globally. Detects project languages and installs relevant coding rules to .claude/rules/ (project) or ~/.claude/rules/ (global). Use when setting up a new project or onboarding to Claude Code.
+description: ALWAYS invoke when the user wants to set up or install development rules for a project or globally. Triggers: "init rules", "set up rules", "install rules", "configure coding rules", "onboard project". Detects project languages and installs relevant coding rules to .claude/rules/ (project) or ~/.claude/rules/ (global).
 argument-hint: '[project|global] [--force]'
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---

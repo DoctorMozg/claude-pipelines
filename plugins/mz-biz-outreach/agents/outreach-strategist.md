@@ -4,6 +4,7 @@ description: Analyzes an outreach goal and defines target company profile, searc
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 50
 ---
 
 # Outreach Strategist Agent

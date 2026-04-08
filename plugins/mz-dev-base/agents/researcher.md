@@ -4,6 +4,7 @@ description: Comprehensive research agent for investigating topics across multip
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 40
 ---
 
 # Researcher Agent

@@ -4,6 +4,7 @@ description: Analyzes a company's technology stack, engineering maturity, open-s
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 40
 ---
 
 # Outreach Tech Analyst Agent

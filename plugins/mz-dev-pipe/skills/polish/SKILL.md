@@ -1,6 +1,6 @@
 ---
 name: polish
-description: Polishes existing code to meet specific completion criteria — runs tests, iterates fixes with review, optimizes code. Provide criteria as the argument.
+description: ALWAYS invoke when the user wants to polish code against specific criteria — fix failing tests, clean up after implementation, or meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests", "clean up the code", "finish this implementation". Iterative polish pipeline — runs tests, fixes failures with review loops, then optimizes. Provide criteria as the argument.
 argument-hint: [scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---

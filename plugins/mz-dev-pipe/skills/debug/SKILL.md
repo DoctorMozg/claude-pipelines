@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Reactive bug investigation pipeline — reproduces, diagnoses root cause with optional domain research, writes a regression test (TDD), fixes minimally, verifies, and reviews. Provide a bug report as the argument.
+description: ALWAYS invoke when the user reports a bug, error, or failing test. Triggers: "debug X", "fix this bug", "why is X failing", "investigate error", "stack trace". Reactive bug investigation pipeline — reproduces, diagnoses root cause with optional domain research, writes a regression test (TDD), fixes minimally, verifies, and reviews. Provide a bug report as the argument.
 argument-hint: [scope:branch|global|working] <bug report — error message, stack trace, failing test, description, or GitHub issue URL>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---

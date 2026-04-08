@@ -3,6 +3,8 @@ name: technical-writer
 description: Use this agent to create or improve technical documentation — README files, API references, SDK docs, user guides, tutorials, and getting-started material. Invoke when you need accurate, example-driven docs grounded in the actual code rather than guesses.
 tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch
 model: sonnet
+effort: high
+maxTurns: 60
 ---
 
 # Technical Writer Agent

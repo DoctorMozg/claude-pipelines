@@ -4,6 +4,7 @@ description: Deep PR reviewer that reads a GitHub PR (diff, comments, discussion
 tools: Read, Write, Edit, Bash, Glob, Grep, Agent(researcher), WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 isolation: worktree
 ---
 

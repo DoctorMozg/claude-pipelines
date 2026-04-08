@@ -4,6 +4,7 @@ description: Finds recent news, press releases, funding rounds, partnerships, an
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 40
 ---
 
 # Outreach News Finder Agent

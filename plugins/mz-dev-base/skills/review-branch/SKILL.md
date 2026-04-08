@@ -1,6 +1,6 @@
 ---
 name: review-branch
-description: Review all changes on the current branch against main — finds bugs, checks architecture, tests, and consistency. Produces a report in .mz/reviews/.
+description: ALWAYS invoke when the user wants to review all changes on the current git branch. Triggers: "review branch", "review my changes", "check my branch", "what did I change", "branch review". Reviews all changes against main — finds bugs, checks architecture, tests, and consistency. Produces a report in .mz/reviews/.
 argument-hint: [base-branch (default: main)]
 allowed-tools: Agent, Bash, Read, Glob, Grep
 ---

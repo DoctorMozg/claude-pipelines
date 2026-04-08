@@ -4,6 +4,7 @@ description: Orchestrates the enrichment phase of the lead pipeline. Reads per-c
 tools: Read, Write, Bash, Glob, Grep, Agent(outreach-contact-finder), Agent(outreach-news-finder), Agent(outreach-growth-analyst), Agent(outreach-tech-analyst)
 model: opus
 effort: high
+maxTurns: 100
 ---
 
 # Outreach Enrichment Orchestrator Agent

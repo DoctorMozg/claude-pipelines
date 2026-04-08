@@ -4,6 +4,7 @@ description: Synthesizes all company cards into a scored executive summary repor
 tools: Read, Write, Bash, Glob, Grep
 model: opus
 effort: high
+maxTurns: 60
 ---
 
 # Outreach Reporter Agent

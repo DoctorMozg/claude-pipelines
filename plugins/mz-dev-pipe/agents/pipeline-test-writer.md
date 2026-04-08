@@ -1,9 +1,10 @@
 ---
 name: pipeline-test-writer
-description: Writes comprehensive tests for implementations in the build skill. Creates unit tests, edge case tests, and integration tests following project conventions.
+description: Writes comprehensive tests for implementations. Creates unit tests, edge case tests, and integration tests following project conventions.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: high
+maxTurns: 60
 ---
 
 # Pipeline Test Writer Agent

@@ -4,6 +4,7 @@ description: Reviews the current git branch against its base, analyzing all chan
 tools: Read, Write, Edit, Bash, Glob, Grep, Agent(researcher), WebFetch, WebSearch
 model: opus
 effort: high
+maxTurns: 80
 ---
 
 # Branch Reviewer Agent

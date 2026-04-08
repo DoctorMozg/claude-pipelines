@@ -4,6 +4,7 @@ description: Scans a single company against review and reputation platforms (Gla
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 30
 ---
 
 # Outreach Scanner Agent

@@ -4,6 +4,7 @@ description: Finds contact information for companies — email addresses, phone 
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 40
 ---
 
 # Outreach Contact Finder Agent

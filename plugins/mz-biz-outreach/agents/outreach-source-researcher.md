@@ -4,6 +4,7 @@ description: Researches and identifies the best business directories, startup hu
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 40
 ---
 
 # Outreach Source Researcher Agent

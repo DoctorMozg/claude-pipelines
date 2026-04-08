@@ -1,6 +1,6 @@
 ---
 name: investigate
-description: Hypothesis-driven investigation pipeline — analyzes code against a suspected issue, runs conditional domain research, writes exploratory tests to prove or disprove, and reports findings with a verdict. Provide a hypothesis as the argument.
+description: ALWAYS invoke when the user wants to verify a hypothesis, check suspected behavior, or prove/disprove an issue without fixing it. Triggers: "investigate X", "check if Y", "verify whether", "is X actually doing Y", "prove/disprove". Hypothesis-driven investigation pipeline — analyzes code, runs domain research, writes exploratory tests, and reports findings with a verdict. Provide a hypothesis as the argument.
 argument-hint: [scope:branch|global|working] <hypothesis — suspected bug, possible issue, or behavior to verify>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---

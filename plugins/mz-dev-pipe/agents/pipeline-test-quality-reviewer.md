@@ -1,9 +1,10 @@
 ---
 name: pipeline-test-quality-reviewer
-description: Reviews test quality for the mz-dev-pipe plugin. Evaluates whether tests are meaningful, independent, well-structured, and would catch real regressions.
+description: Reviews test quality. Evaluates whether tests are meaningful, independent, well-structured, and would catch real regressions.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: medium
+maxTurns: 25
 ---
 
 # Pipeline Test Quality Reviewer Agent

@@ -4,6 +4,7 @@ description: Analyzes a company's growth signals — job postings, hiring patter
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
+maxTurns: 40
 ---
 
 # Outreach Growth Analyst Agent
