@@ -49,7 +49,7 @@ You orchestrate a multi-personality brainstorming session. A curated panel of 5 
 
 ## Phase 0: Setup
 
-Derive a short snake_case task name (max 30 chars) from the topic. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Started: timestamp, Iteration: 0.
+Derive task name as `brainstorm_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the topic and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Started: timestamp, Iteration: 0.
 
 ## Phase 1: Panel Selection
 

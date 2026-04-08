@@ -12,6 +12,7 @@ claude plugin marketplace add DoctorMozg/claude-pipelines
 claude plugin install mz-dev-base       # Standalone agents + rules
 claude plugin install mz-dev-pipe       # Autonomous dev pipelines
 claude plugin install mz-dev-hooks      # Safety gates + workflow hooks
+claude plugin install mz-memory         # Cross-session project memory
 claude plugin install mz-biz-outreach   # Business lead generation
 ```
 
@@ -93,6 +94,22 @@ Multi-personality brainstorming with 10 AI thinkers (engineer, artist, philosoph
 10 personality agents available as standalone creative consultants.
 
 **[Full documentation →](plugins/mz-creative/)**
+
+______________________________________________________________________
+
+### [`mz-memory`](plugins/mz-memory/) — Project Memory
+
+Cross-session project memory that persists knowledge automatically. SessionStart injects, SessionEnd captures completed tasks, PostCompact re-injects after compaction.
+
+| Hook                | Event        | What it does                                           |
+| ------------------- | ------------ | ------------------------------------------------------ |
+| **Memory inject**   | SessionStart | Loads `.mz/memory/MEMORY.md` into context              |
+| **Memory capture**  | SessionEnd   | Captures completed task summaries, prunes to 200 lines |
+| **Memory reinject** | PostCompact  | Re-injects memory after context compaction             |
+
+Pairs with `mz-dev-pipe` agents that have native `memory: project` for per-agent persistent memory.
+
+**[Full documentation →](plugins/mz-memory/)**
 
 ______________________________________________________________________
 

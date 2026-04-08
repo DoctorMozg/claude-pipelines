@@ -62,7 +62,7 @@ Split `$ARGUMENTS` (after removing `scope:` parameter) into:
 
 ### 0.2 Derive task name
 
-Short snake_case name (max 30 chars). Examples: `test_full_project`, `test_branch_changes`, `test_src_auth`.
+Task name format: `verify_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) and HHMMSS is current time. Examples: `verify_full_project_143022`, `verify_branch_changes_150511`.
 
 ### 0.3 Create task directory and state
 

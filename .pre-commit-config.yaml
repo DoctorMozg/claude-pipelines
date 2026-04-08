@@ -16,7 +16,7 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
-        args: [-e, "SC2086,SC2046"]
+        args: [-e, "SC2086,SC2046,SC1091"]
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.11.0-1
     hooks:

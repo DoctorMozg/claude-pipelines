@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.11.0"
+    "version": "0.12.0"
   },
   "name": "mozg-pipelines",
   "owner": {
@@ -21,7 +21,7 @@
       ],
       "name": "mz-dev-base",
       "source": "./plugins/mz-dev-base",
-      "version": "0.11.0"
+      "version": "0.12.0"
     },
     {
       "category": "development",
@@ -37,7 +37,7 @@
       ],
       "name": "mz-dev-pipe",
       "source": "./plugins/mz-dev-pipe",
-      "version": "0.11.0"
+      "version": "0.12.0"
     },
     {
       "category": "business",
@@ -52,7 +52,7 @@
       ],
       "name": "mz-biz-outreach",
       "source": "./plugins/mz-biz-outreach",
-      "version": "0.11.0"
+      "version": "0.12.0"
     },
     {
       "category": "creativity",
@@ -67,7 +67,7 @@
       ],
       "name": "mz-creative",
       "source": "./plugins/mz-creative",
-      "version": "0.11.0"
+      "version": "0.12.0"
     },
     {
       "category": "development",
@@ -82,7 +82,21 @@
       ],
       "name": "mz-dev-hooks",
       "source": "./plugins/mz-dev-hooks",
-      "version": "0.11.0"
+      "version": "0.12.0"
+    },
+    {
+      "category": "development",
+      "description": "Cross-session project memory \u2014 automatic knowledge persistence, injection, and compaction recovery",
+      "keywords": [
+        "memory",
+        "persistence",
+        "cross-session",
+        "context",
+        "compaction"
+      ],
+      "name": "mz-memory",
+      "source": "./plugins/mz-memory",
+      "version": "0.12.0"
     }
   ]
 }

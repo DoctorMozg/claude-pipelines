@@ -79,7 +79,7 @@ Example input: "All tests pass, pre-commit clean, no debug prints in src/"
 
 ### 0.3 Derive task name
 
-Short snake_case name (max 30 chars) from the criteria summary.
+Task name format: `polish_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the criteria and HHMMSS is current time.
 
 ### 0.4 Create task directory and state
 

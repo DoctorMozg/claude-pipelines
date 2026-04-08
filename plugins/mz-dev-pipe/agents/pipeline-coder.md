@@ -3,6 +3,7 @@ name: pipeline-coder
 description: Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
+memory: project
 effort: high
 maxTurns: 60
 ---
@@ -88,3 +89,13 @@ List every file you created or modified with a brief summary of changes.
 - ALWAYS handle errors explicitly with informative messages.
 - If the plan is ambiguous about something, make a reasonable choice and document it in your report.
 - If you discover the plan has a mistake (e.g., wrong function name), fix it reasonably and note the deviation.
+
+## Memory
+
+You have persistent project memory at `.claude/agent-memory/pipeline-coder/MEMORY.md`. Claude Code manages this automatically.
+
+- Save project conventions: naming patterns, code style, preferred libraries, error handling patterns.
+- Save non-obvious integration points and registration steps that were easy to miss.
+- Save patterns that reviewers accepted or rejected (what works, what doesn't in this codebase).
+- Do not save task-specific implementation details.
+- Keep entries concise — one line per fact.

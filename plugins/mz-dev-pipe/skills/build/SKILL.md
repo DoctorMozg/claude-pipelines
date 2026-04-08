@@ -36,7 +36,7 @@ You receive a task description and autonomously research, plan, implement, revie
 
 ## Phase 0: Setup
 
-Derive a short snake_case task name (max 30 chars) from the description. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Iterations. Use TaskCreate for per-phase tracking.
+Derive task name as `build_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the description and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Iterations. Use TaskCreate for per-phase tracking.
 
 ## Phase 1: Research
 

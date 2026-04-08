@@ -34,7 +34,7 @@ You orchestrate a read-only impact analysis pipeline. Given a target (file, func
    - **Function**: argument matches identifier pattern (no path separators) → grep to locate definition, resolve to file + line.
    - **Module**: argument matches directory name → validate directory exists.
 1. If target not found: ask user to clarify via AskUserQuestion.
-1. Derive snake_case task name (max 30 chars) from target basename. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Target, Target type, Started timestamp. Use TaskCreate for tracking.
+1. Derive task name as `blast_radius_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the target basename and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Target, Target type, Started timestamp. Use TaskCreate for tracking.
 
 ## Phase 0.5: Confirm Scope
 

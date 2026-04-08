@@ -71,7 +71,7 @@ If a `scope:` parameter was extracted, resolve it to a concrete file list. Save 
 
 ### 0.3 Create task directory and state
 
-Derive task name: short snake_case (max 30 chars) from bug summary.
+Task name format: `debug_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the bug and HHMMSS is current time.
 
 ```bash
 mkdir -p .mz/task/<task_name>

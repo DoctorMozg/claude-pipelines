@@ -3,6 +3,7 @@ name: pipeline-planner
 description: Creates detailed, parallelizable implementation plans. Breaks tasks into independent work units with clear file paths, changes, and dependencies.
 tools: Read, Grep, Glob, Bash
 model: opus
+memory: project
 effort: high
 maxTurns: 50
 ---
@@ -97,3 +98,13 @@ You receive:
 - Include ALL integration points — registrations, exports, configs, documentation.
 - The test strategy must cover every work unit's happy path + at least 2 edge cases.
 - If revising based on reviewer feedback, address EVERY issue raised. Don't skip any.
+
+## Memory
+
+You have persistent project memory at `.claude/agent-memory/pipeline-planner/MEMORY.md`. Claude Code manages this automatically.
+
+- Save architectural decisions, chosen approaches, and why alternatives were rejected.
+- Save key file paths and integration points that were hard to discover.
+- Save project conventions that affect planning (naming patterns, directory structure, testing practices).
+- Do not save task-specific details that won't be useful in future sessions.
+- Keep entries concise — one line per fact.

@@ -48,7 +48,7 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying dete
 
 ## Phase 0: Setup
 
-Derive a short snake_case task name (max 30 chars) from the scope. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Review iterations, Fix attempts, Files in scope, Chunks. Use TaskCreate for per-phase tracking.
+Derive task name as `optimize_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the scope and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Review iterations, Fix attempts, Files in scope, Chunks. Use TaskCreate for per-phase tracking.
 
 ## Phase 1: Scan & Chunk
 

@@ -68,7 +68,7 @@ Split `$ARGUMENTS` (after removing `scope:`, `output:` parameters) into:
 
 ### 0.2 Derive task name
 
-Short snake_case name (max 30 chars). Examples: `explain_src_auth`, `explain_payment_flow`, `explain_branch_changes`.
+Task name format: `explain_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) and HHMMSS is current time. Examples: `explain_src_auth_143022`, `explain_payment_flow_150511`.
 
 ### 0.3 Create task directory and state
 

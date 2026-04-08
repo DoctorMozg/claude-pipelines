@@ -65,6 +65,8 @@ Define all bounds and paths as named constants in SKILL.md. Every loop must refe
 
 Multi-phase skills persist state to `.mz/task/<task_name>/state.md`. Required fields: Status, Phase, Started. Update after every phase transition. Critical: never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
 
+**Task naming convention**: `<skill>_<slug>_<HHMMSS>` where `<skill>` is the skill name, `<slug>` is a snake_case summary of the argument (max 20 chars), and `<HHMMSS>` is wall-clock time. This prevents collisions across skills and re-runs. Example: `build_oauth_flow_143022`, `debug_payment_err_150511`.
+
 ## 9. Dispatch Prompt Compression
 
 Agent files already contain general process/rules/format. Dispatch prompts provide **only** task-specific context: what to work on, artifact pointers, scope constraints, output format overrides. Don't repeat agent instructions. Explicitly request concise output — output tokens cost 5x input.

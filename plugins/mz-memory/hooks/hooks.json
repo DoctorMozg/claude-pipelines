@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-reinject.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-capture.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-inject.sh",
+            "once": true,
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

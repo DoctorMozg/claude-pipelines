@@ -53,7 +53,7 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before parsing lens/
 
 ## Phase 0: Setup
 
-Derive snake_case task name (max 30 chars) from argument (or "roam"). Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Review iterations, Fix attempts, Lenses dispatched, Findings. Use TaskCreate for per-phase tracking.
+Derive task name as `audit_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the argument (or "roam") and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Review iterations, Fix attempts, Lenses dispatched, Findings. Use TaskCreate for per-phase tracking.
 
 ## Phase 1: Scope & Lens Selection
 
