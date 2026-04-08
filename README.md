@@ -11,6 +11,7 @@ claude plugin marketplace add DoctorMozg/claude-pipelines
 # Install the plugins you need
 claude plugin install mz-dev-base       # Standalone agents + rules
 claude plugin install mz-dev-pipe       # Autonomous dev pipelines
+claude plugin install mz-dev-hooks      # Safety gates + workflow hooks
 claude plugin install mz-biz-outreach   # Business lead generation
 ```
 
@@ -78,6 +79,40 @@ Autonomous lead generation pipeline that discovers companies, scans reputations,
 11 specialized agents covering strategy, source research, company discovery, reputation scanning, contact finding, news monitoring, growth analysis, tech stack analysis, enrichment orchestration, card writing, and reporting.
 
 **[Full documentation →](plugins/mz-biz-outreach/)**
+
+______________________________________________________________________
+
+### [`mz-creative`](plugins/mz-creative/) — Creative Brainstorming
+
+Multi-personality brainstorming with 10 AI thinkers (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian). A curated panel of 5 generates ideas from diverse lenses, a synthesizer merges them, and the panel votes iteratively until consensus.
+
+| Skill          | Command               | What it does                                                    |
+| -------------- | --------------------- | --------------------------------------------------------------- |
+| **brainstorm** | `/brainstorm <topic>` | Panel selection → parallel ideation → synthesis → voting rounds |
+
+10 personality agents available as standalone creative consultants.
+
+**[Full documentation →](plugins/mz-creative/)**
+
+______________________________________________________________________
+
+### [`mz-dev-hooks`](plugins/mz-dev-hooks/) — Development Workflow Hooks
+
+Deterministic safety gates and intelligent workflow reminders. Shell scripts block dangerous actions at zero token cost; Haiku prompt hooks provide language-agnostic formatting, testing, and dependency awareness.
+
+| Hook                    | Event       | Type    | Behavior                                               |
+| ----------------------- | ----------- | ------- | ------------------------------------------------------ |
+| Dangerous command guard | PreToolUse  | command | **Blocks** rm -rf /, force push main, DROP TABLE, etc. |
+| Secret scanner          | PreToolUse  | command | **Blocks** API keys, tokens, private keys in code      |
+| File safety guard       | PreToolUse  | command | **Blocks** edits to lock files, .env, vendor dirs      |
+| Commit quality          | PreToolUse  | command | **Warns** on non-conventional commit messages          |
+| Format reminder         | PostToolUse | prompt  | **Reminds** to run project formatter after edits       |
+| Test reminder           | PostToolUse | prompt  | **Reminds** to add tests for new public functions      |
+| Dependency alert        | PostToolUse | prompt  | **Reminds** to install after manifest changes          |
+
+No configuration required — hooks activate automatically on install.
+
+**[Full documentation →](plugins/mz-dev-hooks/)**
 
 ## How It Works
 

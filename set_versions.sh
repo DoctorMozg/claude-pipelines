@@ -23,7 +23,7 @@ sed -i "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$VERSION\"/g" \
 # Update all plugin.json files
 for f in "$REPO_ROOT"/plugins/*/plugin.json; do
     sed -i "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$VERSION\"/" "$f"
-    echo "Updated: ${f#$REPO_ROOT/}"
+    echo "Updated: ${f#"$REPO_ROOT"/}"
 done
 
 # Update README.md version column
