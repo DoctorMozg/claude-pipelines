@@ -1,32 +1,5 @@
 {
   "hooks": {
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "model": "haiku",
-            "prompt": "A file was just modified. Check the tool_input to see which file and what changed. If this is a source code file (not config, not docs, not test files themselves) and the project likely has a configured formatter (prettier, ruff, black, gofmt, rustfmt, clang-format, autopep8, etc.), remind Claude to run the appropriate formatter. Look at the file extension to determine the language. Only flag this if formatting is likely relevant \u2014 skip for markdown, plain text, JSON, YAML, and config files. Respond with a brief additionalContext reminder if needed, or approve silently by returning nothing.",
-            "type": "prompt"
-          },
-          {
-            "model": "haiku",
-            "prompt": "A source file was just modified. Check the tool_input to see which file and what changed. If the change adds new public functions, classes, methods, or exported symbols that don't have corresponding test coverage, remind Claude to add or update tests. Be conservative: only flag clearly missing test coverage for NEW code with non-trivial logic, not minor edits to already-tested code, not private helpers, not type definitions, and not config changes. Approve silently for small edits, refactors of tested code, or non-source files.",
-            "type": "prompt"
-          }
-        ],
-        "matcher": "Write|Edit|MultiEdit"
-      },
-      {
-        "hooks": [
-          {
-            "model": "haiku",
-            "prompt": "A file was just edited. Check the tool_input to see which file was modified. If it is a dependency manifest (package.json, pyproject.toml, Cargo.toml, go.mod, requirements.txt, Gemfile, pom.xml, build.gradle, etc.) and the edit added or removed a dependency (not just a version bump or non-dependency field change), remind Claude to run the appropriate install/update command (npm install, pip install, cargo build, go mod tidy, bundle install, etc.). Approve silently for version-only changes, non-manifest files, or changes to non-dependency sections.",
-            "type": "prompt"
-          }
-        ],
-        "matcher": "Edit|MultiEdit"
-      }
-    ],
     "PreToolUse": [
       {
         "hooks": [
