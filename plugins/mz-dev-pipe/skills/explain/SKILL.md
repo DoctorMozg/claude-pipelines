@@ -1,6 +1,6 @@
 ---
 name: explain
-description: ALWAYS invoke when the user wants to understand how code works, needs documentation, or asks "what does X do". Triggers: "explain X", "how does X work", "what does this do", "walk me through", "document this code". Deep code explainer — researches structure, execution flow, and domain context, then produces a report with mermaid diagrams documenting design rationale and observations.
+description: ALWAYS invoke when the user wants to understand how code works, needs visual documentation, or asks "what does X do". Triggers: "explain X", "how does X work", "diagram this", "what does this do", "walk me through", "document this code", "visualize the flow". Deep diagram-first code explainer — researches structure, execution flow, and domain context, then produces a mermaid-rich report (architecture, sequence, data flow, and optional mindmap diagrams) documenting design rationale and observations.
 argument-hint: [scope:branch|global|working] [output:<path>] <scope or question — e.g. "src/auth/", "how does the payment flow work", "explain the WebSocket reconnection logic">
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
@@ -53,7 +53,7 @@ Example: `explain_2026_04_06_src_auth_token_refresh.md`
 | 0   | Setup             | inline below         | —     |
 | 1   | Scope Resolution  | inline below         | —     |
 | 2   | Research Dispatch | `phases/research.md` | —     |
-| 3   | Report Generation | `phases/research.md` | —     |
+| 3   | Report Generation | `phases/report.md`   | —     |
 
 ______________________________________________________________________
 
@@ -101,7 +101,7 @@ ______________________________________________________________________
 ## Phase 2: Research Dispatch
 
 Dispatch 1-3 `pipeline-researcher` agents based on scope size and external dependency detection.
-**See `phases/research.md` → Phase 2** for the dispatch decision matrix, researcher prompts, and per-researcher artifact format.
+**See `phases/research.md`** for the dispatch decision matrix, researcher prompts, and per-researcher artifact format.
 Update state phase to `researched`.
 
 ______________________________________________________________________
@@ -109,7 +109,7 @@ ______________________________________________________________________
 ## Phase 3: Report Generation
 
 Compile all researcher outputs into a single report with mandatory mermaid diagrams.
-**See `phases/research.md` → Phase 3** for the report template, diagram requirements, and quality checks.
+**See `phases/report.md`** for the report template, diagram requirements, and quality checks.
 Write the report to the resolved output path. Update state to `completed`. Present a summary to the user with the report path.
 
 ______________________________________________________________________

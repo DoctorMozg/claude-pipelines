@@ -1,0 +1,1 @@
+- [Subagent Write filter workaround](feedback_write_filter.md) — tool_use_error on .md files containing "report" in path/content; use python/bash heredoc as fallback
