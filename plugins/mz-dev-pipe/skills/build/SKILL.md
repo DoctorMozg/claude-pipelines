@@ -1,14 +1,28 @@
 ---
 name: build
-description: ALWAYS invoke when the user wants to build, implement, or create a new feature, module, or component from scratch. Triggers: "build X", "implement Y", "create Z", "add feature", "develop". Full autonomous development pipeline — researches feasibility, plans with approach comparison, codes in parallel waves, reviews, tests, optimizes, and verifies completeness. Provide a task description as the argument.
+description: ALWAYS invoke when the user wants to build, implement, or create a new feature, module, or component from scratch. Triggers: "build X", "implement Y", "add feature". When NOT to use: bug fixes (use debug), polishing existing code (use polish).
 argument-hint: <task description>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Autonomous Development Pipeline
 
-You are an orchestrator that drives a full development lifecycle using specialized sub-agents.
-You receive a task description and autonomously research, plan, implement, review, and test it.
+## Overview
+
+Orchestrates a full development lifecycle — research, plan, implement in parallel waves, review, test, optimize, and verify — using specialized sub-agents. Takes a task description and produces reviewed, tested, green code with explicit user approval at the plan gate.
+
+## When to Use
+
+- User asks to build, implement, or create a new feature/module/component.
+- Triggers: "build X", "implement Y", "add feature Z", "develop".
+- Work spans multiple files and benefits from a plan + review + test loop.
+
+### When NOT to use
+
+- Fixing a known bug — use `debug`.
+- Making existing code meet quality criteria — use `polish`.
+- Read-only analysis or impact mapping — use `blast-radius` or `audit`.
+- One-line edits or trivial tweaks — just edit directly.
 
 ## Input
 
@@ -18,7 +32,9 @@ You receive a task description and autonomously research, plan, implement, revie
 
 - **MAX_REVIEW_ITERATIONS**: 3 | **TASK_DIR**: `.mz/task/`
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | #   | Phase                              | Reference                             | Loop?               |
 | --- | ---------------------------------- | ------------------------------------- | ------------------- |
@@ -34,25 +50,19 @@ You receive a task description and autonomously research, plan, implement, revie
 | 9   | Optimization                       | `phases/finalization.md`              | max 2               |
 | 10  | Completeness Check                 | `phases/finalization.md`              | restart-from-phase  |
 
-## Phase 0: Setup
+### Phase 0: Setup
 
 Derive task name as `build_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the description and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Iterations. Use TaskCreate for per-phase tracking.
 
-## Phase 1: Research
+### Phase 1: Research
 
-Gather codebase context, assess feasibility, compare 2-3 approaches in parallel.
+Gather codebase context, assess feasibility, compare 2-3 approaches in parallel. See `phases/research_and_planning.md` → Phase 1. Update state to `research_complete`.
 
-**See `phases/research_and_planning.md` → Phase 1** for researcher dispatch and `research.md` artifact.
+### Phase 2: Planning
 
-Update state phase to `research_complete`.
+Generate detailed plan, run plan-review loop, get user approval. See `phases/research_and_planning.md` → Phase 2.
 
-## Phase 2: Planning
-
-Generate a detailed plan, run the plan-review loop, then get user approval.
-
-**See `phases/research_and_planning.md` → Phase 2** for planner/reviewer dispatch and `plan.md` artifact.
-
-### 2.3 User approval gate
+#### 2.3 User approval gate
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
@@ -72,65 +82,59 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 - **"reject"** → abort.
 - **Feedback** → spawn `pipeline-planner` with feedback, overwrite `plan.md`, re-present via AskUserQuestion. Do NOT re-run plan review — user's word is final. Loop until explicit approval.
 
-## Phase 3: Implementation
+### Phase 3: Implementation
 
-Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus).
+Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). See `phases/implementation_and_review.md` → Phase 3. Update state to `implementation_complete`.
 
-**See `phases/implementation_and_review.md` → Phase 3** for wave scheduling and coder dispatch.
+### Phase 4: Code Review
 
-Update state phase to `implementation_complete`.
+Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 4. Update state to `code_review_passed`.
 
-## Phase 4: Code Review
+### Phase 5: Test Writing
 
-Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times.
+Create tests with `pipeline-test-writer` (model: opus). See `phases/testing.md` → Phase 5.
 
-**See `phases/implementation_and_review.md` → Phase 4** for review prompt and verdict handling.
+### Phase 6: Test Review
 
-Update state phase to `code_review_passed`.
+Spawn THREE review agents in parallel (model: sonnet): coverage, quality, code. See `phases/testing.md` → Phase 6. Update state to `test_review_passed`.
 
-## Phase 5: Test Writing
+### Phase 7: Lint, Format, and Test Run
 
-Create tests with `pipeline-test-writer` (model: opus).
+Detect tooling, run linters/formatters, then run tests. See `phases/testing.md` → Phase 7. Update state to `tests_passing`.
 
-**See `phases/testing.md` → Phase 5** for test-writer dispatch and `tests.md` artifact.
+### Phase 8: Final Code Review
 
-## Phase 6: Test Review
+Last validation pass over ALL code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 8. Update state to `final_review_passed`.
 
-Spawn THREE review agents in parallel (model: sonnet): coverage, quality, code.
+### Phase 9: Optimization
 
-**See `phases/testing.md` → Phase 6** for dispatch, consolidation, and review loop (max 3).
+Clean up dead code, debug artifacts, unused imports. Re-verify then review. See `phases/finalization.md` → Phase 9. Update state to `optimized`.
 
-Update state phase to `test_review_passed`.
+### Phase 10: Completeness Check
 
-## Phase 7: Lint, Format, and Test Run
+Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is done. See `phases/finalization.md` → Phase 10. Max 2 iterations.
 
-Detect project tooling, run linters/formatters, then run tests.
+## Techniques
 
-**See `phases/testing.md` → Phase 7** for tooling detection and test-fix loop (max 3).
+Techniques: delegated to phase files — see Phase Overview table above.
 
-Update state phase to `tests_passing`.
+## Common Rationalizations
 
-## Phase 8: Final Code Review
+| Rationalization                         | Rebuttal                                                                      |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| "plan is fine without review"           | "plan review catches integration gaps that become 3 review cycles downstream" |
+| "tests can wait until after first ship" | "missing tests on Day 1 become 'why is this flaky?' in Week 2"                |
+| "one big commit is easier"              | "atomic commits are the only way to bisect a regression cheaply"              |
 
-Last validation pass over ALL code with `pipeline-code-reviewer` (model: opus).
+## Red Flags
 
-**See `phases/finalization.md` → Phase 8** for final review and fix-and-retry (max 2).
+- You dispatched coders without user approval of the plan.
+- Plan review was skipped or truncated to save time.
+- Tests were deferred to "later" instead of written in Phase 5.
 
-Update state phase to `final_review_passed`.
+## Verification
 
-## Phase 9: Optimization
-
-Clean up dead code, debug artifacts, unused imports. Re-verify, then review.
-
-**See `phases/finalization.md` → Phase 9** for sub-phases and regression-revert logic.
-
-Update state phase to `optimized`.
-
-## Phase 10: Completeness Check
-
-Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is done.
-
-**See `phases/finalization.md` → Phase 10** for completeness prompt and restart-from-phase logic. Max 2 iterations before escalating.
+Output the final state block: task dir path, all phases marked complete, review iteration counts, file list, and tests-passing status. If any phase is incomplete, print the blocker explicitly.
 
 ## Error Handling
 

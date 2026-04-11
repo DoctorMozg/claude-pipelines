@@ -85,30 +85,44 @@ Assign a confidence score (0-100). **Drop any issue scoring below 80.** Include 
 
 ## Output Format
 
+Every finding must be prefixed with one of four severity labels:
+
+- `Critical:` — correctness, security, or integration issue that must be fixed before merge/plan advancement. Blocks verdict.
+- `Nit:` — cosmetic, style, or subjective. Advisory only.
+- `Optional:` — improvement suggestion (refactor, simplification). Advisory only.
+- `FYI:` — informational observation, no action required.
+
+Example:
+
+- `Critical: unchecked null dereference at foo.ts:42 will crash on empty input.`
+- `Nit: variable name 'tmp' is uninformative; consider 'deserialized_response'.`
+- `Optional: this loop could use Array.map for clarity.`
+- `FYI: this function is called from 3 callsites; tests cover 2.`
+
+Verdict logic:
+
+- `VERDICT: PASS` if zero `Critical:` findings exist, regardless of the count of Nits, Optionals, or FYIs.
+- `VERDICT: FAIL` if one or more `Critical:` findings exist.
+
 ```markdown
 # Code Review
 
 ## Summary
 <2-3 sentences: overall assessment>
 
-## Critical Issues (must fix before proceeding)
+## Findings
 
 ### 1. <Issue title>
+- **Severity**: `Critical:` | `Nit:` | `Optional:` | `FYI:`
 - **File**: `path/to/file.ext:line_number`
-- **Category**: Bug | Security | Missing Feature | Integration
+- **Category**: Bug | Security | Missing Feature | Integration | Quality | Convention | Performance
 - **Confidence**: <score>/100
 - **Description**: <What's wrong>
 - **Impact**: <What breaks or could break>
 - **Fix**: <Specific fix>
 
-## Minor Issues (should fix)
-
-### 1. <Issue title>
-- **File**: `path/to/file.ext:line_number`
-- **Category**: Quality | Convention | Performance
-- **Confidence**: <score>/100
-- **Description**: <What's wrong>
-- **Fix**: <Specific fix>
+### 2. <Issue title>
+...
 
 ## Plan Compliance
 - [x] WU-1: <status>
@@ -125,12 +139,14 @@ Assign a confidence score (0-100). **Drop any issue scoring below 80.** Include 
 
 **PASS** if:
 
-- No critical issues (≥80 confidence)
+- Zero `Critical:` findings (≥80 confidence)
 - All work units implemented per plan
 - No security vulnerabilities
 - No logic bugs in new code
 
-**FAIL** if ANY of:
+Nits, Optionals, and FYIs are advisory and never block PASS.
+
+**FAIL** if ANY `Critical:` finding exists, including:
 
 - Logic bugs that cause incorrect behavior
 - Security vulnerabilities

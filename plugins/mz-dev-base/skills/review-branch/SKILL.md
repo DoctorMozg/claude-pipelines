@@ -1,19 +1,31 @@
 ---
 name: review-branch
-description: ALWAYS invoke when the user wants to review all changes on the current git branch. Triggers: "review branch", "review my changes", "check my branch", "what did I change", "branch review". Reviews all changes against main — finds bugs, checks architecture, tests, and consistency. Produces a report in .mz/reviews/.
-argument-hint: [base-branch (default: main)]
+description: ALWAYS invoke when the user wants to review all changes on the current git branch. Triggers:"review branch","review my changes","check my branch","what did I change","branch review".
+argument-hint: '[base-branch (default: main)]'
 allowed-tools: Agent, Bash, Read, Glob, Grep
 ---
 
 # Review Current Branch
 
-Launch the `branch-reviewer` agent to perform a comprehensive review of all changes on the current git branch.
+## Overview
+
+Launch the `branch-reviewer` agent to perform a comprehensive review of all changes on the current git branch against a base branch (default `main`). Produces a report under `.mz/reviews/`.
+
+## When to Use
+
+Triggers: "review branch", "review my changes", "check my branch", "what did I change", "branch review".
+
+### When NOT to use
+
+- You want to review a GitHub PR — use `review-pr` instead.
+- The current branch is `main` or `master` — nothing to diff.
+- The user wants a scoped review of a single file — read and review it directly.
 
 ## Arguments
 
 - `$ARGUMENTS[0]` (optional) — Base branch to diff against. Defaults to `main`.
 
-## Steps
+## Core Process
 
 ### 1. Validate branch state
 
@@ -45,3 +57,21 @@ Once the agent completes:
 - Show the path to the generated report file
 - Print a brief summary of the verdict and key findings (critical bugs, missing tests, etc.)
 - If the agent found critical issues, highlight them explicitly
+
+## Techniques
+
+Techniques: delegated to the `branch-reviewer` agent — see its agent definition for diff-walking, test-coverage, and architecture-consistency checks.
+
+## Common Rationalizations
+
+N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+
+## Red Flags
+
+- You reviewed diff output without checking out or reading the branch's actual file contents.
+- You skipped running (or at least reading) the tests that the branch changed.
+- The report references files or symbols that do not exist on the branch.
+
+## Verification
+
+Output the report path (`.mz/reviews/review_branch_<YYYY_MM_DD>_<branch><_vN>.md`), confirm the file exists, and print the verdict line plus the top critical findings.

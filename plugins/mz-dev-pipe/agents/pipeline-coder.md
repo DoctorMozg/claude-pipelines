@@ -76,7 +76,22 @@ List every file you created or modified with a brief summary of changes.
 
 ## Potential Issues
 <Anything the code reviewer should pay extra attention to>
+
+STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
+
+Every dispatch must end with a terminal status line:
+
+```
+STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
+```
+
+Status meanings:
+
+- `DONE` — work complete, no concerns. Orchestrator proceeds.
+- `DONE_WITH_CONCERNS` — work complete, but flag issues in a `## Concerns` section above the status line. Orchestrator logs concerns in task state and proceeds.
+- `NEEDS_CONTEXT` — cannot proceed without specific info. List required info in a `## Required Context` section above the status line. Orchestrator re-dispatches with the context added.
+- `BLOCKED` — fundamental obstacle (broken environment, impossible constraint, ambiguous specification). List the obstacle in a `## Blocker` section above the status line. Orchestrator escalates to user via AskUserQuestion. **Never retry the same operation after `BLOCKED`** — wait for user input or abort.
 
 ## Rules
 

@@ -73,19 +73,20 @@ Agents are specialized workers that can be invoked directly or used by skills.
 
 Available via `/init-rules`. Each rule is a focused guideline installed as a `.md` file in your rules directory.
 
-| Rule                       | Focus                                                   |
-| -------------------------- | ------------------------------------------------------- |
-| **code-quality**           | Clean code principles, meaningful naming, function size |
-| **coding-standards**       | Project-level conventions and consistency               |
-| **strict-typing**          | Type hints, TypedDict, Protocol usage                   |
-| **python-conventions**     | Python-specific patterns, pytest fixtures, Pydantic     |
-| **edit-safety**            | Re-read before edit, verify after, no stale context     |
-| **context-safety**         | Context decay awareness, file read budgets              |
-| **self-evaluation**        | Verify before reporting, two-perspective review         |
-| **agent-workflow**         | Sub-agent swarming, phased execution                    |
-| **git-conventions**        | Commit messages, branch hygiene                         |
-| **housekeeping**           | File hygiene, checkpoint suggestions                    |
-| **pre-commit-conventions** | Pre-commit hook patterns                                |
+| Rule                         | Focus                                                   |
+| ---------------------------- | ------------------------------------------------------- |
+| **code-quality**             | Clean code principles, meaningful naming, function size |
+| **coding-standards**         | Project-level conventions and consistency               |
+| **strict-typing-python**     | Python type hints, TypedDict, Protocol usage            |
+| **strict-typing-typescript** | TypeScript strict types, no any, exhaustive unions      |
+| **python-conventions**       | Python-specific patterns, pytest fixtures, Pydantic     |
+| **edit-safety**              | Re-read before edit, verify after, no stale context     |
+| **context-safety**           | Context decay awareness, file read budgets              |
+| **self-evaluation**          | Verify before reporting, two-perspective review         |
+| **agent-workflow**           | Sub-agent swarming, phased execution                    |
+| **git-conventions**          | Commit messages, branch hygiene                         |
+| **housekeeping**             | File hygiene, checkpoint suggestions                    |
+| **pre-commit-conventions**   | Pre-commit hook patterns                                |
 
 ## License
 

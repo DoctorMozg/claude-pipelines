@@ -1,13 +1,25 @@
 ---
 name: init-rules
-description: ALWAYS invoke when the user wants to set up or install development rules for a project or globally. Triggers: "init rules", "set up rules", "install rules", "configure coding rules", "onboard project". Detects project languages and installs relevant coding rules to .claude/rules/ (project) or ~/.claude/rules/ (global).
+description: ALWAYS invoke when the user wants to install development rules for a project or globally. Triggers:"init rules","set up rules","install rules","configure coding rules","onboard project".
 argument-hint: '[project|global] [--force]'
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
 # Init Rules
 
-Install curated development rules based on project context.
+## Overview
+
+Install curated development rules based on detected project context. Scans the working directory for language/tooling signals, selects matching rule files, and writes them to `.claude/rules/` (project) or `~/.claude/rules/` (global).
+
+## When to Use
+
+Triggers: "init rules", "set up rules", "install rules", "configure coding rules", "onboard project".
+
+### When NOT to use
+
+- The user wants to edit rule content itself — open the rule file directly.
+- The user wants per-file rule scoping beyond what `paths:` frontmatter supports.
+- The target directory is managed by another tool and should not be touched.
 
 ## Arguments
 
@@ -17,7 +29,7 @@ Install curated development rules based on project context.
 
 Parse the argument from `$ARGUMENTS`.
 
-## Process
+## Core Process
 
 ### 1. Determine target directory
 
@@ -62,12 +74,13 @@ Rules are bundled at `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/`.
 
 **Conditional rules:**
 
-| Condition                         | Rule file                   |
-| --------------------------------- | --------------------------- |
-| `git` detected                    | `git-conventions.md`        |
-| `.pre-commit-config.yaml` exists  | `pre-commit-conventions.md` |
-| `python` detected                 | `python-conventions.md`     |
-| `python` OR `typescript` detected | `strict-typing.md`          |
+| Condition                        | Rule file                     |
+| -------------------------------- | ----------------------------- |
+| `git` detected                   | `git-conventions.md`          |
+| `.pre-commit-config.yaml` exists | `pre-commit-conventions.md`   |
+| `python` detected                | `python-conventions.md`       |
+| `python` detected                | `strict-typing-python.md`     |
+| `typescript` detected            | `strict-typing-typescript.md` |
 
 For `global` mode: install ALL rules regardless of detection (the user wants them everywhere).
 
@@ -97,9 +110,26 @@ Skipped: 1 (already exist)
 Installed: 8
 ```
 
-## Important
+## Techniques
 
+- **Stack detection**: read manifest files (`pyproject.toml`, `package.json`, `tsconfig.json`, `Cargo.toml`, `go.mod`, `CMakeLists.txt`, `pom.xml`) and glob language extensions to build a context tag set before selecting rules.
+- **Conditional rule mapping**: never invent rules — look them up in the table under Step 3. Python adds both `python-conventions.md` and `strict-typing-python.md`; TypeScript adds `strict-typing-typescript.md`.
+- **Idempotent writes**: honor `--force` semantics — skip existing files unless overwrite is explicitly requested. Never silently clobber.
 - Do NOT modify existing CLAUDE.md files — only write to the rules/ directory.
 - Rule files with `paths:` frontmatter are path-scoped and only load when Claude works with matching files.
 - Rule files without frontmatter load every session unconditionally.
 - If no project signals are found (empty directory), still install the universal rules.
+
+## Common Rationalizations
+
+N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+
+## Red Flags
+
+- You invented rule files instead of reading the conditional-rules table in Step 3.
+- You copied rules to a non-standard location (not `.claude/rules/` or `~/.claude/rules/`).
+- You skipped the stack-detection step and installed a hardcoded rule set.
+
+## Verification
+
+Print the installed-rules summary block from Step 5, listing the target directory, detected contexts, and per-file install/skip status. Confirm each written file exists at `<target>/<filename>`.

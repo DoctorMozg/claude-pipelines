@@ -1,13 +1,28 @@
 ---
 name: debug
-description: ALWAYS invoke when the user reports a bug, error, or failing test. Triggers: "debug X", "fix this bug", "why is X failing", "investigate error", "stack trace". Reactive bug investigation pipeline — reproduces, diagnoses root cause with optional domain research, writes a regression test (TDD), fixes minimally, verifies, and reviews. Provide a bug report as the argument.
+description: ALWAYS invoke when the user reports a bug, error, or failing test. Triggers: "debug X", "fix this bug", "why is X failing", "stack trace". When NOT to use: new features (use build), quality polish on known-good code (use polish).
 argument-hint: [scope:branch|global|working] <bug report — error message, stack trace, failing test, description, or GitHub issue URL>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Bug Investigation Pipeline
 
-You orchestrate a reactive bug investigation: reproduce the bug, diagnose root cause (with domain research for external dependencies), get user approval on the diagnosis, write a regression test that fails (TDD), fix the root cause minimally, verify, review, and report.
+## Overview
+
+Orchestrates a reactive bug investigation: reproduce the bug, diagnose root cause (with optional domain research), get user approval on the diagnosis, write a regression test that fails (TDD), fix minimally, verify, review, and report.
+
+## When to Use
+
+- User reports a bug, error, or failing test with a reproducible symptom.
+- Triggers: "debug X", "fix this bug", "why is X failing", "investigate error", "stack trace".
+- You have (or can create) a reproducer; the failure is observable.
+
+### When NOT to use
+
+- Building a new feature from scratch — use `build`.
+- Polishing already-working code to criteria — use `polish`.
+- Map-reduce cleanup across a module — use `optimize`.
+- Impact analysis before a refactor — use `blast-radius`.
 
 ## Input
 
@@ -22,17 +37,14 @@ If empty, ask the user what bug to investigate.
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing the bug report.
+Extract `scope:<mode>` from `$ARGUMENTS` (case-insensitive), remove before parsing bug report.
 
-| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
-| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
-| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, files >5000 LOC).                                                                                     |
-| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
+- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
+- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock files, >5000 LOC.
+- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
+- **Default** — all project files eligible for edits.
 
-**Default** (no `scope:` parameter): all files in the project are eligible for edits.
-
-The `scope:` parameter controls **which files agents may edit**. It does NOT restrict investigation — researchers read any file needed to trace the bug. Tests and linters always run on the full project.
+`scope:` controls **which files agents may edit**. It does NOT restrict investigation — researchers read any file needed to trace the bug. Tests and linters always run on the full project.
 
 ## Constants
 
@@ -40,7 +52,9 @@ The `scope:` parameter controls **which files agents may edit**. It does NOT res
 - **MAX_REVIEW_RETRIES**: 2 — max times a review can reject before escalating
 - **TASK_DIR**: `.mz/task/` in the project root
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | Phase | Goal                       | Details                    |
 | ----- | -------------------------- | -------------------------- |
@@ -55,51 +69,16 @@ The `scope:` parameter controls **which files agents may edit**. It does NOT res
 
 Read the relevant phase file when you reach that phase. Do not read both phase files upfront.
 
-______________________________________________________________________
+### Phase 0: Setup
 
-## Phase 0: Setup
-
-### 0.1 Parse input
-
-Classify the input into one of: `failing_test`, `stack_trace`, `error_message`, `free_text`, `github_issue`.
-
-If GitHub issue URL: run `gh issue view <url> --json title,body,comments` and extract bug details. If that fails, ask the user to paste the issue content.
-
-### 0.2 Resolve scope
-
-If a `scope:` parameter was extracted, resolve it to a concrete file list. Save to `.mz/task/<task_name>/scope_files.txt`. This constrains which files coder agents may edit.
-
-### 0.3 Create task directory and state
-
-Task name format: `debug_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the bug and HHMMSS is current time.
-
-```bash
-mkdir -p .mz/task/<task_name>
-```
-
-Write `.mz/task/<task_name>/state.md`:
-
-```markdown
-# Debug: <bug summary>
-- **Status**: started
-- **Phase**: setup
-- **Started**: <timestamp>
-- **Input type**: <failing_test | stack_trace | error_message | free_text | github_issue>
-- **Reproduced**: pending
-- **Root cause**: pending
-- **Fix iterations**: 0
-- **Review retries**: 0
-```
-
-### 0.4 Create task tracking
-
-Use TaskCreate for each pipeline phase.
+1. **Parse input** — classify as `failing_test`, `stack_trace`, `error_message`, `free_text`, or `github_issue`. For GitHub URLs, run `gh issue view <url> --json title,body,comments`; on failure, ask user to paste content.
+1. **Resolve scope** — if `scope:` extracted, resolve to file list and save to `.mz/task/<task_name>/scope_files.txt`.
+1. **Task directory** — name `debug_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Input type, Reproduced (pending), Root cause (pending), Fix iterations (0), Review retries (0).
+1. **Task tracking** — use TaskCreate for each pipeline phase.
 
 After setup, read `phases/investigate.md` and proceed to Phase 1.
 
-______________________________________________________________________
-
-## Phase 2.5: User Approval Gate
+### Phase 2.5: User Approval Gate
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
@@ -132,7 +111,28 @@ Reply 'approve' to proceed with regression test + fix, 'reject' to abort, or pro
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → re-run diagnosis (Phase 2) incorporating the user's input, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
-______________________________________________________________________
+## Techniques
+
+Techniques: delegated to phase files — see Phase Overview table above.
+Reference files: grep `references/debugging-patterns.md` for bisection, flaky test, stack trace, or memory leak patterns — do not load the entire file.
+
+## Common Rationalizations
+
+| Rationalization                            | Rebuttal                                                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| "I know what the bug is, I'll just fix it" | "the bug you diagnosed by inspection is the bug you'll miss in a similar codepath tomorrow — write the reproducer first" |
+| "can't reproduce, probably flaky"          | "intermittent bugs are the ones that cost real money in prod"                                                            |
+| "fix works locally, done"                  | "local environment is not prod; write the regression test that pins the behavior"                                        |
+
+## Red Flags
+
+- You fixed before reproducing the bug.
+- You moved on without writing a regression test that pins the fix.
+- You assumed the bug was unique to one file without a call-graph check.
+
+## Verification
+
+Output the final report block: reproducer command, root cause with file:line, regression test name, fix diff summary, and green test run confirmation.
 
 ## Error Handling
 

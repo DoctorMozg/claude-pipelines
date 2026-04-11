@@ -30,22 +30,34 @@ Assign a confidence score (0-100). **Drop any issue scoring below 80.** Include 
 
 ## Output Format
 
+Every finding must be prefixed with one of four severity labels:
+
+- `Critical:` — correctness, security, or integration issue that must be fixed before merge/plan advancement. Blocks verdict.
+- `Nit:` — cosmetic, style, or subjective. Advisory only.
+- `Optional:` — improvement suggestion (refactor, simplification). Advisory only.
+- `FYI:` — informational observation, no action required.
+
+Example:
+
+- `Critical: unchecked null dereference at foo.ts:42 will crash on empty input.`
+- `Nit: variable name 'tmp' is uninformative; consider 'deserialized_response'.`
+- `Optional: this loop could use Array.map for clarity.`
+- `FYI: this function is called from 3 callsites; tests cover 2.`
+
 For each finding, report:
 
 ```
-### [severity]: Brief title
+### Critical: | Nit: | Optional: | FYI: Brief title
 **File**: `path/to/file:line`
 **Confidence**: <score>/100
 **Issue**: What's wrong and why it matters.
 **Suggestion**: How to fix it (with code if helpful).
 ```
 
-Severity levels:
+Verdict logic:
 
-- **critical** — Bugs, security holes, data loss risk. Must fix.
-- **major** — Code smells, maintainability blockers. Should fix.
-- **minor** — Style, minor improvements. Nice to have.
-- **info** — Observations, alternatives. Optional.
+- `VERDICT: PASS` if zero `Critical:` findings exist, regardless of the count of Nits, Optionals, or FYIs.
+- `VERDICT: FAIL` if one or more `Critical:` findings exist.
 
 ## Guidelines
 

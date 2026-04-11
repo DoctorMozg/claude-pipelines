@@ -1,13 +1,28 @@
 ---
 name: optimize
-description: ALWAYS invoke when the user wants to optimize, clean up, or reduce complexity in existing code. Triggers: "optimize X", "clean up", "refactor", "reduce complexity", "remove dead code". Map-reduce optimization pipeline — scans scope, builds import graph, dispatches parallel optimizers with mirrored reviewers, iterates on rejections. Provide scope as the argument.
+description: ALWAYS invoke when the user wants to optimize, clean up, or reduce complexity in existing code. Triggers: "optimize X", "clean up", "refactor", "remove dead code". When NOT to use: fixing failing tests (use polish), bug hunt (use debug or audit).
 argument-hint: [scope:branch|global|working] <scope: glob, directory, git range, or free-text description>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Autonomous Code Optimization Pipeline
 
-You orchestrate a multi-agent optimization pass over existing code. Build import-graph-based chunking, dispatch parallel `pipeline-optimizer` agents with mirrored `pipeline-code-reviewer` agents per chunk. On rejection, respawn rejected chunks only. Tests and linters run after each batch; auto-fix regressions before review.
+## Overview
+
+Orchestrates a multi-agent optimization pass over existing code. Builds import-graph-based chunking, dispatches parallel `pipeline-optimizer` agents with mirrored `pipeline-code-reviewer` agents per chunk. On rejection, respawn rejected chunks only. Tests and linters run after each batch.
+
+## When to Use
+
+- User wants to clean up, reduce complexity, or eliminate dead code.
+- Triggers: "optimize X", "clean up", "refactor", "reduce complexity", "remove dead code".
+- Scope spans multiple files and benefits from parallel chunked cleanup.
+
+### When NOT to use
+
+- Failing tests that need fixing — use `polish`.
+- Known bug investigation — use `debug`.
+- Bug and security hunt across lenses — use `audit`.
+- Impact analysis before a refactor — use `blast-radius`.
 
 ## Input
 
@@ -29,10 +44,11 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying dete
 
 ## Constants
 
-- **MAX_OPTIMIZERS**: 6 | **MAX_REVIEWERS**: 6
-- **MAX_REVIEW_ITERATIONS**: 3 | **MAX_FIX_ATTEMPTS**: 3 | **TASK_DIR**: `.mz/task/`
+- **MAX_OPTIMIZERS**: 6 | **MAX_REVIEWERS**: 6 | **MAX_REVIEW_ITERATIONS**: 3 | **MAX_FIX_ATTEMPTS**: 3 | **TASK_DIR**: `.mz/task/`
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | #   | Phase                 | Reference                       | Loop?                  |
 | --- | --------------------- | ------------------------------- | ---------------------- |
@@ -46,27 +62,13 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying dete
 | 6   | Handle Verdicts       | `phases/review_and_finalize.md` | respawn loop (max 3)   |
 | 7   | Final Summary         | `phases/review_and_finalize.md` | —                      |
 
-## Phase 0: Setup
+### Phase 0–2: Setup, Scan & Baseline
 
-Derive task name as `optimize_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the scope and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Review iterations, Fix attempts, Files in scope, Chunks. Use TaskCreate for per-phase tracking.
+- **Phase 0 — Setup**: derive `optimize_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started, Review iterations, Fix attempts, Files in scope, Chunks). TaskCreate per phase.
+- **Phase 1 — Scan & Chunk**: resolve to file list, build import graph, group into 1-6 chunks (SCCs + module boundaries). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
+- **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 
-## Phase 1: Scan & Chunk
-
-Resolve input to file list, build import graph, group into 1-6 chunks using SCCs and module boundaries.
-
-**See `phases/scan_and_plan.md` → Phase 1** for scope resolution, graph construction, and chunking.
-
-Update state phase to `scanned`.
-
-## Phase 2: Baseline Snapshot
-
-Run tests and linters once to capture pre-optimization state. Required before optimizers touch code.
-
-**See `phases/scan_and_plan.md` → Phase 2** for tooling detection and `baseline.md` artifact.
-
-Update state phase to `baseline_captured`.
-
-## Phase 2.5: User Approval Gate
+### Phase 2.5: User Approval Gate
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
@@ -89,39 +91,48 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes
 - **"reject"** → abort.
 - **Feedback** → apply changes, overwrite `scan.md`, re-present via AskUserQuestion. Loop until explicit approval.
 
-## Phase 3: Parallel Optimization
+### Phase 3: Parallel Optimization
 
-Dispatch N `pipeline-optimizer` agents (model: opus) in a single message, one per chunk.
+Dispatch N `pipeline-optimizer` agents (model: opus) in a single message, one per chunk. See `phases/optimize_and_verify.md` → Phase 3.
 
-**See `phases/optimize_and_verify.md` → Phase 3** for dispatch prompts and conflict detection.
+### Phase 4: Verify & Auto-Fix
 
-## Phase 4: Verify & Auto-Fix
+Re-run tests/linters; restore green before Phase 5. See `phases/optimize_and_verify.md` → Phase 4. Update state to `verified_green`.
 
-Re-run tests/linters. Must restore green before Phase 5.
+### Phase 5: Parallel Review
 
-**See `phases/optimize_and_verify.md` → Phase 4** for inner fix loop (max 3) and escalation.
+Dispatch M = N `pipeline-code-reviewer` agents (opus), 1:1 per chunk. See `phases/review_and_finalize.md` → Phase 5.
 
-Update state phase to `verified_green`.
+### Phase 6: Handle Verdicts
 
-## Phase 5: Parallel Review
+Re-dispatch rejected chunks only. Approved chunks frozen. See `phases/review_and_finalize.md` → Phase 6. Update state to `review_passed` when all PASS.
 
-Dispatch M = N `pipeline-code-reviewer` agents (model: opus), one per chunk (1:1 mirror).
+### Phase 7: Final Summary
 
-**See `phases/review_and_finalize.md` → Phase 5** for dispatch prompts and `review_<iteration>.md` artifact.
+Final verification, then write `summary.md` listing chunks, files, iterations, deferred observations. See `phases/review_and_finalize.md` → Phase 7. Update state to `completed`.
 
-## Phase 6: Handle Verdicts
+## Techniques
 
-Re-dispatch rejected chunks only. Approved chunks are frozen.
+Techniques: delegated to phase files — see Phase Overview table above.
+Reference files: grep `references/dead-code-detection-patterns.md` for per-language detection patterns — do not load the entire file.
 
-**See `phases/review_and_finalize.md` → Phase 6** for decision tree and respawn loop (max 3).
+## Common Rationalizations
 
-Update state phase to `review_passed` when all PASS.
+| Rationalization                                  | Rebuttal                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------ |
+| "dead code is harmless, leave it"                | "dead code accelerates context decay and hides the live code"            |
+| "this loop is fine"                              | "hot-path loops are the 5% of code that is 80% of CPU time"              |
+| "premature optimization is the root of all evil" | "so is late optimization of a known hot path; profile before you decide" |
 
-## Phase 7: Final Summary
+## Red Flags
 
-Final verification, then write `summary.md` listing chunks, files, iterations, and deferred observations.
+- Dead code was left in place to "minimize diff".
+- The hot path was optimized without a profiler capture first.
+- No before/after benchmark was captured when claiming a perf win.
 
-**See `phases/review_and_finalize.md` → Phase 7** for summary template. Update state status to `completed`.
+## Verification
+
+Output the final `summary.md` block: chunks touched, files modified, baseline vs post-optimization test/lint status, review iterations, and deferred observations.
 
 ## Error Handling
 

@@ -40,6 +40,7 @@ Description is the single most important field — Claude uses pure LLM reasonin
 - Prefer positive framing: "Use X exclusively" over "Do NOT use Y" — reduces violations by ~50%.
 - Anchor critical rules at the top AND bottom of SKILL.md (primacy-recency bias).
 - Every verification step must produce visible output. "Check X" → "Output a block showing X, then proceed." Silent checks get skipped.
+- See Rule 23 for skill-type-specific language recipes.
 
 ## 5. Phase Overview Table
 
@@ -95,7 +96,117 @@ Detect test/lint/type-check tooling before first use. Save to `.mz/task/<task_na
 
 Document accepted input formats in SKILL.md. Empty or ambiguous args → ask, never guess.
 
-## 16. Pre-Publish Checklist
+## 16. Canonical Skill Anatomy
+
+Every SKILL.md body must contain these 7 sections in order:
+
+1. `## Overview` — 1 paragraph: what the skill does.
+1. `## When to Use` — triggers plus `### When NOT to use` counter-triggers.
+1. `## Core Process` — the non-negotiable steps or phase table.
+1. `## Techniques` — concrete patterns and tools the skill applies.
+1. `## Common Rationalizations` — anti-rationalization table (see Rule 17).
+1. `## Red Flags` — signs the skill is being skipped or misapplied.
+1. `## Verification` — how to confirm the skill actually ran.
+
+**Pipeline exemption**: multi-phase orchestrator skills with a Phase Overview table may replace the full `## Techniques` section with a single line: `Techniques: delegated to phase files — see Phase Overview table above.` This avoids duplication with phase files (Rule 2 progressive disclosure) while still satisfying the "every section present" check.
+
+Pattern source: addyosmani/superpowers 7-section canonical anatomy.
+
+## 17. Anti-Rationalization Tables
+
+Mandatory for **discipline-enforcement** skills (build, debug, audit, verify, polish, optimize, blast-radius — any skill that pushes back against user shortcuts). Optional for collaboration and reference skills.
+
+Format under `## Common Rationalizations`:
+
+```
+| Rationalization | Rebuttal |
+| --- | --- |
+| "..."           | "..."    |
+```
+
+- Minimum 3 rows per discipline skill.
+- Rationalizations must be empirically grounded (observed user excuses), not invented.
+- Rebuttals must be specific — no generic "because it's best practice".
+
+Canonical seed: `writing-skills/references/anti-rationalization-library.md`.
+
+## 18. CSO (Critical Skill Orientation)
+
+Descriptions describe **trigger conditions only**, never workflow summaries. The description is the skill's auction bid for invocation — every character that isn't a trigger is waste.
+
+- Lead with `ALWAYS invoke when...` phrasing.
+- List 2–3 concrete trigger phrases.
+- Include explicit "When NOT to use" counter-triggers inline or in the body.
+- Ban workflow-summary tails: no `— orchestrates X, Y, Z` after the triggers.
+- Max 250 chars (matches Rule 3).
+
+Grounding: Meincke et al. (2025) N=28,000 LLM persuasion compliance study — directive, authority-coded language lifts compliance from 33% baseline to 72%.
+
+## 19. Source-Hierarchy Discipline
+
+Researcher and review agents must declare and enforce a source priority ladder:
+
+1. Official docs (vendor-hosted, versioned)
+1. Official blog (vendor-hosted, dated)
+1. MDN / web.dev / caniuse (curated, versioned)
+1. Vendor-maintained GitHub wiki
+1. Peer-reviewed papers (for claims)
+
+**Banned sources**: Stack Overflow, AI-generated summaries (including other LLMs' output), undated blog posts, forum threads.
+
+**Disclosure tokens** (emit in research output so orchestrators can grep):
+
+- `STACK DETECTED: <stack + version>` — before any research query, detect project stack from manifests (package.json, pyproject.toml, Cargo.toml, go.mod).
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` — when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against official source` — when no authoritative source found.
+
+Pattern source: obra/superpowers `source-hierarchy-discipline`.
+
+## 20. Severity-Labeled Review Output
+
+Review agents prefix every finding with a severity label:
+
+- `Critical:` — blocks merge or plan advancement.
+- `Nit:` — cosmetic or subjective; advisory.
+- `Optional:` — improvement suggestion; advisory.
+- `FYI:` — informational; advisory.
+
+Verdict logic: `VERDICT: PASS` if zero `Critical:` findings, regardless of Nit/Optional/FYI count. `VERDICT: FAIL` only if one or more `Critical:` findings exist.
+
+## 21. Four-Status Subagent Escalation
+
+Coder and planner agents emit a terminal `STATUS:` line with one of four values:
+
+- `DONE` — work complete, proceed.
+- `DONE_WITH_CONCERNS` — work complete but flagged concerns; orchestrator logs concerns and proceeds.
+- `NEEDS_CONTEXT` — cannot proceed without specific info; orchestrator re-dispatches with added context.
+- `BLOCKED` — fundamental obstacle (broken env, impossible constraint, ambiguous spec); orchestrator escalates to user via AskUserQuestion. **Never auto-retry the same operation on `BLOCKED`.**
+
+## 22. References Directory
+
+Skills may include an optional `references/` directory containing lazy-loaded knowledge.
+
+- `references/<topic>.md` — per-topic content, ≤400 lines.
+- SKILL.md or phase files point at specific reference files: `Reference: grep \`references/<file>.md\` for <topic>.\`
+- Agents grep the file for the specific query; they do **not** load the whole file.
+
+Purpose: keeps SKILL.md slim while making deep knowledge available on demand. Examples: `explain/references/mermaid-syntax-by-type.md`, `audit/references/owasp-top-10-checklist.md`.
+
+## 23. Persuasion-Informed Language
+
+Skill type determines the persuasion register (Cialdini principles applied per Meincke et al. 2025):
+
+| Skill type        | Purpose                             | Persuasion register                   |
+| ----------------- | ----------------------------------- | ------------------------------------- |
+| **Discipline**    | Push back against shortcuts         | Authority + Commitment + Social Proof |
+| **Collaboration** | Work with the user on shared output | Unity + Commitment                    |
+| **Reference**     | Provide neutral knowledge           | Neutral / informational only          |
+
+**Banned for discipline skills**: Liking ("I think you'll find...", "great question!"). Liking softens directives and cuts compliance.
+
+Grounding: Meincke et al. (2025), N=28,000 — compliance rose from 33% baseline to 72% under directive/authority framing.
+
+## 24. Pre-Publish Checklist
 
 Before merging any new or modified skill:
 
@@ -106,3 +217,11 @@ Before merging any new or modified skill:
 - [ ] No nested file references (one level deep from SKILL.md)
 - [ ] Consistent terminology across all files in the skill
 - [ ] Tested with direct invocation (`/skill-name`) and natural language trigger
+- [ ] Canonical 7-section anatomy present (Rule 16)
+- [ ] Anti-rationalization table present if discipline skill (Rule 17)
+- [ ] Description is CSO-compliant, no workflow summary (Rule 18)
+- [ ] Research/review agents declare source hierarchy (Rule 19)
+- [ ] Review output uses severity labels (Rule 20)
+- [ ] Subagent output uses four-status protocol (Rule 21)
+- [ ] references/ directory uses grep-first pattern if present (Rule 22)
+- [ ] Language matches skill type per Rule 23

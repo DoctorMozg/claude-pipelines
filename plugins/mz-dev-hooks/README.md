@@ -1,6 +1,6 @@
 # mz-dev-hooks
 
-Development workflow hooks for [Claude Code](https://claude.com/claude-code). Deterministic safety gates and intelligent workflow reminders that work with any project type.
+Development workflow hooks for [Claude Code](https://claude.com/claude-code). Deterministic safety gates that work with any project type.
 
 ## Install
 
@@ -25,16 +25,6 @@ Hooks activate automatically on install — no configuration needed.
 Safety gates use regex pattern matching — they're fast, deterministic, and cost zero API tokens.
 
 The secret scanner has an **allowlist**: files in test/fixture/mock/example/sample directories are not blocked, only warned.
-
-### Workflow Reminders (Haiku prompts, language-agnostic)
-
-| Hook                 | Event                    | What it does                                                     |
-| -------------------- | ------------------------ | ---------------------------------------------------------------- |
-| **Format reminder**  | PostToolUse(Write\|Edit) | Reminds to run the project formatter after modifying source code |
-| **Test reminder**    | PostToolUse(Write\|Edit) | Reminds to add/update tests when new public functions are added  |
-| **Dependency alert** | PostToolUse(Edit)        | Reminds to run install command after dependency manifest changes |
-
-Prompt hooks use Haiku to understand context — they work with any programming language without hardcoding tool names. They only fire when relevant (not for config edits, docs, or minor changes).
 
 ## Design Principles
 

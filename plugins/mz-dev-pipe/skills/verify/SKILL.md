@@ -1,13 +1,27 @@
 ---
 name: verify
-description: ALWAYS invoke when the user wants to verify code quality, run tests, lint, or check type safety. Triggers: "verify", "run tests", "check code quality", "lint the code", "validate". Deep verification pipeline — runs tests, linters, formatters, type checkers, analyzes coverage and quality, checks examples, and diagnoses failures. Produces a pass/fail report. Provide scope as the argument.
+description: ALWAYS invoke when the user wants to verify code quality, run tests, lint, or check type safety. Triggers: "verify", "run tests", "lint the code", "validate". When NOT to use: fixing failures (use polish or debug).
 argument-hint: [scope:branch|global|working] [optional focus — e.g. "src/auth/", "test_payments.py", "check examples work"]
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Code Verification Pipeline
 
-You orchestrate a deep verification pass that checks whether code in scope is correct, clean, well-tested, and functional. This pipeline reports findings — it does NOT auto-fix anything. The user decides what to fix based on the report.
+## Overview
+
+Orchestrates a deep verification pass that checks whether code in scope is correct, clean, well-tested, and functional. This pipeline reports findings — it does NOT auto-fix anything. The user decides what to fix based on the report.
+
+## When to Use
+
+- User asks to verify, run tests, lint, type-check, or gate quality.
+- Triggers: "verify", "run tests", "check code quality", "lint the code", "validate".
+- You need a read-only pass/fail snapshot before shipping or reviewing.
+
+### When NOT to use
+
+- Failing tests that need fixing — use `polish` or `debug`.
+- New feature work that includes tests — use `build`.
+- Bug hunt with auto-fix — use `audit`.
 
 ## Input
 
@@ -20,24 +34,23 @@ If empty, verify the entire project (roam mode with standard exclusions).
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing.
+Extract `scope:<mode>` from `$ARGUMENTS` (case-insensitive), remove before parsing.
 
-| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
-| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
-| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, >5000 LOC).                                                                                           |
-| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
+- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
+- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock, >5000 LOC.
+- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
+- **Default** — path/glob detection from argument, or roam entire project if empty.
 
-**Default** (no `scope:` parameter): use path/glob detection from argument, or roam the entire project if empty.
-
-The `scope:` parameter determines **which source files** are under verification. Tests always run fully (not filtered by scope) to catch regressions. Coverage and quality analysis focus on code within scope.
+`scope:` determines **which source files** are under verification. Tests always run fully (not filtered) to catch regressions. Coverage and quality analysis focus on code within scope.
 
 ## Constants
 
 - **TASK_DIR**: `.mz/task/` — working artifacts under `.mz/task/<task_name>/`
 - **MAX_RESEARCHERS**: 3 — for failure diagnosis and coverage/quality review
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | #   | Phase                       | Reference          | Loop? |
 | --- | --------------------------- | ------------------ | ----- |
@@ -49,82 +62,43 @@ The `scope:` parameter determines **which source files** are under verification.
 | 5   | Failure Diagnosis           | `phases/checks.md` | —     |
 | 6   | Report                      | `phases/checks.md` | —     |
 
-______________________________________________________________________
+### Phase 0: Setup
 
-## Phase 0: Setup
+1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
+1. **Task name** — `verify_<slug>_<HHMMSS>` (slug = snake_case, max 20 chars).
+1. **Task dir & state** — create `.mz/task/<task_name>/`, write `state.md` with Status, Phase, Started.
+1. **Task tracking** — TaskCreate per pipeline phase.
 
-### 0.1 Parse argument
+### Phase 1–6
 
-Split `$ARGUMENTS` (after removing `scope:` parameter) into:
+- **Phase 1 — Scope Resolution**: resolve argument into source, test, and example files. See `phases/setup.md` → Phase 1. Update state to `scope_resolved`.
+- **Phase 2 — Tooling Detection**: detect test frameworks, linters, formatters, type checkers, example runners. See `phases/setup.md` → Phase 2. Update state to `tooling_detected`.
+- **Phase 3 — Execution**: run all detected tools, capture results. See `phases/checks.md` → Phase 3. Update state to `checks_executed`.
+- **Phase 4 — Coverage & Quality Analysis**: dispatch coverage and quality reviewer agents for code in scope. See `phases/checks.md` → Phase 4. Update state to `analysis_complete`.
+- **Phase 5 — Failure Diagnosis**: if any Phase 3 check failed, dispatch researchers; skip if green. See `phases/checks.md` → Phase 5. Update state to `diagnosis_complete`.
+- **Phase 6 — Report**: compile results, write to `.mz/reports/test_<YYYY_MM_DD>_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Update state to `completed`.
 
-- **Path-like tokens**: globs, directories, file paths
-- **Focus tokens**: everything else — the user's focus area or question
+## Techniques
 
-### 0.2 Derive task name
+Techniques: delegated to phase files — see Phase Overview table above.
 
-Task name format: `verify_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) and HHMMSS is current time. Examples: `verify_full_project_143022`, `verify_branch_changes_150511`.
+## Common Rationalizations
 
-### 0.3 Create task directory and state
+| Rationalization                      | Rebuttal                                                           |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| "tests passed last time, skip rerun" | "environment drift silently breaks suites between runs"            |
+| "type-check is slow, skip"           | "the bug you didn't type-check is the one that crashes in staging" |
+| "coverage is a vanity metric"        | "coverage < 70% means you're shipping blind in the uncovered 30%"  |
 
-Create `.mz/task/<task_name>/` directory. Write `state.md` with Status, Phase, and Started fields.
+## Red Flags
 
-### 0.4 Create task tracking
+- Type-check was skipped because it was "slow".
+- Tests were declared passing without running them fresh in this session.
+- Coverage delta was not measured against the scope.
 
-Use TaskCreate for each pipeline phase.
+## Verification
 
-______________________________________________________________________
-
-## Phase 1: Scope Resolution
-
-Resolve the argument into source files, test files, and example/sample files.
-
-**See `phases/setup.md` → Phase 1** for file resolution rules, test file mapping, and the `scope.md` artifact.
-
-Update state phase to `scope_resolved`.
-
-______________________________________________________________________
-
-## Phase 2: Tooling Detection
-
-Detect test frameworks, linters, formatters, type checkers, and example runners.
-
-**See `phases/setup.md` → Phase 2** for the detection tables, `tooling.md` artifact, and missing-framework escalation.
-
-Update state phase to `tooling_detected`.
-
-______________________________________________________________________
-
-## Phase 3: Execution
-
-Run all detected tools and capture results.
-**See `phases/checks.md` → Phase 3** for execution order, output capture, and the per-check result format.
-Update state phase to `checks_executed`.
-
-______________________________________________________________________
-
-## Phase 4: Coverage & Quality Analysis
-
-Dispatch coverage and quality reviewer agents for code in scope.
-**See `phases/checks.md` → Phase 4** for dispatch prompts and result artifacts.
-Update state phase to `analysis_complete`.
-
-______________________________________________________________________
-
-## Phase 5: Failure Diagnosis
-
-If any Phase 3 check failed, dispatch researchers to diagnose root causes. Skip if all passed.
-**See `phases/checks.md` → Phase 5** for the diagnosis dispatch prompt and result artifact.
-Update state phase to `diagnosis_complete`.
-
-______________________________________________________________________
-
-## Phase 6: Report
-
-Compile all results into a single report.
-**See `phases/checks.md` → Phase 6** for the full report template.
-Write to `.mz/reports/test_<YYYY_MM_DD>_<scope_name>.md` (append `_v2`, `_v3` if exists). Update state to `completed`. Present a summary to the user with the report path.
-
-______________________________________________________________________
+Output the final report block: per-check pass/fail status, coverage percentages, top quality findings, and the written report path. No silent skips.
 
 ## Error Handling
 

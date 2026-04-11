@@ -1,13 +1,25 @@
 ---
 name: investigate
-description: ALWAYS invoke when the user wants to verify a hypothesis, check suspected behavior, or prove/disprove an issue without fixing it. Triggers: "investigate X", "check if Y", "verify whether", "is X actually doing Y", "prove/disprove". Hypothesis-driven investigation pipeline — analyzes code, runs domain research, writes exploratory tests, and reports findings with a verdict. Provide a hypothesis as the argument.
+description: ALWAYS invoke when the user wants to verify a hypothesis, check suspected behavior, or prove/disprove an issue without fixing it. Triggers: "investigate X", "check if Y", "verify whether", "is X actually doing Y", "prove/disprove".
 argument-hint: [scope:branch|global|working] <hypothesis — suspected bug, possible issue, or behavior to verify>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Hypothesis Investigation Pipeline
 
+## Overview
+
 You orchestrate a hypothesis-driven investigation: analyze the codebase against a suspected issue, run domain research when the hypothesis involves complex external behavior, write exploratory tests to prove or disprove the hypothesis, and report findings with a verdict. No code fixes — output is a report only.
+
+## When to Use
+
+Invoke when the user wants a suspected bug, behavior, regression, or architectural doubt verified without modifying production code. Trigger phrases: "investigate X", "check if Y", "verify whether", "is X actually doing Y", "prove/disprove".
+
+### When NOT to use
+
+- The user has already confirmed the bug and wants a fix — use `debug` instead.
+- The user wants to understand how code works without a specific hypothesis — use `explain` instead.
+- The hypothesis is a vague wish ("make it faster") with no concrete claim to test.
 
 ## Input
 
@@ -40,7 +52,9 @@ The `scope:` parameter controls **where to focus the investigation**. Tests are 
 - **MAX_TEST_RETRIES**: 2 — max re-dispatches for broken exploratory tests
 - **TASK_DIR**: `.mz/task/` in the project root
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | Phase | Goal                          | Details                     |
 | ----- | ----------------------------- | --------------------------- |
@@ -51,6 +65,24 @@ The `scope:` parameter controls **where to focus the investigation**. Tests are 
 | 4     | Synthesis & report            | `phases/test_and_report.md` |
 
 Read the relevant phase file when you reach that phase. Do not read both phase files upfront.
+
+## Techniques
+
+Techniques: delegated to phase files — see Phase Overview table above.
+
+## Common Rationalizations
+
+N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+
+## Red Flags
+
+- You jumped to a fix before understanding the root cause.
+- You investigated a single file when the issue spans multiple.
+- You reported findings without reproduction steps.
+
+## Verification
+
+Before completing, output a visible block showing: hypothesis type, files analyzed, exploratory tests written and their pass/fail results, and the absolute path of the written report. Confirm the report contains an explicit verdict.
 
 ______________________________________________________________________
 

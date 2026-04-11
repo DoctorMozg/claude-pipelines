@@ -50,16 +50,17 @@ ______________________________________________________________________
 
 Multi-agent orchestration skills that run full development workflows. Each skill coordinates specialized agents through phased pipelines with user approval gates.
 
-| Skill           | Command                     | What it does                                                                                               |
-| --------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **build**       | `/build <task>`             | Research → plan → code → review → test                                                                     |
-| **audit**       | `/audit [focus]`            | Multi-lens codebase scan (correctness, security, performance, maintainability, reliability) → ranked fixes |
-| **debug**       | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify                                                |
-| **investigate** | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                              |
-| **verify**      | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                      |
-| **polish**      | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                      |
-| **optimize**    | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                            |
-| **explain**     | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                          |
+| Skill            | Command                     | What it does                                                                                               |
+| ---------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **build**        | `/build <task>`             | Research → plan → code → review → test                                                                     |
+| **audit**        | `/audit [focus]`            | Multi-lens codebase scan (correctness, security, performance, maintainability, reliability) → ranked fixes |
+| **debug**        | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify                                                |
+| **investigate**  | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                              |
+| **verify**       | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                      |
+| **polish**       | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                      |
+| **optimize**     | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                            |
+| **blast-radius** | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                          |
+| **explain**      | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                          |
 
 10 specialized agents (researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-coverage-reviewer, test-quality-reviewer, optimizer, completeness-checker).
 
@@ -115,17 +116,14 @@ ______________________________________________________________________
 
 ### [`mz-dev-hooks`](plugins/mz-dev-hooks/) — Development Workflow Hooks
 
-Deterministic safety gates and intelligent workflow reminders. Shell scripts block dangerous actions at zero token cost; Haiku prompt hooks provide language-agnostic formatting, testing, and dependency awareness.
+Deterministic safety gates. Shell scripts block dangerous actions at zero token cost.
 
-| Hook                    | Event       | Type    | Behavior                                               |
-| ----------------------- | ----------- | ------- | ------------------------------------------------------ |
-| Dangerous command guard | PreToolUse  | command | **Blocks** rm -rf /, force push main, DROP TABLE, etc. |
-| Secret scanner          | PreToolUse  | command | **Blocks** API keys, tokens, private keys in code      |
-| File safety guard       | PreToolUse  | command | **Blocks** edits to lock files, .env, vendor dirs      |
-| Commit quality          | PreToolUse  | command | **Warns** on non-conventional commit messages          |
-| Format reminder         | PostToolUse | prompt  | **Reminds** to run project formatter after edits       |
-| Test reminder           | PostToolUse | prompt  | **Reminds** to add tests for new public functions      |
-| Dependency alert        | PostToolUse | prompt  | **Reminds** to install after manifest changes          |
+| Hook                    | Event      | Type    | Behavior                                               |
+| ----------------------- | ---------- | ------- | ------------------------------------------------------ |
+| Dangerous command guard | PreToolUse | command | **Blocks** rm -rf /, force push main, DROP TABLE, etc. |
+| Secret scanner          | PreToolUse | command | **Blocks** API keys, tokens, private keys in code      |
+| File safety guard       | PreToolUse | command | **Blocks** edits to lock files, .env, vendor dirs      |
+| Commit quality          | PreToolUse | command | **Warns** on non-conventional commit messages          |
 
 No configuration required — hooks activate automatically on install.
 

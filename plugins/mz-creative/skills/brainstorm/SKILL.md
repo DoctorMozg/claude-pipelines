@@ -1,13 +1,25 @@
 ---
 name: brainstorm
-description: ALWAYS invoke when the user wants creative ideas, brainstorming, multi-perspective thinking, or diverse viewpoints on a problem. Triggers: "brainstorm", "creative ideas for", "think about this from different angles", "diverse perspectives on". Assembles a panel of 5 personalities from 10 available, each contributes ideas with optional web research, a synthesizer merges them, panelists vote — iterates until majority or max 5 rounds. Provide a topic as the argument.
+description: ALWAYS invoke when the user wants creative ideas, brainstorming, multi-perspective thinking, or diverse viewpoints on a problem. Triggers: "brainstorm", "creative ideas for", "think about this from different angles", "diverse perspectives on".
 argument-hint: <topic or problem to brainstorm>
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Creative Brainstorming Pipeline
 
+## Overview
+
 You orchestrate a multi-personality brainstorming session. A curated panel of 5 thinkers from 10 available personalities generates ideas from diverse lenses, a synthesizer merges them, and the panel votes iteratively until consensus or max rounds.
+
+## When to Use
+
+Invoke when the user wants creative ideation, multi-perspective thinking, or diverse viewpoints on an open problem. Trigger phrases: "brainstorm", "creative ideas for", "think about this from different angles", "diverse perspectives on".
+
+### When NOT to use
+
+- The user wants a single concrete decision or implementation — use `build` or `explain` instead.
+- The user wants verification of an existing idea — use `investigate` instead.
+- The problem has one objectively correct answer knowable from docs — look it up instead of ideating.
 
 ## Input
 
@@ -36,7 +48,9 @@ You orchestrate a multi-personality brainstorming session. A curated panel of 5 
 | creative-psychologist  | Cognition, bias, motivation, behavior, UX             | User research, adoption, persuasion, habits      |
 | creative-historian     | Precedent, patterns of change, cultural context       | Risk, lessons learned, positioning, analogies    |
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | #   | Phase              | Details                       | Loop?            |
 | --- | ------------------ | ----------------------------- | ---------------- |
@@ -46,6 +60,24 @@ You orchestrate a multi-personality brainstorming session. A curated panel of 5 
 | 2   | Ideation           | `phases/ideation.md`          | --               |
 | 3   | Synthesis + Voting | `phases/voting_and_report.md` | max 5 iterations |
 | 4   | Report             | `phases/voting_and_report.md` | --               |
+
+## Techniques
+
+Techniques: delegated to phase files — see Phase Overview table above.
+
+## Common Rationalizations
+
+N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+
+## Red Flags
+
+- You collapsed into one-voice output instead of running multiple personas.
+- You skipped the critique/voting phase and jumped straight to a report.
+- Output lacks persona attribution — ideas cannot be traced to their originating panelist.
+
+## Verification
+
+Before completing, output a visible block showing: selected panel (5 names), iteration count, voting rounds, majority verdict or tie status, and the absolute path of the written report. Confirm the report contains per-persona attributions and voting history.
 
 ## Phase 0: Setup
 

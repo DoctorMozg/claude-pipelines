@@ -14,6 +14,48 @@ Write your strategy to: <RUN_DIR>/strategy.json
 Read `strategy.json`. Extract target profile, scoring weights, outreach angles, source hints.
 Update state: `"phase": "strategy_complete"`.
 
+Proceed to Phase 1.5 before launching Phase 2.
+
+______________________________________________________________________
+
+## Phase 1.5: User Approval of Strategy
+
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+### What to present
+
+The user must see, verbatim or summarized from `strategy.json`:
+
+1. **Target company profile** — industry, size, geography, stage.
+1. **Scoring weights** — how candidates will be ranked.
+1. **Sources candidate list** — which directories/platforms will be queried.
+1. **Signals to look for** — growth signals, hiring patterns, news triggers.
+1. **Outreach angles** — what the eventual message will focus on.
+
+### Why the gate matters
+
+Phase 2 (source research) and Phase 3 (scout fan-out) dispatch parallel agents per source and per candidate company; each dispatch costs tokens and time. User approval at Phase 1.5 is the cost cap — the user confirms the strategy is right before the expensive fan-out runs. If feedback is provided, the strategy is revised before any discovery starts.
+
+### AskUserQuestion prompt
+
+Use AskUserQuestion with the following message:
+
+```
+The target profile, search criteria, scoring weights, sources list, and signals for this lead-generation task:
+
+<contents of strategy.json, formatted as the five points above>
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+```
+
+### Response handling
+
+- **"approve"** → update state `"phase": "strategy_approved"` and proceed to Phase 2.
+- **"reject"** → update state `"phase": "aborted_by_user"` and stop. Do not proceed.
+- **Feedback** → re-dispatch `outreach-strategist` with the user's feedback appended to the prompt, overwrite `strategy.json`, return to this gate and re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+
+All five elements above (delegation guard, presentation, AskUserQuestion prompt ending with the canonical reply line, three-bullet response handling, explicit loop language) are required per `SKILL_GUIDELINES.md` Rule 1.
+
 ______________________________________________________________________
 
 ## Phase 2: Source Research

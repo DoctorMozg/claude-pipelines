@@ -86,7 +86,22 @@ You receive:
 <Checklist of conditions that must ALL be true for the task to be complete>
 - [ ] <criterion 1>
 - [ ] <criterion 2>
+
+STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
+
+Every dispatch must end with a terminal status line:
+
+```
+STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
+```
+
+Status meanings:
+
+- `DONE` — plan complete, no concerns. Orchestrator proceeds.
+- `DONE_WITH_CONCERNS` — plan complete, but flag issues in a `## Concerns` section above the status line. Orchestrator logs concerns in task state and proceeds.
+- `NEEDS_CONTEXT` — cannot plan without specific info (e.g., ambiguous requirements, missing research findings). List required info in a `## Required Context` section above the status line. Orchestrator re-dispatches with the context added.
+- `BLOCKED` — fundamental obstacle (impossible constraint, ambiguous specification that cannot be resolved, missing research dependency). List the obstacle in a `## Blocker` section above the status line. Orchestrator escalates to user via AskUserQuestion. **Never retry the same operation after `BLOCKED`** — wait for user input or abort.
 
 ## Rules
 

@@ -1,13 +1,28 @@
 ---
 name: polish
-description: ALWAYS invoke when the user wants to polish code against specific criteria — fix failing tests, clean up after implementation, or meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests", "clean up the code", "finish this implementation". Iterative polish pipeline — runs tests, fixes failures with review loops, then optimizes. Provide criteria as the argument.
+description: ALWAYS invoke when the user wants to polish code against criteria — fix failing tests, meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests". When NOT to use: new feature (use build), single bug (use debug).
 argument-hint: [scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Code Polishing Pipeline
 
-You are an orchestrator that takes existing code and polishes it until it meets specific completion criteria. Unlike the build skill which builds from scratch, you work with what's already there — running tests, diagnosing failures, fixing issues, reviewing changes, and optimizing code.
+## Overview
+
+Orchestrates iterative polish of existing code against specific completion criteria. Unlike `build` which builds from scratch, polish works with what's already there — running tests, diagnosing failures, fixing issues with review loops, and optimizing.
+
+## When to Use
+
+- User has existing code that needs to meet specific criteria or quality standards.
+- Triggers: "polish X", "make tests pass", "fix failing tests", "clean up the code", "finish this implementation".
+- Code exists but is failing tests, lint, or quality gates.
+
+### When NOT to use
+
+- Starting a new feature from scratch — use `build`.
+- A single isolated bug with a reproducer — use `debug`.
+- Read-only verification with no fix intent — use `verify`.
+- Map-reduce dead-code cleanup — use `optimize`.
 
 ## Input
 
@@ -22,19 +37,14 @@ If empty, ask the user what needs to be polished.
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing completion criteria.
+Extract `scope:<mode>` from `$ARGUMENTS` (case-insensitive), remove before parsing criteria.
 
-| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
-| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
-| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, files >5000 LOC).                                                                                     |
-| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
+- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
+- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock, >5000 LOC.
+- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
+- **Default** — all project files eligible for edits.
 
-**Default** (no `scope:` parameter): all files in the project are eligible for edits (existing behavior).
-
-The `scope:` parameter controls **which files agents may edit**. It does NOT restrict verification — tests and linters always run on the full project to catch regressions. The criteria determine **what to verify**; the scope determines **where fixes may be applied**.
-
-Example: `scope:branch "all tests pass"` → only edit files changed on this branch, but run the full test suite to verify.
+`scope:` controls **which files agents may edit**. Tests and linters always run on the full project. Criteria determine **what to verify**; scope determines **where fixes may be applied**.
 
 ## Constants
 
@@ -42,7 +52,9 @@ Example: `scope:branch "all tests pass"` → only edit files changed on this bra
 - **MAX_REVIEW_RETRIES**: 3 — max times a review can fail before escalating
 - **TASK_DIR**: `.mz/task/` in the project root
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | Phase | Goal                 | Details                             |
 | ----- | -------------------- | ----------------------------------- |
@@ -56,58 +68,35 @@ Example: `scope:branch "all tests pass"` → only edit files changed on this bra
 
 Read the relevant phase file when you reach that phase. Do not read both phase files upfront.
 
-______________________________________________________________________
+### Phase 0: Setup
 
-## Phase 0: Setup
+1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list and save to `.mz/task/<task_name>/scope_files.txt`. Otherwise all project files eligible.
+1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/").
+1. **Task name** — `polish_<slug>_<HHMMSS>` (slug = snake_case of criteria, max 20 chars).
+1. **Task dir & state** — create `.mz/task/<task_name>/`, write `state.md` with Status, Phase, Started, Iteration (0), and the criteria checklist.
+1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
-### 0.1 Resolve scope
+## Techniques
 
-If a `scope:` parameter was extracted, resolve it to a concrete file list using the git commands from the Scope Parameter table. Save the list to `.mz/task/<task_name>/scope_files.txt` (one path per line). This list constrains which files coder and optimizer agents may edit in later phases.
+Techniques: delegated to phase files — see Phase Overview table above.
 
-If no `scope:` parameter was given, skip this step — all project files are eligible.
+## Common Rationalizations
 
-### 0.2 Parse criteria
+| Rationalization                      | Rebuttal                                                 |
+| ------------------------------------ | -------------------------------------------------------- |
+| "good enough, ship"                  | "polish is the last line of defense before users see it" |
+| "edge cases are rare"                | "every bug report you've ever gotten is an edge case"    |
+| "tests are green, refactor can wait" | "green-test refactor debt compounds"                     |
 
-Break the remaining input into a checklist of discrete, verifiable criteria. Each criterion must be something you can check programmatically or by reading code.
+## Red Flags
 
-Example input: "All tests pass, pre-commit clean, no debug prints in src/"
-→ Criteria:
+- Edge cases were deferred to "next sprint" instead of handled now.
+- Code was declared "good enough" without a final criteria sweep.
+- Polish was equated with refactor — criteria drifted mid-loop.
 
-1. All tests in scope pass
-1. Pre-commit hooks pass
-1. No `print()` statements in `src/` (excluding intentional logging)
+## Verification
 
-### 0.3 Derive task name
-
-Task name format: `polish_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the criteria and HHMMSS is current time.
-
-### 0.4 Create task directory and state
-
-```bash
-mkdir -p .mz/task/<task_name>
-```
-
-Write `.mz/task/<task_name>/state.md`:
-
-```markdown
-# Polish: <criteria summary>
-- **Status**: started
-- **Phase**: setup
-- **Started**: <timestamp>
-- **Iteration**: 0
-- **Criteria**:
-  1. [ ] <criterion 1>
-  2. [ ] <criterion 2>
-  ...
-```
-
-### 0.5 Create task tracking
-
-Use TaskCreate for each pipeline phase.
-
-After setup completes, read `phases/assess_and_fix.md` and proceed to Phase 1.
-
-______________________________________________________________________
+Output the final criteria checklist with every item checked, along with the test run status, lint status, and iteration count. Any unchecked item blocks completion.
 
 ## Error Handling
 

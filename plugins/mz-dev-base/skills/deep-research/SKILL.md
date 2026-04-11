@@ -1,19 +1,31 @@
 ---
 name: deep-research
-description: ALWAYS invoke when the user wants exhaustive multi-source research on any topic. Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is the state of". Splits the topic into domains, dispatches parallel researcher agents that each scan 20-100 web pages, then synthesizes findings into a comprehensive report. Provide a topic as the argument.
+description: ALWAYS invoke when the user wants exhaustive multi-source research on any topic. Triggers:"research X","deep dive into","comprehensive analysis of","what is the state of". Provide a topic as the argument.
 argument-hint: <research topic>
 allowed-tools: Agent, Bash, Read, Write
 ---
 
 # Deep Research
 
-Conduct exhaustive, multi-agent research on a topic by splitting it into domains and running parallel researcher agents.
+## Overview
+
+Conduct exhaustive, multi-agent research on a topic by decomposing it into independent domains, dispatching parallel researcher agents, and synthesizing findings into a single report under `.mz/research/`.
+
+## When to Use
+
+Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is the state of".
+
+### When NOT to use
+
+- The user wants a one-line factual answer — use plain web search.
+- The topic is narrow enough for a single researcher agent — dispatch directly.
+- The user wants a code review or audit — use `review-branch` or `audit`.
 
 ## Arguments
 
 `$ARGUMENTS` is the research topic or question. If empty, ask the user.
 
-## Process
+## Core Process
 
 Steps 2-5 are detailed in `phases/research_and_report.md`. Step 1 (decomposition + approval gate) is inline below.
 
@@ -55,22 +67,34 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback
 
 ### 2. Dispatch parallel researcher agents
 
-Launch a `researcher` agent per subtopic in parallel with exhaustive research instructions.
-
-**See `phases/research_and_report.md` → Step 2** for the researcher dispatch prompt template and parallel launch requirements.
+Launch a `researcher` agent per subtopic in parallel. **See `phases/research_and_report.md` → Step 2** for the dispatch prompt template.
 
 ### 3. Collect and synthesize
 
-After all agents complete, cross-reference findings, identify emergent patterns, and assess coverage.
-
-**See `phases/research_and_report.md` → Step 3** for the synthesis process.
+After all agents complete, cross-reference findings, identify emergent patterns, and assess coverage. **See `phases/research_and_report.md` → Step 3**.
 
 ### 4. Write the report
 
-Write the final report to `.mz/research/` using the naming convention `research_<YYYY_MM_DD>_<slugified_topic>.md`.
-
-**See `phases/research_and_report.md` → Step 4** for the full report template.
+Write the final report to `.mz/research/` using the naming convention `research_<YYYY_MM_DD>_<slugified_topic>.md`. **See `phases/research_and_report.md` → Step 4** for the template.
 
 ### 5. Report to user
 
 Display path, source count, subtopic count, and top 3-5 findings.
+
+## Techniques
+
+Techniques: delegated to phase files — see `phases/research_and_report.md`.
+
+## Common Rationalizations
+
+N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+
+## Red Flags
+
+- You dispatched a single researcher instead of a parallel fan-out across subtopics.
+- You skipped the decomposition approval gate and jumped straight to research.
+- The report lives in chat output instead of `.mz/research/<file>.md`.
+
+## Verification
+
+Output the final report path (`.mz/research/research_<YYYY_MM_DD>_<slug>.md`), confirm the file exists on disk, and print the number of subtopics researched alongside the top 3-5 findings.

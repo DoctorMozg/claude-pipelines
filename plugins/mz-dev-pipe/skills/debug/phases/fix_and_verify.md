@@ -230,6 +230,22 @@ Update state phase to `reviewed`.
 
 ______________________________________________________________________
 
+## Sub-agent status handling
+
+Review verdict parsing:
+
+- `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
+- `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
+
+Coder/planner status handling (Rule 21 four-status protocol):
+
+- `DONE` — proceed to the next step.
+- `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.
+- `NEEDS_CONTEXT` — re-dispatch the coder with the additional context included in the new prompt. Do not proceed to the next step until the coder returns with `DONE` or `DONE_WITH_CONCERNS`.
+- `BLOCKED` — escalate to the user via AskUserQuestion with the blocker details. Never auto-retry the same operation. Wait for user direction or abort.
+
+______________________________________________________________________
+
 ## Phase 6: Report
 
 **Goal**: Write a comprehensive debug report summarizing the investigation and fix.

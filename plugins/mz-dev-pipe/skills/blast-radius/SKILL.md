@@ -1,13 +1,27 @@
 ---
 name: blast-radius
-description: ALWAYS invoke when the user wants to see the impact of changing a file, function, or module before refactoring. Triggers: "blast radius of X", "what depends on X", "impact analysis", "what would break if I change X". Computes full dependency graph — direct callers, transitive consumers, tests, configs — with code age overlay and risk scoring. Provide a target as the argument.
+description: ALWAYS invoke when the user wants to see the impact of changing a file, function, or module before refactoring. Triggers: "blast radius of X", "what depends on X", "impact analysis". When NOT to use: the refactor itself (use optimize or build).
 argument-hint: <file path, function name, or module name>
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, AskUserQuestion
 ---
 
 # Refactor Blast Radius Map
 
-You orchestrate a read-only impact analysis pipeline. Given a target (file, function, or module), compute the full dependency graph, overlay code age data, score risk, and produce a ranked report showing what breaks if the target changes.
+## Overview
+
+Orchestrates a read-only impact analysis pipeline. Given a target (file, function, or module), computes the full dependency graph, overlays git age data, scores risk, and produces a ranked report showing what breaks if the target changes.
+
+## When to Use
+
+- User wants impact analysis before a refactor or rename.
+- Triggers: "blast radius of X", "what depends on X", "impact analysis", "what would break if I change X".
+- You need a read-only dependency map, not a code change.
+
+### When NOT to use
+
+- Performing the refactor itself — use `optimize` or `build`.
+- Fixing a known bug — use `debug`.
+- Bug hunt across the repo — use `audit`.
 
 ## Input
 
@@ -18,7 +32,9 @@ You orchestrate a read-only impact analysis pipeline. Given a target (file, func
 - **MAX_DEPTH**: 3 | **MAX_RESEARCHERS**: 4 | **MAX_GRAPH_NODES**: 100
 - **TASK_DIR**: `.mz/task/`
 
-## Phase Overview
+## Core Process
+
+### Phase Overview
 
 | #   | Phase             | Reference                       | Loop? |
 | --- | ----------------- | ------------------------------- | ----- |
@@ -27,7 +43,7 @@ You orchestrate a read-only impact analysis pipeline. Given a target (file, func
 | 1   | Discovery & Graph | `phases/discovery.md`           | hops  |
 | 2   | Analysis & Report | `phases/analysis_and_report.md` | —     |
 
-## Phase 0: Setup
+### Phase 0: Setup
 
 1. Parse `$ARGUMENTS` to determine target type:
    - **File**: argument contains `/` or `.` extension → validate file exists via Glob.
@@ -36,7 +52,7 @@ You orchestrate a read-only impact analysis pipeline. Given a target (file, func
 1. If target not found: ask user to clarify via AskUserQuestion.
 1. Derive task name as `blast_radius_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the target basename and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Target, Target type, Started timestamp. Use TaskCreate for tracking.
 
-## Phase 0.5: Confirm Scope
+### Phase 0.5: Confirm Scope
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
@@ -60,7 +76,7 @@ Reply 'approve' to start analysis, 'reject' to abort, or adjust (e.g. "depth 2",
 - **"reject"** → update state to `aborted_by_user` and stop.
 - **Feedback** → adjust depth or scope constraints, re-present via AskUserQuestion. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
 
-## Phase 1: Discovery & Graph Building
+### Phase 1: Discovery & Graph Building
 
 Dispatch **MAX_RESEARCHERS** (4) `pipeline-researcher` agents (model: sonnet) in parallel, each covering a distinct reference category. Then run iterative hop expansion up to **MAX_DEPTH**.
 
@@ -68,13 +84,35 @@ Dispatch **MAX_RESEARCHERS** (4) `pipeline-researcher` agents (model: sonnet) in
 
 Update state phase to `graph_complete`.
 
-## Phase 2: Analysis & Report
+### Phase 2: Analysis & Report
 
 Overlay git age data on every node in the graph. Compute risk scores. Generate the final report with safety verdict.
 
 **See `phases/analysis_and_report.md`** for age analysis commands, risk scoring formula, report template, and safety verdict criteria.
 
 Write report to `.mz/reports/blast_radius_<YYYY_MM_DD>_<target_slug>.md`. Present summary to user. Update state to `completed`.
+
+## Techniques
+
+Techniques: delegated to phase files — see Phase Overview table above.
+
+## Common Rationalizations
+
+| Rationalization                | Rebuttal                                                                          |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| "small refactor, skip the map" | "small refactors produce the most silent breakage because reviewers don't look"   |
+| "I know what this touches"     | "you know what the call graph you remember touches, not what it actually touches" |
+| "the tests will catch it"      | "tests only catch what they cover; the map catches what tests miss"               |
+
+## Red Flags
+
+- You skipped the call-graph scan because the change "felt small".
+- You relied on memory of the codebase instead of fresh grep results.
+- You didn't run the test suite on the dependents the graph surfaced.
+
+## Verification
+
+Output the final report block: target, graph node count, top risk dependents, safety verdict, and the written report path.
 
 ## Error Handling
 
