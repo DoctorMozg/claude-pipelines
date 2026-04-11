@@ -2,5 +2,5 @@
   "description": "Development workflow hooks \u2014 safety gates, secret scanning, formatting reminders, and test awareness for any project type",
   "license": "MIT",
   "name": "mz-dev-hooks",
-  "version": "0.14.0"
+  "version": "0.15.0"
 }

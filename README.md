@@ -2,6 +2,142 @@
 
 Multi-agent plugins for [Claude Code](https://claude.com/claude-code). Autonomous development pipelines, code review, deep research, and business intelligence — all as slash commands.
 
+## Workflows
+
+> [!TIP]
+> Skills compose. Most real tasks span 3–4 commands across multiple plugins — chain them end-to-end instead of reaching for any single skill in isolation. Click any workflow below to see the flow.
+
+<details open>
+<summary><b>Ship a new feature end-to-end</b> &nbsp;·&nbsp; <code>mz-dev-base</code> + <code>mz-dev-pipe</code></summary>
+
+```mermaid
+flowchart LR
+    A["/deep-research"]:::base --> B["/build"]:::pipe
+    B --> C["/verify"]:::pipe
+    C --> D["/review-branch"]:::base
+    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/deep-research`** — survey trade-offs, cite references, pick an approach
+1. **`/build`** — research → plan (approval gate) → parallel code → review → test
+1. **`/verify`** — lint + types + tests + coverage, diagnose failures
+1. **`/review-branch`** — independent final pass before opening the PR
+
+</details>
+
+<details>
+<summary><b>Hunt a production bug</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code></summary>
+
+```mermaid
+flowchart LR
+    A["/debug"]:::pipe --> B["/blast-radius"]:::pipe
+    B --> C["/investigate"]:::pipe
+    C --> D["/polish"]:::pipe
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/debug`** — reproduce → regression test → diagnose → fix → verify
+1. **`/blast-radius`** — map every caller, test, and type at risk of the patch
+1. **`/investigate`** — prove or disprove "does the same race exist on the refund path" without touching code
+1. **`/polish`** — fix-test-review loop until the criteria are met
+
+</details>
+
+<details>
+<summary><b>Take over a legacy codebase</b> &nbsp;·&nbsp; <code>mz-dev-base</code> + <code>mz-dev-pipe</code></summary>
+
+```mermaid
+flowchart LR
+    A["/init-rules"]:::base --> B["/explain"]:::pipe
+    B --> C["/audit"]:::pipe
+    C --> D["/blast-radius"]:::pipe
+    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/init-rules`** — install curated coding rules for the detected languages
+1. **`/explain`** — multi-angle walkthrough with Mermaid diagrams of the module
+1. **`/audit`** — ranked list of landmines and tech-debt hotspots
+1. **`/blast-radius`** — know what shatters before the first refactor commit
+
+</details>
+
+<details>
+<summary><b>Security sweep and remediation</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code> + <code>mz-dev-base</code></summary>
+
+```mermaid
+flowchart LR
+    A["/audit"]:::pipe --> B["/investigate"]:::pipe
+    B --> C["/debug"]:::pipe
+    C --> D["/review-branch"]:::base
+    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/audit`** — prioritized vulnerabilities with file:line evidence
+1. **`/investigate`** — verify top critical findings, drop false positives
+1. **`/debug`** — TDD-style fix anchored on a regression test
+1. **`/review-branch`** — catch any fallout the fix introduced elsewhere
+
+</details>
+
+<details>
+<summary><b>Design-driven feature</b> &nbsp;·&nbsp; <code>mz-creative</code> + <code>mz-design</code> + <code>mz-dev-pipe</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
+
+```mermaid
+flowchart LR
+    A["/brainstorm"]:::creative --> B["/expert"]:::creative
+    B --> C["/design-document"]:::design
+    C --> D["/build"]:::pipe
+    classDef creative fill:#fbefff,stroke:#8250df,color:#8250df
+    classDef design fill:#ffebf0,stroke:#bf3989,color:#bf3989
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/brainstorm`** — 5 lens personas → parallel ideation → vote-to-consensus
+1. **`/expert`** — Delphi critique (3 rounds) with dedicated report writer
+1. **`/design-document`** — draft → 4-critic loop → WCAG 2.2 AA hard gate
+1. **`/build`** — plan → code → review → test against the approved spec
+
+</details>
+
+<details>
+<summary><b>Outreach package in one evening</b> &nbsp;·&nbsp; <code>mz-biz-outreach</code> + <code>mz-dev-base</code> + <code>mz-creative</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
+
+```mermaid
+flowchart LR
+    A["/lead-gen"]:::outreach --> B["/deep-research"]:::base
+    B --> C["/brainstorm"]:::creative
+    classDef outreach fill:#fff1e5,stroke:#bc4c00,color:#bc4c00
+    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef creative fill:#fbefff,stroke:#8250df,color:#8250df
+```
+
+1. **`/lead-gen`** — strategy → source research → scout → enrich → score → report
+1. **`/deep-research`** — domain context to ground outreach in current regulation
+1. **`/brainstorm`** — multi-lens positioning ideas tied back to the lead-gen report
+
+</details>
+
+<details>
+<summary><b>Performance rescue</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code></summary>
+
+```mermaid
+flowchart LR
+    A["/audit"]:::pipe --> B["/optimize"]:::pipe
+    B --> C["/verify"]:::pipe
+    C --> D["/polish"]:::pipe
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/audit`** — ranked performance hotspots with evidence and suspected causes
+1. **`/optimize`** — import-graph chunking → parallel optimization → mirrored review
+1. **`/verify`** — prove the optimizations didn't regress behavior or types
+1. **`/polish`** — iterative loop until the SLO actually holds
+
+</details>
+
 ## Quick Start
 
 ```bash
