@@ -86,15 +86,16 @@ Autonomous lead generation pipeline that discovers companies, scans reputations,
 
 ______________________________________________________________________
 
-### [`mz-creative`](plugins/mz-creative/) — Creative Brainstorming
+### [`mz-creative`](plugins/mz-creative/) — Multi-Perspective Panels
 
-Multi-personality brainstorming with 10 AI thinkers (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian). A curated panel of 5 generates ideas from diverse lenses, a synthesizer merges them, and the panel votes iteratively until consensus.
+Two panel-driven skills sharing a unified roster of **16 lens agents** (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian, cto, data, devops, product, security, seo). Each lens is a fixed intellectual personality; per-dispatch behavior (ideation vs. critique) is injected by the calling skill. **Brainstorm** picks 5 lenses and runs them through a vote-to-consensus ideation loop. **Expert** picks 5 lenses and runs a Delphi-style 3-round critique with inter-round synthesis and a final written report.
 
-| Skill          | Command               | What it does                                                    |
-| -------------- | --------------------- | --------------------------------------------------------------- |
-| **brainstorm** | `/brainstorm <topic>` | Panel selection → parallel ideation → synthesis → voting rounds |
+| Skill          | Command               | What it does                                                                  |
+| -------------- | --------------------- | ----------------------------------------------------------------------------- |
+| **brainstorm** | `/brainstorm <topic>` | Panel selection → parallel ideation → synthesis → voting rounds               |
+| **expert**     | `/expert <idea>`      | Panel selection → 3 rounds (view → summary → react) → dedicated report writer |
 
-10 personality agents available as standalone creative consultants.
+19 agents total: 16 lens personas (shared between brainstorm and expert) plus 3 support agents (researcher, round-synthesizer, report-writer).
 
 **[Full documentation →](plugins/mz-creative/)**
 

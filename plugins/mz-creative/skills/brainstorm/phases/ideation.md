@@ -1,75 +1,56 @@
 # Phase 2: Ideation
 
-Detail for the parallel personality agent dispatch and idea collection.
+Dispatch the 5 selected lens agents in parallel using the ideation behavior contract.
 
-## 2.1 Prepare context packet
+## 2.1 Load the behavior contract
 
-Read `.mz/task/<task_name>/panel.md` to get the 5 selected agents.
+Read `plugins/mz-creative/skills/brainstorm/behaviors/ideation.md`. This file defines the dispatch prompt template with `{variable}` placeholders inside a fenced `text` code block. That block is the entire message to send to each lens agent — nothing before it, nothing after it. You must substitute variables per-agent before dispatching.
 
-For the **first iteration**, the context packet per agent is:
+## 2.2 Prepare per-agent context
 
-```
-Topic: <the brainstorming topic>
-Your role: <agent name> — <one-line lens description from panel.md>
+Read `.mz/task/<task_name>/panel.md` to get the 5 selected `lens-*` agents.
 
-Generate 2-3 distinct ideas from your unique perspective. For each idea:
-1. **Name**: a short memorable title (3-5 words)
-2. **Concept**: 2-3 sentences describing the idea
-3. **Why this lens**: 1 sentence on why your perspective makes this idea unique
-4. **Feasibility signal**: High / Medium / Low with brief justification
+For each selected agent, substitute the behavior template variables:
 
-You may use WebSearch and WebFetch to research the topic if you need external context, trends, or data to ground your ideas. Prioritize original thinking over research — use research to validate or enrich, not to substitute for creativity.
+| Variable                  | Value                                                                                                                                         |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{topic}`                 | the brainstorming topic                                                                                                                       |
+| `{round_n}`               | current iteration number (1 for first round)                                                                                                  |
+| `{previous_rounds_block}` | empty string for round 1; `## Previous rounds\n\n<contents of history.md>\n\n## Facilitator guidance\n\n<disagreement summary>` for round > 1 |
+| `{output_path}`           | `.mz/task/<task_name>/ideas_round_<N>_<agent_name>.md` (absolute or repo-relative)                                                            |
+| `{lens_name}`             | the short label derived from the agent name (e.g. `engineer` for `lens-engineer`)                                                             |
+| `{step}`                  | `generate`                                                                                                                                    |
 
-Write your ideas as a structured markdown list. Be concise — output tokens are expensive.
-```
+When `{previous_rounds_block}` is empty, collapse the surrounding blank line so the prompt does not contain a stray empty section.
 
-For **subsequent iterations** (iteration > 1), append to the context packet:
+## 2.3 Dispatch agents in parallel
 
-```
-## Previous rounds
+Dispatch all **PANEL_SIZE** (5) selected lens agents in a **single message** as parallel Agent tool calls. Each agent receives its own substituted dispatch prompt as the user message. Use each agent's registered name (`lens-engineer`, `lens-artist`, `lens-philosopher`, `lens-mathematician`, `lens-scientist`, `lens-economist`, `lens-storyteller`, `lens-futurist`, `lens-psychologist`, `lens-historian`, `lens-cto`, `lens-data`, `lens-devops`, `lens-product`, `lens-security`, `lens-seo`) as the `subagent_type`.
 
-<contents of .mz/task/<task_name>/history.md>
+Do not repeat the agent's system prompt instructions — the behavior prompt is self-contained.
 
-## Facilitator guidance
+## 2.4 Collect results
 
-The panel did not reach consensus in the previous round. Key areas of disagreement:
-<disagreement summary from state.md>
+Each agent writes its artifact to `{output_path}`. After dispatch, for each agent:
 
-Build on the strongest ideas from previous rounds. You may refine an existing idea, combine ideas, or propose something new that bridges the disagreement. Do not simply repeat your prior submission.
-```
+1. Verify the file exists and is non-empty.
+1. Validate structure: at least one `## Idea` block with a title, concept, lens rationale, and feasibility signal.
+1. If the file is missing, empty, or off-topic: retry once with a clarified prompt per the behavior post-dispatch checklist. If still bad, exclude the agent from this iteration and note the gap in `state.md`.
 
-## 2.2 Dispatch agents in parallel
-
-Dispatch all **PANEL_SIZE** (5) agents in a **single message** as parallel Agent tool calls. Each agent receives the context packet above.
-
-The agents are dispatched using their registered names (e.g., `creative-engineer`, `creative-artist`). The dispatch prompt is the context packet — do not repeat the agent's system prompt instructions.
-
-## 2.3 Collect results
-
-As agents complete, read each agent's response. For each:
-
-1. Extract the structured ideas (name, concept, lens justification, feasibility)
-1. Validate: at least 1 idea returned, ideas relate to the topic
-1. If an agent returned empty or off-topic: retry once with a clarified prompt. If still empty, note the gap.
-
-Write all collected ideas to `.mz/task/<task_name>/ideas_round_<N>.md`:
+Merge all agent outputs into `.mz/task/<task_name>/ideas_round_<N>.md`:
 
 ```markdown
 # Ideas — Round <N>
 
-## <Agent Name>
+## lens-engineer
 
-### Idea 1: <title>
-- **Concept**: ...
-- **Why this lens**: ...
-- **Feasibility**: ...
+<contents of ideas_round_<N>_lens-engineer.md — skip the agent's own H1 title>
 
-### Idea 2: <title>
-- **Concept**: ...
-- **Why this lens**: ...
-- **Feasibility**: ...
+## lens-artist
 
-[repeat for each agent]
+<contents of ideas_round_<N>_lens-artist.md — skip the agent's own H1 title>
+
+[repeat for each agent that produced output]
 ```
 
 Append a summary to `.mz/task/<task_name>/history.md`:
@@ -77,7 +58,8 @@ Append a summary to `.mz/task/<task_name>/history.md`:
 ```markdown
 ## Round <N> — Ideation
 
-### <Agent 1 Name>
+### lens-engineer
+
 - Idea: <title 1> — <one-line summary>
 - Idea: <title 2> — <one-line summary>
 
