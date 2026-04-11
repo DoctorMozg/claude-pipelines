@@ -2,6 +2,10 @@
 
 Before calling anything done, re-read everything you modified. Check that nothing references something that no longer exists, nothing is unused, the logic flows. State what you actually verified — not just "looks good."
 
+## Scope Trace
+
+Before reporting done, check that every changed line traces directly to the user's request. Walk the diff and for each hunk ask: "does this exist because the user asked for it, or because I decided to fold something else in?" Flag anything that doesn't trace — either justify it explicitly or revert it. Unexplained incidental changes are how diffs accumulate noise and reviewers lose trust.
+
 ## Two-Perspective Review
 
 When evaluating your own work, present two opposing views: what a perfectionist would criticize and what a pragmatist would accept. Let the user decide which tradeoff to take.
