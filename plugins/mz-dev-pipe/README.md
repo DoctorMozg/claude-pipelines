@@ -131,6 +131,20 @@ Researches a scope across structure, execution flow, and domain context, then pr
 
 **Pipeline**: Scope Analysis → Parallel Researchers (structure, flow, domain) → Synthesis → Report with Diagrams
 
+______________________________________________________________________
+
+### `/combine` — Local Source Combiner
+
+Synthesizes prior pipeline output — `.mz/research/` reports, `.mz/task/*/` artifacts, `.mz/reports/`, `.mz/reviews/`, codebase files, git history — into a unified report with task-derived sections (or user-supplied sections via `sections:`). Local-first: only calls web research to fill residual gaps, and only after your approval.
+
+```
+/combine consolidate what we learned about the auth refactor
+/combine sections:Context,Findings,Risks synthesize our findings on the WebSocket reconnection work
+/combine output:docs/caching_summary.md pull together everything about cache invalidation
+```
+
+**Pipeline**: Inventory → Lens Decomposition → User Approval → Parallel Lens Dispatch → Synthesis → (optional) Gap-Fill Approval → Web Gap-Fill → Task-Adaptive Report
+
 ## Scope Parameter
 
 All pipeline skills support an optional `scope:` parameter that constrains which files agents may edit:
@@ -150,6 +164,7 @@ Specialized worker agents used by the pipeline skills. You don't invoke these di
 | Agent                               | Role                                                  |
 | ----------------------------------- | ----------------------------------------------------- |
 | **pipeline-researcher**             | Codebase exploration + domain research via web search |
+| **pipeline-web-researcher**         | Web-first research with primary-source verification   |
 | **pipeline-planner**                | Creates parallelizable implementation plans           |
 | **pipeline-plan-reviewer**          | Validates plans for completeness and correctness      |
 | **pipeline-coder**                  | Implements specific work units from an approved plan  |

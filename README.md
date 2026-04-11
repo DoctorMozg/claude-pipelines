@@ -61,8 +61,9 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **optimize**     | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                            |
 | **blast-radius** | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                          |
 | **explain**      | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                          |
+| **combine**      | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report   |
 
-10 specialized agents (researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-coverage-reviewer, test-quality-reviewer, optimizer, completeness-checker).
+11 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-coverage-reviewer, test-quality-reviewer, optimizer, completeness-checker).
 
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 
