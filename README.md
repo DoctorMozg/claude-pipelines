@@ -14,6 +14,7 @@ claude plugin install mz-dev-pipe       # Autonomous dev pipelines
 claude plugin install mz-dev-hooks      # Safety gates + workflow hooks
 claude plugin install mz-memory         # Cross-session project memory
 claude plugin install mz-biz-outreach   # Business lead generation
+claude plugin install mz-design         # UI/UX design documents
 ```
 
 After installation, skills are available as slash commands:
@@ -96,6 +97,20 @@ Multi-personality brainstorming with 10 AI thinkers (engineer, artist, philosoph
 10 personality agents available as standalone creative consultants.
 
 **[Full documentation →](plugins/mz-creative/)**
+
+______________________________________________________________________
+
+### [`mz-design`](plugins/mz-design/) — UI/UX Design Documents
+
+Iterative design-specification skill that drafts a UI/UX document then refines it through four parallel specialist critics (visual layout, UX flows, color/typography, accessibility) with a WCAG 2.2 AA hard gate. Up to 5 critique iterations until all critics approve and zero contrast violations remain.
+
+| Skill               | Command            | What it does                                                                    |
+| ------------------- | ------------------ | ------------------------------------------------------------------------------- |
+| **design-document** | `/design-document` | Intake → research → draft → 4-critic loop → WCAG-gated approval → final summary |
+
+8 specialized agents (researcher, document-writer, revision-writer, critique-synthesizer, ui-designer, ux-designer, art-designer, accessibility-specialist) and 3 lazy-loaded reference files (Nielsen heuristics, WCAG thresholds, canonical spec template).
+
+**[Full documentation →](plugins/mz-design/)**
 
 ______________________________________________________________________
 

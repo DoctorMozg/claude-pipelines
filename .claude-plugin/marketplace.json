@@ -96,6 +96,22 @@
       "name": "mz-memory",
       "source": "./plugins/mz-memory",
       "version": "0.14.0"
+    },
+    {
+      "category": "design",
+      "description": "UI/UX design document generation \u2014 researches the domain, drafts a comprehensive spec, and iterates against ui/ux/art/accessibility critics with a WCAG hard gate",
+      "keywords": [
+        "design",
+        "ui",
+        "ux",
+        "wcag",
+        "accessibility",
+        "design-system",
+        "wireframes"
+      ],
+      "name": "mz-design",
+      "source": "./plugins/mz-design",
+      "version": "0.14.0"
     }
   ]
 }
