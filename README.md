@@ -101,6 +101,20 @@ Multi-personality brainstorming with 10 AI thinkers (engineer, artist, philosoph
 
 ______________________________________________________________________
 
+### [`mz-funny`](plugins/mz-funny/) — Character-Voice Code Roasting
+
+Evidence-anchored code roasting in 7 character voices. Each persona is a first-class agent that can only embellish real findings from a static-analysis-plus-docs-plus-web-research dossier — no fabrication. Pick a voice, point at a file or a branch, get roasted.
+
+| Skill        | Command                        | What it does                                                                            |
+| ------------ | ------------------------------ | --------------------------------------------------------------------------------------- |
+| **do-roast** | `/do-roast <persona> <target>` | Resolve target → analyze → dossier → persona dispatch → roast report with inline teaser |
+
+7 persona agents (roast-caveman, roast-wh40k-ork, roast-pirate, roast-viking, roast-dwarf, roast-drill-sergeant, roast-yoda) — each standalone-invocable as a creative consultant.
+
+**[Full documentation →](plugins/mz-funny/)**
+
+______________________________________________________________________
+
 ### [`mz-design`](plugins/mz-design/) — UI/UX Design Documents
 
 Iterative design-specification skill that drafts a UI/UX document then refines it through four parallel specialist critics (visual layout, UX flows, color/typography, accessibility) with a WCAG 2.2 AA hard gate. Up to 5 critique iterations until all critics approve and zero contrast violations remain.

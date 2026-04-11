@@ -69,6 +69,21 @@
       "version": "0.14.0"
     },
     {
+      "category": "creativity",
+      "description": "Evidence-anchored character-voice code roasting \u2014 7 personas deliver roasts grounded in real findings, never fabricated",
+      "keywords": [
+        "roast",
+        "humor",
+        "personas",
+        "code-review",
+        "character-voice",
+        "evidence-anchored"
+      ],
+      "name": "mz-funny",
+      "source": "./plugins/mz-funny",
+      "version": "0.14.0"
+    },
+    {
       "category": "development",
       "description": "Development workflow hooks \u2014 safety gates, secret scanning, formatting reminders, and test awareness for any project type",
       "keywords": [
