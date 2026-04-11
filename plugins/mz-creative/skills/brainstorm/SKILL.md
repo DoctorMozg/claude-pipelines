@@ -9,7 +9,7 @@ allowed-tools: Agent, Bash, Read, Write, Glob, Grep, AskUserQuestion, WebFetch, 
 
 ## Overview
 
-You orchestrate a multi-personality brainstorming session. A curated panel of 5 thinkers from 10 available personalities generates ideas from diverse lenses, a synthesizer merges them, and the panel votes iteratively until consensus or max rounds.
+You orchestrate a multi-lens brainstorming session. A curated panel of 5 thinkers from 16 available lenses generates ideas from diverse perspectives, a synthesizer merges them, and the panel votes iteratively until consensus or max rounds.
 
 ## When to Use
 
@@ -29,24 +29,30 @@ Invoke when the user wants creative ideation, multi-perspective thinking, or div
 
 - **MAX_ITERATIONS**: 5
 - **PANEL_SIZE**: 5
-- **TOTAL_PERSONALITIES**: 10
+- **TOTAL_LENSES**: 16
 - **MAJORITY_THRESHOLD**: 3
 - **TASK_DIR**: `.mz/task/`
 
-## Available Personalities
+## Available Lenses
 
-| Agent                  | Lens                                                  | Best for                                         |
-| ---------------------- | ----------------------------------------------------- | ------------------------------------------------ |
-| creative-engineer      | Systems thinking, technical feasibility, scalability  | Technical problems, product design, architecture |
-| creative-artist        | Aesthetics, form, visual communication, experience    | Design, branding, UX, presentation, media        |
-| creative-philosopher   | Meaning, ethics, cultural impact, narrative framing   | Ethics, purpose, messaging, social impact        |
-| creative-mathematician | Patterns, optimization, formal logic, structure       | Algorithms, processes, strategy, quantitative    |
-| creative-scientist     | Hypotheses, experiments, evidence, natural systems    | Research, validation, methodology, bio-inspired  |
-| creative-economist     | Incentives, markets, game theory, resource allocation | Business models, pricing, strategy, growth       |
-| creative-storyteller   | Narrative, metaphor, emotional arcs, audience         | Marketing, pitching, content, communication      |
-| creative-futurist      | Emerging trends, disruption, long-term trajectories   | Innovation, strategy, roadmaps, future-proofing  |
-| creative-psychologist  | Cognition, bias, motivation, behavior, UX             | User research, adoption, persuasion, habits      |
-| creative-historian     | Precedent, patterns of change, cultural context       | Risk, lessons learned, positioning, analogies    |
+| Agent              | Lens                                                  | Best for                                                 |
+| ------------------ | ----------------------------------------------------- | -------------------------------------------------------- |
+| lens-engineer      | Systems thinking, technical feasibility, scalability  | Technical problems, product design, architecture         |
+| lens-artist        | Aesthetics, form, visual communication, experience    | Design, branding, UX, presentation, media                |
+| lens-philosopher   | Meaning, ethics, cultural impact, narrative framing   | Ethics, purpose, messaging, social impact                |
+| lens-mathematician | Patterns, optimization, formal logic, structure       | Algorithms, processes, strategy, quantitative            |
+| lens-scientist     | Hypotheses, experiments, evidence, natural systems    | Research, validation, methodology, bio-inspired          |
+| lens-economist     | Incentives, markets, game theory, resource allocation | Business models, pricing, strategy, growth               |
+| lens-storyteller   | Narrative, metaphor, emotional arcs, audience         | Marketing, pitching, content, communication              |
+| lens-futurist      | Emerging trends, disruption, long-term trajectories   | Innovation, strategy, roadmaps, future-proofing          |
+| lens-psychologist  | Cognition, bias, motivation, behavior, UX             | User research, adoption, persuasion, habits              |
+| lens-historian     | Precedent, patterns of change, cultural context       | Risk, lessons learned, positioning, analogies            |
+| lens-cto           | Architecture, build-vs-buy, tech-debt, org impact     | Technology strategy, platform leverage, delivery risk    |
+| lens-data          | Measurement, experimentation, instrumentation, growth | Metrics design, A/B tests, analytics, growth loops       |
+| lens-devops        | Reliability, SLOs, observability, capacity, cost      | Production systems, on-call, rollout, operational burden |
+| lens-product       | PMF, jobs-to-be-done, prioritization, kill criteria   | Roadmap, MVP scoping, user value, backlog tradeoffs      |
+| lens-security      | Threat modeling, attack surface, authZ, compliance    | Appsec review, data handling, trust boundaries           |
+| lens-seo           | Search intent, content strategy, technical SEO        | Organic growth, content planning, indexing decisions     |
 
 ## Core Process
 
@@ -85,7 +91,7 @@ Derive task name as `brainstorm_<slug>_<HHMMSS>` where slug is a snake_case summ
 
 ## Phase 1: Panel Selection
 
-Analyze the topic and select the **PANEL_SIZE** (5) best-suited personalities from the table above. Consider:
+Analyze the topic and select the **PANEL_SIZE** (5) best-suited lenses from the table above. Consider:
 
 - What lenses are most relevant to this topic?
 - What complementary perspectives would create productive tension?

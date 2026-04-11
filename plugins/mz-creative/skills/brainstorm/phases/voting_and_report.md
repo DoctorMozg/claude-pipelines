@@ -34,30 +34,22 @@ Save the synthesis to `.mz/task/<task_name>/synthesis_round_<N>.md`.
 
 ### 3.3 Dispatch voting round
 
-Dispatch all **PANEL_SIZE** (5) panelists in a **single message** as parallel Agent tool calls. Each receives:
+Load `plugins/mz-creative/skills/brainstorm/behaviors/ideation.md`. Substitute variables per-voter:
 
-```
-Voting round <N> for brainstorming topic: <topic>
+| Variable                  | Value                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `{topic}`                 | the brainstorming topic                                                                          |
+| `{round_n}`               | current iteration                                                                                |
+| `{previous_rounds_block}` | `## Synthesis\n\n<contents of synthesis_round_<N>.md>\n\n## History\n\n<contents of history.md>` |
+| `{output_path}`           | `.mz/task/<task_name>/vote_round_<N>_<agent_name>.md`                                            |
+| `{lens_name}`             | short lens label (e.g. `engineer` for `lens-engineer`)                                           |
+| `{step}`                  | `vote`                                                                                           |
 
-Read the synthesis: .mz/task/<task_name>/synthesis_round_<N>.md
-Read the full history: .mz/task/<task_name>/history.md
-
-The synthesizer (<synthesizer name>) produced a ranked shortlist of top 5 ideas.
-
-Your vote:
-1. Pick your #1 idea from the shortlist (by name)
-2. Write 1 sentence explaining why from your perspective as a <agent lens>
-3. Optionally: note any strong objection to another idea (1 sentence max)
-
-Format:
-VOTE: <idea name>
-REASON: <1 sentence>
-OBJECTION: <idea name> — <1 sentence> (or "none")
-```
+Dispatch all **PANEL_SIZE** (5) panelists in a **single message** as parallel Agent tool calls. Each receives its own substituted prompt.
 
 ### 3.4 Collect and tally votes
 
-Read each agent's response. Extract the VOTE, REASON, and OBJECTION fields.
+Read each voter's file at `{output_path}`. Extract the **Vote**, **Justification**, and (optional) **Objection** fields from each lens's vote artifact.
 
 Build a vote tally:
 
@@ -66,16 +58,16 @@ Build a vote tally:
 
 | Idea | Votes | Voters |
 |---|---|---|
-| <idea 1> | 3 | engineer, scientist, economist |
-| <idea 2> | 2 | artist, storyteller |
+| <idea 1> | 3 | lens-engineer, lens-scientist, lens-economist |
+| <idea 2> | 2 | lens-artist, lens-storyteller |
 
 ### Justifications
-- **engineer**: <reason>
-- **artist**: <reason>
+- **lens-engineer**: <reason>
+- **lens-artist**: <reason>
 [...]
 
 ### Objections
-- **philosopher** objects to <idea>: <reason>
+- **lens-philosopher** objects to <idea>: <reason>
 [...]
 ```
 
@@ -170,7 +162,7 @@ Brief final statement from each panelist's lens on the winning idea:
 
 ## Methodology
 
-- Personalities selected: <5 of 10>
+- Lenses selected: <5 of 16>
 - Selection rationale: <brief>
 - Iterations: <count>
 - Consensus method: majority vote (>= 3/5)
