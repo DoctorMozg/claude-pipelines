@@ -145,6 +145,23 @@ Synthesizes prior pipeline output — `.mz/research/` reports, `.mz/task/*/` art
 
 **Pipeline**: Inventory → Lens Decomposition → User Approval → Parallel Lens Dispatch → Synthesis → (optional) Gap-Fill Approval → Web Gap-Fill → Task-Adaptive Report
 
+______________________________________________________________________
+
+### `/translate` — Translation & Localization Pipeline
+
+Parses a natural-language request to identify source files, target language, and output mode. Seeds a glossary from the source, presents a translation plan for approval, then dispatches parallel `pipeline-translator` agents that preserve markdown structure, code blocks, and i18n placeholders. Verification is always on and organized into three tiers: Tier-1 structural checks inside the translator agent, Tier-2 LLM-as-Judge on every chunk (wave-split), and Tier-3 uncertainty-driven deep verification (Wiktionary + MyMemory + back-translation) on flagged chunks only.
+
+```
+/translate README.md to Russian
+/translate locales/en.json to fr mode:i18n
+/translate docs/**/*.md to Japanese
+/translate CHANGELOG.md to de mode:inplace
+```
+
+**Pipeline**: Discovery → Language Detect → Glossary Seed → Plan → User Approval → Parallel Translation + Tier-1 → Cross-File Consistency → Tier-2 Judge → Tier-3 Deep Verify (flagged chunks only) → Re-Translation Loop → Summary
+
+**Output modes**: `sidecar` (default, writes `README.ru.md`), `i18n` (rewrites `locales/<lang>/…`), `inplace` (overwrites — destructive, requires explicit flag).
+
 ## Scope Parameter
 
 All pipeline skills support an optional `scope:` parameter that constrains which files agents may edit:
@@ -161,19 +178,20 @@ Scope restricts edits, not investigation — researchers and tests always read t
 
 Specialized worker agents used by the pipeline skills. You don't invoke these directly — the skills orchestrate them.
 
-| Agent                               | Role                                                  |
-| ----------------------------------- | ----------------------------------------------------- |
-| **pipeline-researcher**             | Codebase exploration + domain research via web search |
-| **pipeline-web-researcher**         | Web-first research with primary-source verification   |
-| **pipeline-planner**                | Creates parallelizable implementation plans           |
-| **pipeline-plan-reviewer**          | Validates plans for completeness and correctness      |
-| **pipeline-coder**                  | Implements specific work units from an approved plan  |
-| **pipeline-code-reviewer**          | Reviews code for bugs, security, conventions          |
-| **pipeline-test-writer**            | Writes unit, edge case, and integration tests         |
-| **pipeline-test-coverage-reviewer** | Identifies untested functions and missing code paths  |
-| **pipeline-test-quality-reviewer**  | Evaluates test meaningfulness and independence        |
-| **pipeline-optimizer**              | Removes dead code, simplifies logic, cleans artifacts |
-| **pipeline-completeness-checker**   | Final quality gate — verifies 100% task completion    |
+| Agent                               | Role                                                                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **pipeline-researcher**             | Codebase exploration + domain research via web search                                          |
+| **pipeline-web-researcher**         | Web-first research with primary-source verification                                            |
+| **pipeline-planner**                | Creates parallelizable implementation plans                                                    |
+| **pipeline-plan-reviewer**          | Validates plans for completeness and correctness                                               |
+| **pipeline-coder**                  | Implements specific work units from an approved plan                                           |
+| **pipeline-code-reviewer**          | Reviews code for bugs, security, conventions                                                   |
+| **pipeline-test-writer**            | Writes unit, edge case, and integration tests                                                  |
+| **pipeline-test-coverage-reviewer** | Identifies untested functions and missing code paths                                           |
+| **pipeline-test-quality-reviewer**  | Evaluates test meaningfulness and independence                                                 |
+| **pipeline-optimizer**              | Removes dead code, simplifies logic, cleans artifacts                                          |
+| **pipeline-completeness-checker**   | Final quality gate — verifies 100% task completion                                             |
+| **pipeline-translator**             | Translates a single file or chunk with Tier-1 structural verification and confidence reporting |
 
 ## Architecture
 

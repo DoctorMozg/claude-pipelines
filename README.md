@@ -51,20 +51,21 @@ ______________________________________________________________________
 
 Multi-agent orchestration skills that run full development workflows. Each skill coordinates specialized agents through phased pipelines with user approval gates.
 
-| Skill            | Command                     | What it does                                                                                               |
-| ---------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **build**        | `/build <task>`             | Research → plan → code → review → test                                                                     |
-| **audit**        | `/audit [focus]`            | Multi-lens codebase scan (correctness, security, performance, maintainability, reliability) → ranked fixes |
-| **debug**        | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify                                                |
-| **investigate**  | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                              |
-| **verify**       | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                      |
-| **polish**       | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                      |
-| **optimize**     | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                            |
-| **blast-radius** | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                          |
-| **explain**      | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                          |
-| **combine**      | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report   |
+| Skill            | Command                     | What it does                                                                                                                              |
+| ---------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **build**        | `/build <task>`             | Research → plan → code → review → test                                                                                                    |
+| **audit**        | `/audit [focus]`            | Multi-lens codebase scan (correctness, security, performance, maintainability, reliability) → ranked fixes                                |
+| **debug**        | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify                                                                               |
+| **investigate**  | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                                                             |
+| **verify**       | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                                                     |
+| **polish**       | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                                                     |
+| **optimize**     | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                                                           |
+| **blast-radius** | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                                                         |
+| **explain**      | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                                                         |
+| **combine**      | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report                                  |
+| **translate**    | `/translate <request>`      | NL request → discovery → glossary seed → plan → parallel translation → tiered verification (structural + judge + uncertainty-driven deep) |
 
-11 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-coverage-reviewer, test-quality-reviewer, optimizer, completeness-checker).
+12 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-coverage-reviewer, test-quality-reviewer, optimizer, completeness-checker, translator).
 
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 
