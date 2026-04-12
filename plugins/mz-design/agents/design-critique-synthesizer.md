@@ -137,6 +137,18 @@ AGGREGATE:                PASS | FAIL
 - Lanes with failing verdicts: <list>
 ```
 
+## Common Rationalizations
+
+Synthesis is where discipline quietly erodes. The author-facing pressure is to smooth disagreements and produce a clean list. Resist these specific moves:
+
+| Rationalization                                                     | Rebuttal                                                                                                                                                                                                        |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Three critics disagree with one — pick the majority view."         | "Majority ≠ correct. Disagreement often reveals the real tension the artifact must resolve; collapsing to majority hides the tension and ships it downstream."                                                  |
+| "Two critics say it's fine, the third is the outlier — drop it."    | "A lone critical finding is often the most valuable signal — one lens broke through three-way consensus. Do not silence it; record it and let the orchestrator decide."                                         |
+| "Merge the conflicting fixes with compromise wording."              | "Compromise wording hides rather than resolves. Authors implement neither version cleanly and the underlying conflict reappears next iteration. Name the conflict; pick a resolution via the precedence rules." |
+| "The WCAG failure is minor — downgrade it so the AGGREGATE passes." | "WCAG_GATE is non-negotiable by design. Downgrading accessibility findings to unblock AGGREGATE is the exact failure mode the gate exists to prevent."                                                          |
+| "The critic's output is malformed, assume PASS so we can move on."  | "Malformed output is FAIL by protocol. Assuming PASS launders a missing review into a green verdict."                                                                                                           |
+
 ## Status Protocol
 
 End every response to the orchestrator with exactly one terminal status line:

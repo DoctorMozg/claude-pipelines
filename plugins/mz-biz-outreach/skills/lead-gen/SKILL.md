@@ -2,6 +2,7 @@
 name: lead-gen
 description: ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients".
 argument-hint: <target description> [sector:filter] [limit:N]
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, WebFetch, WebSearch
 ---
 
@@ -30,12 +31,22 @@ Invoke when the user wants to find prospective companies, build a lead list, or 
 
 If empty, ask the user what kind of companies they want to find and why.
 
+## Scope Parameter
+
+Extract scope modifiers from `$ARGUMENTS`, case-insensitive. `lead-gen` is outbound (company discovery), so scope controls **which prospective companies enter the funnel**, not which files to scan. Remaining text controls the outreach goal (orthogonal).
+
+- **`sector:<value>`** — restrict discovery to a specific industry/vertical (e.g. `sector:HR-tech`, `sector:fintech`). Default: inferred by `outreach-strategist` from the goal text.
+- **`region:<value>`** — restrict discovery to a geographic market (e.g. `region:DACH`, `region:LATAM`). Default: inferred from the goal text; global if no signal.
+- **`limit:<N>`** — maximum companies to carry through the pipeline. Default: 20.
+- **Default** — full-scope strategist-driven discovery using only the goal text when no modifiers are present.
+
 ## Argument Parsing
 
 Extract from `$ARGUMENTS`:
 
 - **goal** — the full description (everything not matching a parameter pattern)
 - **sector** — optional, from `sector:<value>` (default: inferred by strategist)
+- **region** — optional, from `region:<value>` (default: inferred from goal text)
 - **limit** — optional, from `limit:<N>` (default: 20)
 
 ## Directory Structure
@@ -65,22 +76,40 @@ Extract from `$ARGUMENTS`:
 
 ### Phase Overview
 
-| #   | Phase                     | Agent(s)                              | Details                           |
-| --- | ------------------------- | ------------------------------------- | --------------------------------- |
-| 0   | Setup                     | —                                     | Inline below                      |
-| 1   | Strategy                  | `outreach-strategist`                 | `phases/discovery.md`             |
-| 1.5 | User approval of strategy | — (orchestrator, AskUserQuestion)     | `phases/discovery.md` §Phase 1.5  |
-| 2   | Source Research           | `outreach-source-researcher`          | `phases/discovery.md`             |
-| 3   | Scout + Dedup             | N x `outreach-scout` (parallel)       | `phases/discovery.md`             |
-| 4   | Scan                      | N x `outreach-scanner` (parallel)     | `phases/enrichment_and_report.md` |
-| 5   | Enrich                    | `outreach-enrichment-orchestrator`    | `phases/enrichment_and_report.md` |
-| 6   | Score                     | inline (orchestrator)                 | `phases/enrichment_and_report.md` |
-| 7   | Write Cards               | N x `outreach-card-writer` (parallel) | `phases/enrichment_and_report.md` |
-| 8   | Report                    | `outreach-reporter`                   | `phases/enrichment_and_report.md` |
+| #   | Phase                     | Agent(s)                              | Details                                                       |
+| --- | ------------------------- | ------------------------------------- | ------------------------------------------------------------- |
+| 0   | Setup                     | —                                     | Inline below                                                  |
+| 1   | Strategy                  | `outreach-strategist`                 | `phases/discovery.md`                                         |
+| 1.5 | User approval of strategy | — (orchestrator, AskUserQuestion)     | Inline below (+ `phases/discovery.md` §Phase 1.5 for details) |
+| 2   | Source Research           | `outreach-source-researcher`          | `phases/discovery.md`                                         |
+| 3   | Scout + Dedup             | N x `outreach-scout` (parallel)       | `phases/discovery.md`                                         |
+| 4   | Scan                      | N x `outreach-scanner` (parallel)     | `phases/enrichment_and_report.md`                             |
+| 5   | Enrich                    | `outreach-enrichment-orchestrator`    | `phases/enrichment_and_report.md`                             |
+| 6   | Score                     | inline (orchestrator)                 | `phases/enrichment_and_report.md`                             |
+| 7   | Write Cards               | N x `outreach-card-writer` (parallel) | `phases/enrichment_and_report.md`                             |
+| 8   | Report                    | `outreach-reporter`                   | `phases/enrichment_and_report.md`                             |
 
 Read the relevant phase file when you reach that phase. Do not read both phase files upfront.
 
-**Phase 1.5** (approval gate): after Phase 1 writes `strategy.json`, the orchestrator presents the strategy to the user via AskUserQuestion before any expensive research/fan-out runs. See `phases/discovery.md` §Phase 1.5 for the gate content, AskUserQuestion prompt, and feedback-loop contract. Never skip this gate or delegate it to a subagent.
+### Phase 1.5: User Approval of Strategy
+
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+Present: the approved target profile, sector/geo scope, candidate-source plan, and estimated fan-out cost from `strategy.json` — the user confirms scope before any expensive research runs. See `phases/discovery.md` §Phase 1.5 for extended presentation details.
+
+Use AskUserQuestion with:
+
+```
+Strategy drafted for "<goal>". Target profile, sector filters, and candidate sources are in .mz/outreach/<run_name>/strategy.json.
+
+Reply 'approve' to proceed to source research, 'reject' to abort, or provide feedback for changes.
+```
+
+**Response handling**:
+
+- **"approve"** → update `state.json` phase to `strategy_approved`, proceed to Phase 2.
+- **"reject"** → update `state.json` to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Techniques
 
@@ -88,7 +117,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 

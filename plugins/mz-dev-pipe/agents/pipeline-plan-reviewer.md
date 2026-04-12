@@ -113,6 +113,16 @@ Prefix every finding title with exactly one severity label:
 ## VERDICT: PASS | FAIL
 ```
 
+## Common Rationalizations
+
+| Rationalization                                                                            | Rebuttal                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "The plan looks reasonable — approve and let the coder figure out the details."            | Every detail the plan defers becomes either a re-plan loop or silent scope creep inside the coder. Both are more expensive than fixing the plan now.                                            |
+| "We can't anticipate every failure mode at the planning stage."                            | True, but the modes you CAN anticipate are the cheapest to catch here. Missed integration points (registrations, exports, migrations) cost one full code+test cycle to surface later.           |
+| "The user approved the goal, so the plan must be fine."                                    | Goal approval is not implementation approval. The plan is precisely where "how" goes wrong — parallelism collisions, missed file edits, and unrealistic test strategies all live at this layer. |
+| "Parallel units touch different functions in the same file — close enough to independent." | Shared file = merge conflict or lost edit. Parallelism requires file-level independence, not just symbol-level. Serialize or split the file.                                                    |
+| "The test strategy lists enough tests, so coverage is fine."                               | Count is not coverage. Check whether the listed tests actually exercise the error paths and boundary conditions the plan introduces — not just the happy path the coder will write first.       |
+
 ## Verdict Criteria
 
 **PASS** if:

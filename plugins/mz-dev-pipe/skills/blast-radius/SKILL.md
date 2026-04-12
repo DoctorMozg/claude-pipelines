@@ -2,7 +2,8 @@
 name: blast-radius
 description: ALWAYS invoke when the user wants to see the impact of changing a file, function, or module before refactoring. Triggers: "blast radius of X", "what depends on X", "impact analysis". When NOT to use: the refactor itself (use optimize or build).
 argument-hint: <file path, function name, or module name>
-allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, AskUserQuestion
+model: sonnet
+allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Refactor Blast Radius Map

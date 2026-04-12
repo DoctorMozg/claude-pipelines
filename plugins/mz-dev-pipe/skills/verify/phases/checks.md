@@ -289,7 +289,9 @@ Read all artifacts from `.mz/task/<task_name>/`. Compile into a single report us
 **Scope**: <mode> — N source files, M test files, K examples
 **Tools**: <test framework>, <linter>, <formatter>, <type checker or "none">
 
-## Verdict: PASS / FAIL / PARTIAL
+## Verdict: PASS | FAIL
+
+Verdict vocabulary is strictly binary. There is no `PARTIAL`. A run that is green on tests but carries non-critical hygiene issues (lint, format, type, coverage, quality) is still **PASS** — express the remaining issues as `Nit:` or `FYI:` severity findings in the body per the severity rubric. Only elevate to **FAIL** when a blocking issue is present.
 
 <One-paragraph summary: what passed, what failed, most important finding.>
 
@@ -371,11 +373,11 @@ Read all artifacts from `.mz/task/<task_name>/`. Compile into a single report us
 
 The overall verdict follows this logic:
 
-| Condition                                                    | Verdict                                                           |
-| ------------------------------------------------------------ | ----------------------------------------------------------------- |
-| All checks PASS, coverage PASS, quality PASS                 | **PASS**                                                          |
-| Tests PASS but lint/format/type/coverage/quality have issues | **PARTIAL** — code works but has hygiene issues                   |
-| Any test failure                                             | **FAIL**                                                          |
-| Examples fail                                                | **FAIL** (unless failures are environment-specific, then PARTIAL) |
+| Condition                                                    | Verdict                                                                                                                     |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| All checks PASS, coverage PASS, quality PASS                 | **PASS**                                                                                                                    |
+| Tests PASS but lint/format/type/coverage/quality have issues | **PASS** with a Nit-severity finding for each hygiene issue                                                                 |
+| Any test failure                                             | **FAIL**                                                                                                                    |
+| Examples fail                                                | **FAIL** (or **PASS** with a Nit-severity FYI if failures are demonstrably environment-specific and not reproducible in CI) |
 
 Present the verdict and a one-paragraph summary to the user after writing the report. Include the path to the full report.

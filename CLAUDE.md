@@ -41,6 +41,8 @@ model: sonnet
 Agent instructions here...
 ```
 
+See [AGENTS_GUIDELINES.md](guidelines/AGENTS_GUIDELINES.md) for detailed authoring rules covering frontmatter fields, tool allowlisting, model tiers, status/verdict protocols, and archetype templates.
+
 ## Skill Format
 
-Standard Claude Code skill structure with `SKILL.md` containing YAML frontmatter and instructions. See [SKILL_GUIDELINES.md](SKILL_GUIDELINES.md) for detailed authoring rules covering approval gates, progressive disclosure, dispatch prompts, error handling, and more.
+Standard Claude Code skill structure with `SKILL.md` containing YAML frontmatter and instructions. See [SKILL_GUIDELINES.md](guidelines/SKILL_GUIDELINES.md) for detailed authoring rules covering approval gates, progressive disclosure, dispatch prompts, error handling, and more.

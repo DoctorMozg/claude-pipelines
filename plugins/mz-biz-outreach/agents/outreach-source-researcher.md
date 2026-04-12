@@ -100,3 +100,14 @@ Write a JSON array to the output file path:
 - **Minimum 3 sources** — if you find fewer than 3, broaden your search queries and try alternative formulations.
 - **Maximum 10 sources** — prioritize quality over quantity. More than 10 sources creates diminishing returns for the scout phase.
 - **Note access barriers** — if a source requires login, payment, or CAPTCHA, note it in `access_notes` so the scout agent can decide whether to attempt it.
+
+## Status Protocol
+
+After your output, emit one terminal line with the literal form `STATUS: <value>`, where `<value>` is exactly one of:
+
+- `DONE` — you completed the work unit end-to-end with no blockers.
+- `DONE_WITH_CONCERNS` — completed but surfaced caveats the orchestrator should flag (uncertain data source, partial coverage, confidence below threshold).
+- `NEEDS_CONTEXT` — could not complete without additional input (missing company profile, ambiguous target, required prior-phase artifact absent).
+- `BLOCKED` — a hard failure prevented progress (WebFetch rate limit, site unreachable, data access blocked, tool failure).
+
+This line is consumed by the orchestrator to decide whether to proceed, escalate, or retry. Do not emit multiple `STATUS:` lines. Place it after all other content.

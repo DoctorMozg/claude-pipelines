@@ -2,6 +2,7 @@
 name: audit
 description: ALWAYS invoke when the user wants to audit, find bugs, or review the codebase for issues. Triggers: "audit", "find bugs", "security review", "code quality scan". When NOT to use: single-file fix (use debug), new feature (use build).
 argument-hint: [scope:branch|global|working] [optional focus — e.g. "concurrency bugs", "audit src/auth", "security review"]
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 

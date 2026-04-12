@@ -89,6 +89,18 @@ Use severity labels:
 - **PASS**: zero `Critical:` findings. Palette declares and honors a harmony rule. Type pairing has a rationale. Mood is coherent.
 - **FAIL**: palette is incoherent, type pairing clashes, or mood signals contradict each other.
 
+## Common Rationalizations
+
+Aesthetic critiques are easy to dismiss as taste. Do not let the following excuses convert a `Critical:` into a `Nit:`:
+
+| Rationalization                                                           | Rebuttal                                                                                                                                                                                          |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "The palette isn't harmonic but it's on-brand."                           | "On-brand plus off-theory is recognizable but unlovable. Brand identity rides on top of color theory, not around it — a harmonically broken palette reads as amateur regardless of brand intent." |
+| "Two body type families are fine because they contrast."                  | "Typographic contrast is achieved through weight, size, and case within one family — not family count. Two families for body text reads as indecision, not contrast."                             |
+| "The stakeholder likes the aesthetic, so it's good."                      | "Stakeholder approval is non-transferable to end users. The audience's emotional response to mood and tone is measurable and routinely diverges from internal taste."                             |
+| "Type scale ratios are arbitrary — pick numbers that look right."         | "Perceptual harmony in type scale is the reason musical ratios (1.125, 1.25, 1.333, 1.618) keep winning. 'Looks right' is usually 'accidentally near a musical ratio'; make the ratio explicit."  |
+| "The semantic colors are close to the primary but users will learn them." | "Users don't learn colors; they scan for them. Success/warning/danger that are hue-adjacent to the primary accent cause misreads in peripheral vision and under stress."                          |
+
 ## Common False Positives — Do NOT Flag
 
 - Contrast ratios (that's `accessibility-specialist`'s lane).

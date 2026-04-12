@@ -34,7 +34,7 @@ Agents loaded from a plugin directory silently ignore three frontmatter fields: 
 
 ## 3. Description Trigger-Condition Phrasing
 
-The description is the single most load-bearing field — Claude decides whether to dispatch the agent by reasoning over the description alone, with no fallback if it fails. Activation data shows directive phrasing hits ~100% while passive phrasing hits ~77% (controlled trial, p\<0.0001, N=650).
+The description is the single most load-bearing field — Claude decides whether to dispatch the agent by reasoning over the description alone, with no fallback if it fails. Directive phrasing materially increases trigger reliability vs. passive phrasing in observed invocations.
 
 - Standalone user-triggered agents should open with `Use this agent when [conditions]. Examples:` in second-person directive voice.
 - Pipeline-only agents that are always explicitly dispatched by skills may use a compact third-person description, but it must still front-load purpose, trigger conditions, and "When NOT to use" counter-triggers in the body.
@@ -42,14 +42,14 @@ The description is the single most load-bearing field — Claude decides whether
 - For standalone agents, include 2–3 concrete trigger phrases the user would actually type.
 - State explicit "When NOT to use" counter-triggers, either inline or in the agent body. Pipeline-only agents may express these as dispatch constraints instead of user-facing trigger phrases.
 - Ban workflow-summary tails: no "— orchestrates X, Y, Z" after the triggers.
-- Never use first person ("I help you…"). Never use passive narration ("This agent is designed to…").
+- Never use first person ("I help you…"). Never use passive narration ("This agent is designed to…"). Second person is required because the agent body is an instruction directed at the agent being dispatched — third-person reads as if describing the agent externally rather than instructing it.
 - Hard range: 10–5,000 characters including example blocks. Optimal 200–1,000 chars of prose before the examples.
 
 Agent descriptions differ from skill descriptions: skills use third-person CSO bids capped at 250 chars; standalone agents use second-person trigger phrasing and may include XML example blocks (see Rule 4). Do not import SKILL_GUIDELINES.md Rule 3/18 verbatim.
 
 ## 4. Triggering Example Blocks
 
-Standalone user-triggered agents should contain 2–4 `<example>` blocks (minimum 2, maximum 6). Examples drive the activation classifier harder than prose; missing examples is the single most common cause of "the agent never triggers." Pipeline-only agents explicitly selected by skills may omit example blocks, but must still have precise trigger and counter-trigger language.
+Standalone user-triggered agents should contain 2–4 `<example>` blocks; 6 is the hard upper limit. Examples drive the activation classifier harder than prose; missing examples is the single most common cause of "the agent never triggers." Pipeline-only agents explicitly selected by skills may omit example blocks, but must still have precise trigger and counter-trigger language.
 
 Required shape for every example:
 
@@ -126,7 +126,7 @@ Three runtime constraints are non-negotiable and must never be worked around wit
 
 - **Controlled agent dispatch only.** Agents may dispatch subagents only when their archetype is orchestration and their `tools:` frontmatter lists an explicit `Agent(<allowed-subagent>)` allowlist. Ordinary workers must not spawn agents. If a worker needs fan-out, redesign so the top-level orchestrator handles it.
 - **Background agents silently fail on writes.** `run_in_background: true` auto-denies permission prompts, so any dispatched agent needing `Write` or `Edit` will appear to succeed while producing no files. Never background a writer agent. Background mode is for read-only fan-out with a final summary only.
-- **`Task` was renamed `Agent` in v2.1.63.** References to the `Task` tool in legacy agent bodies, comments, or docs are stale — update to `Agent`.
+- **`Task` was renamed `Agent` in a recent runtime version.** References to the `Task` tool in legacy agent bodies, comments, or docs are stale — update to `Agent`.
 
 ## 10. Parallel Fan-Out
 
@@ -273,7 +273,7 @@ The review checklist (Rule 25) must flag any of these patterns explicitly. Each 
 | `MCP_ON_PLUGIN_AGENT`         | Declaring `mcpServers:` in a plugin agent → field silently ignored. Symptom: MCP tool calls fail.                                                                            |
 | `PERMISSION_ON_PLUGIN_AGENT`  | Declaring `permissionMode:` in a plugin agent → field silently ignored. Symptom: prompts appear where auto-approve was expected.                                             |
 | `REPEAT_TOOL_CALLS`           | Identical tool calls in quick succession → loop-detection fingerprinter blocks them. Symptom: "tool call dropped" after a few iterations.                                    |
-| `STALE_TASK_NAME`             | Using `Task(...)` syntax instead of `Agent(...)` → references v2.1.62 or earlier API. Symptom: immediate tool-not-found error.                                               |
+| `STALE_TASK_NAME`             | Using `Task(...)` syntax instead of `Agent(...)` → references a pre-rename runtime API. Symptom: immediate tool-not-found error.                                             |
 
 ## 19. State Persistence
 
@@ -306,11 +306,13 @@ Hooks are deterministic; agent prompt rules are probabilistic. Agents must under
 - **Hook reliability**: PreToolUse/PostToolUse occasionally do not fire (issue #6305). Safety-critical logic must not rely solely on hooks; implement defense-in-depth in the agent body too.
 - **`SubagentStop` blocking applies only to `command`-type handlers.** `prompt`-type SubagentStop handlers do NOT prevent agent termination — if you need a hard stop on the subagent, use a `command`-type handler.
 - **Cowork mode drops plugin hooks silently.** Agents running under `--setting-sources user` cannot rely on plugin hook guarantees at all.
-- **Hook event counts are version-dependent** (12, 21, 25, or 28 depending on version). Never hard-code event counts in agent logic.
+- **Hook event counts are version-dependent** — the plugin hook surface has grown across releases. Never hard-code event counts in agent logic.
 
 ## 22. Persuasion-Informed Language
 
-Agent type determines the persuasion register. Framing is not decoration — compliance rises from 33% to 72% under directive/authority framing (Meincke et al. 2025, N=28,000).
+**Agent types** (referenced by Rules 16, 17): *Discipline* agents enforce quality or correctness against pressure (Validation/Reviewer, Quality Gate archetypes from Rule 12). *Collaboration* agents co-produce artifacts with the user or an orchestrator (Generation/Coder, Orchestration, Analysis/Lens archetypes in interactive mode). *Reference* agents provide neutral information (Research/Synthesizer archetype in read-only mode, plus routers and lookup maps). The six archetypes in Rule 12 describe process spine; the three types here describe persuasion register — a single archetype can map to different types depending on how the agent is dispatched.
+
+Agent type determines the persuasion register. Framing is not decoration — published persuasion-compliance studies consistently show directive/authority framing materially raises rule-following rates over neutral or soft phrasing.
 
 | Agent type                                                        | Purpose                                             | Persuasion register                   |
 | ----------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------- |
@@ -353,19 +355,20 @@ Every new or modified agent must pass a two-part test before publishing.
 - Ambiguous or contradictory requirements.
 - Error scenarios the agent should escalate via `STATUS: BLOCKED`.
 
-Run `scripts/validate-agent.sh` if present. Completeness checklist must cover all four edge cases, not just happy path.
+If a validator script is added under `scripts/`, run it here; otherwise perform the checklist manually. Completeness checklist must cover all four edge cases, not just happy path.
 
 ## 25. Pre-Publish Checklist
 
 Before merging any new or modified agent:
 
 - [ ] `name` is kebab-case, 3–50 chars, 2–4 words, globally unique in this plugin (Rule 23).
-- [ ] Standalone agent `description` opens with `Use this agent when…` and includes 2–4 `<example>` blocks each with Context/user/assistant/commentary; pipeline-only agent description clearly states purpose and trigger conditions (Rules 3–4).
+- [ ] Standalone agent `description` opens with `Use this agent when…` and includes 2–4 `<example>` blocks (6 is the hard upper limit) each with Context/user/assistant/commentary; pipeline-only agent description clearly states purpose and trigger conditions (Rules 3–4).
 - [ ] `description` front-loads key trigger within first 250 characters (Rule 3).
 - [ ] `tools:` is explicitly set — no omission (Rule 5).
 - [ ] Read-only agent omits `Write` and `Edit` from tools (Rule 5).
 - [ ] No invented tool names (`FileRead`, `ShellExec`, etc.) in `tools:` (Rules 5, 18).
 - [ ] `model:` is set intentionally — pipeline subagent uses explicit tier; standalone plugin agent uses explicit tier unless a documented runtime-supported inherit mode is chosen (Rule 6).
+- [ ] Tool allowlist justified by least-privilege — no tools present that the agent's archetype doesn't use (Rules 5, 7).
 - [ ] `effort:` and `maxTurns:` set (Rule 1).
 - [ ] Plugin agent does NOT declare `hooks:`, `mcpServers:`, or `permissionMode:` (Rule 2).
 - [ ] New or substantially rewritten agent body uses 5-section canonical anatomy: Role, Core Principles, Process, Output Format, Red Flags (Rule 11).
@@ -377,10 +380,12 @@ Before merging any new or modified agent:
 - [ ] Discipline agents include an anti-rationalization table with ≥3 empirically grounded rows (Rule 16).
 - [ ] Critical rules anchored at top AND bottom of system prompt (Rule 17, primacy-recency).
 - [ ] Positive framing preferred throughout (Rule 17).
-- [ ] Rich outputs written to files with short pointer return — no 32K cap hits (Rule 8).
+- [ ] Orchestrator-consumed output is written to files with a short pointer return rather than returned inline (Rules 8, 10).
 - [ ] No `Agent` in tools for non-orchestrator archetypes; orchestrators use explicit `Agent(<allowed-subagent>)` allowlists (Rule 9).
 - [ ] No `run_in_background: true` dispatch pattern for writer agents (Rule 9).
 - [ ] No references to legacy `Task` tool — use `Agent` (Rule 9).
+- [ ] Parallel fan-out stays within wave-size caps and emits independent agents in a single assistant message (Rule 10).
+- [ ] Multi-phase agents persist state to `.mz/task/<task_name>/state.md` rather than relying on conversation memory; tooling read from `.mz/tooling.json` (Rule 19).
 - [ ] Feedback loops bounded by explicit max-iteration constants (Rule 20).
 - [ ] Agent does not duplicate hook-enforced safety guards (Rule 21).
 - [ ] Language matches agent type per Rule 22 — no Liking tokens in discipline agents.

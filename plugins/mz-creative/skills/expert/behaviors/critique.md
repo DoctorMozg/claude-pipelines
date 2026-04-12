@@ -4,16 +4,16 @@ Dispatch contract for `/expert` lens panelists. The expert orchestrator reads th
 
 ## Template variables
 
-| Variable                | Source                                                                          | Example                                  |
-| ----------------------- | ------------------------------------------------------------------------------- | ---------------------------------------- |
-| `{brief}`               | `intake.md` contents                                                            | —                                        |
-| `{research_block}`      | `research.md` contents if present, else literal text `no codebase research run` | —                                        |
-| `{round_n}`             | current round (1, 2, or 3)                                                      | `2`                                      |
-| `{prior_summary_block}` | empty for R1; `## Previous round summary\n\n<round_{n-1}_summary.md>` for R2/R3 | —                                        |
-| `{prior_iter_block}`    | empty for R1; `## Your prior output\n\n<iter_{n-1}_{agent_name}.md>` for R2/R3  | —                                        |
-| `{output_path}`         | absolute path where the agent writes its artifact                               | `.mz/expert/xxx/iter_2_lens-engineer.md` |
-| `{lens_name}`           | short lens label, no prefix                                                     | `engineer`                               |
-| `{agent_name}`          | full agent name                                                                 | `lens-engineer`                          |
+| Variable                | Source                                                                          | Example                                |
+| ----------------------- | ------------------------------------------------------------------------------- | -------------------------------------- |
+| `{brief}`               | `intake.md` contents                                                            | —                                      |
+| `{research_block}`      | `research.md` contents if present, else literal text `no codebase research run` | —                                      |
+| `{round_n}`             | current round (1, 2, or 3)                                                      | `2`                                    |
+| `{prior_summary_block}` | empty for R1; `## Previous round summary\n\n<round_{n-1}_summary.md>` for R2/R3 | —                                      |
+| `{prior_iter_block}`    | empty for R1; `## Your prior output\n\n<iter_{n-1}_{agent_name}.md>` for R2/R3  | —                                      |
+| `{output_path}`         | absolute path where the agent writes its artifact                               | `.mz/task/xxx/iter_2_lens-engineer.md` |
+| `{lens_name}`           | short lens label, no prefix                                                     | `engineer`                             |
+| `{agent_name}`          | full agent name                                                                 | `lens-engineer`                        |
 
 When R1, substitute empty strings for `{prior_summary_block}` and `{prior_iter_block}` and collapse the surrounding blank lines.
 

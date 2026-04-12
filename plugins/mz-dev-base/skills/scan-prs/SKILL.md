@@ -2,6 +2,7 @@
 name: scan-prs
 description: ALWAYS invoke when the user wants to check which PRs need attention across repositories. Triggers:"scan PRs","check PRs","what PRs need attention","PR inbox","daily PR report".
 argument-hint: '[owner/repo1, owner/repo2, ...]'
+model: sonnet
 allowed-tools: Agent, Bash, Read
 ---
 
@@ -33,7 +34,16 @@ If no argument is provided, detect the current repository from `gh repo view --j
 
 ## Core Process
 
-1. If `$ARGUMENTS` is empty, resolve the current repo via `gh repo view`. If that fails (not a git repo or no remote), ask the user.
+### Phase 0: Setup
+
+1. Parse `$ARGUMENTS` — list of GitHub repositories. If empty, resolve current repo via `gh repo view --json nameWithOwner -q .nameWithOwner`; if that fails, escalate via AskUserQuestion. Never guess.
+1. `task_name` = `scan_prs_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the repo list (max 20 chars, e.g. `owner_repo` or `multi_repo`) and `<HHMMSS>` is wall-clock time.
+1. Create `.mz/task/<task_name>/`.
+1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Repos: [<list>]`, `ScannedPRs: 0`, `ReviewedPRs: 0`.
+1. Emit a visible setup block: `task_name`, repo list, report dir (`.mz/reviews/`).
+
+### 1. Dispatch
+
 1. Launch the `pr-scanner` agent with the repository list as the prompt.
 1. The agent scans for PRs where the user is requested for review, mentioned, assigned, or has changes requested on their own PRs.
 1. It dispatches `pr-reviewer` agents for the top-5 priority PRs.
@@ -45,7 +55,7 @@ Techniques: delegated to the `pr-scanner` and `pr-reviewer` agents — see their
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 
@@ -56,3 +66,10 @@ N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
 ## Verification
 
 Output the consolidated report path (`.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md`), confirm the file exists, and print the per-PR verdict lines for each top-5 dispatch.
+
+## Error Handling
+
+- **Empty args** with no detectable current repo → escalate via AskUserQuestion; never guess.
+- **Missing tooling** (`gh` not installed, not authenticated, or `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
+- **Empty scanner result** (zero PRs returned or no priority-ranked list) → retry the scan once with the same repo list; if still empty, report "no PRs need attention" and exit cleanly. For a malformed agent response, retry once then escalate via AskUserQuestion.
+- Never guess — on any ambiguity (unresolvable repo, invalid URL, missing auth) escalate via AskUserQuestion rather than proceed silently.

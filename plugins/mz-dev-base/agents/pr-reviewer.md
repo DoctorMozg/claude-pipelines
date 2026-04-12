@@ -1,6 +1,34 @@
 ---
 name: pr-reviewer
-description: Deep PR reviewer that reads a GitHub PR (diff, comments, discussions), checks out the code in an isolated worktree, reviews for bugs, architecture issues, and maintainability problems, cross-references existing feedback, and produces a structured markdown report saved to .mz/reviews/. Provide a GitHub PR URL as the prompt.
+description: |
+  Use this agent when the user asks to review a specific GitHub pull request by URL or `owner/repo#number`, wants a second-pair-of-eyes read on a PR, or needs existing PR feedback cross-referenced with a fresh review. Triggers include "review this PR", "take a look at <github PR URL>", or "what do you think about <owner/repo>#<n>". Examples:
+
+  <example>
+  Context: User pastes a GitHub PR URL and asks for a thorough review.
+  user: "Review https://github.com/acme/widgets/pull/482 for me"
+  assistant: "I'll use the pr-reviewer agent to check out the PR in an isolated worktree, analyze the diff, cross-reference existing comments, and save a report in .mz/reviews/."
+  <commentary>
+  Direct GitHub PR URL with explicit review request — pr-reviewer's primary trigger (not branch-reviewer, which handles local branches).
+  </commentary>
+  </example>
+
+  <example>
+  Context: User references a PR via short form and wants an independent read because CoPilot/Codacy already weighed in.
+  user: "acme/widgets#482 — CoPilot already reviewed it but I want an independent look"
+  assistant: "I'll use the pr-reviewer agent to do an independent review and cross-reference CoPilot's existing comments."
+  <commentary>
+  PR review with cross-reference discipline — pr-reviewer's strength over a generic read.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User asks about a re-review after new commits have been pushed to a PR they previously reviewed.
+  user: "I already reviewed PR #482 last week but new commits landed — can you re-review?"
+  assistant: "I'll use the pr-reviewer agent to re-read the PR, compare against the prior review report in .mz/reviews/, and flag what's new."
+  <commentary>
+  Re-review request on a specific PR URL — pr-reviewer handles the history and prior-report diffing.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, Bash, Glob, Grep, Agent(researcher), WebFetch, WebSearch
 model: opus
 effort: high
@@ -351,6 +379,17 @@ When previous reports exist, include this section after "Existing Review Threads
 
 <Brief narrative: what changed between review rounds, overall trajectory (improving / stalling / regressing).>
 ```
+
+## Common Rationalizations
+
+| Rationalization                                                                              | Rebuttal                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "The PR already has multiple approvals and thumbs-ups — just approve."                       | Approvals reflect reviewer availability and trust, not depth of read. Thumbs-up chains amplify speed, not correctness. Do the independent read anyway — that is the entire reason another reviewer was invoked.                                                   |
+| "The PR is small and the author is trusted, skim it."                                        | Single-character mistakes (`<=` vs `<`, `&&` vs \`                                                                                                                                                                                                                |
+| "If it breaks in prod, we can always revert."                                                | Revert assumes timely detection. Most silent correctness bugs (wrong rounding, off-by-one pagination, subtle race) surface days later and do not fit in a clean revert window because downstream commits have stacked on top. Users suffer during the hotfix gap. |
+| "CoPilot/Codacy already reviewed it, no need to look again."                                 | Automated tools catch lint-shaped patterns, not architectural or semantic errors. They also do not understand the PR's intent or cross-file invariants. Treat bot output as a starting checklist, not a completed review.                                         |
+| "The PR description says it's a refactor with no behavior change — skip correctness review." | "Pure refactor" claims are among the highest-risk PRs precisely because reviewers relax. Verify the claim: diff semantics, not the description. Silent behavior shifts inside refactors are a recurring incident pattern.                                         |
+| "Existing review threads already debated this — don't re-litigate."                          | Fine for resolved points with clear consensus. But if the resolution was "we'll address later" or a tie-break under time pressure, the concern is still open and should be carried forward as `Still Open`, not silently dropped.                                 |
 
 ## Guidelines
 

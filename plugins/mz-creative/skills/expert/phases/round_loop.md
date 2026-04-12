@@ -40,7 +40,7 @@ For each of the 5 selected lens agents, substitute:
 | `{round_n}`             | current round number (1, 2, or 3)                                                        |
 | `{prior_summary_block}` | empty for R1; `## Previous round summary\n\n<verbatim round_<N-1>_summary.md>` for R2/R3 |
 | `{prior_iter_block}`    | empty for R1; `## Your prior output\n\n<verbatim iter_<N-1>_<agent_name>.md>` for R2/R3  |
-| `{output_path}`         | `.mz/expert/<task_name>/iter_<N>_<agent_name>.md`                                        |
+| `{output_path}`         | `.mz/task/<task_name>/iter_<N>_<agent_name>.md`                                          |
 | `{lens_name}`           | short lens label derived from the agent name (e.g. `engineer` for `lens-engineer`)       |
 | `{agent_name}`          | the full agent name (e.g. `lens-engineer`)                                               |
 
@@ -48,7 +48,7 @@ When R1, substitute empty strings for `{prior_summary_block}` and `{prior_iter_b
 
 ## Step 2.2 — Parallel panelist dispatch
 
-Read `.mz/expert/<task_name>/panel.md` to get the 5 agent names. Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
+Read `.mz/task/<task_name>/panel.md` to get the 5 agent names. Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
 
 The 5 panelists are opus-class lens agents registered by their `name:` field (e.g., `lens-engineer`, `lens-cto`). Do not repeat agent system-prompt instructions — the critique behavior prompt is self-contained.
 
@@ -59,14 +59,14 @@ Parallelism is load-bearing. Sequential dispatch triples latency and introduces 
 For each panelist, verify:
 
 ```bash
-test -s .mz/expert/<task_name>/iter_<N>_<agent>.md
+test -s .mz/task/<task_name>/iter_<N>_<agent>.md
 ```
 
 And that the file contains the required sections for the round. Quick check:
 
 ```bash
 grep -c '^## Strengths\|^## Weaknesses\|^## Risks\|^## Suggestions\|^## Confidence' \
-  .mz/expert/<task_name>/iter_<N>_<agent>.md
+  .mz/task/<task_name>/iter_<N>_<agent>.md
 ```
 
 Should return ≥ 5 for round 1 and ≥ 7 for rounds 2-3 (adds Reactions + Changelog).
@@ -84,19 +84,19 @@ Once all 5 (or however many succeeded) panelist outputs are on disk, dispatch `e
 You are the round synthesizer for an expert panel review. Your job is a neutral, lens-agnostic consolidation. You do not advocate.
 
 ## Task Directory
-.mz/expert/<task_name>/
+.mz/task/<task_name>/
 
 ## Round
 <N>
 
 ## Read
-- .mz/expert/<task_name>/iter_<N>_<agent1>.md
-- .mz/expert/<task_name>/iter_<N>_<agent2>.md
+- .mz/task/<task_name>/iter_<N>_<agent1>.md
+- .mz/task/<task_name>/iter_<N>_<agent2>.md
 - ... (all 5 panelist files for round <N>)
-- .mz/expert/<task_name>/panel.md
+- .mz/task/<task_name>/panel.md
 
 ## Your Job
-Write .mz/expert/<task_name>/round_<N>_summary.md using the schema from your agent spec. Capture:
+Write .mz/task/<task_name>/round_<N>_summary.md using the schema from your agent spec. Capture:
 
 1. **Consensus** — points ≥3 of the 5 agents converged on. Quote or paraphrase specific agents.
 2. **Divergence** — explicit conflicts. Name both sides. Capture the core tradeoff.

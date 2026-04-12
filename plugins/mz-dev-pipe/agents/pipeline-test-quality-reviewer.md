@@ -105,6 +105,16 @@ Prefix every finding title with exactly one severity label:
 ## VERDICT: PASS | FAIL
 ```
 
+## Common Rationalizations
+
+| Rationalization                                                          | Rebuttal                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "The test passes — that's what matters."                                 | Passing tests that assert nothing are worse than no tests; they produce false confidence and are cited as evidence the code works when nothing was verified. A green bar on a hollow test is an active lie.                        |
+| "Mocking is fine — the real thing is hard to set up."                    | Mocks that never fail only test the mock. When the real dependency's contract drifts (signature, error shape, timing), the mocked test still passes and the bug ships. Justify each mock against the contract it claims to honour. |
+| "More tests = better coverage — don't overthink quality."                | A thousand trivial tests mask the one missing invariant test. Volume creates the illusion of rigor while the critical assertion is absent. Quality lives in the assertion, not the count.                                          |
+| "Shared fixtures make tests faster — order dependence is a minor issue." | Order-dependent tests pass locally and fail in CI (or vice versa) based on runner shuffle, parallelism, or file-discovery order. The failure surfaces weeks later as "flaky test" and erodes trust in the whole suite.             |
+| "Tight coupling to implementation is fine if it catches bugs today."     | Tests coupled to implementation break on every valid refactor, so the team stops refactoring or stops trusting the tests. Both outcomes are net-negative. Test behavior, not structure.                                            |
+
 ## Verdict Criteria
 
 **PASS** if:

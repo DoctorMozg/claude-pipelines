@@ -2,6 +2,7 @@
 name: review-branch
 description: ALWAYS invoke when the user wants to review all changes on the current git branch. Triggers:"review branch","review my changes","check my branch","what did I change","branch review".
 argument-hint: '[base-branch (default: main)]'
+model: sonnet
 allowed-tools: Agent, Bash, Read, Glob, Grep
 ---
 
@@ -27,6 +28,13 @@ Triggers: "review branch", "review my changes", "check my branch", "what did I c
 
 ## Core Process
 
+### Phase 0: Setup
+
+1. `task_name` = `review_branch_<slug>_<HHMMSS>` where `<slug>` is the current branch name (snake_case, max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. Create `.mz/task/<task_name>/`.
+1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `BaseBranch: <base>`, `Branch: <current>`.
+1. Emit a visible setup block: `task_name`, base branch, current branch, report dir.
+
 ### 1. Validate branch state
 
 Verify the current branch is not `main` or `master`:
@@ -35,11 +43,11 @@ Verify the current branch is not `main` or `master`:
 git branch --show-current
 ```
 
-If on main/master, inform the user there is nothing to review.
+If on main/master, inform the user there is nothing to review and update `state.md` to `Status: aborted`.
 
 ### 2. Launch the branch-reviewer agent
 
-Spawn the `branch-reviewer` agent with the following prompt:
+Dispatch `Agent(branch-reviewer)` in the foreground with the following prompt:
 
 ```
 Review the current branch against <base-branch>.
@@ -48,7 +56,7 @@ Use researcher agents for domain research if the implementation topic is complex
 Save the report to .mz/reviews/ using the naming convention: review_branch_<YYYY_MM_DD>_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```
 
-Use `subagent_type: "branch-reviewer"` and run it in the foreground so the result is available.
+Update `state.md` to `Phase: 2` before dispatch and `Phase: 3` after the agent returns.
 
 ### 3. Report to user
 
@@ -64,7 +72,7 @@ Techniques: delegated to the `branch-reviewer` agent — see its agent definitio
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 
@@ -75,3 +83,10 @@ N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
 ## Verification
 
 Output the report path (`.mz/reviews/review_branch_<YYYY_MM_DD>_<branch><_vN>.md`), confirm the file exists, and print the verdict line plus the top critical findings.
+
+## Error Handling
+
+- **Empty / invalid base-branch argument** → escalate via AskUserQuestion; never guess.
+- **Missing tooling** (`git`, `gh`) → detect before dispatch; if absent, escalate via AskUserQuestion with the exact missing command.
+- **Empty agent result** (report file missing or empty) → retry the dispatch once with the same prompt; if it fails again, escalate via AskUserQuestion with the failure mode.
+- Never guess — on any ambiguity (unknown base branch, detached HEAD, no diff) escalate via AskUserQuestion rather than proceed silently.

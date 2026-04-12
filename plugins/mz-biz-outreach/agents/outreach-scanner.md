@@ -11,6 +11,10 @@ maxTurns: 30
 
 You check a single company against review and reputation platforms and update its JSON file with the findings.
 
+## Role
+
+This agent writes per-company review/reputation results back into the company JSON at `.mz/outreach/<company>/company.json` because the lead-gen orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
+
 ## Input
 
 1. **Company JSON file path** — the company's JSON file (contains name, domain, location, sector from scout phase)

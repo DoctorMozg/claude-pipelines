@@ -2,6 +2,7 @@
 name: init-rules
 description: ALWAYS invoke when the user wants to install development rules for a project or globally. Triggers:"init rules","set up rules","install rules","configure coding rules","onboard project".
 argument-hint: '[project|global] [--force]'
+model: sonnet
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
@@ -30,6 +31,14 @@ Triggers: "init rules", "set up rules", "install rules", "configure coding rules
 Parse the argument from `$ARGUMENTS`.
 
 ## Core Process
+
+### Phase 0: Setup
+
+1. Parse `$ARGUMENTS` to determine mode (`project` default, or `global`) and the `--force` flag. Ambiguous tokens → escalate via AskUserQuestion; never guess.
+1. `task_name` = `init_rules_<slug>_<HHMMSS>` where `<slug>` is the mode (`project` or `global`) and `<HHMMSS>` is wall-clock time.
+1. Create `.mz/task/<task_name>/`.
+1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Mode: <project|global>`, `Force: <bool>`, `DetectedContexts: []`, `Installed: []`, `Skipped: []`.
+1. Emit a visible setup block: `task_name`, target directory, mode, force flag.
 
 ### 1. Determine target directory
 
@@ -112,17 +121,16 @@ Installed: 8
 
 ## Techniques
 
-- **Stack detection**: read manifest files (`pyproject.toml`, `package.json`, `tsconfig.json`, `Cargo.toml`, `go.mod`, `CMakeLists.txt`, `pom.xml`) and glob language extensions to build a context tag set before selecting rules.
-- **Conditional rule mapping**: never invent rules — look them up in the table under Step 3. Python adds both `python-conventions.md` and `strict-typing-python.md`; TypeScript adds `strict-typing-typescript.md`.
-- **Idempotent writes**: honor `--force` semantics — skip existing files unless overwrite is explicitly requested. Never silently clobber.
+- **Stack detection**: read manifest files and glob language extensions to build a context tag set before selecting rules.
+- **Conditional rule mapping**: never invent rules — look them up in the Step 3 table. Python adds both `python-conventions.md` and `strict-typing-python.md`; TypeScript adds `strict-typing-typescript.md`.
+- **Idempotent writes**: honor `--force` — skip existing files unless overwrite is explicit. Never silently clobber.
 - Do NOT modify existing CLAUDE.md files — only write to the rules/ directory.
-- Rule files with `paths:` frontmatter are path-scoped and only load when Claude works with matching files.
-- Rule files without frontmatter load every session unconditionally.
-- If no project signals are found (empty directory), still install the universal rules.
+- Rule files with `paths:` frontmatter are path-scoped; without frontmatter they load every session.
+- If no project signals are found, still install the universal rules.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 
@@ -133,3 +141,10 @@ N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
 ## Verification
 
 Print the installed-rules summary block from Step 5, listing the target directory, detected contexts, and per-file install/skip status. Confirm each written file exists at `<target>/<filename>`.
+
+## Error Handling
+
+- **Empty / ambiguous argument** (conflicting tokens, unknown mode) → escalate via AskUserQuestion; never guess.
+- **Missing tooling** — if `${CLAUDE_PLUGIN_ROOT}` is unset or the bundled `rules/` directory is not readable, escalate via AskUserQuestion with the exact path that failed.
+- **Empty detection result** (no project signals found) → still install universal rules; if the target directory is not writable, escalate via AskUserQuestion. Retry the write once after surfacing the permission error; if still failing, escalate.
+- Never guess — on any ambiguity (unknown mode, target directory conflict, pre-existing non-rule files) escalate via AskUserQuestion rather than silently overwrite or skip.

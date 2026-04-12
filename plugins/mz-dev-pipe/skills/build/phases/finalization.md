@@ -141,8 +141,8 @@ Evaluate:
 4. Would a user/stakeholder consider this task DONE?
 
 Output:
-- **VERDICT**: COMPLETE or INCOMPLETE
-- If INCOMPLETE:
+- **VERDICT**: PASS (task complete) or FAIL (task incomplete)
+- If FAIL:
   - **Missing items**: what's not done
   - **Restart phase**: which phase to restart from (research/plan/code/test)
   - **Reason**: why that phase needs re-running
@@ -150,13 +150,13 @@ Output:
 
 ### 10.1 Handle verdict
 
-**If COMPLETE**:
+**If PASS**:
 
 - Update state file status to `completed`
 - Write a summary to `.mz/task/<task_name>/summary.md` listing all files changed, tests added, and key decisions
 - Report to user: task is complete, here's what was done
 
-**If INCOMPLETE**:
+**If FAIL**:
 
 - Update state file with the restart phase and reason
 - Jump to the indicated phase and re-execute from there

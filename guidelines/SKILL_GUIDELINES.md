@@ -29,11 +29,11 @@ SKILL.md competes with a shared ~150-instruction budget (system prompt uses ~50,
 
 Description is the single most important field — Claude uses pure LLM reasoning on it to decide whether to invoke the skill. No fallback if the description fails.
 
-- Write in third person ("Processes files..." not "I can help you...")
+- Write in third person ("Processes files..." not "I can help you..."). Third person because the skill description is shown to Claude as a registry entry, not as an instruction directed at Claude — second-person `you` reads as if the description itself is the task.
 - Use directive phrasing: "ALWAYS invoke when the user asks about [topic]"
 - Front-load the key use case within 250 characters (truncated in listings)
-- Include both WHAT the skill does AND WHEN to use it
 - Include 2-3 example trigger phrases for activation reliability
+- See Rule 18 (CSO) for the complete description format spec.
 
 ## 4. Instruction Framing
 
@@ -108,9 +108,11 @@ Every SKILL.md body must contain these 7 sections in order:
 1. `## Red Flags` — signs the skill is being skipped or misapplied.
 1. `## Verification` — how to confirm the skill actually ran.
 
-**Pipeline exemption**: multi-phase orchestrator skills with a Phase Overview table may replace the full `## Techniques` section with a single line: `Techniques: delegated to phase files — see Phase Overview table above.` This avoids duplication with phase files (Rule 2 progressive disclosure) while still satisfying the "every section present" check.
+**Pipeline exemption**: multi-phase orchestrator skills with a Phase Overview table may delegate sections **4 (Techniques), 5 (Common Rationalizations), 6 (Red Flags), and 7 (Verification)** to phase files by replacing each with a single pointer line: `<Section>: delegated to phase files — see Phase Overview table above.` Sections **1 (Overview), 2 (When to Use), and 3 (Core Process)** must remain fully inline in SKILL.md — they are load-bearing for invocation and orientation. This avoids duplication with phase files (Rule 2 progressive disclosure) while still satisfying the "every section present" check.
 
 Pattern source: addyosmani/superpowers 7-section canonical anatomy.
+
+**Skill types** (referenced by Rules 17, 20): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, lead-gen, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, writing-skills). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
 
 ## 17. Anti-Rationalization Tables
 
@@ -128,7 +130,7 @@ Format under `## Common Rationalizations`:
 - Rationalizations must be empirically grounded (observed user excuses), not invented.
 - Rebuttals must be specific — no generic "because it's best practice".
 
-Canonical seed: `writing-skills/references/anti-rationalization-library.md`.
+Canonical seed: `plugins/mz-dev-base/skills/writing-skills/references/anti-rationalization-library.md`.
 
 ## 18. CSO (Critical Skill Orientation)
 
@@ -140,7 +142,7 @@ Descriptions describe **trigger conditions only**, never workflow summaries. The
 - Ban workflow-summary tails: no `— orchestrates X, Y, Z` after the triggers.
 - Max 250 chars (matches Rule 3).
 
-Grounding: Meincke et al. (2025) N=28,000 LLM persuasion compliance study — directive, authority-coded language lifts compliance from 33% baseline to 72%.
+Grounding: published LLM persuasion-compliance studies consistently show directive, authority-coded framing lifts compliance substantially over neutral phrasing.
 
 ## 19. References Directory
 
@@ -154,7 +156,7 @@ Purpose: keeps SKILL.md slim while making deep knowledge available on demand. Ex
 
 ## 20. Persuasion-Informed Language
 
-Skill type determines the persuasion register (Cialdini principles applied per Meincke et al. 2025):
+Skill type determines the persuasion register (Cialdini principles applied to LLM compliance):
 
 | Skill type        | Purpose                             | Persuasion register                   |
 | ----------------- | ----------------------------------- | ------------------------------------- |
@@ -164,7 +166,7 @@ Skill type determines the persuasion register (Cialdini principles applied per M
 
 **Banned for discipline skills**: Liking ("I think you'll find...", "great question!"). Liking softens directives and cuts compliance.
 
-Grounding: Meincke et al. (2025), N=28,000 — compliance rose from 33% baseline to 72% under directive/authority framing.
+Grounding: published persuasion-compliance studies consistently show directive, authority-coded framing lifts LLM compliance over neutral phrasing.
 
 ## 21. Pre-Publish Checklist
 
@@ -172,6 +174,14 @@ Before merging any new or modified skill:
 
 - [ ] Description follows Rule 3 (third person, directive, front-loaded, trigger phrases)
 - [ ] SKILL.md under 150 lines, phase files under 400 lines
+- [ ] Scope parameter accepted with documented default if code-editing skill (Rule 6)
+- [ ] All bounds and paths declared as named constants, no inline hardcoded limits (Rule 7)
+- [ ] State persisted to `.mz/task/<task_name>/state.md` with task-naming convention (Rule 8)
+- [ ] Dispatch prompts carry only task-specific context, no agent-instruction repetition (Rule 9)
+- [ ] Error paths escalate via AskUserQuestion, never silently guess (Rule 10)
+- [ ] Model tier (opus/sonnet/haiku) chosen per Rule 12 for each agent dispatch
+- [ ] Tooling (test/lint/type) detected on first use and recorded to `tooling.md` (Rule 14)
+- [ ] Input formats documented in SKILL.md; empty or ambiguous args ask, never guess (Rule 15)
 - [ ] All phase file references in SKILL.md resolve to existing files
 - [ ] Agent names in dispatch prompts match actual agent definitions
 - [ ] No nested file references (one level deep from SKILL.md)

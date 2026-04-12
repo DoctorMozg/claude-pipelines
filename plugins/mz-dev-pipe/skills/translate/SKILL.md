@@ -2,6 +2,7 @@
 name: translate
 description: ALWAYS invoke when the user wants to translate files, docs, or i18n resources. Triggers - "translate X to Y", "localize", "i18n to <lang>". When NOT to use - single-sentence phrase translation (answer inline).
 argument-hint: <natural language request — e.g. "translate README.md to Russian" or "translate locales/en.json to fr mode:i18n">
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch
 ---
 

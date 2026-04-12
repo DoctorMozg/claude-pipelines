@@ -380,4 +380,4 @@ rg -A 10 '## printf positional' references/placeholder-patterns.md
 rg -A 30 '## Combined ripgrep recipe' references/placeholder-patterns.md
 ```
 
-Never cat or Read the whole file into context — it defeats the purpose of progressive disclosure under SKILL_GUIDELINES.md Rule 22.
+Never cat or Read the whole file into context — it defeats the purpose of progressive disclosure under SKILL_GUIDELINES.md Rule 2.

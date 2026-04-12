@@ -30,7 +30,7 @@ Rebuttal: "small plans misjudge integration; the gate is the 30-second cost cap 
 
 ### 1.3 Classify the persuasion register
 
-Re-read SKILL_GUIDELINES.md Rule 23. Match the skill type (discipline / collaboration / reference) to the register:
+Re-read SKILL_GUIDELINES.md Rule 20. Match the skill type (discipline / collaboration / reference) to the register:
 
 - **Discipline** → Authority + Commitment + Social Proof. No Liking. MUST/ALWAYS phrasing. Cite observed incidents.
 - **Collaboration** → Unity + Commitment. "We"/"us" framing. Ask the user to commit verbally at gates.
@@ -55,7 +55,7 @@ Grep `references/canonical-skill-anatomy.md` for the 7-section skeleton. Paste i
 1. **When to Use**: 3-5 concrete trigger phrases. `### When NOT to use` with 2-3 counter-triggers that route to a sibling skill.
 1. **Core Process**: for single-step skills, a numbered list. For multi-phase skills, a Phase Overview table with `phases/<file>.md` references (Rule 5).
 1. **Techniques**: concrete patterns, tools, decision trees. Pipeline exemption (Rule 16): multi-phase orchestrators may use the single line `Techniques: delegated to phase files — see Phase Overview table above.`
-1. **Common Rationalizations**: two-column table with the pairs from Step 1. Discipline skills must have ≥3 rows (Rule 17). Collaboration/reference skills may use `N/A — collaboration skill per Rule 23.` with no table.
+1. **Common Rationalizations**: two-column table with the pairs from Step 1. Discipline skills must have ≥3 rows (Rule 17). Collaboration/reference skills may use `N/A — collaboration skill per Rule 17.` with no table.
 1. **Red Flags**: 3+ observable signs the skill is being skipped or misapplied.
 1. **Verification**: how to confirm the skill actually ran. Every check must produce visible output (Rule 4).
 
@@ -118,31 +118,36 @@ Discipline skills with \<3 rows fail Rule 17. Re-open Step 1 if the table is thi
 
 - `wc -l SKILL.md` ≤ 150.
 - `wc -l phases/*.md` ≤ 400 each.
-- Every `phases/<file>.md` and `references/<file>.md` mentioned in SKILL.md must exist on disk. Dead references fail Rule 24.
+- Every `phases/<file>.md` and `references/<file>.md` mentioned in SKILL.md must exist on disk. Dead references fail Rule 21.
 
-### 3.5 Run the Rule 24 pre-publish checklist
+### 3.5 Run the Rule 21 pre-publish checklist
 
-Output every bullet from SKILL_GUIDELINES.md Rule 24 as a visible checklist and mark each PASS/FAIL. Block the workflow on any FAIL — return to GREEN or RED as needed.
+Output every bullet from SKILL_GUIDELINES.md Rule 21 as a visible checklist and mark each PASS/FAIL. Block the workflow on any FAIL — return to GREEN or RED as needed.
 
-Expected bullets (all 15):
+Expected bullets (all 20):
 
 - [ ] Description follows Rule 3 (third person, directive, front-loaded, trigger phrases)
 - [ ] SKILL.md under 150 lines, phase files under 400 lines
+- [ ] Scope parameter accepted with documented default if code-editing skill (Rule 6)
+- [ ] All bounds and paths declared as named constants, no inline hardcoded limits (Rule 7)
+- [ ] State persisted to `.mz/task/<task_name>/state.md` with task-naming convention (Rule 8)
+- [ ] Dispatch prompts carry only task-specific context, no agent-instruction repetition (Rule 9)
+- [ ] Error paths escalate via AskUserQuestion, never silently guess (Rule 10)
+- [ ] Model tier (opus/sonnet/haiku) chosen per Rule 12 for each agent dispatch
+- [ ] Tooling (test/lint/type) detected on first use and recorded to `tooling.md` (Rule 14)
+- [ ] Input formats documented in SKILL.md; empty or ambiguous args ask, never guess (Rule 15)
 - [ ] All phase file references in SKILL.md resolve to existing files
 - [ ] Agent names in dispatch prompts match actual agent definitions
 - [ ] No nested file references (one level deep from SKILL.md)
 - [ ] Consistent terminology across all files in the skill
-- [ ] Tested with direct invocation and natural language trigger
+- [ ] Tested with direct invocation (`/skill-name`) and natural language trigger
 - [ ] Canonical 7-section anatomy present (Rule 16)
 - [ ] Anti-rationalization table present if discipline skill (Rule 17)
 - [ ] Description is CSO-compliant, no workflow summary (Rule 18)
-- [ ] Research/review agents declare source hierarchy (Rule 19)
-- [ ] Review output uses severity labels (Rule 20)
-- [ ] Subagent output uses four-status protocol (Rule 21)
-- [ ] references/ directory uses grep-first pattern if present (Rule 22)
-- [ ] Language matches skill type per Rule 23
+- [ ] references/ directory uses grep-first pattern if present (Rule 19)
+- [ ] Language matches skill type per Rule 20
 
-**REFACTOR exit criterion**: every Rule 24 bullet is PASS.
+**REFACTOR exit criterion**: every Rule 21 bullet is PASS.
 
 ## Step 4: Final approval gate
 
@@ -151,7 +156,7 @@ Expected bullets (all 15):
 Present to the user:
 
 ```
-The new skill draft is ready and passed the Rule 24 pre-publish checklist.
+The new skill draft is ready and passed the Rule 21 pre-publish checklist.
 
 Target: plugins/<plugin>/skills/<name>/SKILL.md
 Classification: <discipline | collaboration | reference>
@@ -174,5 +179,5 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - Empty arguments → ask the user for skill name, intent, and target plugin. Never guess.
 - Target plugin directory does not exist → stop and ask; do not create a new plugin directory as a side effect.
-- Rule 24 checklist has a persistent FAIL after two refactor attempts → escalate to the user via AskUserQuestion with the specific failing bullet and the options: (a) accept the exception with a documented reason, (b) rework the skill, (c) abort.
+- Rule 21 checklist has a persistent FAIL after two refactor attempts → escalate to the user via AskUserQuestion with the specific failing bullet and the options: (a) accept the exception with a documented reason, (b) rework the skill, (c) abort.
 - Description cannot fit under 250 chars without dropping triggers → surface the conflict to the user; do not silently truncate triggers.

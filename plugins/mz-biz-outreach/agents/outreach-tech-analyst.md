@@ -124,3 +124,14 @@ Write a JSON object to the output file path:
 - **Source everything** — note where each piece of tech stack info came from (job posting, GitHub, blog).
 - **Distinguish confidence** — a tech stack from 5 job postings is high confidence. One from a single blog post is medium.
 - **Focus on actionable data** — the reporter needs to know what tech they use and who decides. Skip trivia.
+
+## Status Protocol
+
+After your output, emit one terminal line with the literal form `STATUS: <value>`, where `<value>` is exactly one of:
+
+- `DONE` — you completed the work unit end-to-end with no blockers.
+- `DONE_WITH_CONCERNS` — completed but surfaced caveats the orchestrator should flag (uncertain data source, partial coverage, confidence below threshold).
+- `NEEDS_CONTEXT` — could not complete without additional input (missing company profile, ambiguous target, required prior-phase artifact absent).
+- `BLOCKED` — a hard failure prevented progress (WebFetch rate limit, site unreachable, data access blocked, tool failure).
+
+This line is consumed by the orchestrator to decide whether to proceed, escalate, or retry. Do not emit multiple `STATUS:` lines. Place it after all other content.

@@ -2,6 +2,7 @@
 name: debug
 description: ALWAYS invoke when the user reports a bug, error, or failing test. Triggers: "debug X", "fix this bug", "why is X failing", "stack trace". When NOT to use: new features (use build), quality polish on known-good code (use polish).
 argument-hint: [scope:branch|global|working] <bug report — error message, stack trace, failing test, description, or GitHub issue URL>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 

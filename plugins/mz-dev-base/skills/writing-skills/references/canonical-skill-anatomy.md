@@ -127,7 +127,7 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
 <!--
   For collaboration/reference skills, replace the table with:
 
-    N/A — collaboration skill per SKILL_GUIDELINES.md Rule 23, not discipline. See Rule 17.
+    N/A — collaboration skill per SKILL_GUIDELINES.md Rule 17, not discipline. See Rule 17.
 -->
 
 ## Red Flags
@@ -147,7 +147,7 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
 <!--
   How to confirm the skill actually ran correctly.
   Every check must produce VISIBLE output (Rule 4) — "silent checks get skipped".
-  Close with the Rule 24 pre-publish checklist result for skills that author artifacts.
+  Close with the Rule 21 pre-publish checklist result for skills that author artifacts.
 -->
 
 <checklist or explicit verification steps, each producing visible output>
@@ -183,21 +183,21 @@ Grep verification:
 grep -n '^## ' plugins/<plugin>/skills/<name>/SKILL.md
 ```
 
-The output must list the seven headers in order. Any deviation fails Rule 24's anatomy check.
+The output must list the seven headers in order. Any deviation fails Rule 16's anatomy check.
 
 ## When a section genuinely does not apply
 
-- **Reference skills** often have no `## Common Rationalizations` — use `N/A — reference skill per Rule 23.`
+- **Reference skills** often have no `## Common Rationalizations` — use `N/A — reference skill per Rule 17.`
 - **Read-only skills** often have no `## Verification` gate beyond "output produced" — use `N/A — read-only skill; output is the verification.`
 - **Single-step skills** may have a trivial `## Core Process` — still use a numbered list, not free prose.
 
-Never omit a section header. The header must exist so that Rule 24's grep check passes; the body can be a one-line `N/A` explanation.
+Never omit a section header. The header must exist so that Rule 16's grep check passes; the body can be a one-line `N/A` explanation.
 
 ## Links
 
 - `SKILL_GUIDELINES.md` Rule 16 — canonical anatomy spec and pipeline exemption.
 - `SKILL_GUIDELINES.md` Rule 17 — anti-rationalization table requirements.
 - `SKILL_GUIDELINES.md` Rule 18 — CSO description rules.
-- `SKILL_GUIDELINES.md` Rule 23 — persuasion-informed language per skill type.
+- `SKILL_GUIDELINES.md` Rule 20 — persuasion-informed language per skill type.
 - `writing-skills/references/anti-rationalization-library.md` — seed content for the rationalization table.
 - `writing-skills/references/persuasion-principles.md` — which Cialdini principles to apply per skill type.

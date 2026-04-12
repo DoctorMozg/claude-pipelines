@@ -2,6 +2,7 @@
 name: combine
 description: ALWAYS invoke when the user wants to synthesize or consolidate existing local research, task artifacts, or prior pipeline output into a unified report. Triggers: "synthesize what we learned", "combine our findings", "consolidate past research".
 argument-hint: [output:<path>] [sources:<glob>] [scope:branch|global|working] [sections:<csv>] <task — what to synthesize>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -85,7 +86,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 
@@ -109,21 +110,45 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 ## Phase 1.5: Decomposition Approval Gate
 
-**This orchestrator** (not a subagent) must present the inventory and proposed lens decomposition to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Read `phases/inventory.md §Phase 1.5 Gate` for the presentation content, the verbatim AskUserQuestion prompt body, the 3-bullet response handling, and the loop language. **The orchestrator — not a subagent — reads that section and then issues the AskUserQuestion call from here.** Never delegate the phase-file read to an agent; it would defeat Rule 1.
+Present: the source inventory summary (bucket counts, stale-excluded count, unavailable buckets) and the proposed lens decomposition (3–6 lenses with names and file counts) from `inventory.md`. See `phases/inventory.md §Phase 1.5 Gate` for extended presentation content and feedback handling rules.
 
-After the user explicitly approves, update `state.md` phase to `decomposition_approved` and proceed to Phase 2 (read `phases/lens_dispatch.md`). On rejection, stop. On feedback, re-run Phase 1 decomposition and loop back to this gate.
+Use AskUserQuestion with:
+
+```
+Source inventory complete for "<task slug>". <N> lenses proposed: <lens names>. Full decomposition at .mz/task/<task_name>/inventory.md.
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+```
+
+**Response handling**:
+
+- **"approve"** → update `state.md` phase to `decomposition_approved`, proceed to Phase 2 (`phases/lens_dispatch.md`).
+- **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Phase 3.5: Gap-Fill Approval Gate (conditional)
 
 If the residual gap list produced by Phase 3 is empty, skip this gate and jump to Phase 5.
 
-**This orchestrator** (not a subagent) must present the residual gaps to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Read `phases/synthesis.md §Phase 3.5 Gate` for the presentation content, the verbatim AskUserQuestion prompt body, the 3-bullet response handling, and the loop language. **The orchestrator — not a subagent — reads that section and then issues the AskUserQuestion call from here.** Never delegate the phase-file read to an agent; it would defeat Rule 1.
+Present: the residual gap list (one bullet per gap with context) and the estimated cost (number of web `pipeline-web-researcher` agents to dispatch, capped at `MAX_LENSES`). See `phases/synthesis.md §Phase 3.5 Gate` for extended presentation content and merge rules.
 
-After the user explicitly approves, update `state.md` phase to `gapfill_approved` and proceed to Phase 4 (read `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`). On rejection, skip to Phase 5 with gaps marked unresolved. On feedback, incorporate and loop back to this gate.
+Use AskUserQuestion with:
+
+```
+Synthesis left <N> residual gap(s): <short list>. Web gap-fill would dispatch <M> researcher agent(s).
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+```
+
+**Response handling**:
+
+- **"approve"** → update `state.md` phase to `gapfill_approved`, proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
+- **"reject"** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
+- **Feedback** → incorporate (drop/merge/rewrite gaps), return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
 
 ## Error Handling
 

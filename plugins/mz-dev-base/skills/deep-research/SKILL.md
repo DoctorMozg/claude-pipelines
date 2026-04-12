@@ -2,6 +2,7 @@
 name: deep-research
 description: ALWAYS invoke when the user wants exhaustive multi-source research on any topic. Triggers:"research X","deep dive into","comprehensive analysis of","what is the state of". Provide a topic as the argument.
 argument-hint: <research topic>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write
 ---
 
@@ -27,7 +28,15 @@ Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is 
 
 ## Core Process
 
-Steps 2-5 are detailed in `phases/research_and_report.md`. Step 1 (decomposition + approval gate) is inline below.
+Steps 2-5 are detailed in `phases/research_and_report.md`. Phase 0 (setup) and Step 1 (decomposition + approval gate) are inline below.
+
+### Phase 0: Setup
+
+1. Parse `$ARGUMENTS`. If the research topic is empty, escalate via AskUserQuestion — never guess.
+1. `task_name` = `deep_research_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the topic (max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. Create `.mz/task/<task_name>/`.
+1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Topic: <original argument>`, `Subtopics: []`.
+1. Emit a visible setup block: `task_name`, topic, working dir, report dir (`.mz/research/`).
 
 ### 1. Analyze and decompose the topic
 
@@ -87,7 +96,7 @@ Techniques: delegated to phase files — see `phases/research_and_report.md`.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 
@@ -98,3 +107,10 @@ N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
 ## Verification
 
 Output the final report path (`.mz/research/research_<YYYY_MM_DD>_<slug>.md`), confirm the file exists on disk, and print the number of subtopics researched alongside the top 3-5 findings.
+
+## Error Handling
+
+- **Empty topic argument** → escalate via AskUserQuestion; never guess.
+- **Missing tooling** (`WebSearch`/`WebFetch` unavailable, `Agent` tool absent) → escalate via AskUserQuestion rather than degrade silently.
+- **Empty researcher result** (agent returns nothing or malformed output) → retry that subtopic once with a clarified prompt; if still empty, note the gap in `state.md` and escalate via AskUserQuestion before writing the final report.
+- Never guess — on any ambiguity (unclear scope, conflicting subtopics, source availability) escalate via AskUserQuestion rather than fabricate.

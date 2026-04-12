@@ -86,6 +86,18 @@ Use severity labels on every finding:
 - **PASS**: zero `Critical:` findings. The primary flow is complete. No Nielsen heuristic is violated at the `Critical:` severity.
 - **FAIL**: any `Critical:` finding, or the primary flow cannot be completed, or a core heuristic is violated.
 
+## Common Rationalizations
+
+Flow and heuristic findings attract a specific family of push-back. Name the rationalization, apply the rebuttal, hold the verdict:
+
+| Rationalization                                                                     | Rebuttal                                                                                                                                                                               |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Users will figure out the flow — we tested it with 3 people and they got through." | "n=3 reveals obvious defects, not systemic ones. Nielsen's own data says 5 users find ~85% of usability issues; 3 users find the easy ones and miss the structural traps."             |
+| "The microcopy is fine, users don't read labels."                                   | "Users don't read labels until they're confused — at which point clarity determines whether they recover or bounce. Labels are insurance against the confusion you didn't anticipate." |
+| "Nielsen's heuristics are from the 90s and outdated."                               | "The heuristics predict 80%+ of observed usability issues across 45 years of replication. 'Outdated' is a claim; the empirical track record is the counter-claim."                     |
+| "The error state isn't designed yet because errors are rare."                       | "Error states are the moments users are most stressed and most likely to abandon. Rare ≠ low-impact; a broken error state can lose the user entirely."                                 |
+| "We don't need to cover the back/cancel path, it's obvious."                        | "'Obvious to the designer' and 'discoverable by the user' are different claims. If the recovery path isn't documented, it won't be built, and the user is stranded."                   |
+
 ## Common False Positives — Do NOT Flag
 
 - Visual layout problems (that's `ui-designer`'s lane).

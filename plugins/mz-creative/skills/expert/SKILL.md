@@ -37,7 +37,7 @@ If `$ARGUMENTS` is empty, ask the user via `AskUserQuestion`. Never guess.
 - **PANEL_SIZE**: 5
 - **TOTAL_LENSES**: 16
 - **ROUNDS**: 3 (fixed — no early stopping, no convergence check)
-- **TASK_DIR**: `.mz/expert/`
+- **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reports/`
 
 ## Available Lenses
@@ -67,22 +67,42 @@ Panel picks 5 from the 16 available lenses. Behavior is injected by this skill (
 
 ### Phase Overview
 
-| #   | Phase                              | File                         | Loop?                        |
-| --- | ---------------------------------- | ---------------------------- | ---------------------------- |
-| 0   | Setup                              | inline below                 | —                            |
-| 1   | Intake + Optional Research + Panel | `phases/intake_and_panel.md` | —                            |
-| 1.5 | Panel Approval Gate                | `phases/intake_and_panel.md` | user-feedback sub-loop       |
-| 2   | Round Loop                         | `phases/round_loop.md`       | fixed 3 rounds, no early-out |
-| 3   | Final Report                       | `phases/final_report.md`     | —                            |
+| #   | Phase                              | File                                                      | Loop?                        |
+| --- | ---------------------------------- | --------------------------------------------------------- | ---------------------------- |
+| 0   | Setup                              | inline below                                              | —                            |
+| 1   | Intake + Optional Research + Panel | `phases/intake_and_panel.md`                              | —                            |
+| 1.5 | Panel Approval Gate                | Inline below (+ `phases/intake_and_panel.md` for details) | user-feedback sub-loop       |
+| 2   | Round Loop                         | `phases/round_loop.md`                                    | fixed 3 rounds, no early-out |
+| 3   | Final Report                       | `phases/final_report.md`                                  | —                            |
 
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`. Extract brief, `scope:`, `@doc:` refs.
 1. If brief is empty → `AskUserQuestion`. Never guess.
 1. `task_name` = `expert_<slug>_<HHMMSS>` (snake_case summary, max 20 chars).
-1. Create `.mz/expert/<task_name>/`.
+1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status`, `Phase`, `Started`, `Round: 0`, `FilesWritten: []`.
 1. Emit a visible setup block: `task_name`, working dir, report dir, detected modifiers.
+
+### Phase 1.5: Panel Approval Gate
+
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+Present: the 5 selected panelist lenses with one-line rationale per pick, drawn from `panel.md`. The user confirms the panel composition before any of the 3 rounds dispatch. See `phases/intake_and_panel.md` Step 1.4 for extended presentation details.
+
+Use AskUserQuestion with:
+
+```
+Panel assembled: <5 lens names>. Full rationale at .mz/task/<task_name>/panel.md.
+
+Reply 'approve' to start the 3-round consultation, 'reject' to abort, or provide feedback (e.g. swap a lens) for changes.
+```
+
+**Response handling**:
+
+- **"approve"** → update `state.md` to `panel_approved`, proceed to Phase 2 (Round Loop).
+- **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not run rounds.
+- **Feedback** → apply swaps/changes to `panel.md`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 
@@ -107,7 +127,7 @@ At the end of Phase 3, output a visible block:
 
 ```
 Expert consultation finalized.
-Task dir:   .mz/expert/<task_name>/
+Task dir:   .mz/task/<task_name>/
 Report:     .mz/reports/expert_<YYYY_MM_DD>_<slug>.md
 Panel:      <5 agent names>
 Rounds:     3/3
@@ -134,7 +154,7 @@ If any phase is incomplete, print the blocker explicitly. The verification block
 
 ## State Management
 
-After each phase, update `.mz/expert/<task_name>/state.md`:
+After each phase, update `.mz/task/<task_name>/state.md`:
 
 - `Status:` `pending` | `running` | `complete` | `aborted_by_user` | `failed`
 - `Phase:` `0` | `1` | `1.5` | `2` | `3`

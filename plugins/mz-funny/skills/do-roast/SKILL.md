@@ -2,6 +2,7 @@
 name: do-roast
 description: ALWAYS invoke when the user wants a code roast, character-voice critique, or funny review grounded in real findings. Triggers: "roast this code", "do-roast", "make fun of", "character roast of".
 argument-hint: <persona> <freeform target — path, branch, text, or natural-language scope>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
 

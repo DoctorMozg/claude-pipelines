@@ -21,7 +21,7 @@ From Phase 2:
 Verify all artifacts are on disk. If any round file is missing, log the gap and proceed anyway — the report writer must document gaps rather than block.
 
 ```bash
-ls .mz/expert/<task_name>/iter_{1,2,3}_*.md .mz/expert/<task_name>/round_{1,2,3}_summary.md
+ls .mz/task/<task_name>/iter_{1,2,3}_*.md .mz/task/<task_name>/round_{1,2,3}_summary.md
 ```
 
 ## Step 3.2 — Compute report filename
@@ -42,21 +42,21 @@ Spawn `expert-report-writer` (model: **sonnet**) with this prompt:
 You are producing the final report for an expert panel review.
 
 ## Task Directory
-.mz/expert/<task_name>/
+.mz/task/<task_name>/
 
 ## Output path
 <computed report_path from step 3.2>
 
 ## Read
-- .mz/expert/<task_name>/intake.md
-- .mz/expert/<task_name>/research.md (if exists)
-- .mz/expert/<task_name>/panel.md
-- .mz/expert/<task_name>/iter_1_<each panelist>.md  (5 files)
-- .mz/expert/<task_name>/round_1_summary.md
-- .mz/expert/<task_name>/iter_2_<each panelist>.md  (5 files)
-- .mz/expert/<task_name>/round_2_summary.md
-- .mz/expert/<task_name>/iter_3_<each panelist>.md  (5 files)
-- .mz/expert/<task_name>/round_3_summary.md
+- .mz/task/<task_name>/intake.md
+- .mz/task/<task_name>/research.md (if exists)
+- .mz/task/<task_name>/panel.md
+- .mz/task/<task_name>/iter_1_<each panelist>.md  (5 files)
+- .mz/task/<task_name>/round_1_summary.md
+- .mz/task/<task_name>/iter_2_<each panelist>.md  (5 files)
+- .mz/task/<task_name>/round_2_summary.md
+- .mz/task/<task_name>/iter_3_<each panelist>.md  (5 files)
+- .mz/task/<task_name>/round_3_summary.md
 
 ## Your Job
 Write the final report to the output path following the schema in your agent spec. Key rules:
@@ -120,7 +120,7 @@ Output a visible block to the user:
 ```
 Expert consultation finalized.
 
-Task dir:  .mz/expert/<task_name>/
+Task dir:  .mz/task/<task_name>/
 Report:    <report_path>
 Panel:     <5 names>
 Rounds:    3/3

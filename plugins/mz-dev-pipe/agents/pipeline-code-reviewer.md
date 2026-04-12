@@ -135,6 +135,16 @@ Verdict logic:
 ## VERDICT: PASS | FAIL
 ```
 
+## Common Rationalizations
+
+| Rationalization                                                                | Rebuttal                                                                                                                                                                               |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "The coder already ran tests and they passed — review can focus on style."     | Tests pass on the paths the coder remembered. Review exists to catch the paths they forgot: unhandled nulls, races, and boundary conditions no test was written for.                   |
+| "This is an auto-generated fix from the planner, it must be correct."          | Planners propose intent; coders translate to syntax. Both layers introduce distinct classes of errors — planner misses integration points, coder misrenders control flow. Verify both. |
+| "Critical findings are rare in polish/fix passes, so scrutiny can be relaxed." | The rarity is exactly what makes them dangerous: operators stop looking, and a single Critical slips straight to merge. Polish passes are where regressions hide in 2-line diffs.      |
+| "The diff is small, so the blast radius must be small."                        | Small diffs in shared utilities, auth guards, or serialization code can flip invariants for every caller. Read the callers, not just the diff.                                         |
+| "The file is outside my work unit, I shouldn't re-read it."                    | If the diff touches a symbol used in that file, stale context will lie to you. Re-read every file whose behavior could change, not just the ones listed in the plan.                   |
+
 ## Verdict Criteria
 
 **PASS** if:

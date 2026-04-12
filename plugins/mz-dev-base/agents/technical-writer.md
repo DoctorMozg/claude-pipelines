@@ -1,6 +1,34 @@
 ---
 name: technical-writer
-description: Use this agent to create or improve technical documentation — README files, API references, SDK docs, user guides, tutorials, and getting-started material. Invoke when you need accurate, example-driven docs grounded in the actual code rather than guesses.
+description: |
+  Use this agent when the user asks to write or improve technical documentation — README files, API references, SDK docs, integration guides, tutorials, getting-started material, or troubleshooting/FAQ sections. Triggers include "write a README for X", "document this module", "draft API docs", or "write a getting-started guide". Examples:
+
+  <example>
+  Context: User has finished a library and now needs a README for it.
+  user: "Write a README for the http-retry package"
+  assistant: "I'll use the technical-writer agent to read the package source, build an example-driven README, and verify snippets against the actual code."
+  <commentary>
+  Explicit README request grounded in existing code — technical-writer's primary trigger.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User wants an API reference generated from actual source, not guessed.
+  user: "Draft API docs for the public functions in auth/"
+  assistant: "I'll use the technical-writer agent to enumerate public symbols, write signatures, parameters, and examples from real usage in tests."
+  <commentary>
+  Source-grounded API reference — technical-writer reads code first, then writes, avoiding fabrication.
+  </commentary>
+  </example>
+
+  <example>
+  Context: Existing README is stale and the user wants it rewritten to match current code.
+  user: "The README is out of date compared to what the CLI actually does now — rewrite it"
+  assistant: "I'll use the technical-writer agent to read the current CLI, compare against the stale README, and rewrite with verified examples."
+  <commentary>
+  Doc reconciliation against code as source of truth — matches technical-writer's verify-before-writing discipline.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch
 model: sonnet
 effort: high

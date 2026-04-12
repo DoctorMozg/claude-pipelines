@@ -2,6 +2,7 @@
 name: investigate
 description: ALWAYS invoke when the user wants to verify a hypothesis, check suspected behavior, or prove/disprove an issue without fixing it. Triggers: "investigate X", "check if Y", "verify whether", "is X actually doing Y", "prove/disprove".
 argument-hint: [scope:branch|global|working] <hypothesis — suspected bug, possible issue, or behavior to verify>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -72,7 +73,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 

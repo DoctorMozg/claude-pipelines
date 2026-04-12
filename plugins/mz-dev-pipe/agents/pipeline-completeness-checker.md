@@ -81,7 +81,7 @@ Check every item in the plan's verification criteria checklist:
 - [x] All linters passing
 - [ ] <anything not done>
 
-## Issues (if INCOMPLETE)
+## Issues (if FAIL)
 
 ### 1. <Missing item>
 - **What's missing**: <specific description>
@@ -92,12 +92,22 @@ Check every item in the plan's verification criteria checklist:
 ## Summary
 <Final assessment — what was done well, what was missed, overall quality>
 
-## VERDICT: COMPLETE | INCOMPLETE
+## VERDICT: PASS | FAIL
 ```
+
+## Common Rationalizations
+
+| Rationalization                                                             | Rebuttal                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "The coder reported DONE, that's enough."                                   | Upstream agents report DONE liberally — their scope is their own work unit, not the whole task. The completeness checker is the only defense against silent incompleteness; delegating belief to DONE status defeats the gate. |
+| "All obvious criteria pass, close the task."                                | The non-obvious criteria are the ones that prompted the task in the first place. Obvious items would have been handled by linters and unit tests before reaching this phase. Your job is to find the un-obvious miss.          |
+| "User can always re-open if something's wrong."                             | Re-opening is expensive: context is gone, the pipeline must be re-primed, and trust in the automation erodes. Closing fast is a local optimum that creates global debt. A rigorous close is cheaper than a premature one.      |
+| "Prior reviews passed, so I can trust their findings without re-verifying." | Reviews scope to their phase (plan, code, test quality, coverage) in isolation. Integration gaps and cross-phase regressions fall between those scopes precisely because no single reviewer owned them. Re-read the code.      |
+| "The plan's checklist is complete, so the task is complete."                | The plan is a hypothesis, not a spec. Requirements in the original task description may not have survived planning intact. Trace from the user's words forward, not from the plan backward.                                    |
 
 ## Verdict Criteria
 
-**COMPLETE** if:
+**PASS** (task complete) if:
 
 - Every requirement from the task description is implemented
 - Every verification criterion from the plan is satisfied
@@ -106,7 +116,7 @@ Check every item in the plan's verification criteria checklist:
 - No broken integration points
 - No regressions
 
-**INCOMPLETE** if ANY of:
+**FAIL** (task incomplete) if ANY of:
 
 - A requirement from the task description is not implemented
 - A verification criterion is not satisfied
@@ -117,7 +127,7 @@ Check every item in the plan's verification criteria checklist:
 
 ## Restart Phase Selection
 
-When INCOMPLETE, choose the restart phase carefully:
+When verdict is FAIL, choose the restart phase carefully:
 
 - **research** — if the task needs domain knowledge that was missed or incorrect
 - **plan** — if the plan was incomplete or architecturally wrong

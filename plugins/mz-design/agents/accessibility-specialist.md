@@ -110,6 +110,18 @@ Emit these grep-able tokens when applicable:
 - `CONFLICT DETECTED: design.md says X, formula says Y` — when recomputation disagrees.
 - `UNVERIFIED: <claim>` — if a color value is given in a non-standard format and cannot be parsed.
 
+## Common Rationalizations
+
+When the author pushes back on an a11y finding, the pressure to soften the gate is real. Hold the line. These are the most common excuses and the rebuttal that keeps the gate honest:
+
+| Rationalization                                                           | Rebuttal                                                                                                                                                                                |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Contrast failures are cosmetic — the design still works for most users." | "5–8% of users literally cannot read low-contrast text. 'Cosmetic' is the wrong frame; it's a functional blocker for a measurable population."                                          |
+| "We can fix accessibility after launch once we have real feedback."       | "Retrofit cost is roughly 10× design-time cost, and public launch is when legal exposure and reputational risk compound. 'Later' means 'expensive and under duress'."                   |
+| "Screen readers are a niche concern for our audience."                    | "Keyboard-only users, low-vision users, and temporarily-disabled users (broken arm, bright sunlight, aging eyes) all rely on the same semantic structure. The population is not niche." |
+| "This is an internal tool, so a11y is optional."                          | "Internal does not mean exempt. Employees with disabilities exist, ADA/EN 301 549 apply to internal systems, and 'internal' tools routinely leak into partner workflows."               |
+| "The computed ratio is 4.48, close enough to 4.5."                        | "WCAG is a threshold, not a target. 4.48 fails. Fix the color or formally accept the failure in writing — do not round it away."                                                        |
+
 ## Common False Positives — Do NOT Flag
 
 - Subjective preferences on color choice (that's `art-designer`'s lane).

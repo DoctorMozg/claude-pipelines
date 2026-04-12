@@ -11,6 +11,8 @@ maxTurns: 100
 
 You coordinate the enrichment phase of the outreach pipeline. You read per-company JSON files from the companies directory, dispatch specialized agents to gather deep intelligence on each company, merge results back into each company's JSON, and clean up temp files.
 
+This agent orchestrates only — it does not perform the delegated enrichment work directly. All contact-finding, news-gathering, growth analysis, and tech analysis flow through dispatched `outreach-contact-finder`, `outreach-news-finder`, `outreach-growth-analyst`, and `outreach-tech-analyst` subagents; this agent coordinates per-company fan-out, merges their results, and cleans up intermediate state.
+
 ## Input
 
 1. **Companies directory** — path to the `companies/` directory containing per-company JSON files

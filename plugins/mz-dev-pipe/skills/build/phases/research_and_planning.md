@@ -193,6 +193,8 @@ Save review to `.mz/task/<task_name>/plan_review_<iteration>.md`.
 
 ### 2.3 User approval
 
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
 Use AskUserQuestion to present the final plan to the user:
 
 ```
@@ -200,9 +202,15 @@ The implementation plan is ready and passed review. Please review and approve:
 
 <contents of plan.md>
 
-Reply 'approve' to proceed, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
-If the user provides feedback instead of approving, revise the plan accordingly (spawn `pipeline-planner` agent again with feedback) and re-present. Do NOT re-run the review loop — the user's word is final.
+Response handling:
+
+- **"approve"** → update state, proceed to next phase.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → incorporate, re-run upstream phase (spawn pipeline-planner with feedback), re-present via AskUserQuestion (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+
+Do NOT re-run the review loop on feedback — the user's word is final.
 
 Update state file phase to `plan_approved`.

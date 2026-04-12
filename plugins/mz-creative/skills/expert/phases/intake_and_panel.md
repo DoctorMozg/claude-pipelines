@@ -56,7 +56,7 @@ You are researching codebase context for an expert panel review.
 <branch|global|working>
 
 ## Task Directory
-.mz/expert/<task_name>/
+.mz/task/<task_name>/
 
 ## Your Job
 Scan the codebase within the declared scope and write research.md. Capture:
@@ -86,7 +86,7 @@ Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKE
 ### 1.2.2 Verify `research.md`
 
 ```bash
-test -s .mz/expert/<task_name>/research.md
+test -s .mz/task/<task_name>/research.md
 ```
 
 If missing or empty, retry once with explicit instruction. If still missing, escalate.

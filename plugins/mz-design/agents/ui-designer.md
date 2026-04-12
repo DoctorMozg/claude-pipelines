@@ -66,6 +66,18 @@ Use severity labels on every finding:
 - **PASS**: zero `Critical:` findings. Nits and optionals are advisory and do not block.
 - **FAIL**: one or more `Critical:` findings.
 
+## Common Rationalizations
+
+Authors routinely defend weak layout choices with plausible-sounding arguments. Do not let these soften a `Critical:` finding. The table below is the counter-pressure:
+
+| Rationalization                                                                 | Rebuttal                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Whitespace looks empty — users want information density."                      | "Density is the enemy of scanability. Dense pages are skimmed, not read; the eye-tracking data is 45 years deep on this. 'Empty' is the cost of legibility."                                   |
+| "The grid has one exception but the rest holds, so it's fine."                  | "One sanctioned exception legitimizes the next. Grids deliver value only when enforced; a grid with a documented exception is two grids."                                                      |
+| "The stakeholder wants the logo 2× bigger, so designer concerns are overruled." | "Stakeholder approval ≠ user success. Past a prominence threshold, logo inflation demonstrably reduces conversion and scan speed. Record the override; don't launder it as a design decision." |
+| "Alignment is off by 2–4px but nobody will notice."                             | "Pre-attentive vision notices sub-pixel drift before users can name it. They experience 'this feels cheap' without knowing why. Fix the drift."                                                |
+| "Visual hierarchy is subjective — different users look at different things."    | "Hierarchy is not preference; it is a measurable function of size, weight, contrast, and position. If two elements compete, one of them is miscalibrated."                                     |
+
 ## Common False Positives — Do NOT Flag
 
 - Subjective preferences on primary color choice (that's `art-designer`'s lane).

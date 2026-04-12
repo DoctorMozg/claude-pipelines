@@ -2,6 +2,7 @@
 name: design-document
 description: ALWAYS invoke when the user wants a UI/UX design document or interface spec. Triggers:"design a UI for X","create a design document","design spec","UX spec". Provide a brief as the argument.
 model: sonnet
+allowed-tools: Agent(design-researcher), Agent(design-document-writer), Agent(ui-designer), Agent(ux-designer), Agent(art-designer), Agent(accessibility-specialist), Agent(design-critique-synthesizer), Agent(design-revision-writer), AskUserQuestion, Read, Write, Grep, Bash, WebSearch
 ---
 
 # Design Document Pipeline
@@ -45,13 +46,13 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 ### Phase Overview
 
-| #   | Phase             | File                            | Loop?                           |
-| --- | ----------------- | ------------------------------- | ------------------------------- |
-| 0   | Setup             | inline below                    | —                               |
-| 1   | Intake & Research | `phases/intake_and_research.md` | —                               |
-| 2   | Initial Draft     | `phases/initial_draft.md`       | —                               |
-| 3   | Critique Loop     | `phases/critique_loop.md`       | max `MAX_DESIGN_ITERATIONS` (5) |
-| 4   | Finalization      | `phases/finalization.md`        | user-approval sub-loop          |
+| #   | Phase             | File                                                       | Loop?                           |
+| --- | ----------------- | ---------------------------------------------------------- | ------------------------------- |
+| 0   | Setup             | inline below                                               | —                               |
+| 1   | Intake & Research | `phases/intake_and_research.md`                            | —                               |
+| 2   | Initial Draft     | `phases/initial_draft.md`                                  | —                               |
+| 3   | Critique Loop     | `phases/critique_loop.md`                                  | max `MAX_DESIGN_ITERATIONS` (5) |
+| 4   | Finalization      | Inline gate below (+ `phases/finalization.md` for details) | user-approval sub-loop          |
 
 ### Phase 0: Setup
 
@@ -61,6 +62,26 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 1. Create `.mz/design/<task_name>/`.
 1. Write `state.md` with `Status`, `Phase`, `Started`, `Iteration: 0`, `FilesWritten: []`.
 1. Output a visible setup block showing: `task_name`, `DESIGN_DIR` path, detected modifiers.
+
+### Phase 4: User Approval Gate
+
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+Present: the finalized design document draft (path + summary of iterations, aggregate verdict, WCAG gate result) after the critique loop has converged with `AGGREGATE: PASS` and zero WCAG violations. See `phases/finalization.md` Step 4.1 for extended presentation details and the revision-writer sub-loop.
+
+Use AskUserQuestion with:
+
+```
+Design document ready at .mz/design/<task_name>/design.md (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS).
+
+Reply 'approve' to finalize, 'reject' to abort, or provide feedback for changes.
+```
+
+**Response handling**:
+
+- **"approve"** → update `state.md` to `complete`, proceed to write `final-summary.md`.
+- **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not write `final-summary.md`.
+- **Feedback** → dispatch `design-revision-writer` to apply the feedback, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
 
 ## Techniques
 

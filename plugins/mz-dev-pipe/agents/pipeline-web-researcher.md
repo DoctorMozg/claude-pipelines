@@ -110,3 +110,14 @@ List all sources consulted with brief descriptions of what each contributed.
 - Do not fabricate or hallucinate sources. If you cannot find information, say so explicitly.
 - When the research topic intersects with the user's codebase, check local files for existing implementations or documentation that may be relevant.
 - For quantitative claims (market size, growth rates, benchmarks), always include the source and date of the data.
+
+## Status Protocol
+
+After your output, emit one terminal line with the literal form `STATUS: <value>`, where `<value>` is exactly one of:
+
+- `DONE` — you completed the research end-to-end with adequate source coverage and no blockers.
+- `DONE_WITH_CONCERNS` — completed but surfaced caveats (sparse sources, contested claims, time-sensitive data, confidence below threshold).
+- `NEEDS_CONTEXT` — could not complete without additional input (scope ambiguous, domain unclear, required source list missing).
+- `BLOCKED` — a hard failure prevented progress (WebFetch rate limit, all primary sources unreachable, policy refusal, tool failure).
+
+This line is consumed by the orchestrator to decide whether to proceed, escalate, or retry. Do not emit multiple `STATUS:` lines. Place it after all other content.

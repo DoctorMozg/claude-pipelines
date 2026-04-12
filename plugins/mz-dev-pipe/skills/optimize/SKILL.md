@@ -2,6 +2,7 @@
 name: optimize
 description: ALWAYS invoke when the user wants to optimize, clean up, or reduce complexity in existing code. Triggers: "optimize X", "clean up", "refactor", "remove dead code". When NOT to use: fixing failing tests (use polish), bug hunt (use debug or audit).
 argument-hint: [scope:branch|global|working] <scope: glob, directory, git range, or free-text description>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 

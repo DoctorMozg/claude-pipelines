@@ -2,6 +2,7 @@
 name: polish
 description: ALWAYS invoke when the user wants to polish code against criteria — fix failing tests, meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests". When NOT to use: new feature (use build), single bug (use debug).
 argument-hint: [scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -60,6 +61,7 @@ Extract `scope:<mode>` from `$ARGUMENTS` (case-insensitive), remove before parsi
 | ----- | -------------------- | ----------------------------------- |
 | 0     | Setup                | Inline below                        |
 | 1     | Initial Assessment   | `phases/assess_and_fix.md`          |
+| 1.5   | User Approval Gate   | Inline below                        |
 | 2     | Quick Fixes          | `phases/assess_and_fix.md`          |
 | 3     | Research (if needed) | `phases/assess_and_fix.md`          |
 | 4     | Fix-Test-Review Loop | `phases/fix_review_and_finalize.md` |
@@ -75,6 +77,30 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 1. **Task name** — `polish_<slug>_<HHMMSS>` (slug = snake_case of criteria, max 20 chars).
 1. **Task dir & state** — create `.mz/task/<task_name>/`, write `state.md` with Status, Phase, Started, Iteration (0), and the criteria checklist.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
+
+### Phase 1.5: User Approval Gate
+
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+Present the Phase 1 assessment output: the criteria checklist showing which items are failing, the proposed quick-fix plan (one line per fix target), and the estimated file count in scope.
+
+Use AskUserQuestion with:
+
+```
+Phase 1 assessment complete. Please review:
+
+<failing criteria list>
+<proposed quick-fix plan>
+<estimated file count>
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+```
+
+**Response handling**:
+
+- **"approve"** → update state, proceed to Phase 2.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → incorporate, re-run Phase 1 if needed, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

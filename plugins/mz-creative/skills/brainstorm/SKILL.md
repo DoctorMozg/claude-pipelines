@@ -2,6 +2,7 @@
 name: brainstorm
 description: ALWAYS invoke when the user wants creative ideas, brainstorming, multi-perspective thinking, or diverse viewpoints on a problem. Triggers: "brainstorm", "creative ideas for", "think about this from different angles", "diverse perspectives on".
 argument-hint: <topic or problem to brainstorm>
+model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -73,7 +74,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 23, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
 
 ## Red Flags
 
@@ -107,7 +108,7 @@ Update state phase to `panel_selected`.
 
 Present: the topic, the 5 selected panelists with justifications, and the 5 not selected.
 
-Use AskUserQuestion: `Panel assembled for "<topic>". Selected: <list with justifications>. Not selected: <list>. Reply 'approve' to start ideation, 'reject' to abort, or suggest swaps (e.g., "replace economist with historian").`
+Use AskUserQuestion: `Panel assembled for "<topic>". Selected: <list with justifications>. Not selected: <list>. Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
 
 **Response handling**:
 
