@@ -104,6 +104,15 @@ Re-read all test files to ensure:
 <Any testing decisions, mock justifications, or known limitations>
 ```
 
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — tests written, targeted tests run successfully, and output artifacts reported.
+- `STATUS: DONE_WITH_CONCERNS` — tests written but with caveats, such as a missing full-suite run or an environment-limited check. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot write or run tests without specific missing input, such as the test command, target behavior, or implementation file list.
+- `STATUS: BLOCKED` — fundamental obstacle, such as no test framework available or an unwritable test directory. State the blocker and do not retry the same operation.
+
 ## Rules
 
 - NEVER write tests that pass by accident (e.g., asserting on default values that happen to match).

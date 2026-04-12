@@ -59,6 +59,17 @@ For each test, ask: "If someone introduced a bug in the code this tests, would t
 - Try to think of plausible bugs that would slip past the test.
 - Check if the test is so tightly coupled to implementation that a valid refactor would break it.
 
+## Severity Labels
+
+Prefix every finding title with exactly one severity label:
+
+- `Critical:` — test weakness that can hide real regressions, order dependence, meaningless assertions, or over-mocking that invalidates the test. Blocks verdict.
+- `Nit:` — minor readability or naming issue; advisory only.
+- `Optional:` — improvement suggestion; advisory only.
+- `FYI:` — informational observation; advisory only.
+
+`VERDICT: PASS` if zero `Critical:` findings exist. `VERDICT: FAIL` if one or more `Critical:` findings exist.
+
 ## Output Format
 
 ```markdown
@@ -69,17 +80,24 @@ For each test, ask: "If someone introduced a bug in the code this tests, would t
 
 ## Quality Issues
 
-### 1. <Issue title>
+### Critical: <Issue title>
 - **File**: `path/to/test_file.ext:test_function`
 - **Category**: Weak Assertion | Independence | Readability | Over-Mocking | Fragility
 - **Description**: <What's wrong with this test>
 - **Impact**: <Why this matters — what could go wrong>
 - **Fix**: <How to improve it>
 
-### 2. ...
+### Nit: <Issue title>
+- **File**: `path/to/test_file.ext:test_function`
+- **Category**: Readability | Fragility
+- **Description**: <What's wrong with this test>
+- **Fix**: <How to improve it>
 
-## Suggestions (not blockers)
+### Optional: <Suggestion title>
 - <Suggestion for improvement>
+
+### FYI: <Observation title>
+- <Informational note>
 
 ## Well-Written Tests
 <Acknowledge tests that are exemplary — good patterns worth keeping>
@@ -96,6 +114,7 @@ For each test, ask: "If someone introduced a bug in the code this tests, would t
 - No over-mocking that hides real behavior
 - Test names are descriptive
 - Tests would catch real regressions
+- Zero `Critical:` findings exist
 
 **FAIL** if ANY of:
 
@@ -104,3 +123,4 @@ For each test, ask: "If someone introduced a bug in the code this tests, would t
 - Excessive mocking that makes tests meaningless
 - Tests so fragile they'd break on valid refactors
 - Tests that can't actually catch the bugs they claim to test
+- One or more `Critical:` findings exist

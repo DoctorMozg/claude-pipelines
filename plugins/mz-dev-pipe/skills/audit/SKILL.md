@@ -96,8 +96,8 @@ Reply 'approve' to proceed with fixes, 'reject' to abort, or provide feedback fo
 **Response handling**:
 
 - **"approve"** → proceed to Phase 4.
-- **"reject"** → abort.
-- **Feedback** — *drop/adjust* → remove and re-present (no re-research). *Scope/lens changes* → Phase 1, then re-present. *Unclear* → ask follow-up. Loop until explicit approval.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** — *drop/adjust* → remove and re-present (no re-research). *Scope/lens changes* → Phase 1, then re-present. *Unclear* → ask follow-up. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
 
 ### Phase 4–10: Fix, Review, Finalize
 

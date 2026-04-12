@@ -124,6 +124,15 @@ negative news, no contactable decision-makers.>
 *Generated: <today's date> | Sources: <sources list from company JSON>*
 ```
 
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — card written, all available JSON fields represented, no concerns.
+- `STATUS: DONE_WITH_CONCERNS` — card written but with caveats, such as missing enrichment categories or inconsistent JSON fields. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot write the card without specific missing input, such as an unreadable company JSON path or missing strategy file. State exactly what is needed.
+- `STATUS: BLOCKED` — fundamental obstacle, such as invalid JSON that cannot be parsed. State the blocker and do not retry the same operation.
+
 ## Rules
 
 - **One company per invocation** — you write exactly one card.

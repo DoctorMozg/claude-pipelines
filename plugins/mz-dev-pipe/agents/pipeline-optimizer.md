@@ -180,6 +180,15 @@ After per-file optimization:
 <List anything that looked like it could be optimized but was intentionally left alone, with reasoning>
 ```
 
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — optimization pass complete, changed files re-read, and behavior-preservation checks reported.
+- `STATUS: DONE_WITH_CONCERNS` — optimization pass complete but with caveats, such as skipped risky cleanup or verification command failures. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot proceed without specific missing input, such as the modified-file list or project test command.
+- `STATUS: BLOCKED` — fundamental obstacle, such as unreadable scoped files or contradictory instructions. State the blocker and do not retry the same operation.
+
 ## Rules
 
 - NEVER remove code that is referenced anywhere in the project — verify with grep first.

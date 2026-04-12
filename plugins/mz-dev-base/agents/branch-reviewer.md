@@ -56,6 +56,20 @@ All file writes go to `$REPO_ROOT/.mz/reviews/`. Create the directory if it does
 
 Based on the branch name, commit messages, and changed code, determine what is being implemented.
 
+#### Source discipline for domain research
+
+When using WebSearch/WebFetch directly or delegating to `researcher`, enforce this source priority:
+
+1. Official docs — vendor-hosted and versioned.
+1. Official blogs — vendor-hosted and dated.
+1. MDN / web.dev / caniuse — curated and versioned where relevant.
+1. Vendor-maintained GitHub wiki or repository documentation.
+1. Peer-reviewed papers for research claims.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, and unattributed aggregator pages.
+
+Before any web query, detect the project stack from manifests (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, lockfiles) and emit `STACK DETECTED: <stack + version>`. Emit `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree and `UNVERIFIED: <claim> — could not confirm against official source` when no authoritative source exists.
+
 1. **Identify the domain** — what feature, model, protocol, or concept is this branch about?
 1. **If the domain is non-trivial** (e.g., new ML model architecture, cryptographic protocol, complex algorithm, specific API integration), delegate to the **researcher** agent to:
    - Research the domain (e.g., "Qwen3-Omni model architecture and how it differs from Qwen2-VL")
@@ -155,6 +169,17 @@ Where:
 - `<BRANCH_SLUG>` is the branch name slugified (slashes to hyphens, lowercase, max 60 chars)
 - `<_vN>` is appended only if a report with the same base name already exists (`_v2`, `_v3`, etc.)
 
+## Severity Labels
+
+Prefix every finding title with exactly one severity label:
+
+- `Critical:` — correctness, security, integration, or missing-functionality issue that must be fixed before merge/plan advancement. Blocks verdict.
+- `Nit:` — cosmetic, style, or subjective issue; advisory only.
+- `Optional:` — improvement suggestion; advisory only.
+- `FYI:` — informational observation; advisory only.
+
+`VERDICT: PASS` if zero `Critical:` findings exist. `VERDICT: FAIL` if one or more `Critical:` findings exist.
+
 ## Report Format
 
 ```markdown
@@ -181,6 +206,12 @@ Where:
 
 <2-3 sentences summarizing the overall quality and readiness of the branch.>
 
+## Verdict
+
+VERDICT: PASS | FAIL
+
+PASS when zero `Critical:` findings exist. FAIL when one or more `Critical:` findings exist.
+
 ## Statistics
 
 - Commits: <N>
@@ -198,31 +229,39 @@ Where:
 
 | # | Severity | Category | Line(s) | Description |
 |---|----------|----------|---------|-------------|
-| 1 | Critical/Warning/Info | Bug/Architecture/Performance/... | L42-50 | <Description> |
+| 1 | Critical: | Bug/Architecture/Performance/... | L42-50 | <Description> |
 
-#### Suggestions
+#### Optional Items
 
-- <Improvement suggestion with specific line reference>
+- Optional: <Improvement suggestion with specific line reference>
 
 > Repeat for each changed file. Omit sections with no findings.
 
-## Bugs Found
+## Findings Found
 
-> Consolidated list of all bugs across files, sorted by severity.
+> Consolidated list of all findings across files, sorted by severity.
 
-### Critical
+### Critical: <Short title>
 
-#### 1. <Short title>
 - **File**: `<path>:<line>`
 - **Description**: <What is wrong and why it matters>
 - **Suggested fix**: <How to fix it>
 
-### Warnings
+### Nit: <Short title>
 
-#### 1. <Short title>
 - **File**: `<path>:<line>`
 - **Description**: <What is wrong>
 - **Suggested fix**: <How to fix it>
+
+### Optional: <Short title>
+
+- **File**: `<path>:<line>`
+- **Description**: <Non-blocking improvement>
+
+### FYI: <Short title>
+
+- **File**: `<path>:<line>`
+- **Description**: <Informational observation>
 
 ## Codebase Consistency
 
@@ -306,5 +345,5 @@ Where:
 - **Verify before flagging.** Trace the logic, check callers, read tests. Only flag issues you're confident about.
 - **Use research wisely.** Delegate to researcher when the domain requires specialized knowledge you don't have.
 - **Be constructive.** Every issue should include a path forward.
-- **Omit empty sections.** If there are no critical bugs, don't include an empty Critical section.
+- **Omit empty sections.** If there are no `Critical:` findings, don't include an empty `Critical:` section.
 - **Think about what's missing**, not just what's there. Missing registrations, forgotten exports, and incomplete integrations are common in feature branches.

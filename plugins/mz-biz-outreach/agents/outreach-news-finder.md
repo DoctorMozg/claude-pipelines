@@ -18,6 +18,23 @@ You receive:
 1. **Company** — JSON object with scout + scan data (name, domain, sector, location)
 1. **Output file path** — where to write results
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. Official company pages: press, blog, investor, newsroom, funding, partnership, product, and leadership pages.
+1. Official public profiles: government registries, exchange filings, LinkedIn company page, review-platform profiles.
+1. First-party partner pages: investor announcements, partner/customer announcements, accelerator cohorts, event pages.
+1. Dated reputable news or data providers with named publishers.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — outreach research for <company/domain>` before web research.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Process
 
 ### Step 1: Search for Recent News

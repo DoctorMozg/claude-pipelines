@@ -123,3 +123,12 @@ When INCOMPLETE, choose the restart phase carefully:
 - **plan** — if the plan was incomplete or architecturally wrong
 - **code** — if the plan is fine but implementation has issues
 - **test** — if the code is fine but tests are incomplete or wrong
+
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — completeness check finished and verdict emitted.
+- `STATUS: DONE_WITH_CONCERNS` — check finished but with caveats, such as unverified commands or partial evidence. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot complete the check without specific missing artifacts, such as the original task, plan, or changed-file list.
+- `STATUS: BLOCKED` — fundamental obstacle, such as unreadable implementation files or an unavailable repository state. State the blocker and do not retry the same operation.

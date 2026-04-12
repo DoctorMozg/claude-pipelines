@@ -18,6 +18,23 @@ You receive:
 1. **Company** — JSON object with scout + scan data (name, domain, sector, location)
 1. **Output file path** — where to write results
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. Official company pages: Careers, engineering blog, docs, changelog, press, About, Team.
+1. Official public profiles: GitHub/GitLab org, package registries, app stores, cloud marketplace pages, LinkedIn company page.
+1. First-party partner/event pages: conference talks, vendor case studies, VC/accelerator profiles.
+1. Dated reputable news or data providers with named publishers.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: <technologies + evidence source>` before researching stack-sensitive claims; use `STACK DETECTED: unknown — <company/domain>` if no stack evidence is found.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Process
 
 ### Step 1: Tech Stack from Job Postings

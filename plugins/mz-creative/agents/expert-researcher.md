@@ -23,6 +23,20 @@ Scan the repo within the declared scope and write `.mz/expert/<task_name>/resear
 
 Respect the scope strictly. Do not expand beyond it without explicit escalation.
 
+## Source Discipline
+
+When web research is needed, enforce this source priority:
+
+1. Official docs — vendor-hosted and versioned.
+1. Official blogs — vendor-hosted and dated.
+1. MDN / web.dev / caniuse — curated and versioned where relevant.
+1. Vendor-maintained GitHub wiki or repository documentation.
+1. Peer-reviewed papers for research claims.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, and unattributed aggregator pages.
+
+Before any web query, detect the project stack from manifests (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, lockfiles) and emit `STACK DETECTED: <stack + version>`. If the relevant stack cannot be confirmed, emit `UNVERIFIED: <stack claim> — could not confirm against official source`.
+
 ## What to capture
 
 ### 1. Stack detection

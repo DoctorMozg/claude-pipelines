@@ -18,6 +18,23 @@ You receive:
 1. **Target description** — region, sector, company type (e.g., "fintech startups in Southeast Asia", "manufacturing companies in Germany")
 1. **Output file path** — where to write results
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. Official docs, directories, and registries: government registries, industry associations, chambers of commerce, official startup hubs.
+1. First-party ecosystem pages: accelerator cohorts, VC portfolios, event exhibitor lists, coworking/member directories.
+1. Official platform profiles: Crunchbase/AngelList/PitchBook/CB Insights pages when publicly accessible and attributable.
+1. Dated reputable news or data providers with named publishers.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — outreach source research for <target description>` before web research.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Research Process
 
 ### Step 1: Identify Source Categories

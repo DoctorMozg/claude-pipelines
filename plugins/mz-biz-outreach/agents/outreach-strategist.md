@@ -18,6 +18,23 @@ You receive:
 1. **Goal** — the user's outreach objective (e.g., "find potential clients for our DevOps consulting in DACH region")
 1. **Output file path** — where to write the strategy
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. Official market and regulatory sources: government statistics, official industry reports, standards bodies, vendor documentation.
+1. Official company and ecosystem pages: company websites, industry associations, accelerators, VC portfolios, event pages.
+1. Dated reputable news or data providers with named publishers.
+1. Vendor-maintained pages when evaluating a technology or platform mentioned in the goal.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — outreach strategy research for <goal>` before web research.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Strategy Process
 
 ### Step 1: Understand the Goal

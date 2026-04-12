@@ -47,6 +47,17 @@ Compare the inventory against the test map:
 - Error paths not tested (what happens when dependencies fail?)
 - Integration scenarios not tested (components working together)
 
+## Severity Labels
+
+Prefix every finding title with exactly one severity label:
+
+- `Critical:` — coverage gap that leaves public behavior, critical paths, required edge cases, or error handling untested. Blocks verdict.
+- `Nit:` — minor test-coverage organization issue; advisory only.
+- `Optional:` — additional coverage suggestion; advisory only.
+- `FYI:` — informational observation; advisory only.
+
+`VERDICT: PASS` if zero `Critical:` findings exist. `VERDICT: FAIL` if one or more `Critical:` findings exist.
+
 ## Output Format
 
 ```markdown
@@ -63,21 +74,26 @@ Compare the inventory against the test map:
 
 ## Coverage Gaps
 
-### 1. <Untested component/function>
+### Critical: <Untested component/function>
 - **File**: `path/to/file.ext:function_name`
 - **What's missing**: <specific paths or scenarios not tested>
 - **Risk**: <what bugs could slip through>
 - **Suggested test**: <brief description of test to add>
 
-### 2. ...
+### Optional: <Additional coverage suggestion>
+- **File**: `path/to/file.ext:function_name`
+- **Suggestion**: <non-blocking coverage improvement>
 
 ## Missing Edge Cases
 
-### 1. <Edge case description>
+### Critical: <Edge case description>
 - **For**: `function_name` in `file.ext`
 - **Scenario**: <specific input or condition>
 - **Expected behavior**: <what should happen>
 - **Why important**: <what could go wrong>
+
+### FYI: <Coverage observation>
+- <Informational note that does not block>
 
 ## Well Covered
 <Components with good test coverage — acknowledge good work>
@@ -93,6 +109,7 @@ Compare the inventory against the test map:
 - Critical code paths are tested
 - Edge cases from the plan's test strategy are covered
 - Error handling is tested for critical operations
+- Zero `Critical:` findings exist
 
 **FAIL** if ANY of:
 
@@ -100,3 +117,4 @@ Compare the inventory against the test map:
 - Critical code paths (error handling, validation) not tested
 - Plan's required edge cases missing
 - No negative/error path testing at all
+- One or more `Critical:` findings exist

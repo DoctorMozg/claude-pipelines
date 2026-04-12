@@ -138,6 +138,15 @@ ______________________________________________________________________
 | ... | ... | ... | ... |
 ```
 
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — report written, ranked table links to cards, and methodology reflects the input data.
+- `STATUS: DONE_WITH_CONCERNS` — report written but with caveats, such as missing cards, partial enrichment, or sparse data. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot write the report without specific missing input, such as a missing strategy file or companies directory.
+- `STATUS: BLOCKED` — fundamental obstacle, such as no readable company JSON files or an unwritable output path. State the blocker and do not retry the same operation.
+
 ## Rules
 
 - **No per-company deep analysis** — that's in the cards. Reference cards, don't duplicate them.

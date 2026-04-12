@@ -79,8 +79,8 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 **Response handling**:
 
 - **"approve"** → proceed to Phase 3.
-- **"reject"** → abort.
-- **Feedback** → spawn `pipeline-planner` with feedback, overwrite `plan.md`, re-present via AskUserQuestion. Do NOT re-run plan review — user's word is final. Loop until explicit approval.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → spawn `pipeline-planner` with feedback, overwrite `plan.md`, re-present via AskUserQuestion. Do NOT re-run plan review — user's word is final. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
 ### Phase 3: Implementation
 

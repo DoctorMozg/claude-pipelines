@@ -70,6 +70,17 @@ For every file path in the plan:
 - Are mitigations actionable?
 - Are there risks the plan doesn't mention?
 
+## Severity Labels
+
+Prefix every finding title with exactly one severity label:
+
+- `Critical:` — plan flaw that will cause incorrect implementation, missed requirements, broken integration, unsafe parallelism, or a test strategy that cannot catch regressions. Blocks verdict.
+- `Nit:` — minor wording or organization issue; advisory only.
+- `Optional:` — improvement suggestion; advisory only.
+- `FYI:` — informational observation; advisory only.
+
+`VERDICT: PASS` if zero `Critical:` findings exist. `VERDICT: FAIL` if one or more `Critical:` findings exist.
+
 ## Output Format
 
 ```markdown
@@ -80,17 +91,21 @@ For every file path in the plan:
 
 ## Issues (if FAIL)
 
-### 1. <Issue title>
-- **Severity**: Critical | Major | Minor
+### Critical: <Issue title>
 - **Category**: Completeness | Correctness | Architecture | Parallelism | Testing
 - **Details**: <What's wrong>
 - **Fix**: <Exactly what the plan needs to change>
 
-### 2. ...
+### Nit: <Issue title>
+- **Category**: Completeness | Correctness | Architecture | Parallelism | Testing
+- **Details**: <What's wrong>
+- **Fix**: <Exactly what the plan needs to change>
 
-## Suggestions (optional, not blockers)
+### Optional: <Suggestion title>
 - <Suggestion 1>
-- <Suggestion 2>
+
+### FYI: <Observation title>
+- <Observation 1>
 
 ## What's Good
 <Acknowledge aspects of the plan that are well done>
@@ -107,6 +122,7 @@ For every file path in the plan:
 - Parallelism is correctly identified
 - Test strategy is comprehensive
 - No architectural red flags
+- Zero `Critical:` findings exist
 
 **FAIL** if ANY of:
 
@@ -115,3 +131,4 @@ For every file path in the plan:
 - Parallel units have hidden dependencies
 - Test strategy has obvious gaps
 - Architectural problems that will cause rework
+- One or more `Critical:` findings exist

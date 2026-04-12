@@ -137,6 +137,15 @@ AGGREGATE:                PASS | FAIL
 - Lanes with failing verdicts: <list>
 ```
 
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — `critique_<N>.md` written, all four critic files read, and verdict block complete.
+- `STATUS: DONE_WITH_CONCERNS` — synthesis written but with caveats, such as malformed critic output or unresolved conflicts. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot synthesize without a specific missing critic file, iteration number, or task name.
+- `STATUS: BLOCKED` — fundamental obstacle, such as multiple unreadable critic files or an unwritable critique path. State the blocker and do not retry the same operation.
+
 ## Guidelines
 
 - Do not write to `design.md`, `wireframes.md`, or `wcag-report.md`. That is the revision writer's job.

@@ -62,8 +62,8 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback
 **Response handling**:
 
 - **"approve"** → proceed to Step 2 (dispatch researchers).
-- **"reject"** → stop. Do not proceed.
-- **Feedback** → adjust the decomposition accordingly, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never dispatch researchers without explicit approval.
+- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Feedback** → adjust the decomposition accordingly, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
 
 ### 2. Dispatch parallel researcher agents
 

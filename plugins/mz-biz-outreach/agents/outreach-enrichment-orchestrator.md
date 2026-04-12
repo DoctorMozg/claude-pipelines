@@ -103,6 +103,15 @@ After all companies are enriched:
 - Set the corresponding field to `null` for failed agents
 - At the end, report how many companies were fully enriched vs. partially enriched
 
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — all eligible companies processed, merged, and temp files cleaned up.
+- `STATUS: DONE_WITH_CONCERNS` — processing completed but some companies have `null` enrichment fields or failed sub-agent outputs. Summarize counts above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot proceed without specific missing input, such as an absent companies directory or strategy file.
+- `STATUS: BLOCKED` — fundamental obstacle, such as unreadable company JSON files across the run or temp directory creation failure. State the blocker and do not retry the same operation.
+
 ## Rules
 
 - **Process companies sequentially** — one company at a time, 4 agents in parallel per company.

@@ -19,6 +19,23 @@ You receive:
 1. **Strategy context** — target audience and outreach angles from the strategist (which decision-makers to prioritize)
 1. **Output file path** — where to write results
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. Official company pages: website, About, Team, Leadership, Contact, Careers, blog, press, investor pages.
+1. Official public profiles: LinkedIn company/person pages, GitHub orgs, government registries, review-platform profiles.
+1. First-party partner pages: VC portfolios, accelerator cohorts, industry association member lists, conference speaker pages.
+1. Dated reputable news or data providers with named publishers.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — outreach research for <company/domain>` before web research.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Process
 
 ### Step 1: Key People

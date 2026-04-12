@@ -40,7 +40,7 @@ Description is the single most important field — Claude uses pure LLM reasonin
 - Prefer positive framing: "Use X exclusively" over "Do NOT use Y" — reduces violations by ~50%.
 - Anchor critical rules at the top AND bottom of SKILL.md (primacy-recency bias).
 - Every verification step must produce visible output. "Check X" → "Output a block showing X, then proceed." Silent checks get skipped.
-- See Rule 23 for skill-type-specific language recipes.
+- See Rule 20 for skill-type-specific language recipes.
 
 ## 5. Phase Overview Table
 
@@ -142,47 +142,7 @@ Descriptions describe **trigger conditions only**, never workflow summaries. The
 
 Grounding: Meincke et al. (2025) N=28,000 LLM persuasion compliance study — directive, authority-coded language lifts compliance from 33% baseline to 72%.
 
-## 19. Source-Hierarchy Discipline
-
-Researcher and review agents must declare and enforce a source priority ladder:
-
-1. Official docs (vendor-hosted, versioned)
-1. Official blog (vendor-hosted, dated)
-1. MDN / web.dev / caniuse (curated, versioned)
-1. Vendor-maintained GitHub wiki
-1. Peer-reviewed papers (for claims)
-
-**Banned sources**: Stack Overflow, AI-generated summaries (including other LLMs' output), undated blog posts, forum threads.
-
-**Disclosure tokens** (emit in research output so orchestrators can grep):
-
-- `STACK DETECTED: <stack + version>` — before any research query, detect project stack from manifests (package.json, pyproject.toml, Cargo.toml, go.mod).
-- `CONFLICT DETECTED: <source A> says X, <source B> says Y` — when sources disagree.
-- `UNVERIFIED: <claim> — could not confirm against official source` — when no authoritative source found.
-
-Pattern source: obra/superpowers `source-hierarchy-discipline`.
-
-## 20. Severity-Labeled Review Output
-
-Review agents prefix every finding with a severity label:
-
-- `Critical:` — blocks merge or plan advancement.
-- `Nit:` — cosmetic or subjective; advisory.
-- `Optional:` — improvement suggestion; advisory.
-- `FYI:` — informational; advisory.
-
-Verdict logic: `VERDICT: PASS` if zero `Critical:` findings, regardless of Nit/Optional/FYI count. `VERDICT: FAIL` only if one or more `Critical:` findings exist.
-
-## 21. Four-Status Subagent Escalation
-
-Coder and planner agents emit a terminal `STATUS:` line with one of four values:
-
-- `DONE` — work complete, proceed.
-- `DONE_WITH_CONCERNS` — work complete but flagged concerns; orchestrator logs concerns and proceeds.
-- `NEEDS_CONTEXT` — cannot proceed without specific info; orchestrator re-dispatches with added context.
-- `BLOCKED` — fundamental obstacle (broken env, impossible constraint, ambiguous spec); orchestrator escalates to user via AskUserQuestion. **Never auto-retry the same operation on `BLOCKED`.**
-
-## 22. References Directory
+## 19. References Directory
 
 Skills may include an optional `references/` directory containing lazy-loaded knowledge.
 
@@ -192,7 +152,7 @@ Skills may include an optional `references/` directory containing lazy-loaded kn
 
 Purpose: keeps SKILL.md slim while making deep knowledge available on demand. Examples: `explain/references/mermaid-syntax-by-type.md`, `audit/references/owasp-top-10-checklist.md`.
 
-## 23. Persuasion-Informed Language
+## 20. Persuasion-Informed Language
 
 Skill type determines the persuasion register (Cialdini principles applied per Meincke et al. 2025):
 
@@ -206,7 +166,7 @@ Skill type determines the persuasion register (Cialdini principles applied per M
 
 Grounding: Meincke et al. (2025), N=28,000 — compliance rose from 33% baseline to 72% under directive/authority framing.
 
-## 24. Pre-Publish Checklist
+## 21. Pre-Publish Checklist
 
 Before merging any new or modified skill:
 
@@ -220,8 +180,5 @@ Before merging any new or modified skill:
 - [ ] Canonical 7-section anatomy present (Rule 16)
 - [ ] Anti-rationalization table present if discipline skill (Rule 17)
 - [ ] Description is CSO-compliant, no workflow summary (Rule 18)
-- [ ] Research/review agents declare source hierarchy (Rule 19)
-- [ ] Review output uses severity labels (Rule 20)
-- [ ] Subagent output uses four-status protocol (Rule 21)
-- [ ] references/ directory uses grep-first pattern if present (Rule 22)
-- [ ] Language matches skill type per Rule 23
+- [ ] references/ directory uses grep-first pattern if present (Rule 19)
+- [ ] Language matches skill type per Rule 20

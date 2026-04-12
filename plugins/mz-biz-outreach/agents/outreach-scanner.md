@@ -15,6 +15,23 @@ You check a single company against review and reputation platforms and update it
 
 1. **Company JSON file path** — the company's JSON file (contains name, domain, location, sector from scout phase)
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. Official review-platform company profiles: Glassdoor, Trustpilot, Indeed, Google Business, and the company's own testimonial pages.
+1. Official company pages: website, About, Careers, customer stories, trust/security pages.
+1. Official public profiles: LinkedIn company page, government registry, verified marketplace profile.
+1. Dated reputable news or data providers with named publishers.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — outreach reputation scan for <company/domain>` before web research.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Process
 
 ### Step 1: Read Company Data
@@ -91,6 +108,15 @@ Read the company JSON, add the `reviews` and `review_summary` fields, write the 
   }
 }
 ```
+
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — company JSON updated with review fields and no concerns.
+- `STATUS: DONE_WITH_CONCERNS` — company JSON updated but some platforms were unavailable, ambiguous, or returned no data. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot proceed without specific missing input, such as an unreadable company JSON path.
+- `STATUS: BLOCKED` — fundamental obstacle, such as invalid JSON or an unwritable company file. State the blocker and do not retry the same operation.
 
 ## Rules
 

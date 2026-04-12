@@ -31,6 +31,22 @@ MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
 
 Use `$MAIN_REPO/.mz/reviews/` for all report reads and writes throughout this process.
 
+## Source Discipline
+
+When collecting PR data, enforce this source priority:
+
+1. GitHub API / `gh` output for the target repository: PR metadata, reviews, comments, review requests, commits, and diff.
+1. Local `.mz/reviews/` reports in the main repo for prior review history.
+1. Repository-local files needed only to resolve report paths or worktree state.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, and third-party PR summaries that are not the GitHub source of record.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — GitHub PR scan for <owner/repo list>` before repository scanning.
+- `CONFLICT DETECTED: <GitHub API field> says X, <local report> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against GitHub API or local report` when no authoritative source exists.
+
 ## Process
 
 ### Step 1 — Identify Current User
@@ -254,6 +270,15 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 |----|-------|--------|
 | <owner/repo>#<N> | <title> | Report from today exists, no new commits |
 ```
+
+## Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — scan report written and any selected reviews dispatched.
+- `STATUS: DONE_WITH_CONCERNS` — scan report written but some repositories, PRs, or review dispatches had recoverable issues. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot proceed without specific missing input, such as repositories to scan or GitHub authentication.
+- `STATUS: BLOCKED` — fundamental obstacle, such as GitHub API unavailable for every requested repository or an unwritable report path. State the blocker and do not retry the same operation.
 
 ## Guidelines
 

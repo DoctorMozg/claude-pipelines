@@ -113,6 +113,20 @@ Only flag issues you are confident about after tracing the logic. For each poten
 
 When a changed file touches a complex or unfamiliar domain (e.g., cryptography, financial calculations, specific protocol implementations), delegate to the **researcher** agent to verify correctness of the approach.
 
+### Source Discipline for Domain Research
+
+When using WebSearch/WebFetch directly or delegating to `researcher`, enforce this source priority:
+
+1. Official docs — vendor-hosted and versioned.
+1. Official blogs — vendor-hosted and dated.
+1. MDN / web.dev / caniuse — curated and versioned where relevant.
+1. Vendor-maintained GitHub wiki or repository documentation.
+1. Peer-reviewed papers for research claims.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, and unattributed aggregator pages.
+
+Before any web query, detect the project stack from manifests (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, lockfiles) and emit `STACK DETECTED: <stack + version>`. Emit `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree and `UNVERIFIED: <claim> — could not confirm against official source` when no authoritative source exists.
+
 ### Phase 2.5 — Confidence Scoring
 
 Before cross-referencing, filter out likely false positives. For each issue found in Phase 2, launch a **haiku** scoring agent (batch all issues into one call) with this prompt:
@@ -167,6 +181,17 @@ Where:
 
 Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
+## Severity Labels
+
+Prefix every finding title with exactly one severity label:
+
+- `Critical:` — correctness, security, integration, or merge-blocking maintainability issue. Blocks verdict.
+- `Nit:` — cosmetic, style, or subjective issue; advisory only.
+- `Optional:` — improvement suggestion; advisory only.
+- `FYI:` — informational observation; advisory only.
+
+`VERDICT: PASS` if zero `Critical:` findings exist. `VERDICT: FAIL` if one or more `Critical:` findings exist.
+
 ## Report Format
 
 ```markdown
@@ -187,6 +212,12 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
 <1-2 sentences justifying the verdict>
 
+## Rule 20 Verdict
+
+VERDICT: PASS | FAIL
+
+PASS when zero `Critical:` findings exist. FAIL when one or more `Critical:` findings exist.
+
 ## Statistics
 
 - Files changed: <N>
@@ -197,36 +228,33 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
 > Issues discovered by this review for the first time — not previously flagged by any human reviewer, automated tool (CoPilot, Codacy, etc.), or prior report.
 
-### Critical
+### Critical: <Short issue title>
 
-> Issues that must be fixed before merge.
-
-#### 1. <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
 - **Category**: Bug | Security | Architecture | Performance
 - **Confidence**: <score>/100
 - **Comment**: <2-3 concise sentences describing the problem>
 - **Suggested fix**: <Brief solving route, if applicable>
 
-### Warnings
+### Nit: <Short issue title>
 
-> Issues that should be addressed but are not blockers.
-
-#### 1. <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
-- **Category**: Maintainability | Architecture | Performance
+- **Category**: Maintainability | Readability | Style
 - **Confidence**: <score>/100
 - **Comment**: <2-3 concise sentences>
 - **Suggested fix**: <Brief solving route, if applicable>
 
-### Suggestions
+### Optional: <Short issue title>
 
-> Nice-to-have improvements.
-
-#### 1. <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
 - **Confidence**: <score>/100
 - **Comment**: <2-3 concise sentences>
+
+### FYI: <Short issue title>
+
+- **File**: `<path/to/file.ext>:<line>`
+- **Confidence**: <score>/100
+- **Comment**: <Informational observation>
 
 ## Discussions Needing Your Attention
 
@@ -249,7 +277,7 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
 > Previously reported and remains unresolved.
 
-#### 1. <Short issue title>
+#### Critical: <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
 - **Category**: Bug | Security | Architecture | Performance | Maintainability
 - **Comment**: <2-3 concise sentences>
@@ -260,7 +288,7 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
 > Previously reported, author made changes but fix may be incomplete or worth verifying.
 
-#### 1. <Short issue title>
+#### Optional: <Short issue title>
 - **File**: `<path/to/file.ext>:<line>`
 - **Originally reported by**: @<reviewer> or <previous report filename>
 - **What was done**: <Summary of the fix, e.g., "null check added in commit abc1234">
@@ -270,7 +298,7 @@ Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
 > Previously reported and now fully fixed.
 
-#### 1. <Short issue title>
+#### FYI: <Short issue title>
 - **Originally reported by**: @<reviewer> or <previous report filename>
 - **Resolution**: <How it was resolved>
 
@@ -332,7 +360,7 @@ When previous reports exist, include this section after "Existing Review Threads
 - **Verify before flagging.** If you're unsure whether something is a bug, trace the logic. Use Grep to find callers, tests, or related code. Only flag issues you're confident about.
 - **Respect existing discussions.** If reviewers already debated a point and reached consensus, don't re-litigate it unless you have new information.
 - **Be constructive.** Every issue should include a path forward, not just a complaint.
-- **Omit empty sections.** If there are no Critical issues, don't include an empty Critical section.
+- **Omit empty sections.** If there are no `Critical:` findings, don't include an empty `Critical:` section.
 
 ## Common False Positives — Do NOT Flag These
 

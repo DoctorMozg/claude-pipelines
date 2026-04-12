@@ -117,11 +117,7 @@ Use AskUserQuestion: `Panel assembled for "<topic>". Selected: <list with justif
 
 ## Phase 2: Ideation
 
-Dispatch the 5 selected personality agents in parallel.
-
-**See `phases/ideation.md`** for dispatch prompt template and idea collection.
-
-Update state phase to `ideation_complete`, increment iteration.
+Dispatch the 5 selected personality agents in parallel. **See `phases/ideation.md`** for dispatch prompt template and idea collection. Update state phase to `ideation_complete`, increment iteration.
 
 ## Phase 3: Synthesis + Voting
 
@@ -133,11 +129,7 @@ If majority reached → proceed to Phase 4. If not and iteration < MAX_ITERATION
 
 ## Phase 4: Report
 
-Compile final report with winning ideas, all perspectives, voting history.
-
-**See `phases/voting_and_report.md` → Phase 4** for report template.
-
-Write to `.mz/reports/brainstorm_<YYYY_MM_DD>_<topic_slug>.md` (append `_v2`, `_v3` if exists). Present summary to user.
+Compile final report with winning ideas, all perspectives, and voting history. **See `phases/voting_and_report.md` → Phase 4** for report template. Write to `.mz/reports/brainstorm_<YYYY_MM_DD>_<topic_slug>.md` (append `_v2`, `_v3` if exists). Present summary to user.
 
 ## Error Handling
 
@@ -148,6 +140,6 @@ Write to `.mz/reports/brainstorm_<YYYY_MM_DD>_<topic_slug>.md` (append `_v2`, `_
 
 ## State Management
 
-After each phase, update `.mz/task/<task_name>/state.md`. Track: current phase, iteration count, votes per round, which agents participated. All ideas and votes persist in `.mz/task/<task_name>/history.md` across iterations — this file is passed to agents in subsequent rounds so they build on prior discussion.
+After each phase, update `.mz/task/<task_name>/state.md`. Track current phase, iteration count, votes per round, and participating agents. Persist all ideas and votes in `.mz/task/<task_name>/history.md` for later rounds.
 
-Critical: anchor the most important rule at the end — never proceed past the approval gate without explicit user approval. Never skip voting. Never fabricate votes.
+Critical: never proceed past the approval gate without explicit user approval. Never skip voting. Never fabricate votes.

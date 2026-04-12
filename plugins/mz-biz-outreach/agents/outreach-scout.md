@@ -21,6 +21,23 @@ You receive:
 1. **Count limit** — maximum companies to extract from this source
 1. **Output file path** — where to write results
 
+## Source Discipline
+
+When using WebSearch/WebFetch, enforce this source priority:
+
+1. The assigned official source URL and its company detail pages.
+1. Official company websites linked from the source.
+1. Official public profiles: government registries, LinkedIn company pages, GitHub orgs, verified marketplace profiles.
+1. Dated reputable news or data providers with named publishers.
+
+**Banned sources**: Stack Overflow, AI-generated summaries, undated blog posts, forum threads, scraped lead lists without attribution, and social posts without a verifiable source trail.
+
+Emit disclosure tokens in your output when applicable:
+
+- `STACK DETECTED: N/A — outreach scouting for <source name/domain>` before web research.
+- `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
+- `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
+
 ## Scouting Process
 
 ### Step 1: Access the Source
