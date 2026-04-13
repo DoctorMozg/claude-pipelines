@@ -1,16 +1,19 @@
 ---
 name: init-rules
 description: ALWAYS invoke when the user wants to install development rules for a project or globally. Triggers:"init rules","set up rules","install rules","configure coding rules","onboard project".
-argument-hint: '[project|global] [--force]'
+argument-hint: '[project|global] [--target=rules|claudemd] [--force] [--uninstall]'
 model: sonnet
-allowed-tools: Read, Write, Bash, Glob, Grep
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
 ---
 
 # Init Rules
 
 ## Overview
 
-Install curated development rules based on detected project context. Scans the working directory for language/tooling signals, selects matching rule files, and writes them to `.claude/rules/` (project) or `~/.claude/rules/` (global).
+Install curated development rules based on detected project context. Two delivery modes:
+
+- `--target=rules` (default) — write rule files into `.claude/rules/` (project) or `~/.claude/rules/` (global). Files with `paths:` frontmatter stay path-scoped.
+- `--target=claudemd` — inject rule content directly into `./CLAUDE.md` (project) or `~/.claude/CLAUDE.md` (global), wrapped in sentinel blocks for idempotent re-runs and clean uninstall.
 
 ## When to Use
 
@@ -19,41 +22,43 @@ Triggers: "init rules", "set up rules", "install rules", "configure coding rules
 ### When NOT to use
 
 - The user wants to edit rule content itself — open the rule file directly.
-- The user wants per-file rule scoping beyond what `paths:` frontmatter supports.
-- The target directory is managed by another tool and should not be touched.
+- The user wants per-file rule scoping — use `--target=rules`; claudemd mode cannot path-scope.
+- The target directory or CLAUDE.md is managed by another tool and should not be touched.
 
 ## Arguments
 
-- No argument or `project` → install to `.claude/rules/` (project scope)
-- `global` → install to `~/.claude/rules/` (user scope)
-- `--force` → overwrite existing rule files
+- `project` (default) → scope to working directory
+- `global` → scope to `~/.claude/`
+- `--target=rules` (default) → write as individual rule files
+- `--target=claudemd` → inject into CLAUDE.md with sentinel blocks
+- `--force` → overwrite existing rule files / replace existing sentinel blocks
+- `--uninstall` → remove rules previously installed by this skill (mode-aware)
 
-Parse the argument from `$ARGUMENTS`.
+Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; never guess.
 
 ## Core Process
 
 ### Phase 0: Setup
 
-1. Parse `$ARGUMENTS` to determine mode (`project` default, or `global`) and the `--force` flag. Ambiguous tokens → escalate via AskUserQuestion; never guess.
-1. `task_name` = `init_rules_<slug>_<HHMMSS>` where `<slug>` is the mode (`project` or `global`) and `<HHMMSS>` is wall-clock time.
+1. Parse `$ARGUMENTS`: scope (`project`/`global`), target (`rules`/`claudemd`), `--force`, `--uninstall`. Unknown token → AskUserQuestion.
+1. `task_name` = `init_rules_<scope>_<target>_<HHMMSS>`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Mode: <project|global>`, `Force: <bool>`, `DetectedContexts: []`, `Installed: []`, `Skipped: []`.
-1. Emit a visible setup block: `task_name`, target directory, mode, force flag.
+1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO>`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `Installed: []`, `Replaced: []`, `Skipped: []`, `Removed: []`.
+1. Emit setup block: task_name, resolved target path, mode flags.
 
-### 1. Determine target directory
+### Step 1: Resolve target path
 
-```
-If $ARGUMENTS contains "global":
-  target = ~/.claude/rules/
-Else:
-  target = .claude/rules/
-```
+| Scope   | Target=rules       | Target=claudemd       |
+| ------- | ------------------ | --------------------- |
+| project | `.claude/rules/`   | `./CLAUDE.md`         |
+| global  | `~/.claude/rules/` | `~/.claude/CLAUDE.md` |
 
-Create the target directory if it doesn't exist.
+- `target=rules`: create target directory if missing.
+- `target=claudemd`: if file missing and not `--uninstall`, flag `will_create=true` for the approval gate.
 
-### 2. Detect project context
+### Step 2: Detect project context
 
-Scan the working directory for language and tooling signals. Build a list of detected contexts:
+Scan working directory for language/tooling signals:
 
 | Signal                                                              | Context tag  |
 | ------------------------------------------------------------------- | ------------ |
@@ -67,11 +72,13 @@ Scan the working directory for language and tooling signals. Build a list of det
 | `.git`                                                              | `git`        |
 | `.pre-commit-config.yaml`                                           | `pre-commit` |
 
-### 3. Select rules
+In `global` scope: skip detection; select all rules (the user wants them everywhere).
 
-Rules are bundled at `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/`.
+### Step 3: Select rules
 
-**Always install (universal rules):**
+Bundled at `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/`.
+
+**Universal (always):**
 
 - `code-quality.md`
 - `edit-safety.md`
@@ -81,7 +88,7 @@ Rules are bundled at `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/`.
 - `agent-workflow.md`
 - `housekeeping.md`
 
-**Conditional rules:**
+**Conditional:**
 
 | Condition                        | Rule file                     |
 | -------------------------------- | ----------------------------- |
@@ -91,60 +98,169 @@ Rules are bundled at `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/`.
 | `python` detected                | `strict-typing-python.md`     |
 | `typescript` detected            | `strict-typing-typescript.md` |
 
-For `global` mode: install ALL rules regardless of detection (the user wants them everywhere).
+### Step 4: Apply selected rules
 
-### 4. Install rules
+Branch on `--target` and `--uninstall`.
+
+#### 4a. Install to rules directory — `--target=rules`, no `--uninstall`
 
 For each selected rule:
 
-1. Read the rule file from `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/<filename>`
-1. Check if `<target>/<filename>` already exists
-   - If exists and `--force` not set: skip it, note it was skipped
-   - If exists and `--force` set: overwrite
-1. Write the rule file to `<target>/<filename>`
+1. Read `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/<filename>`.
+1. If `<target>/<filename>` exists and not `--force`: skip, record `Skipped`.
+1. If `<target>/<filename>` exists and `--force`: overwrite, record `Replaced`.
+1. Otherwise: write, record `Installed`.
 
-### 5. Report
+#### 4b. Inject into CLAUDE.md — `--target=claudemd`, no `--uninstall`
 
-Print a summary:
+**Approval gate.** Before any write, call AskUserQuestion with:
+
+- Resolved target path
+- File state (`create-new` / `modify-existing`)
+- Per-rule action preview: `append` | `replace` (only under `--force`) | `skip` (block exists, no `--force`)
+
+Proceed only on explicit approval. A single run-level confirmation covers all subsequent writes in the run.
+
+**Sentinel format.** Each rule is wrapped:
+
+```
+<!-- mz-rule:<id> v=<plugin-version> start -->
+<!-- source: <filename>[ | scope: <glob>[, <glob>...]] -->
+<rule-body>
+<!-- mz-rule:<id> end -->
+```
+
+- `<id>` = rule filename without `.md`.
+- `<plugin-version>` = read from `${CLAUDE_PLUGIN_ROOT}/../plugin.json` → `version`. If unreadable, use literal `unknown`.
+- `source` comment records the original filename; if the rule has `paths:` frontmatter, append `| scope: <glob>` (comma-join multiple globs).
+- `<rule-body>` = rule file content with YAML frontmatter stripped. If the body contains any H1 heading (`# `), demote to H2 before injection. H2 and below pass through verbatim.
+
+**Per-rule procedure:**
+
+1. If CLAUDE.md missing, create it with a minimal header:
+
+   ```
+   # Project Rules
+
+   <!-- This file is partially managed by mz-dev-base init-rules. Sentinel-wrapped blocks below are maintained automatically; content outside them is user-authored. -->
+   ```
+
+   Use `# Project Rules` for project scope, `# Global Rules` for global. Never overwrite an existing header.
+
+1. Grep CLAUDE.md for the start sentinel of `<id>`.
+
+1. **Absent** → append a blank line, then the sentinel block, at end of file. Record `Installed`.
+
+1. **Present, no `--force`** → skip, record `Skipped`.
+
+1. **Present, `--force`** → replace content between the matching start and end sentinels in place, preserving everything outside the block. Record `Replaced`.
+
+#### 4c. Uninstall — `--uninstall`
+
+**Target=rules:**
+
+1. Enumerate candidate rule filenames using the same Step 3 selection logic.
+1. For each: if `<target>/<filename>` exists AND the filename is in the known bundled rule set, delete and record `Removed`.
+1. Never delete files in the rules directory that are not bundled by this skill.
+
+**Target=claudemd:**
+
+1. Approval gate — list every `<!-- mz-rule:<id>` sentinel pair found in the file; confirm before removing.
+1. For each matching pair: remove the block plus one adjacent blank line to avoid accumulating gaps.
+1. Never delete CLAUDE.md itself, even if it ends up containing only the managed header.
+
+### Step 5: Report
+
+Mode-specific summary.
+
+**Rules-file mode:**
 
 ```
 Rules installed to <target>:
   ✓ code-quality.md
-  ✓ edit-safety.md
   ✓ python-conventions.md (detected: pyproject.toml)
-  ⊘ git-conventions.md (already exists, use --force to overwrite)
+  ⊘ git-conventions.md (exists, use --force)
 
-Detected contexts: python, git
-Skipped: 1 (already exist)
-Installed: 8
+Detected: python, git
+Installed: 8  Replaced: 0  Skipped: 1
 ```
+
+**CLAUDE.md mode:**
+
+```
+CLAUDE.md: <resolved path> (created|modified)
+  + appended: code-quality, edit-safety
+  ~ replaced: python-conventions (--force)
+  ⊘ skipped: git-conventions (block exists)
+
+Detected: python, git
+Appended: 7  Replaced: 1  Skipped: 1
+```
+
+**Uninstall:**
+
+```
+Removed from <target>:
+  - code-quality (block|file)
+  - python-conventions (block|file)
+
+Removed: N
+```
+
+## Sentinel Format Reference
+
+Exact line shape — re-runs and uninstall depend on it.
+
+```
+<!-- mz-rule:<id> v=<version> start -->
+<!-- source: <filename>[ | scope: <glob>[, <glob>...]] -->
+<body>
+<!-- mz-rule:<id> end -->
+```
+
+Detection rules:
+
+- Start sentinel regex: `<!-- mz-rule:<id> v=\S+ start -->`.
+- End sentinel regex: `<!-- mz-rule:<id> end -->`.
+- Version in the start sentinel is informational (enables future upgrade diffing); detection matches on `<id>` only.
+- One block per `<id>`. If duplicates exist (manual edit or prior bug), stop and surface an error — do not guess which to replace.
 
 ## Techniques
 
-- **Stack detection**: read manifest files and glob language extensions to build a context tag set before selecting rules.
-- **Conditional rule mapping**: never invent rules — look them up in the Step 3 table. Python adds both `python-conventions.md` and `strict-typing-python.md`; TypeScript adds `strict-typing-typescript.md`.
-- **Idempotent writes**: honor `--force` — skip existing files unless overwrite is explicit. Never silently clobber.
-- Do NOT modify existing CLAUDE.md files — only write to the rules/ directory.
-- Rule files with `paths:` frontmatter are path-scoped; without frontmatter they load every session.
-- If no project signals are found, still install the universal rules.
+- **Stack detection**: manifest files + language-extension globs before rule selection.
+- **Conditional mapping**: look up in the Step 3 table; never invent rules.
+- **Idempotent writes**: honor `--force`; never silently clobber.
+- **Sentinel-bounded edits** (claudemd mode): detection via start-sentinel grep, replacement bounded by matching end sentinel. Preserve all content outside the block.
+- **Frontmatter stripping**: on inject, remove YAML frontmatter and demote any stray H1 to H2 so CLAUDE.md stays single-rooted.
+- **Approval gate** (claudemd mode): always ask once before the first write; never modify CLAUDE.md silently.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
+N/A — collaboration/reference skill per Rule 17.
 
 ## Red Flags
 
-- You invented rule files instead of reading the conditional-rules table in Step 3.
-- You copied rules to a non-standard location (not `.claude/rules/` or `~/.claude/rules/`).
-- You skipped the stack-detection step and installed a hardcoded rule set.
+- You invented rule files instead of reading the Step 3 table.
+- You copied rules to a non-standard location.
+- You skipped stack detection.
+- (claudemd mode) You modified CLAUDE.md without the approval gate.
+- (claudemd mode) You replaced content outside sentinel boundaries.
+- (claudemd mode) You omitted the version tag in the start sentinel.
+- (uninstall) You deleted rule files or CLAUDE.md blocks you did not author.
 
 ## Verification
 
-Print the installed-rules summary block from Step 5, listing the target directory, detected contexts, and per-file install/skip status. Confirm each written file exists at `<target>/<filename>`.
+Print the mode-appropriate Step 5 summary.
+
+- **Rules-file mode**: confirm each recorded filename exists at `<target>/<filename>` (or is absent after uninstall).
+- **CLAUDE.md mode**: after writes, grep CLAUDE.md for each injected `<id>` start sentinel — expect exactly one match per installed rule. For uninstall, expect zero matches for removed IDs.
 
 ## Error Handling
 
-- **Empty / ambiguous argument** (conflicting tokens, unknown mode) → escalate via AskUserQuestion; never guess.
-- **Missing tooling** — if `${CLAUDE_PLUGIN_ROOT}` is unset or the bundled `rules/` directory is not readable, escalate via AskUserQuestion with the exact path that failed.
-- **Empty detection result** (no project signals found) → still install universal rules; if the target directory is not writable, escalate via AskUserQuestion. Retry the write once after surfacing the permission error; if still failing, escalate.
-- Never guess — on any ambiguity (unknown mode, target directory conflict, pre-existing non-rule files) escalate via AskUserQuestion rather than silently overwrite or skip.
+- **Empty / ambiguous argument** → AskUserQuestion; never guess.
+- **Missing tooling** — if `${CLAUDE_PLUGIN_ROOT}` is unset or the bundled `rules/` directory is not readable, AskUserQuestion with the failing path.
+- **No detected contexts** → still install universal rules; if target not writable, retry once then AskUserQuestion.
+- **CLAUDE.md unreadable or unwritable** → AskUserQuestion with the exact path and error; do not fall back silently.
+- **Duplicate sentinel IDs found in CLAUDE.md** (manual edit or prior bug) → stop, report the conflicting lines, ask the user to resolve before re-running.
+- **Plugin version unreadable** → use literal `unknown` for the version tag and note it in the report.
+- Never guess — any ambiguity escalates via AskUserQuestion rather than silent overwrite or skip.

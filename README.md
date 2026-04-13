@@ -169,13 +169,13 @@ After installation, skills are available as slash commands:
 
 Standalone agents and skills for everyday development. No pipeline orchestration — each tool works independently.
 
-| Skill             | Command                         | What it does                                                        |
-| ----------------- | ------------------------------- | ------------------------------------------------------------------- |
-| **review-branch** | `/review-branch`                | Reviews all changes on the current branch against main              |
-| **review-pr**     | `/review-pr <URL>`              | Deep-reviews a GitHub PR for bugs and architecture issues           |
-| **scan-prs**      | `/scan-prs [repos]`             | Scans repos for PRs needing your attention, produces a daily report |
-| **deep-research** | `/deep-research <topic>`        | Multi-agent web research with parallel domain experts               |
-| **init-rules**    | `/init-rules [project\|global]` | Installs curated coding rules based on detected languages           |
+| Skill             | Command                                                    | What it does                                                        |
+| ----------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| **review-branch** | `/review-branch`                                           | Reviews all changes on the current branch against main              |
+| **review-pr**     | `/review-pr <URL>`                                         | Deep-reviews a GitHub PR for bugs and architecture issues           |
+| **scan-prs**      | `/scan-prs [repos]`                                        | Scans repos for PRs needing your attention, produces a daily report |
+| **deep-research** | `/deep-research <topic>`                                   | Multi-agent web research with parallel domain experts               |
+| **init-rules**    | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 
 6 agents (code-reviewer, branch-reviewer, pr-reviewer, pr-scanner, researcher, technical-writer) and 11 coding rules.
 

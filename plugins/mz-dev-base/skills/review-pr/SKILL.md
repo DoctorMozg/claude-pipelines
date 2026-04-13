@@ -33,6 +33,11 @@ If no argument is provided, ask the user for a PR URL.
 
 ## Core Process
 
+| Phase | Goal                       | Details      |
+| ----- | -------------------------- | ------------ |
+| 0     | Setup                      | Inline below |
+| 1     | Dispatch pr-reviewer agent | Inline below |
+
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`. If the PR reference is empty or malformed, escalate via AskUserQuestion — never guess, never fabricate a PR URL.
@@ -44,24 +49,28 @@ If no argument is provided, ask the user for a PR URL.
 
 ### 1. Dispatch
 
-1. Validate that the normalized PR reference points to an accessible PR (via `gh pr view`). On failure, escalate via AskUserQuestion.
+1. Validate via `gh pr view` that the normalized PR reference is accessible. On failure, escalate via AskUserQuestion.
 1. Launch the `pr-reviewer` agent with the PR reference as the prompt.
-1. The agent runs in an isolated worktree, reviews the PR, and writes a report to `.mz/reviews/` using the naming convention: `review_pr_<YYYY_MM_DD>_<owner>_<repo>_<pr_number><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).
-1. After the agent completes, update `state.md` to `Status: complete`, `Phase: 1`, and display the path to the generated report.
+1. After the agent completes, parse its final message for the `STATUS:` line:
+   - `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS` → update `state.md` to `Status: complete`, `Phase: 1`. On `DONE_WITH_CONCERNS`, also log the concerns block into `state.md`.
+   - `STATUS: NEEDS_CONTEXT` → re-dispatch **once** with the requested context; on a second `NEEDS_CONTEXT`, escalate via AskUserQuestion.
+   - `STATUS: BLOCKED` → escalate via AskUserQuestion with the blocker reason. Never auto-retry on `BLOCKED`.
+1. On any terminal success, display the absolute report path.
 
 ## Techniques
 
-Techniques: delegated to the `pr-reviewer` agent — see its agent definition for worktree isolation, diff-plus-context reading, CI-result cross-referencing, and severity labeling.
+Delegated to phase files — see Phase Overview table above. Detailed technique (worktree isolation, diff-plus-context reading, multi-lens fan-out, two-signal Critical gate, CI-result cross-referencing, severity labeling) lives in `plugins/mz-dev-base/agents/pr-reviewer.md` and the code-lens-\* agent files.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
+N/A — this is a reference/collaboration skill that dispatches a specialist agent. It does not enforce discipline decisions itself. Discipline pressure is enforced inside `pr-reviewer` and the code-lens-\* agents.
 
 ## Red Flags
 
-- You reviewed only the diff hunks without reading the surrounding code in the worktree.
-- You ignored existing PR comments and re-raised points already discussed.
-- You did not cross-reference CI results (lint, type-check, test) before rendering a verdict.
+- The PR argument is missing or malformed and you are guessing a URL instead of asking.
+- You dispatched `pr-reviewer` without first validating PR accessibility via `gh pr view`.
+- The agent returned `STATUS: BLOCKED` or `NEEDS_CONTEXT` and you retried more than once instead of escalating.
+- The agent's final message had no `STATUS:` line and you proceeded anyway.
 
 ## Verification
 

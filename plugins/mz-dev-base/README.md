@@ -48,13 +48,18 @@ Splits a research topic into domains, dispatches parallel domain-researcher agen
 
 ### `/init-rules` — Rule Installer
 
-Detects project languages and installs relevant coding rules to `.claude/rules/` (project scope) or `~/.claude/rules/` (global scope). Rules cover code quality, typing, git conventions, edit safety, and language-specific patterns.
+Detects project languages and installs relevant coding rules. Two delivery modes: rule files in `.claude/rules/` (default) or sentinel-wrapped blocks injected directly into `CLAUDE.md`. Rules cover code quality, typing, git conventions, edit safety, and language-specific patterns.
 
 ```
-/init-rules                 # project scope, auto-detect languages
-/init-rules global          # user scope
-/init-rules project --force # overwrite existing rules
+/init-rules                               # project scope, rule files, auto-detect
+/init-rules global                        # user scope, rule files
+/init-rules project --force               # overwrite existing rule files
+/init-rules project --target=claudemd     # inject into ./CLAUDE.md (asks for approval)
+/init-rules global --target=claudemd      # inject into ~/.claude/CLAUDE.md
+/init-rules --uninstall                   # remove rules previously installed by this skill
 ```
+
+`--target=claudemd` wraps each rule in a `<!-- mz-rule:<id> ... -->` sentinel block so re-runs are idempotent and `--uninstall` can remove them cleanly. `--force` replaces existing blocks in place.
 
 ## Agents
 
