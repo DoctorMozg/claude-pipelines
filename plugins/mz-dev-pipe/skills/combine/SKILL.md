@@ -53,15 +53,8 @@ Extract `sections:<comma-separated list>` from `$ARGUMENTS` if present. If provi
 
 ## Constants
 
-- `MAX_LENSES = 6` — hard cap on parallel lens agents in Phase 2 (Rule 13 wave cap).
-- `TASK_ARTIFACT_STALE_DAYS = 30` — freshness cutoff for `.mz/task/*/` artifacts.
-- `REPORT_STALE_DAYS = 60` — freshness cutoff for `.mz/reports/*` and `.mz/reviews/*`.
-- `RESEARCH_STALE_DAYS = 90` — freshness cutoff for `.mz/research/*` deep-research reports.
-- `MAX_GAP_FILL_WAVES = 1` — single-shot web gap-fill cap (prevents infinite loops, Rule 10).
-- `TASK_DIR = .mz/task/` — working artifact root.
-- `REPORT_DIR = .mz/reports/` — final report root.
-- `RESEARCH_DIR = .mz/research/` — deep-research artifact root; primary source for the `research` lens.
-- `MIN_TASK_QUERY_TOKENS = 5` — below this token count in the task text, Phase 0.2 fires a focusing question before any phase runs.
+Bounds: `MAX_LENSES = 6`, `MAX_GAP_FILL_WAVES = 1`, `MIN_TASK_QUERY_TOKENS = 5`.
+Paths/freshness: `TASK_DIR = .mz/task/`, `REPORT_DIR = .mz/reports/`, `RESEARCH_DIR = .mz/research/`, `TASK_ARTIFACT_STALE_DAYS = 30`, `REPORT_STALE_DAYS = 60`, `RESEARCH_STALE_DAYS = 90`.
 
 ## Core Process
 
@@ -77,8 +70,6 @@ Extract `sections:<comma-separated list>` from `$ARGUMENTS` if present. If provi
 | 3.5 | Gap-Fill Approval Gate (conditional)    | inline stub + body in `phases/synthesis.md §Phase 3.5 Gate`    | yes   |
 | 4   | Web Gap-Fill (conditional)              | `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)` | —     |
 | 5   | Task-Adaptive Report Generation         | `phases/synthesis.md`                                          | —     |
-
-Read the relevant phase file when you reach that phase. Do not read all phase files upfront.
 
 ## Techniques
 
@@ -152,12 +143,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 ## Error Handling
 
-- **Vague task** — Phase 0.2 fires the focusing question; do not advance until clarified.
-- **Empty `.mz/`** — AskUserQuestion offering codebase-only mode or abort. Never silently degrade to `/deep-research`.
-- **Lens agent returns `BLOCKED`** — escalate via AskUserQuestion, no auto-retry.
-- **Lens agent returns `NEEDS_CONTEXT`** — single re-dispatch with the requested context, then escalate.
-- **`MAX_GAP_FILL_WAVES` exhausted** — report residual gaps as unresolved in the final report; do not iterate.
-- **Report collision** — append `_v2`, `_v3` per Rule 11.
+Vague task → ask before Phase 1. Empty `.mz/` → offer codebase-only mode or abort; never silently degrade to `/deep-research`. Lens `BLOCKED` → escalate with no auto-retry. Lens `NEEDS_CONTEXT` → single re-dispatch, then escalate. `MAX_GAP_FILL_WAVES` exhausted → report unresolved gaps. Report collision → append `_v2`, `_v3`.
 
 ## State Management
 

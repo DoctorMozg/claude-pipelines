@@ -74,7 +74,7 @@ Use AskUserQuestion with:
 ```
 Design document ready at .mz/design/<task_name>/design.md (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS).
 
-Reply 'approve' to finalize, 'reject' to abort, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:

@@ -68,7 +68,7 @@ Impact analysis target resolved:
 - Analysis depth: <MAX_DEPTH> hops (transitive)
 - Estimated scope: <brief description of what will be searched>
 
-Reply 'approve' to start analysis, 'reject' to abort, or adjust (e.g. "depth 2", "only look at src/").
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:

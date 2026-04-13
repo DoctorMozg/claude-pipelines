@@ -103,7 +103,7 @@ Bug investigation complete. Review the diagnosis before I proceed:
 ## External Context
 <domain research findings — omit if none>
 
-Reply 'approve' to proceed with regression test + fix, 'reject' to abort, or provide feedback.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:

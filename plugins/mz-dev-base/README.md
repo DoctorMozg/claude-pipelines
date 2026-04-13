@@ -39,7 +39,7 @@ Scans GitHub repositories for PRs needing your attention — review requested, m
 
 ### `/deep-research` — Multi-Agent Research
 
-Splits a research topic into domains, dispatches parallel researcher agents that each scan 20-100 web pages, then synthesizes findings into a comprehensive report.
+Splits a research topic into domains, dispatches parallel domain-researcher agents that each scan 20-100 web pages, then synthesizes findings into a comprehensive report.
 
 ```
 /deep-research best practices for gRPC error handling in Go
@@ -60,14 +60,14 @@ Detects project languages and installs relevant coding rules to `.claude/rules/`
 
 Agents are specialized workers that can be invoked directly or used by skills.
 
-| Agent                | Purpose                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------ |
-| **code-reviewer**    | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability |
-| **branch-reviewer**  | Analyzes all branch changes file-by-file, delegates to researcher for complex domain topics      |
-| **pr-reviewer**      | Deep PR review in an isolated worktree with structured markdown report                           |
-| **pr-scanner**       | Scans repos for PRs needing attention, dispatches pr-reviewer for top priorities                 |
-| **researcher**       | Multi-source research with web search, source verification, and structured reports               |
-| **technical-writer** | Creates and improves technical documentation grounded in actual code                             |
+| Agent                 | Purpose                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| **code-reviewer**     | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability   |
+| **branch-reviewer**   | Analyzes all branch changes file-by-file, delegates to domain-researcher for complex domain topics |
+| **pr-reviewer**       | Deep PR review in an isolated worktree with structured markdown report                             |
+| **pr-scanner**        | Scans repos for PRs needing attention, dispatches pr-reviewer for top priorities                   |
+| **domain-researcher** | Multi-source research with web search, source verification, and structured reports                 |
+| **technical-writer**  | Creates and improves technical documentation grounded in actual code                               |
 
 ## Rules
 

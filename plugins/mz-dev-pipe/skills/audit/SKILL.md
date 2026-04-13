@@ -90,7 +90,7 @@ Found <N> actionable findings. Please review:
 
 <findings list>
 
-Reply 'approve' to proceed with fixes, 'reject' to abort, or provide feedback for changes
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 (e.g. "drop finding 3", "rerun research with security lens only", "narrow scope to src/api/").
 ```
 

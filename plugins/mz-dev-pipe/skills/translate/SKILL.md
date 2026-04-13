@@ -29,6 +29,10 @@ Orchestrates a plan-approve-translate-verify flow for translating documents, REA
 
 `$ARGUMENTS` is a natural-language request. Accepted forms: `translate <path> to <lang>` and `translate <path> to <lang> mode:<sidecar|inplace|i18n>`. There is no verification opt-in flag in the grammar — tiered verification is always on and its fixed cost is shown to the user at the approval gate. Source language defaults to auto-detect; output mode defaults to `sidecar`. Empty or ambiguous arguments escalate via AskUserQuestion — never guess.
 
+## Scope Parameter
+
+Extract `scope:branch|global|working` from `$ARGUMENTS`, case-insensitive. Default: `working` if paths are omitted, otherwise the explicit path list. Scope constrains **which files may be translated**; discovery may read the full project to resolve globs, detect formats, and seed glossary terms.
+
 ## Constants
 
 - **MAX_PARALLEL_TRANSLATORS**: 6 | **MAX_CHUNK_LINES**: 500 | **MAX_VERIFICATION_ATTEMPTS**: 2 | **MAX_APPROVAL_ITERATIONS**: 3
@@ -69,7 +73,7 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated. Full detail in `phases/discovery_and_planning.md` under `Phase 1.5`; the five load-bearing elements are:
 
 - Show `<task_dir>/translation_plan.md` verbatim plus the verification cost block (chunks, judge batches via `MAX_JUDGE_BATCH`, Tier-3 caps via `MAX_WIKTIONARY_LOOKUPS` / `MAX_MYMEMORY_QUERIES`, wall-clock range, `INPLACE_DESTRUCTIVE` highlight).
-- Ask via AskUserQuestion ending literally with: `Reply 'approve' to proceed with translation, 'reject' to abort, or provide feedback for changes.`
+- Ask via AskUserQuestion ending literally with: `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
 - **"approve"** → state `plan_approved`, proceed to Phase 2.
 - **"reject"** → state `aborted_by_user`, stop. Do not proceed.
 - **Feedback** → re-run affected Phase 1 sub-steps, overwrite the plan, re-present **via AskUserQuestion**. Increment `approval_iterations`; bounded by `MAX_APPROVAL_ITERATIONS`. **This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.**

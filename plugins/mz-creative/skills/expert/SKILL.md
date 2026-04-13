@@ -42,26 +42,8 @@ If `$ARGUMENTS` is empty, ask the user via `AskUserQuestion`. Never guess.
 
 ## Available Lenses
 
-Panel picks 5 from the 16 available lenses. Behavior is injected by this skill (critique mode) — the same lens agent is used by `/brainstorm` (ideation mode).
-
-| Agent              | Lens                                                       | Best for                                               |
-| ------------------ | ---------------------------------------------------------- | ------------------------------------------------------ |
-| lens-engineer      | Systems, architecture, technical feasibility               | Technical critique, implementation realism             |
-| lens-artist        | Aesthetics, form, experience                               | Design, branding, visual communication                 |
-| lens-philosopher   | Meaning, ethics, cultural impact                           | Ethical framing, purpose, values                       |
-| lens-mathematician | Patterns, optimization, formal logic                       | Algorithmic rigor, process design                      |
-| lens-scientist     | Hypotheses, evidence, experiments                          | Empirical validation, methodology                      |
-| lens-economist     | Incentives, markets, game theory                           | Business models, pricing, game-theoretic risk          |
-| lens-storyteller   | Narrative, metaphor, audience                              | Marketing, messaging, pitch quality                    |
-| lens-futurist      | Trends, disruption, long-term trajectories                 | Strategic positioning, innovation horizon              |
-| lens-psychologist  | Cognition, bias, motivation                                | User behavior, adoption, persuasion                    |
-| lens-historian     | Precedent, patterns of change                              | Prior-art risk, lessons learned, positioning           |
-| lens-cto           | Tech strategy, architecture, build-vs-buy, engineering org | Platform decisions, scaling, stack choices             |
-| lens-seo           | Organic visibility, content, SERP, technical SEO           | Discoverability, content strategy, backlink economics  |
-| lens-security      | Threat modeling, compliance, attack surface                | Security posture, regulatory exposure, data privacy    |
-| lens-product       | PMF, user value, roadmap tradeoffs                         | Product scope, prioritization, feature economics       |
-| lens-devops        | Reliability, observability, cost, SLOs                     | Ops readiness, production risk, operational burden     |
-| lens-data          | Analytics, measurement, A/B testing, growth loops          | Measurable outcomes, experiment design, metrics choice |
+Panel picks 5 from 16 lenses: `lens-engineer`, `lens-artist`, `lens-philosopher`, `lens-mathematician`, `lens-scientist`, `lens-economist`, `lens-storyteller`, `lens-futurist`, `lens-psychologist`, `lens-historian`, `lens-cto`, `lens-seo`, `lens-security`, `lens-product`, `lens-devops`, `lens-data`.
+Use the brief to balance primary, adjacent, and productive-tension lenses. Behavior is injected by this skill (critique mode); the same lens agents serve `/brainstorm` in ideation mode.
 
 ## Core Process
 
@@ -95,7 +77,7 @@ Use AskUserQuestion with:
 ```
 Panel assembled: <5 lens names>. Full rationale at .mz/task/<task_name>/panel.md.
 
-Reply 'approve' to start the 3-round consultation, 'reject' to abort, or provide feedback (e.g. swap a lens) for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:

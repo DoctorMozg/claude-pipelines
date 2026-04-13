@@ -29,6 +29,10 @@ Orchestrates a full development lifecycle — research, plan, implement in paral
 
 - `$ARGUMENTS` — The task description. If empty, ask the user what they want built.
 
+## Scope Parameter
+
+Extract `scope:branch|global|working` from `$ARGUMENTS`, case-insensitive. Default: `global`. Scope constrains **edits only**; researchers and verification commands may read the full project. Remove the scope token before deriving the task description.
+
 ## Constants
 
 - **MAX_REVIEW_ITERATIONS**: 3 | **TASK_DIR**: `.mz/task/`
@@ -139,10 +143,7 @@ Output the final state block: task dir path, all phases marked complete, review 
 
 ## Error Handling
 
-- Agent failure → retry once, then escalate to user.
-- No test framework → tell user and ask how to proceed.
-- No linter → note in summary, don't block.
-- Always save state before spawning agents.
+Agent failure → retry once, then escalate. No test framework → ask how to proceed. No linter → note in summary, don't block. Always save state before spawning agents.
 
 ## State Management
 

@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read, Write
 
 ## Overview
 
-Conduct exhaustive, multi-agent research on a topic by decomposing it into independent domains, dispatching parallel researcher agents, and synthesizing findings into a single report under `.mz/research/`.
+Conduct exhaustive, multi-agent research on a topic by decomposing it into independent domains, dispatching parallel domain-researcher agents, and synthesizing findings into a single report under `.mz/research/`.
 
 ## When to Use
 
@@ -19,7 +19,7 @@ Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is 
 ### When NOT to use
 
 - The user wants a one-line factual answer — use plain web search.
-- The topic is narrow enough for a single researcher agent — dispatch directly.
+- The topic is narrow enough for a single domain-researcher agent — dispatch directly.
 - The user wants a code review or audit — use `review-branch` or `audit`.
 
 ## Arguments
@@ -28,7 +28,13 @@ Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is 
 
 ## Core Process
 
-Steps 2-5 are detailed in `phases/research_and_report.md`. Phase 0 (setup) and Step 1 (decomposition + approval gate) are inline below.
+### Phase Overview
+
+| #   | Phase                         | Details                         |
+| --- | ----------------------------- | ------------------------------- |
+| 0   | Setup                         | inline below                    |
+| 1   | Decomposition + approval gate | inline below                    |
+| 2-5 | Research, synthesis, report   | `phases/research_and_report.md` |
 
 ### Phase 0: Setup
 
@@ -64,8 +70,9 @@ Research decomposition ready. Please review:
 
 <numbered list of subtopics with descriptions>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback
-(e.g. "add a subtopic on X", "merge topics 2 and 4", "drop topic 3").
+Feedback examples: add a subtopic, merge two topics, or drop one.
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:
@@ -74,9 +81,9 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → adjust the decomposition accordingly, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
 
-### 2. Dispatch parallel researcher agents
+### 2. Dispatch parallel domain-researcher agents
 
-Launch a `researcher` agent per subtopic in parallel. **See `phases/research_and_report.md` → Step 2** for the dispatch prompt template.
+Launch a `domain-researcher` agent per subtopic in parallel. **See `phases/research_and_report.md` → Step 2** for the dispatch prompt template.
 
 ### 3. Collect and synthesize
 

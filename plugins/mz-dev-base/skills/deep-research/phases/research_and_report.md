@@ -2,9 +2,9 @@
 
 Detail for the researcher dispatch, synthesis, report writing, and user reporting steps of the deep-research skill.
 
-## Step 2: Dispatch parallel researcher agents
+## Step 2: Dispatch parallel domain-researcher agents
 
-For each subtopic, launch a `researcher` agent **in parallel** with a detailed prompt. Each agent's prompt must include:
+For each subtopic, launch a `domain-researcher` agent **in parallel** with a detailed prompt. Each agent's prompt must include:
 
 ```
 Research the following subtopic exhaustively: "<subtopic name>"
@@ -28,7 +28,7 @@ Output format:
 - End with "Gaps" — what you could NOT find or verify.
 ```
 
-IMPORTANT: Launch ALL researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
+IMPORTANT: Launch ALL domain-researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
 
 ## Step 3: Collect and synthesize
 
@@ -86,7 +86,7 @@ What could not be determined from available sources. Suggestions for further inv
 
 ## Methodology
 
-- Number of researcher agents dispatched: N
+- Number of domain-researcher agents dispatched: N
 - Approximate pages consulted per agent: N
 - Search strategy summary
 

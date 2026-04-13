@@ -82,7 +82,7 @@ The optimization plan is ready. Please review and approve:
 
 <plan contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 (e.g. exclude a file, adjust chunking, change chunk count).
 ```
 

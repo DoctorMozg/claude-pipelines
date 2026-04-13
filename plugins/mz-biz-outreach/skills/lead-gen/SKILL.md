@@ -51,26 +51,7 @@ Extract from `$ARGUMENTS`:
 
 ## Directory Structure
 
-```
-.mz/outreach/<run_name>/
-├── state.json
-├── strategy.json
-├── sources.json
-├── _scout/                        # temp: bulk arrays per source (cleaned after dedup)
-│   └── <source_slug>.json
-├── _enrichment/                   # temp: per-company enrichment parts (cleaned after merge)
-│   └── <slug>/
-│       ├── contacts.json
-│       ├── news.json
-│       ├── growth.json
-│       └── tech.json
-├── companies/                     # permanent: one pair per company
-│   ├── <slug>.json                # machine-readable, progressively enriched
-│   ├── <slug>.md                  # human-readable dossier card
-│   └── ...
-├── scout_summary.md
-└── outreach_<YYYY_MM_DD>_<goal_slug>.md  # executive summary + scored ranking + card references
-```
+Use `.mz/outreach/<run_name>/` with `state.json`, `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `outreach_<YYYY_MM_DD>_<goal_slug>.md`.
 
 ## Core Process
 
@@ -102,7 +83,7 @@ Use AskUserQuestion with:
 ```
 Strategy drafted for "<goal>". Target profile, sector filters, and candidate sources are in .mz/outreach/<run_name>/strategy.json.
 
-Reply 'approve' to proceed to source research, 'reject' to abort, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:
