@@ -2,5 +2,5 @@
   "description": "UI/UX design document generation with multi-critic refinement loop and WCAG enforcement",
   "license": "MIT",
   "name": "mz-design",
-  "version": "0.17.0"
+  "version": "0.18.0"
 }
