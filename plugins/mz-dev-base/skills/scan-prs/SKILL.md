@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read
 
 ## Overview
 
-Dispatch the `pr-scanner` agent to find pull requests that need the user's attention across multiple GitHub repositories, prioritize them, and fan-out `pr-reviewer` agents on the top priorities.
+Dispatch the `pr-scanner` agent to find pull requests that need the user's attention across multiple GitHub repositories, fan out per-PR haiku scorers for every PR, and produce a prioritized triage report. Deep code reviews are not part of this skill — for a thorough review on any single PR in the report, the user runs `/review-pr <url>` separately.
 
 ## When to Use
 
@@ -39,19 +39,19 @@ If no argument is provided, detect the current repository from `gh repo view --j
 1. Parse `$ARGUMENTS` — list of GitHub repositories. If empty, resolve current repo via `gh repo view --json nameWithOwner -q .nameWithOwner`; if that fails, escalate via AskUserQuestion. Never guess.
 1. `task_name` = `scan_prs_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the repo list (max 20 chars, e.g. `owner_repo` or `multi_repo`) and `<HHMMSS>` is wall-clock time.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Repos: [<list>]`, `ScannedPRs: 0`, `ReviewedPRs: 0`.
+1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Repos: [<list>]`, `ScannedPRs: 0`, `ScoredPRs: 0`.
 1. Emit a visible setup block: `task_name`, repo list, report dir (`.mz/reviews/`).
 
 ### 1. Dispatch
 
 1. Launch the `pr-scanner` agent with the repository list as the prompt.
-1. The agent scans for PRs where the user is requested for review, mentioned, assigned, or has changes requested on their own PRs.
-1. It dispatches `pr-reviewer` agents for the top-5 priority PRs.
-1. After completion, display the path to the consolidated report at `.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).
+1. The agent scans for PRs where the user is requested for review, mentioned, assigned, or has changes requested on their own PRs, then fans out one `pr-info-scorer` haiku agent per PR (in parallel waves of up to 6) to gather metadata, complexity signals, and unanswered-question state.
+1. Every PR returned by the scan is scored into one of three tiers — Tier 1 (directly asked, unanswered), Tier 2 (review or action requested), or Tier 3 (informational) — and ranked within its tier by complexity and age.
+1. After completion, display the path to the triage report at `.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).
 
 ## Techniques
 
-Techniques: delegated to the `pr-scanner` and `pr-reviewer` agents — see their agent definitions for priority ranking, review deduplication, and parallel review fan-out.
+Techniques: delegated to the `pr-scanner`, `github-pr-data-fetcher`, and `pr-info-scorer` agents — see their agent definitions for bulk PR listing, per-PR haiku triage, and tier-based ranking.
 
 ## Common Rationalizations
 
@@ -59,13 +59,13 @@ N/A — collaboration/reference skill, not discipline.
 
 ## Red Flags
 
-- You reviewed every PR in the scope instead of filtering to those needing the user's attention.
-- You re-reviewed PRs that were already reviewed recently without checking for new commits.
-- The top-5 selection was arbitrary rather than priority-ranked by signal strength.
+- You produced a triage report without scoring every PR the fetcher returned (top-N truncation is a bug here).
+- You dispatched the `pr-reviewer` agent from this skill — deep reviews belong to `/review-pr`, not the triage flow.
+- You let a Tier 2 or Tier 3 item outrank a Tier 1 item in the report (tier boundaries are absolute; complexity only orders within a tier).
 
 ## Verification
 
-Output the consolidated report path (`.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md`), confirm the file exists, and print the per-PR verdict lines for each top-5 dispatch.
+Output the triage report path (`.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md`), confirm the file exists, and confirm Tier 1 items (if any) appear above Tier 2 and Tier 3 in the report. The report should end with a `How to Deep-Review` footer pointing users to `/review-pr <url>` for any single PR that warrants a thorough read.
 
 ## Error Handling
 
@@ -84,8 +84,8 @@ After Phase 1 completes, update `.mz/task/<task_name>/state.md` with:
 
 - `Status:` `complete` | `complete_with_concerns` | `blocked` | `no_prs_found`
 - `Phase:` `1`
-- `ScannedPRs:` total PR count from the scanner report
-- `ReviewedPRs:` count of top-5 PRs dispatched to pr-reviewer
-- `ReportPath:` absolute path to the consolidated scan report
+- `ScannedPRs:` total PR count from the fetcher artifact
+- `ScoredPRs:` count of PRs with valid `pr-info-scorer` artifacts (should equal ScannedPRs on a clean run)
+- `ReportPath:` absolute path to the triage report
 
 Never rely on conversation memory — the state file is the source of truth if the session is interrupted.

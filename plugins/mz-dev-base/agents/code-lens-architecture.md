@@ -76,7 +76,25 @@ Example row:
 | src/services/order_service.py | 142 | 218 | Optional: | architecture | 74 | `OrderService` now owns HTTP parsing, validation, persistence, and notification dispatch in one ~80-line method. The rest of `src/services/` follows the handler→service→repo split (see `user_service.py:40-95`, `invoice_service.py:25-80`) — this class drifts from that convention and will attract further responsibilities on every new endpoint. | architecture |
 ```
 
-Emit only `STATUS:` + the absolute output path in the final message. The findings table stays in the file.
+After the table, write a `## Code Snippets` section in the same file. For each row in the findings table (in table order), add one numbered entry:
+
+````markdown
+### Finding N — `<file>:<line_start>`
+```<lang>
+<comment-marker> line <line_start>
+<lines from max(1, line_start - 3) through min(eof, line_end + 3), 7 lines total>
+```
+````
+
+Rules for code snippets:
+
+- Language from extension: `.py` → `python`, `.ts`/`.tsx` → `typescript`, `.go` → `go`, `.rs` → `rust`, `.js`/`.jsx` → `javascript`, `.cpp`/`.cc` → `cpp`, `.c` → `c`, `.java` → `java`, `.rb` → `ruby`, `.sh` → `bash`, `.yaml`/`.yml` → `yaml`. Leave blank if unrecognised.
+- Comment marker: `#` for Python/Ruby/Shell/YAML, `//` for C/C++/Java/Go/Rust/JS/TS, `--` for SQL.
+- Clamp window to file bounds (never read past end-of-file).
+- If the range spans more than 12 lines, trim to the 12 lines centred on `line_start`.
+- If you already have the file content in context from a prior Read, slice the window — do not re-read the file.
+
+Write the findings table followed by the `## Code Snippets` section to the output file in a single Write call. Emit only `STATUS:` + the absolute output path in the final message; the report body lives in the file.
 
 ## Common Rationalizations
 

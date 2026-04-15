@@ -43,7 +43,7 @@ The dispatch prompt from `branch-reviewer` provides:
 1. **Hot-path identification first.** For each changed region, determine explicitly whether it sits on a hot path (request handler, tight loop, batch processor, DB query path, message consumer, render loop) or a cold path (process startup, one-off admin script, migration, test scaffolding, config loader). Record the classification per finding. Cold-path findings are emitted at `FYI:` severity; do not drop them silently and never mark a cold-path finding as `Critical:` or `Nit:`.
 1. Run the performance Stage 2 checklist on hot-path code: N+1 pattern detection (per-row queries inside iteration), sync-in-async calls (blocking I/O or CPU-bound work in an async context), allocation patterns (per-iteration object churn, needless copies), DB index/query plan concerns (new queries against un-indexed columns, full-table scans, missing composite indexes), caching opportunities (repeated deterministic work across a single request), batch-vs-single call patterns (N single RPC/DB calls that have a bulk equivalent), O(n^2) structures where O(n) or O(n log n) is achievable, inefficient serialization (per-element dict conversions, redundant JSON round-trips).
 1. For each candidate finding, score confidence 0–100. Drop anything below 60 silently. Confidence reflects how sure you are the defect is real given the code you read — not how severe it would be.
-1. Write findings to the output file path provided in the dispatch prompt. One row per finding; append nothing else to that file.
+1. Write findings to the output file path provided in the dispatch prompt as described in `## Output Format` — the findings table followed by the `## Code Snippets` section, in a single Write call.
 1. Emit a final message containing only `STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` and the one-line output path. The report body lives in the file.
 
 ## Output Format
@@ -63,7 +63,25 @@ Severity ladder for this lens:
 - `Optional:` — hot-path improvement whose impact depends on workload assumptions you cannot confirm.
 - `FYI:` — every cold-path finding, regardless of underlying severity.
 
-Final message to the orchestrator contains only the `STATUS:` line and the one-line output path — nothing else.
+After the table, write a `## Code Snippets` section in the same file. For each row in the findings table (in table order), add one numbered entry:
+
+````markdown
+### Finding N — `<file>:<line_start>`
+```<lang>
+<comment-marker> line <line_start>
+<lines from max(1, line_start - 3) through min(eof, line_end + 3), 7 lines total>
+```
+````
+
+Rules for code snippets:
+
+- Language from extension: `.py` → `python`, `.ts`/`.tsx` → `typescript`, `.go` → `go`, `.rs` → `rust`, `.js`/`.jsx` → `javascript`, `.cpp`/`.cc` → `cpp`, `.c` → `c`, `.java` → `java`, `.rb` → `ruby`, `.sh` → `bash`, `.yaml`/`.yml` → `yaml`. Leave blank if unrecognised.
+- Comment marker: `#` for Python/Ruby/Shell/YAML, `//` for C/C++/Java/Go/Rust/JS/TS, `--` for SQL.
+- Clamp window to file bounds (never read past end-of-file).
+- If the range spans more than 12 lines, trim to the 12 lines centred on `line_start`.
+- If you already have the file content in context from a prior Read, slice the window — do not re-read the file.
+
+Write the findings table followed by the `## Code Snippets` section to the output file in a single Write call. Final message to the orchestrator contains only the `STATUS:` line and the one-line output path — nothing else.
 
 ## Common Rationalizations
 

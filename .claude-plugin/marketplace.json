@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.19.0"
+    "version": "0.20.0"
   },
   "name": "mozg-pipelines",
   "owner": {
@@ -20,7 +20,7 @@
       ],
       "name": "mz-dev-base",
       "source": "./plugins/mz-dev-base",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "development",
@@ -36,7 +36,7 @@
       ],
       "name": "mz-dev-pipe",
       "source": "./plugins/mz-dev-pipe",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "business",
@@ -51,7 +51,7 @@
       ],
       "name": "mz-biz-outreach",
       "source": "./plugins/mz-biz-outreach",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "creativity",
@@ -70,7 +70,7 @@
       ],
       "name": "mz-creative",
       "source": "./plugins/mz-creative",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "creativity",
@@ -85,7 +85,7 @@
       ],
       "name": "mz-funny",
       "source": "./plugins/mz-funny",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "development",
@@ -100,7 +100,7 @@
       ],
       "name": "mz-dev-hooks",
       "source": "./plugins/mz-dev-hooks",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "development",
@@ -114,7 +114,7 @@
       ],
       "name": "mz-memory",
       "source": "./plugins/mz-memory",
-      "version": "0.19.0"
+      "version": "0.20.0"
     },
     {
       "category": "design",
@@ -130,7 +130,7 @@
       ],
       "name": "mz-design",
       "source": "./plugins/mz-design",
-      "version": "0.19.0"
+      "version": "0.20.0"
     }
   ]
 }

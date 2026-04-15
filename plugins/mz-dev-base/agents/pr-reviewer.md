@@ -275,6 +275,12 @@ Where:
 
 Create `$MAIN_REPO/.mz/reviews/` if it doesn't exist.
 
+**Populating code blocks**: For every finding you write to the report, populate the `**Code**:` block with the 7 lines surrounding the issue (±3 lines around `line_start`). Source priority:
+
+1. Copy the `**Code**:` block from the corresponding finding in `phase2_findings.md` — match by `file` path and `line_start`. Branch-reviewer embedded these from the working tree.
+1. If the snippet is absent (e.g., the lens was dropped and branch-reviewer could not read the file), read the file directly from the checked-out worktree at the line range. The PR branch is already checked out in the worktree from Phase 1 step 6.
+1. Clamp to file bounds; never read past end-of-file. If the range exceeds 12 lines, trim to 12 lines centred on `line_start`.
+
 ## Severity Labels
 
 Prefix every finding title with exactly one severity label:
@@ -290,7 +296,7 @@ Prefix every finding title with exactly one severity label:
 
 **TL;DR rule** — every issue (Critical / Nit / Optional / FYI; New or Previously Reported) MUST start with a `**TL;DR**:` row of ≤140 characters in the form `<what's wrong> → <how to fix>`. The existing `Comment` and `Suggested fix` fields stay as optional expansion. If it won't fit in 140 chars, the issue is too vague — sharpen it.
 
-```markdown
+````markdown
 # PR Review: <PR Title>
 
 **PR**: <URL>
@@ -325,32 +331,53 @@ PASS when zero `Critical:` findings exist. FAIL when one or more `Critical:` fin
 ### Critical: <Short issue title>
 
 - **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
-- **File**: `<path/to/file.ext>:<line>`
+- **File**: `<path/to/file.ext>:<line_start>-<line_end>`
+- **Code**:
+  ```<lang>
+  <comment-marker> line <line_start>
+  <7 lines: max(1, line_start-3) through min(eof, line_end+3)>
+````
+
 - **Category**: Bug | Security | Architecture | Performance
 - **Confidence**: <score>/100
-- **Comment**: <2-3 concise sentences describing the problem>
-- **Suggested fix**: <Brief solving route, if applicable>
+- **Comment**: \<2-5 sentences describing what is wrong and why it matters>
+- **Suggested fix**: \<Concrete fix route — show the corrected code if short enough>
 
 ### Nit: <Short issue title>
 
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
-- **File**: `<path/to/file.ext>:<line>`
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
+- **File**: `<path/to/file.ext>:<line_start>-<line_end>`
+- **Code**:
+  ```<lang>
+  <comment-marker> line <line_start>
+  <7 lines of context>
+  ```
 - **Category**: Maintainability | Readability | Style
 - **Confidence**: <score>/100
-- **Comment**: <2-3 concise sentences>
-- **Suggested fix**: <Brief solving route, if applicable>
+- **Comment**: \<2-5 sentences>
+- **Suggested fix**: \<Brief solving route, if applicable>
 
 ### Optional: <Short issue title>
 
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
-- **File**: `<path/to/file.ext>:<line>`
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
+- **File**: `<path/to/file.ext>:<line_start>-<line_end>`
+- **Code**:
+  ```<lang>
+  <comment-marker> line <line_start>
+  <7 lines of context>
+  ```
 - **Confidence**: <score>/100
-- **Comment**: <2-3 concise sentences>
+- **Comment**: \<2-5 sentences>
 
 ### FYI: <Short issue title>
 
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
-- **File**: `<path/to/file.ext>:<line>`
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
+- **File**: `<path/to/file.ext>:<line_start>-<line_end>`
+- **Code**:
+  ```<lang>
+  <comment-marker> line <line_start>
+  <7 lines of context>
+  ```
 - **Confidence**: <score>/100
 - **Comment**: <Informational observation>
 
@@ -359,11 +386,12 @@ PASS when zero `Critical:` findings exist. FAIL when one or more `Critical:` fin
 > Active PR threads where the reviewing user is directly mentioned (@username from step 2b), where their input was explicitly requested, or where an unresolved question blocks progress. Sorted by urgency — direct mentions first, then open questions from the author, then unresolved debates.
 
 #### 1. <Short topic>
-- **Thread**: <link to the specific comment/thread>
+
+- **Thread**: \<link to the specific comment/thread>
 - **Participants**: @author, @reviewer, ...
-- **Why you**: <Direct mention | Review requested | Decision needed | Question for you>
-- **Context**: <1-2 sentences summarizing the discussion and what is being asked>
-- **Action needed**: <What you should do — reply, approve, decide between options, etc.>
+- **Why you**: \<Direct mention | Review requested | Decision needed | Question for you>
+- **Context**: \<1-2 sentences summarizing the discussion and what is being asked>
+- **Action needed**: \<What you should do — reply, approve, decide between options, etc.>
 
 > Omit this section entirely if there are no discussions needing attention.
 
@@ -376,56 +404,65 @@ PASS when zero `Critical:` findings exist. FAIL when one or more `Critical:` fin
 > `Status: Open` — previously reported, still unresolved on the current diff.
 
 #### Critical: <Short issue title>
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
+
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
 - **Status**: Open
-- **File**: `<path/to/file.ext>:<line>`
+- **File**: `<path/to/file.ext>:<line_start>-<line_end>`
+- **Code**:
+  ```<lang>
+  <comment-marker> line <line_start>
+  <7 lines of context showing the still-open issue>
+  ```
 - **Category**: Bug | Security | Architecture | Performance | Maintainability
-- **Comment**: <2-3 concise sentences>
+- **Comment**: \<2-5 concise sentences>
 - **Originally reported by**: @<reviewer> or <previous report filename>
-- **Our assessment**: <Agree / Disagree with brief reasoning>
+- **Our assessment**: \<Agree / Disagree with brief reasoning>
 
 ### Addressed With Reply
 
 > `Status: ResolvedWithReply` — thread resolved after a back-and-forth; fix was acknowledged in-thread.
 
 #### Optional: <Short issue title>
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
+
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
 - **Status**: ResolvedWithReply
 - **File**: `<path/to/file.ext>:<line>`
 - **Originally reported by**: @<reviewer> or <previous report filename>
-- **What was done**: <Summary of the fix, e.g., "null check added in commit abc1234">
-- **Remaining concern**: <If any, otherwise omit>
+- **What was done**: \<Summary of the fix, e.g., "null check added in commit abc1234">
+- **Remaining concern**: \<If any, otherwise omit>
 
 ### Resolved Silently
 
 > `Status: ResolvedSilently` — thread marked resolved but only the original comment exists (author pushed a change without replying). **Verify before trusting.**
 
 #### FYI: <Short issue title>
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
+
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
 - **Status**: ResolvedSilently
 - **File**: `<path/to/file.ext>:<line>`
 - **Originally reported by**: @<reviewer> or <previous report filename>
-- **Verification**: <Commit or line-range that addressed the concern, or "unchanged — downgraded to Open" if the anchor code is unchanged>
+- **Verification**: \<Commit or line-range that addressed the concern, or "unchanged — downgraded to Open" if the anchor code is unchanged>
 
 ### Outdated
 
 > `Status: Outdated` — the thread's anchor line is no longer present in the diff (GraphQL returned `line == null`). Kept for history only.
 
 #### FYI: <Short issue title>
-- **TL;DR**: <what's wrong> → <how to fix> (≤140 chars)
+
+- **TL;DR**: \<what's wrong> → <how to fix> (≤140 chars)
 - **Status**: Outdated
 - **Originally reported by**: @<reviewer> or <previous report filename>
 - **Note**: anchor lost from diff
 
 ## Positive Aspects
 
-<List things done well — good patterns, thorough tests, clean abstractions. Acknowledge good work.>
+\<List things done well — good patterns, thorough tests, clean abstractions. Acknowledge good work.>
 
 ## Didn't Touch
 
 > Files or areas intentionally omitted from this review — downstream readers use this to know the review's boundary.
 
-- <path or area>: <reason (e.g., generated code, vendored, out of scope per PR description)>
+- <path or area>: \<reason (e.g., generated code, vendored, out of scope per PR description)>
 
 ## Existing Review Threads
 
@@ -502,6 +539,7 @@ When previous reports exist, include this section after "Existing Review Threads
 - You are reviewing without reading the changed files, diff, or report artifacts in scope.
 - You are about to flag a finding without a concrete file, line, code path, or source.
 - The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- A finding in the final report is missing its `**Code**:` block — every finding must include a code snippet. Pull it from `phase2_findings.md` or read the file in the worktree; never omit it.
 
 ## Guidelines
 
