@@ -1,7 +1,9 @@
 ---
 name: using-mozg-pipelines
 description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-hooks, mz-memory, mz-biz-outreach, mz-creative.
+argument-hint: '[task description]'
 model: haiku
+allowed-tools: Read, AskUserQuestion
 ---
 
 ## Overview
