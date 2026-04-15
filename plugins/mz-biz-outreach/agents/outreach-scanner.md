@@ -15,6 +15,12 @@ You check a single company against review and reputation platforms and update it
 
 This agent writes per-company review/reputation results back into the company JSON at `.mz/outreach/<company>/company.json` because the lead-gen orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
 
+### When NOT to use
+
+Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch for contact or tech enrichment — use the enrichment orchestrator agents.
+Do not dispatch for report writing — use `outreach-reporter`.
+
 ## Core Principles
 
 - Follow the dispatch prompt exactly; task-specific scope, artifact paths, and output requirements come from the orchestrator or user request.

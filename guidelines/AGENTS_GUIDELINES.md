@@ -30,7 +30,7 @@ Agents loaded from a plugin directory silently ignore three frontmatter fields: 
 - Never declare `hooks:`, `mcpServers:`, or `permissionMode:` in an agent inside `plugins/<name>/agents/`.
 - If you need hook-enforced safety, wire hooks into the plugin's top-level hook config, not into the agent file.
 - Cowork mode (`--setting-sources user`) silently drops plugin hooks entirely. Agents running in that mode must implement their own safety checks rather than relying on hook guarantees. See Rule 21.
-- Review checklist must flag any plugin agent declaring these fields. See Rule 25.
+- Review checklist must flag any plugin agent declaring these fields. See Rule 26.
 
 ## 3. Description Trigger-Condition Phrasing
 
@@ -258,7 +258,7 @@ Prompt rules are not hooks — agents must never duplicate hook-enforced safety 
 
 ## 18. Agent Anti-Pattern Catalog
 
-The review checklist (Rule 25) must flag any of these patterns explicitly. Each has a documented failure mode.
+The review checklist (Rule 26) must flag any of these patterns explicitly. Each has a documented failure mode.
 
 | Anti-pattern                  | Failure mode                                                                                                                                                                 |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -357,7 +357,32 @@ Every new or modified agent must pass a two-part test before publishing.
 
 If a validator script is added under `scripts/`, run it here; otherwise perform the checklist manually. Completeness checklist must cover all four edge cases, not just happy path.
 
-## 25. Pre-Publish Checklist
+## 25. No Rule-Number Citations in Plugin Files
+
+Agent and skill files under `plugins/` must not cite specific rule numbers from `AGENTS_GUIDELINES.md` or `SKILL_GUIDELINES.md`. Rule numbers are unstable — a renumbering during guideline edits cascades through every citation site and silently drifts.
+
+**Prohibited in any file under `plugins/*/agents/**` or `plugins/*/skills/**`**:
+
+- `per Rule 13`, `(Rule 5)`, `See Rule 11.`
+- `per AGENTS_GUIDELINES.md Rule 11`, `SKILL_GUIDELINES.md Rule 18`
+- `Rule 14 requires evidence.` as narrative
+- Section headers like `### Status Protocol (Rule 13)` or `## Output Format (Rules 11, 13)`
+
+**Use instead**:
+
+- State the substance directly: `Evidence is required for every finding.` instead of `Rule 14 requires evidence.`
+- Reference the guideline by file: `per AGENTS_GUIDELINES.md` instead of `per AGENTS_GUIDELINES.md Rule 11`.
+- Drop decorative citations: a trailing `(Rule 9)` after a sentence that already states the rule — just delete it.
+
+**Scope and exceptions**:
+
+- Applies to every file under `plugins/*/agents/**` and `plugins/*/skills/**`.
+- The guidelines files themselves (`guidelines/AGENTS_GUIDELINES.md`, `guidelines/SKILL_GUIDELINES.md`) may cross-reference their own rules by number — the numbers are stable within the same document.
+- Repo-root docs (`README.md`, `CLAUDE.md`), commit messages, PR descriptions, and review reports may cite rule numbers when discussing compliance.
+
+Rationale: rule numbers are shared identifiers between the guidelines and the bodies that cite them. Every citation is a load-bearing pointer that breaks when a rule is added or removed. Substance-first prose ages gracefully; citation prose does not.
+
+## 26. Pre-Publish Checklist
 
 Before merging any new or modified agent:
 
@@ -391,3 +416,4 @@ Before merging any new or modified agent:
 - [ ] Language matches agent type per Rule 22 — no Liking tokens in discipline agents.
 - [ ] Standalone triggering test passes on ≥2 natural-language trigger phrases, or pipeline-only dispatch reference is verified (Rule 24).
 - [ ] Behavior test covers happy path + all four edge cases (Rule 24).
+- [ ] No guideline rule numbers cited in the agent body, system prompt, or dispatch-prompt examples (Rule 25).

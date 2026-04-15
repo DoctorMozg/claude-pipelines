@@ -50,69 +50,35 @@ Update state phase to `scope_resolved`.
 
 ## Phase 2: Tooling Detection
 
-Examine the project to identify all verification tools. This phase runs entirely inline — no subagents.
+Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
-### 2.1 Detect test framework
+```
+Detect project tooling and write the result to:
+output_path: .mz/task/<task_name>/tooling.md
+```
 
-Search for configuration in: `pyproject.toml`, `setup.cfg`, `package.json`, `Cargo.toml`, `go.mod`, `CMakeLists.txt`, `Makefile`, `Gemfile`, `build.gradle`, `pom.xml`.
+Read `.mz/task/<task_name>/tooling.md` when done.
 
-| Language | Common frameworks     | Detection                                                              |
-| -------- | --------------------- | ---------------------------------------------------------------------- |
-| Python   | pytest, unittest      | `[tool.pytest]` in pyproject.toml, `pytest` in deps, `test_*.py` files |
-| JS/TS    | jest, vitest, mocha   | `jest` or `vitest` in package.json scripts/deps, config files          |
-| Go       | built-in `go test`    | `go.mod` exists, `_test.go` files present                              |
-| Rust     | built-in `cargo test` | `Cargo.toml` exists                                                    |
-| C/C++    | gtest, catch2, ctest  | `CMakeLists.txt` with `enable_testing()`, gtest in deps                |
-| Java     | JUnit, TestNG         | `@Test` annotations, test deps in build file                           |
+**If the Test command field is "none detected"**: ask the user how to run tests via AskUserQuestion. Do not skip tests.
 
-### 2.2 Detect linters
+### 2.5 Detect example runners (inline)
 
-Search for: `.pre-commit-config.yaml`, `ruff.toml`, `pyproject.toml [tool.ruff]`, `.eslintrc*`, `eslint.config.*`, `.golangci.yml`, `clippy` in Cargo config, `.clang-tidy`, `tslint.json`.
+Check for runnable example/sample files not covered by the standard test framework:
 
-### 2.3 Detect formatters
+- Detect directories: `examples/`, `example/`, `samples/`, `sample/`, `docs/examples/`
+- If scope is global/roam, check all examples. If scope is narrowed, only check examples that reference files in scope.
+- For Python scripts: check for `if __name__ == "__main__"` or shebang
+- For JS/TS scripts: check for direct execution or npm scripts
+- For shell scripts: check for shebang and execute permission
+- Detect README code blocks with fenced language tags that look runnable (not pseudocode or config snippets)
 
-Search for: `ruff format` config, `black` in deps, `prettier` in deps, `gofmt`/`goimports`, `rustfmt`, `clang-format`.
-
-### 2.4 Detect type checkers
-
-Search for: `mypy` in deps or `[tool.mypy]` config, `tsconfig.json` (implies `tsc --noEmit`), `pyright` config, type stubs. **Only detect type checkers the project already has configured** — never add new ones.
-
-### 2.5 Detect example runners
-
-For example/sample files:
-
-- Python scripts: check for `if __name__ == "__main__"` or shebang
-- JS/TS scripts: check for direct execution or npm scripts
-- Shell scripts: check for shebang and execute permission
-- README code blocks: identify language and whether they're runnable (not just snippets)
-
-Write `.mz/task/<task_name>/tooling.md`:
+Append to `.mz/task/<task_name>/tooling.md`:
 
 ```markdown
-# Detected Tooling
-## Tests
-- Framework: <name>
-- Command: `<command>`
-- Scoped command: `<command to run only tests for scope>` (if supported)
-
-## Linter
-- Tool: <name> (or "none detected")
-- Command: `<command>`
-
-## Formatter
-- Tool: <name> (or "none detected")
-- Command: `<command>` (check mode, not write mode)
-
-## Type Checker
-- Tool: <name> (or "none detected — project has no type checking configured")
-- Command: `<command>`
-
 ## Examples
 - Runnable scripts: N
 - README code blocks: M (runnable: K)
 - Execution method: <how to run them>
 ```
-
-**If no test framework is detected**: ask the user how to run tests via AskUserQuestion. Do not skip tests.
 
 Update state phase to `tooling_detected`.

@@ -131,7 +131,7 @@ Review verdict parsing:
 - `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
 - `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
 
-Coder/planner status handling (Rule 21 four-status protocol):
+Coder/planner status handling (four-status protocol):
 
 - `DONE` — proceed to the next step.
 - `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.

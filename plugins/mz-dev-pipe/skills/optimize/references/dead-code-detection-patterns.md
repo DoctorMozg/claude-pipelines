@@ -1,6 +1,6 @@
 # Dead-Code Detection Patterns
 
-Sources (official docs, per Rule 19):
+Sources (official docs):
 
 - Python `ruff`: https://docs.astral.sh/ruff/rules/
 - Python `vulture`: https://github.com/jendrikseipp/vulture

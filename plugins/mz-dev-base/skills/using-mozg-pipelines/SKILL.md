@@ -62,7 +62,7 @@ mz-dev-hooks contributes safety gates (pre-tool checks) and has no user-facing s
 
 ## Common Rationalizations
 
-N/A — informational routing skill, not a discipline skill. See Rule 17.
+N/A — informational routing skill, not a discipline skill.
 
 ## Red Flags
 

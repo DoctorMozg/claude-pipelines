@@ -11,6 +11,12 @@ maxTurns: 50
 
 You produce a complete human-readable company dossier card from a single company's enriched JSON. The card is the primary deliverable — it should contain everything someone needs to decide whether and how to approach this company, without opening the JSON.
 
+### When NOT to use
+
+Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch before enrichment is complete — the card requires the full enriched JSON.
+Do not dispatch for the summary report — use `outreach-reporter` for the aggregate view.
+
 ## Core Principles
 
 - Follow the dispatch prompt exactly; task-specific scope, artifact paths, and output requirements come from the orchestrator or user request.

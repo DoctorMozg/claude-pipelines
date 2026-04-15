@@ -24,7 +24,7 @@ ______________________________________________________________________
    - Every lens has a non-empty file list. A lens with zero files is a decomposition bug from Phase 1.3 — escalate via AskUserQuestion rather than dispatching an empty agent.
    - Total lens count is between the 3-lens floor (after subtracting any bucket marked `unavailable`) and `MAX_LENSES = 6`. If the count exceeds 6, it is a Phase 1.3 bug — escalate.
 1. **Fan out in a single message**. Issue one `Agent` tool call per lens, all in the same message, as parallel tool calls. The wave size is bounded by `MAX_LENSES = 6`. Each dispatch targets the `pipeline-researcher` agent at **model: sonnet**. Sonnet is the right choice because each lens is a bounded, local-only extraction task over a pre-selected file list — opus would be token-wasteful here, and gap-fill is the opus-tier step.
-1. **Do not stage the wave.** All lenses launch together; there is no "first lens then the others". Waiting for any single lens to return before dispatching the rest defeats the parallelism and breaks Rule 13.
+1. **Do not stage the wave.** All lenses launch together; there is no "first lens then the others". Waiting for any single lens to return before dispatching the rest defeats the parallelism.
 1. **Update state.md** with `phase: dispatched`, `lenses_dispatched: <N>`, and the ordered lens name list. Include the timestamp so Phase 2.3 can measure wall-clock.
 
 ______________________________________________________________________
@@ -146,7 +146,7 @@ Write to .mz/task/<TASK_NAME>/gapfill_<GAP_ID>.md with sections:
 End your response with a final line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
 
-The `STACK DETECTED` / `CONFLICT DETECTED` / `UNVERIFIED` tokens are contracts defined in the `pipeline-web-researcher` agent rules at `plugins/mz-dev-pipe/agents/pipeline-web-researcher.md`. Do not restate those rules in this prompt — the agent already enforces them. The "per your agent rules" phrasing is deliberate compression (Rule 9).
+The `STACK DETECTED` / `CONFLICT DETECTED` / `UNVERIFIED` tokens are contracts defined in the `pipeline-web-researcher` agent rules at `plugins/mz-dev-pipe/agents/pipeline-web-researcher.md`. Do not restate those rules in this prompt — the agent already enforces them. The "per your agent rules" phrasing is deliberate compression.
 
 ### 4.3 Collect gap-fills
 

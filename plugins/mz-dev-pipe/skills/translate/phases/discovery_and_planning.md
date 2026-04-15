@@ -30,7 +30,7 @@ You parse `$ARGUMENTS` into four fields:
 - **file tokens / globs** — required. One or more file paths or glob patterns.
 - **output mode** — optional. One of `sidecar` (default when omitted), `inplace`, or `i18n`. Expressed as `mode:<value>`.
 
-**Accepted input forms** (Rule 15):
+**Accepted input forms**:
 
 | Raw argument                                        | target | source      | files             | mode      |
 | --------------------------------------------------- | ------ | ----------- | ----------------- | --------- |
@@ -39,7 +39,7 @@ You parse `$ARGUMENTS` into four fields:
 | `translate docs/**/*.md to Japanese`                | `ja`   | auto-detect | `docs/**/*.md`    | `sidecar` |
 | `translate from en to de CHANGELOG.md mode:inplace` | `de`   | `en`        | `CHANGELOG.md`    | `inplace` |
 
-Empty or ambiguous arguments are never guessed. On any of the following, escalate via `AskUserQuestion` (Rule 10):
+Empty or ambiguous arguments are never guessed. On any of the following, escalate via `AskUserQuestion`:
 
 - No target language supplied.
 - No file tokens supplied.
@@ -62,7 +62,7 @@ Raw tokens stay in state after normalization as an audit trail — the approval 
 
 ### 1.2 File Discovery
 
-You dispatch one `pipeline-researcher` agent (model: **sonnet**) to expand globs, detect formats, and produce a tabular inventory. The dispatch prompt is task-specific only (Rule 9) and instructs the researcher to:
+You dispatch one `pipeline-researcher` agent (model: **sonnet**) to expand globs, detect formats, and produce a tabular inventory. The dispatch prompt is task-specific only and instructs the researcher to:
 
 - Glob-expand every file token supplied in 1.1 against the worktree.
 - For each resolved file, detect the format using extension first, then a `file` probe, then the first line (YAML frontmatter `---`, JSON `{`, `<?xml`). Supported formats: `md`, `mdx`, `json`, `yaml`, `yml`, `po`, `properties`, `strings`, `xliff`, `txt`.
@@ -71,7 +71,7 @@ You dispatch one `pipeline-researcher` agent (model: **sonnet**) to expand globs
 - Return one concise table per report: path, format, size bytes, translatable lines, include-or-skip flag with reason.
 - **Discovery only — no translation, no rewriting, no side-effecting writes.**
 
-Dispatch model: `sonnet`. One researcher is enough — breadth scan, not deep read. Persist the researcher output at `<task_dir>/discovery.md` verbatim for 1.8. Request concise tabular output (Rule 9) — the plan artifact only needs the table.
+Dispatch model: `sonnet`. One researcher is enough — breadth scan, not deep read. Persist the researcher output at `<task_dir>/discovery.md` verbatim for 1.8. Request concise tabular output — the plan artifact only needs the table.
 
 Expected shape of the researcher report (what the orchestrator parses back):
 

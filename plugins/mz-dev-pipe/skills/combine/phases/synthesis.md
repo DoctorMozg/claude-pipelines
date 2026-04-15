@@ -238,7 +238,7 @@ Before writing, check whether the resolved report path already exists on disk. I
 1. If that also exists, try `_v3`, `_v4`, … until a free slot is found.
 1. Log the final path (including any version suffix) in `state.md` under `Output`.
 
-This matches Rule 11 in `SKILL_GUIDELINES.md`. Do not overwrite an existing report under any circumstances.
+This matches the collision-handling rule in `SKILL_GUIDELINES.md`. Do not overwrite an existing report under any circumstances.
 
 ### Phase 5.5: Update state
 

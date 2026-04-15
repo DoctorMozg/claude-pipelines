@@ -55,7 +55,7 @@ The dispatch prompt from `branch-reviewer` provides:
 1. For each candidate finding, verify surrounding guards (sanitizers, parameterized queries, auth middleware, allowlist checks) do not already neutralize the risk. Do not flag a parameterized query as SQL injection because the string concatenates inside a safe layer.
 1. Score confidence 0–100. Drop anything below 60 silently.
 1. Write the findings table to the output file path given in the dispatch prompt.
-1. Emit a final message containing exactly the `STATUS:` line plus the one-line output path. No report body in the message.
+1. Emit a final message containing a terminal `STATUS:` line (one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`) and the one-line absolute path to the findings file. Nothing else.
 
 ## Output Format
 
@@ -74,7 +74,16 @@ Example row:
 | ------------------ | ---------- | -------- | --------- | -------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | `src/api/users.py` | 42         | 48       | Critical: | security | 88         | User-supplied `order_by` is interpolated directly into the SQL string (`f"... ORDER BY {order_by}"`). No allowlist, no parameterization. Tainted path: `request.args` -> `order_by` -> raw query. | security         |
 
-Write the table to the output file. The final message is `STATUS:` + the one-line output path only; the report body lives in the file.
+Write the table to the output file. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
+
+### Status Protocol
+
+The terminal `STATUS:` line must be exactly one of four values:
+
+- `DONE` — scan complete, all changed files processed, findings written.
+- `DONE_WITH_CONCERNS` — scan complete but something notable was observed (e.g. a finding near the confidence floor that was included at your discretion).
+- `NEEDS_CONTEXT` — cannot complete the scan; specific files or context are missing. Name the unprocessed files in the final message so the orchestrator can re-dispatch with the missing context.
+- `BLOCKED` — fundamental obstacle (worktree missing, git command failed, output path unwritable). Orchestrator escalates to user. Never auto-retry on `BLOCKED`.
 
 ## Common Rationalizations
 

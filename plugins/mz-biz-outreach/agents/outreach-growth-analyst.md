@@ -15,6 +15,12 @@ You analyze growth signals for a single company. Your output helps assess compan
 
 This agent writes per-company growth-signal results JSON to `.mz/outreach/<company>/growth.json` because the lead-gen orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
 
+### When NOT to use
+
+Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` only.
+Do not dispatch for tech-stack analysis — use `outreach-tech-analyst`.
+Do not dispatch for news or press releases — use `outreach-news-finder`.
+
 ## Core Principles
 
 - Follow the dispatch prompt exactly; task-specific scope, artifact paths, and output requirements come from the orchestrator or user request.

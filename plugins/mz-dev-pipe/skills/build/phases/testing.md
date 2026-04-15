@@ -164,48 +164,60 @@ ______________________________________________________________________
 
 ### 7.1 Detect project tooling
 
-Examine the project for available tools:
+Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
-- Look for `pyproject.toml`, `.pre-commit-config.yaml`, `Makefile`, `package.json`, `.clang-format`
-- Determine the correct lint, format, and test commands
+```
+Detect project tooling and write the result to:
+output_path: .mz/task/<task_name>/tooling.md
+```
+
+Read `.mz/task/<task_name>/tooling.md` when done. Use the detected commands in the steps below.
 
 ### 7.2 Run linters and formatters
 
-Run the project's linting and formatting tools. Common patterns:
+Dispatch a `pipeline-lint-runner` agent (model: **haiku**):
 
-```bash
-# If pre-commit exists
-pre-commit run --from-ref origin/$(git symbolic-ref refs/remotes/origin/HEAD --short | sed 's|origin/||') --to-ref HEAD
-
-# If package.json with lint script
-npm run lint
-
-# If pyproject.toml with ruff
-ruff check . --fix
-ruff format .
+```
+Run linters and formatters for the project.
+lint_command: <lint_command from tooling.md, or "none detected">
+format_command: <format_command from tooling.md, or "none detected">
+output_path: .mz/task/<task_name>/lint_results.md
 ```
 
-Fix any issues found. If fixes require code changes, make them directly (simple formatting fixes don't need a coder agent).
+Read `.mz/task/<task_name>/lint_results.md`.
+
+If `STATUS: DONE_WITH_CONCERNS`: dispatch a `pipeline-coder` (model: **opus**) with the lint issues from `lint_results.md` to fix them directly. Re-dispatch `pipeline-lint-runner` to confirm clean.
 
 ### 7.3 Run tests
 
-Run the project's test suite for the files you created:
+Dispatch a `pipeline-test-runner` agent (model: **haiku**):
 
-```bash
-# Detect and run appropriate test command
-# pytest, jest, cargo test, go test, etc.
+```
+Run the project test suite.
+test_command: <test_command from tooling.md>
+output_path: .mz/task/<task_name>/test_results.md
 ```
 
-**If tests pass**: proceed to Phase 8.
-**If tests fail**:
+Read `.mz/task/<task_name>/test_results.md`.
 
-- Analyze failures
-- Spawn `pipeline-coder` agent(s) to fix the failing code or tests (use judgment on which needs fixing)
-- Re-run tests
-- If tests still fail after 3 fix attempts, escalate to user
+**If STATUS: DONE**: proceed to Phase 8.
+
+**If STATUS: DONE_WITH_CONCERNS** (failures exist):
+
+- Extract the failed test list from `test_results.md`
+- Dispatch a `pipeline-coder` agent (model: **opus**) to fix the failing code or tests (use judgment on which needs fixing), providing the failed test details
+- Re-dispatch `pipeline-test-runner` to re-run
+- Repeat up to 3 iterations. If still failing after 3 attempts, escalate to user via AskUserQuestion
 
 ### 7.4 Re-run linters after fixes
 
-If any code was changed during test fixes, re-run linters to ensure nothing regressed.
+If any code was changed during test fixes, re-dispatch `pipeline-lint-runner` to ensure nothing regressed:
+
+```
+Verify lint is still clean after test fixes.
+lint_command: <lint_command from tooling.md, or "none detected">
+format_command: <format_command from tooling.md, or "none detected">
+output_path: .mz/task/<task_name>/lint_results_final.md
+```
 
 Update state file phase to `tests_passing`.

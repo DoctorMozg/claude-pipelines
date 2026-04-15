@@ -168,7 +168,32 @@ Skill type determines the persuasion register (Cialdini principles applied to LL
 
 Grounding: published persuasion-compliance studies consistently show directive, authority-coded framing lifts LLM compliance over neutral phrasing.
 
-## 21. Pre-Publish Checklist
+## 21. No Rule-Number Citations in Plugin Files
+
+Skill and agent files under `plugins/` must not cite specific rule numbers from `SKILL_GUIDELINES.md` or `AGENTS_GUIDELINES.md`. Rule numbers are unstable — a renumbering during guideline edits cascades through every citation site and silently drifts.
+
+**Prohibited in any file under `plugins/*/skills/**` or `plugins/*/agents/**`**:
+
+- `per Rule 17`, `(Rule 20)`, `See Rule 11.`
+- `per SKILL_GUIDELINES.md Rule 16`, `AGENTS_GUIDELINES.md Rule 13`
+- `Rule 14 requires evidence.` as narrative
+- Section headers like `## Skeleton (Rule 16)` or `### Status Protocol (Rule 13)`
+
+**Use instead**:
+
+- State the substance directly: `Discipline skills must not use Liking framing.` instead of `Rule 20 bans Liking for discipline skills.`
+- Reference the guideline by file: `per SKILL_GUIDELINES.md` instead of `per SKILL_GUIDELINES.md Rule 16`.
+- Drop decorative citations: a trailing `(Rule 9)` after a sentence that already states the rule — just delete it.
+
+**Scope and exceptions**:
+
+- Applies to every file under `plugins/*/skills/**` and `plugins/*/agents/**`.
+- The guidelines files themselves (`guidelines/SKILL_GUIDELINES.md`, `guidelines/AGENTS_GUIDELINES.md`) may cross-reference their own rules by number — the numbers are stable within the same document.
+- Repo-root docs (`README.md`, `CLAUDE.md`), commit messages, PR descriptions, and review reports may cite rule numbers when discussing compliance.
+
+Rationale: rule numbers are shared identifiers between the guidelines and the bodies that cite them. Every citation is a load-bearing pointer that breaks when a rule is added or removed. Substance-first prose ages gracefully; citation prose does not.
+
+## 22. Pre-Publish Checklist
 
 Before merging any new or modified skill:
 
@@ -192,3 +217,4 @@ Before merging any new or modified skill:
 - [ ] Description is CSO-compliant, no workflow summary (Rule 18)
 - [ ] references/ directory uses grep-first pattern if present (Rule 19)
 - [ ] Language matches skill type per Rule 20
+- [ ] No guideline rule numbers cited in SKILL.md, phase files, or references (Rule 21)

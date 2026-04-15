@@ -1,6 +1,6 @@
 ---
 name: review-branch
-description: ALWAYS invoke when the user wants to review all changes on the current git branch. Triggers:"review branch","review my changes","check my branch","what did I change","branch review".
+description: ALWAYS invoke when the user wants to review all changes on the current git branch. Triggers: "review branch", "review my changes", "check my branch", "what did I change", "branch review".
 argument-hint: '[base-branch (default: main)]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Glob, Grep
@@ -72,7 +72,7 @@ Techniques: delegated to the `branch-reviewer` agent — see its agent definitio
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
+N/A — collaboration/reference skill, not discipline.
 
 ## Red Flags
 

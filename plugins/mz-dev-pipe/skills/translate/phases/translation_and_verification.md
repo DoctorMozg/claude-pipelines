@@ -27,7 +27,7 @@ State stays at `plan_approved` until the first wave dispatch fires.
 
 ### 2.2 Wave Dispatch Loop
 
-For each wave, dispatch all N translator agents in a **single orchestrator message** as parallel tool calls (Rule 13). Never sequentialize dispatches within a wave. Phrase each dispatch as a short, task-specific block (Rule 9) — the agent already knows its own process, rules, and output format.
+For each wave, dispatch all N translator agents in a **single orchestrator message** as parallel tool calls. Never sequentialize dispatches within a wave. Phrase each dispatch as a short, task-specific block — the agent already knows its own process, rules, and output format.
 
 Wave-sizing: `MAX_PARALLEL_TRANSLATORS` is the hard upper bound. With 14 units and `MAX_PARALLEL_TRANSLATORS = 6`, the schedule is `[6, 6, 2]` — three sequential waves, each a single parallel message. Do not reshuffle mid-run; the smallest-chunks-first order from 2.1 is the execution order.
 
@@ -52,9 +52,9 @@ references: grep references/placeholder-patterns.md and references/markdown-pres
 Required: run Tier-1 and emit confidence_<chunk_id>.json before returning.
 ```
 
-The example contains no copy of the agent's process sections, no inline placeholder regex, no rubric restatement, no severity-label reminder — `pipeline-translator.md` already defines those (Rule 9). The dispatch is context and pointers, nothing else.
+The example contains no copy of the agent's process sections, no inline placeholder regex, no rubric restatement, no severity-label reminder — `pipeline-translator.md` already defines those. The dispatch is context and pointers, nothing else.
 
-Collect every response from the wave. Parse the terminal `STATUS:` line per dispatch (Rule 21):
+Collect every response from the wave. Parse the terminal `STATUS:` line per dispatch:
 
 - **`DONE`** — record the output file path, confidence report path, and glossary delta path into `<task_dir>/wave_results.md`. Advance the chunk into Phase 3 eligibility.
 - **`DONE_WITH_CONCERNS`** — append the agent's `## Concerns` block to `<task_dir>/concerns.md` under a heading for this `chunk_id`. Still advance the chunk — Tier-2 may judge the concern harmless. Do not treat `DONE_WITH_CONCERNS` as a failure.
@@ -96,7 +96,7 @@ Terms with frequency ≤ 3 are excluded: drift on tiny counts is statistical noi
 
 ### 3.3 Targeted Re-Translation
 
-For each flagged chunk, re-dispatch `pipeline-translator` in `mode: translate` with a task-specific prompt (Rule 9) naming the divergent terms, their required target translations from the merged glossary, and the output file to rewrite. Include the standard reminder to run Tier-1 and emit a fresh confidence report. Re-dispatches count against `MAX_VERIFICATION_ATTEMPTS` per chunk. Group into waves of ≤ `MAX_PARALLEL_TRANSLATORS`, emit each wave in a single parallel message. Status handling follows the four-status protocol from Phase 2.2.
+For each flagged chunk, re-dispatch `pipeline-translator` in `mode: translate` with a task-specific prompt naming the divergent terms, their required target translations from the merged glossary, and the output file to rewrite. Include the standard reminder to run Tier-1 and emit a fresh confidence report. Re-dispatches count against `MAX_VERIFICATION_ATTEMPTS` per chunk. Group into waves of ≤ `MAX_PARALLEL_TRANSLATORS`, emit each wave in a single parallel message. Status handling follows the four-status protocol from Phase 2.2.
 
 Update `state.md` Phase → `consistency_complete`.
 
@@ -108,18 +108,18 @@ ______________________________________________________________________
 
 ### 4.1 Judge Wave-Split
 
-Compute `judge_batches = ceil(total_chunks / MAX_JUDGE_BATCH)`. If `judge_batches == 1`, dispatch a single `pipeline-code-reviewer`. Otherwise dispatch `judge_batches` reviewers as parallel tool calls in one orchestrator message (Rule 13). Never sequentialize — parallel dispatch + finding merge is the only way to avoid context blowup on long jobs.
+Compute `judge_batches = ceil(total_chunks / MAX_JUDGE_BATCH)`. If `judge_batches == 1`, dispatch a single `pipeline-code-reviewer`. Otherwise dispatch `judge_batches` reviewers as parallel tool calls in one orchestrator message. Never sequentialize — parallel dispatch + finding merge is the only way to avoid context blowup on long jobs.
 
 Group chunks into batches by shared source file when possible so a reviewer can cross-reference neighboring sections. Break ties by chunk order from `wave_results.md`.
 
 ### 4.2 Reviewer Dispatch Prompt
 
-One short, task-specific description block per reviewer (Rule 9). Each block names only:
+One short, task-specific description block per reviewer. Each block names only:
 
 - The batch's source chunks + translated chunks + `glossary.json` + the per-chunk confidence reports from Phase 2.
 - Priority-ordered review targets: **(a)** headings and section titles, **(b)** sentences containing glossary terms, **(c)** sentences containing placeholders, **(d)** first paragraph of each major section, **(e)** the rest of the prose. Review in that order; spend budget on (a)-(d) first.
 - The translation rubric: meaning preservation, terminology adherence to glossary, placeholder parity, structural fidelity, and natural phrasing in the target language.
-- Severity label requirements (Rule 20): every finding must be prefixed with `Critical:`, `Nit:`, `Optional:`, or `FYI:`. `VERDICT: PASS` only when zero `Critical:` findings exist.
+- Severity label requirements: every finding must be prefixed with `Critical:`, `Nit:`, `Optional:`, or `FYI:`. `VERDICT: PASS` only when zero `Critical:` findings exist.
 - Request for concise output — output tokens cost 5x input.
 
 Example dispatch shape:
@@ -137,7 +137,7 @@ severity: Critical: / Nit: / Optional: / FYI:
 verdict: PASS only if zero Critical. Concise output.
 ```
 
-Status handling follows the four-status protocol (Rule 21): `DONE` = normal; `DONE_WITH_CONCERNS` (operational issues, e.g. unreadable chunk) → `<task_dir>/concerns.md`; `NEEDS_CONTEXT` → one re-dispatch with missing files attached; `BLOCKED` → escalate via AskUserQuestion, halt Phase 4.
+Status handling follows the four-status protocol: `DONE` = normal; `DONE_WITH_CONCERNS` (operational issues, e.g. unreadable chunk) → `<task_dir>/concerns.md`; `NEEDS_CONTEXT` → one re-dispatch with missing files attached; `BLOCKED` → escalate via AskUserQuestion, halt Phase 4.
 
 ### 4.3 Finding Merge
 
@@ -207,13 +207,13 @@ Hard-mismatch rule: different **subjects** or different **action verbs** → `Cr
 
 Run back-translation **only** on chunks whose Tier-2 finding set contains at least one `Critical:` entry. This is the most expensive Tier-3 probe; gate it strictly.
 
-Dispatch `pipeline-translator` with `mode: back_translate` and a task-specific prompt (Rule 9) containing only:
+Dispatch `pipeline-translator` with `mode: back_translate` and a task-specific prompt containing only:
 
 - The already-translated chunk content.
 - The reversed language pair (`source_lang` becomes the target, original `target_lang` becomes the source).
 - An explicit line: `mode: back_translate — plain text only, no glossary, no structural checks, no confidence report`.
 
-Batch the back-translation dispatches for a single Phase-5 pass into a **single orchestrator message** as parallel tool calls when more than one chunk needs it (Rule 13), bounded by `MAX_PARALLEL_TRANSLATORS`.
+Batch the back-translation dispatches for a single Phase-5 pass into a **single orchestrator message** as parallel tool calls when more than one chunk needs it, bounded by `MAX_PARALLEL_TRANSLATORS`.
 
 Collect each response (the agent returns plain back-translated text inline). Compute similarity against the original source chunk:
 
@@ -239,7 +239,7 @@ ______________________________________________________________________
 
 **Goal**: re-translate every chunk that still has an unresolved `Critical:` finding after Tiers 1-3, with a deterministic termination bound.
 
-For each chunk whose merged finding set (Tier-2 + Tier-3) contains at least one `Critical:` entry, re-dispatch `pipeline-translator` in `mode: translate` with a task-specific prompt (Rule 9) that contains only:
+For each chunk whose merged finding set (Tier-2 + Tier-3) contains at least one `Critical:` entry, re-dispatch `pipeline-translator` in `mode: translate` with a task-specific prompt that contains only:
 
 - The unit spec (source path + `chunk_range` + `chunk_id`) and the existing `output_path`.
 - The exact `Critical:` findings for this chunk, verbatim from `tier2_findings.md`.

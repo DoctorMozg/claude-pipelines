@@ -6,20 +6,16 @@
 
 ### 1.1 Detect tooling
 
-Detect the project's test framework, linter, and type checker. Check for config files (`pytest.ini`, `pyproject.toml`, `jest.config.*`, `Cargo.toml`, `tsconfig.json`, etc.) and `package.json` scripts.
+Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
-If no test framework is detected: ask the user via AskUserQuestion how to run tests. Do not proceed to Phase 3 without a test command, but Phases 1-2 can continue.
-
-Save tooling info to `.mz/task/<task_name>/tooling.md`:
-
-```markdown
-# Tooling
-- **Test command**: <command>
-- **Lint command**: <command or "none detected">
-- **Type check command**: <command or "none detected">
-- **Language**: <primary language>
-- **Framework**: <if applicable>
 ```
+Detect project tooling and write the result to:
+output_path: .mz/task/<task_name>/tooling.md
+```
+
+Read `.mz/task/<task_name>/tooling.md` when done.
+
+If the **Test command** field is "none detected": ask the user via AskUserQuestion how to run tests. Do not proceed to Phase 3 without a test command, but Phases 1-2 can continue.
 
 ### 1.2 Dispatch codebase researcher
 

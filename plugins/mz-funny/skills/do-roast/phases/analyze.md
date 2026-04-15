@@ -62,7 +62,7 @@ no shell-based analyzers. The user excluded tooling-dependent checks in the
 locked requirements — all structural signal must come from `Read`, `Grep`,
 and `Glob`.
 
-### Source hierarchy (Rule 19) — static analysis tier
+### Source hierarchy — static analysis tier
 
 Declare the source ladder for this phase before recording any finding. Static
 analysis is grounded in the project itself, not external references:
@@ -188,7 +188,7 @@ the target code diverges from the current official best practice for its
 detected stack. One web pass per invocation, cached across invocations so
 repeated roasts of the same repo pay the cost once per week.
 
-### Source hierarchy (Rule 19) — web research tier
+### Source hierarchy — web research tier
 
 Declare and enforce the source priority ladder before issuing any
 `WebSearch` query. Every finding produced by this phase must trace to a
@@ -308,7 +308,7 @@ referenced by persona agents as `(Finding N)` inline citations. Constraints:
   `## Finding-1`.
 - `N` starts at 1 and increments by 1 with no gaps.
 - `<severity>` is drawn from `DOSSIER_SEVERITY_LABELS` and must be one of
-  `Critical`, `Nit`, `Optional`, `FYI` per Rule 20. No other labels ever.
+  `Critical`, `Nit`, `Optional`, `FYI`. No other labels ever.
   Never `Warning`, `Info`, `Minor`, `Major` — the persona agents match on
   the four canonical labels only.
 - `<file>:<line>` must be the single most salient coordinate for the

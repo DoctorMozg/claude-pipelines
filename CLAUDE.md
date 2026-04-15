@@ -46,3 +46,13 @@ See [AGENTS_GUIDELINES.md](guidelines/AGENTS_GUIDELINES.md) for detailed authori
 ## Skill Format
 
 Standard Claude Code skill structure with `SKILL.md` containing YAML frontmatter and instructions. See [SKILL_GUIDELINES.md](guidelines/SKILL_GUIDELINES.md) for detailed authoring rules covering approval gates, progressive disclosure, dispatch prompts, error handling, and more.
+
+## Plugin Authoring Conventions
+
+Cross-cutting preferences that span both agent and skill authoring. These are the items most often forgotten mid-task and most expensive to fix in bulk later.
+
+- **No rule-number citations inside `plugins/`.** Skill and agent files must not reference `Rule 17`, `(Rule 20)`, or `per SKILL_GUIDELINES.md Rule 16`. State the substance directly or reference the guideline by filename only. The guideline documents themselves may cross-reference their own rules by number; plugin files may not.
+- **Every `gh` call needs a tiered fallback.** Agents and skills that use GitHub CLI must document the chain `gh` → GitHub MCP (if session exposes `mcp__*github*` tools) → REST via `curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/...` before emitting `STATUS: BLOCKED`. See `pr-scanner`, `pr-reviewer`, and `github-pr-data-fetcher` for the canonical pattern.
+- **Zero results from a GitHub query are ambiguous.** When a full fan-out returns no PRs, run a one-row smoke test (`gh pr list --state all --limit 1`) before trusting the empty result. Emit one of the disclosure tokens: `ZERO RESULTS VERIFIED`, `ZERO RESULTS UNVERIFIED`, or `ZERO RESULTS GLOBAL`.
+- **State lives at `.mz/task/<task_name>/state.md`.** The task-name pattern is `<skill>_<slug>_<HHMMSS>`. Never rely on conversation memory for cross-phase state — context compaction destroys it.
+- **Parallel agent dispatch is capped at 6 concurrent agents per wave.** Split overflow into sequential waves. Never background writer agents (pr-reviewer, coders, writers) — their file writes are silently dropped.

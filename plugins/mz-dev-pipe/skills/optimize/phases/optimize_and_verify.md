@@ -81,7 +81,21 @@ ______________________________________________________________________
 
 ### 4.1 Run tests and linters
 
-Run the exact same commands captured in `baseline.md`. Compare results:
+Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls):
+
+```
+Run tests to check for regressions after optimization.
+test_command: <Test command from .mz/task/<task_name>/tooling.md>
+output_path: .mz/task/<task_name>/verify_test_results_<iteration>.md
+```
+
+```
+Run linters to check for regressions after optimization.
+lint_command: <Lint command from .mz/task/<task_name>/tooling.md, or "none detected">
+output_path: .mz/task/<task_name>/verify_lint_results_<iteration>.md
+```
+
+Read both artifacts. Compare against `baseline.md`:
 
 - **Tests**: does the pass/fail set match the baseline? Any NEW failing test is a regression.
 - **Lint**: is the error/warning count ≤ baseline?
@@ -183,7 +197,7 @@ Review verdict parsing:
 - `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
 - `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
 
-Coder/planner status handling (Rule 21 four-status protocol):
+Coder/planner status handling (four-status protocol):
 
 - `DONE` — proceed to the next step.
 - `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.

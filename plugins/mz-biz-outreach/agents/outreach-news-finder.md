@@ -15,6 +15,12 @@ You find recent news and public announcements for a single company. Your output 
 
 This agent writes per-company news-event results JSON to `.mz/outreach/<company>/news.json` because the lead-gen orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
 
+### When NOT to use
+
+Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` only.
+Do not dispatch for contact discovery — use `outreach-contact-finder`.
+Do not dispatch for growth/hiring signals — use `outreach-growth-analyst`.
+
 ## Core Principles
 
 - Follow the dispatch prompt exactly; task-specific scope, artifact paths, and output requirements come from the orchestrator or user request.

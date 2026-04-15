@@ -70,7 +70,16 @@ Read .mz/task/<task_name>/domain_research.md for correct behavior per spec.
 
 ### 3.4 Run and verify tests
 
-Run the new exploratory tests. For each test:
+Dispatch a `pipeline-test-runner` agent (model: **haiku**):
+
+```
+Run the exploratory tests written in the previous step.
+test_command: <test_command from .mz/task/<task_name>/tooling.md>
+specific_files: <test files written by pipeline-test-writer>
+output_path: .mz/task/<task_name>/test_runner_results.md
+```
+
+Read `.mz/task/<task_name>/test_runner_results.md` and interpret each result:
 
 | Result     | Interpretation                                                                       |
 | ---------- | ------------------------------------------------------------------------------------ |
@@ -78,9 +87,9 @@ Run the new exploratory tests. For each test:
 | **Fails**  | Code does NOT handle this case correctly — evidence FOR the hypothesis               |
 | **Errors** | Test is broken (import error, setup failure, etc.) — not evidence either way         |
 
-**Handle errors**: if tests error out, re-dispatch test writer with the error output. Max `MAX_TEST_RETRIES = 2` re-dispatches.
+**Handle errors**: if tests error out, re-dispatch `pipeline-test-writer` with the error output from the artifact. Max `MAX_TEST_RETRIES = 2` re-dispatches, then re-dispatch `pipeline-test-runner`.
 
-**Handle conflicts**: if new tests cause existing tests to fail (shared state, fixture conflicts), revert the conflicting test immediately. Note it in the report as "could not test without side effects."
+**Handle conflicts**: if new tests cause existing tests to fail, dispatch a `pipeline-coder` (model: **opus**) to revert the conflicting test immediately. Note it in the report as "could not test without side effects."
 
 ### 3.5 Record test results
 

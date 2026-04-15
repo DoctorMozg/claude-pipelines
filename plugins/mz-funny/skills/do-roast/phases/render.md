@@ -37,7 +37,7 @@ Validate:
 
 ### 5.3 Construct the dispatch prompt
 
-The dispatch prompt is a **task-specific context packet only** (Rule 9). The persona agent already has its Evidence Contract, Safety Floor, and Voice Reference in its system prompt — do NOT repeat those instructions here.
+The dispatch prompt is a **task-specific context packet only**. The persona agent already has its Evidence Contract, Safety Floor, and Voice Reference in its system prompt — do NOT repeat those instructions here.
 
 Use this exact template, substituting the bracketed fields:
 
@@ -71,7 +71,7 @@ Single-agent, single-message dispatch using the `Agent` tool:
 - `description`: `Roast ${finding_count} findings as ${persona}` (one short line for the dispatch log).
 - `prompt`: the full dispatch prompt from 5.3.
 
-Panel mode (all 7 personas in parallel) is deferred to v1.1 — Rule 13 parallel fan-out does not apply in v1 because there is exactly one agent per invocation.
+Panel mode (all 7 personas in parallel) is deferred to v1.1 — parallel fan-out does not apply in v1 because there is exactly one agent per invocation.
 
 ### 5.5 Collect the response
 
@@ -132,7 +132,7 @@ Base path:
 REPORT_DIR + "roast_" + today + "_" + persona + "_" + target_slug + ".md"
 ```
 
-### 6.2 Collision handling (Rule 11)
+### 6.2 Collision handling
 
 If the base path does not exist, use it. Otherwise, walk the suffix ladder:
 
@@ -236,7 +236,7 @@ If `persona_fallback == true` from Phase 5.6, the teaser is replaced with a fixe
 <persona> went quiet — skeleton roast only. See `<report_path>` for the dossier-derived fallback.
 ```
 
-### 6.7 Verification block (Rule 4 — visible output)
+### 6.7 Verification block (visible output)
 
 Print this block to the user verbatim. Every field must be populated; no `TBD` placeholders.
 
@@ -260,7 +260,7 @@ Report path: <report_path>
 ==============================
 ```
 
-This is the Rule 4 visible-output requirement for the skill — every check above has a printed result, no silent steps.
+This is the visible-output requirement for the skill — every check above has a printed result, no silent steps.
 
 ### 6.8 Final state update
 
@@ -275,7 +275,7 @@ Update `TASK_DIR<task_name>/state.md`:
 
 Preserve all fields written in earlier phases (do not rewrite the file from scratch — append / update in place).
 
-### 6.9 Terminal STATUS line (Rule 21)
+### 6.9 Terminal STATUS line
 
 Emit exactly one terminal STATUS line, chosen per the four-status protocol:
 

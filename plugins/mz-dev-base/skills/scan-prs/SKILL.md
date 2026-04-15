@@ -55,7 +55,7 @@ Techniques: delegated to the `pr-scanner` and `pr-reviewer` agents — see their
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
+N/A — collaboration/reference skill, not discipline.
 
 ## Red Flags
 
@@ -69,7 +69,23 @@ Output the consolidated report path (`.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_nam
 
 ## Error Handling
 
-- **Empty args** with no detectable current repo → escalate via AskUserQuestion; never guess.
-- **Missing tooling** (`gh` not installed, not authenticated, or `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
-- **Empty scanner result** (zero PRs returned or no priority-ranked list) → retry the scan once with the same repo list; if still empty, report "no PRs need attention" and exit cleanly. For a malformed agent response, retry once then escalate via AskUserQuestion.
+- **Empty args** with no detectable current repo → before escalating, try the fallback chain for `gh repo view`: (1) `mcp__*github*` MCP tools if exposed, (2) direct REST API (`curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}"`). Only escalate via AskUserQuestion after all three tiers fail; never guess.
+- **`gh` unavailable** (not installed, not authenticated, rate-limited) → delegate to the fallback chain before blocking. The `pr-scanner` agent has its own `GitHub Access Fallback` section that governs downstream calls. Only escalate via AskUserQuestion if MCP and REST tiers also fail.
+- **Missing tooling** (`Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
+- **Empty scanner result** (zero PRs returned or no priority-ranked list) → check the scanner's `pr_data.md` / report for `ZERO RESULTS` disclosure tokens before trusting:
+  - `ZERO RESULTS VERIFIED` (per-repo smoke test passed) → report "no PRs need attention" and exit cleanly.
+  - `ZERO RESULTS UNVERIFIED` or `ZERO RESULTS GLOBAL` → do NOT treat as a clean inbox; surface the warning in the final output and prompt the user to verify the GitHub username and repo list via AskUserQuestion before a silent "all clear" masks a real misconfiguration.
+  - No `ZERO RESULTS` token present with an empty list → retry the scan once with the same repo list; if still empty, escalate via AskUserQuestion. Malformed agent responses also retry once then escalate.
 - Never guess — on any ambiguity (unresolvable repo, invalid URL, missing auth) escalate via AskUserQuestion rather than proceed silently.
+
+## State Management
+
+After Phase 1 completes, update `.mz/task/<task_name>/state.md` with:
+
+- `Status:` `complete` | `complete_with_concerns` | `blocked` | `no_prs_found`
+- `Phase:` `1`
+- `ScannedPRs:` total PR count from the scanner report
+- `ReviewedPRs:` count of top-5 PRs dispatched to pr-reviewer
+- `ReportPath:` absolute path to the consolidated scan report
+
+Never rely on conversation memory — the state file is the source of truth if the session is interrupted.

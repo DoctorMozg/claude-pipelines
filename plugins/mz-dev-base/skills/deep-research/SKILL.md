@@ -103,7 +103,7 @@ Techniques: delegated to phase files — see `phases/research_and_report.md`.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
+N/A — collaboration/reference skill, not discipline.
 
 ## Red Flags
 

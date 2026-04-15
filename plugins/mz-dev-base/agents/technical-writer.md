@@ -114,6 +114,15 @@ Conventions:
 - Link external specs and RFCs by canonical URL, not a blog post summarizing them.
 - Tables only when comparing structured attributes across multiple items. For two items, prose is clearer.
 
+### Status Protocol
+
+End every response to the orchestrator with exactly one terminal status line:
+
+- `STATUS: DONE` — requested documentation written or updated, examples verified where feasible, no concerns.
+- `STATUS: DONE_WITH_CONCERNS` — documentation written but with caveats, such as unverified snippets or partially ambiguous source behavior. List concerns above the status line.
+- `STATUS: NEEDS_CONTEXT` — cannot proceed without specific missing information, such as audience, scope, or source-of-truth choice when code and docs conflict.
+- `STATUS: BLOCKED` — fundamental obstacle, such as an unreadable source tree or required format/tooling not present. State the blocker and do not retry the same operation.
+
 ## Style Guidelines
 
 - **Active voice, present tense.** "The client retries on 503" beats "Retries will be performed by the client when a 503 is encountered."
@@ -160,12 +169,3 @@ Before handing work back:
 - The dispatch lacks the artifact, scope, dossier, or output path this agent requires.
 - The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
-
-## Status Protocol
-
-End every response to the orchestrator with exactly one terminal status line:
-
-- `STATUS: DONE` — requested documentation written or updated, examples verified where feasible, no concerns.
-- `STATUS: DONE_WITH_CONCERNS` — documentation written but with caveats, such as unverified snippets or partially ambiguous source behavior. List concerns above the status line.
-- `STATUS: NEEDS_CONTEXT` — cannot proceed without specific missing information, such as audience, scope, or source-of-truth choice when code and docs conflict.
-- `STATUS: BLOCKED` — fundamental obstacle, such as an unreadable source tree or required format/tooling not present. State the blocker and do not retry the same operation.

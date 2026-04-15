@@ -10,7 +10,7 @@ Each Cialdini principle below lists:
 
 1. A one-line definition.
 1. Example phrasings that encode the principle in a skill body.
-1. Which skill types (discipline / collaboration / reference per Rule 20) should apply it.
+1. Which skill types (discipline / collaboration / reference) should apply it.
 1. Anti-patterns — phrasings that sound persuasive but actively reduce compliance.
 
 At the end, a `## Skill-type recipes` table maps each skill type to the principles it should use and the principles it must not use.
@@ -21,9 +21,9 @@ Claude defers to directives that sound like they come from an authority: standar
 
 **Example phrasings**:
 
-- `MUST run the Rule 21 pre-publish checklist before marking done.`
-- `ALWAYS cite the source URL; Stack Overflow is banned per Rule 19.`
-- `Per SKILL_GUIDELINES.md Rule 18, the description is the auction bid for invocation.`
+- `MUST run the pre-publish checklist before marking done.`
+- `ALWAYS cite the source URL; Stack Overflow is banned.`
+- `Per SKILL_GUIDELINES.md, the description is the auction bid for invocation.`
 - `Meincke et al. (2025) N=28,000 found that directive phrasing lifts compliance from 33% to 72%.`
 - `The Iron Law of this skill: no plan without user approval.`
 
@@ -80,7 +80,7 @@ Claude responds to in-group framing ("we", "us", "our team") by aligning with th
 - `We review every plan before implementation — that is how we keep regressions out.`
 - `Let's look at the rationalization table together before we ship this.`
 - `Our standard is atomic commits — we do not squash during implementation.`
-- `In this repo we use Rule 16 anatomy; let's apply it here.`
+- `In this repo we use the canonical 7-section anatomy; let's apply it here.`
 
 **Use in**: collaboration skills (primary), discipline skills only at the final approval gate where the user is a peer reviewer.
 
@@ -92,7 +92,7 @@ Claude responds to in-group framing ("we", "us", "our team") by aligning with th
 
 Claude responds to warmth and affiliation ("great question", "I think you'll find", "happy to help"). **BANNED for discipline skills.**
 
-**Rationale**: Meincke et al. (2025) found that softening directives with Liking language drops compliance from 72% to 33% — a direct inversion of the authority gain. In a discipline skill, every softening phrase is a license to skip the rule. Rule 20 bans Liking for discipline skills.
+**Rationale**: Meincke et al. (2025) found that softening directives with Liking language drops compliance from 72% to 33% — a direct inversion of the authority gain. In a discipline skill, every softening phrase is a license to skip the rule. Discipline skills must not use Liking framing.
 
 **Allowed in**: reference skills where the tone is informational and no directive is being enforced. Even then, keep it minimal.
 
@@ -149,7 +149,7 @@ Claude responds to "this is your one chance" framing. Use sparingly — overuse 
 ### Discipline example — a debug skill opening line
 
 - **Bad (Liking)**: "Great, let's take a look at this bug together! I think the best first step is to reproduce it."
-- **Good (Authority + Commitment)**: "MUST write a failing reproducer before attempting a fix. Per SKILL_GUIDELINES.md Rule 20, discipline skills use directive phrasing. State the reproducer's expected failure before running it."
+- **Good (Authority + Commitment)**: "MUST write a failing reproducer before attempting a fix. Per SKILL_GUIDELINES.md, discipline skills use directive phrasing. State the reproducer's expected failure before running it."
 
 ### Collaboration example — a plan approval gate
 

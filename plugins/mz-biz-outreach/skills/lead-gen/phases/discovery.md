@@ -12,7 +12,7 @@ Write your strategy to: <RUN_DIR>/strategy.json
 ```
 
 Read `strategy.json`. Extract target profile, scoring weights, outreach angles, source hints.
-Update state: `"phase": "strategy_complete"`.
+Update `.mz/task/<task_name>/state.md` `Phase` field to `strategy_complete`.
 
 Proceed to Phase 1.5 before launching Phase 2.
 
@@ -50,11 +50,11 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 ### Response handling
 
-- **"approve"** → update state `"phase": "strategy_approved"` and proceed to Phase 2.
-- **"reject"** → update state `"phase": "aborted_by_user"` and stop. Do not proceed.
+- **"approve"** → update `.mz/task/<task_name>/state.md` `Phase` field to `strategy_approved` and proceed to Phase 2.
+- **"reject"** → update `.mz/task/<task_name>/state.md` `Status` field to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → re-dispatch `outreach-strategist` with the user's feedback appended to the prompt, overwrite `strategy.json`, return to this gate and re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-All five elements above (delegation guard, presentation, AskUserQuestion prompt ending with the canonical reply line, three-bullet response handling, explicit loop language) are required per `SKILL_GUIDELINES.md` Rule 1.
+All five elements above (delegation guard, presentation, AskUserQuestion prompt ending with the canonical reply line, three-bullet response handling, explicit loop language) are required per `SKILL_GUIDELINES.md`.
 
 ______________________________________________________________________
 
@@ -71,7 +71,7 @@ Source hints: <source_hints>
 Write results to: <RUN_DIR>/sources.json
 ```
 
-Validate >=1 source found. Update state: `"phase": "sources_complete"`.
+Validate >=1 source found. Update `.mz/task/<task_name>/state.md` `Phase` field to `sources_complete`.
 
 ______________________________________________________________________
 
@@ -118,6 +118,6 @@ After all scouts complete:
 
 5. Write `scout_summary.md` (total found, per-source breakdown, dedup count)
 1. Delete `_scout/` temp directory
-1. Update state: `"phase": "scout_complete", "companies_found": N`
+1. Update `.mz/task/<task_name>/state.md` — set `Phase` to `scout_complete` and add a `CompaniesFound` field with the count
 
 Proceed to Phase 4. Read `phases/enrichment_and_report.md`.

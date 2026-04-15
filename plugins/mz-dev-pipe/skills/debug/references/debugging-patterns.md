@@ -1,6 +1,6 @@
 # Debugging Patterns
 
-Sources (official docs, per Rule 19):
+Sources (official docs):
 
 - `git bisect`: https://git-scm.com/docs/git-bisect
 - pytest ordering / flaky detection: https://docs.pytest.org/en/stable/how-to/randomorder.html, https://docs.pytest.org/en/stable/how-to/cache.html

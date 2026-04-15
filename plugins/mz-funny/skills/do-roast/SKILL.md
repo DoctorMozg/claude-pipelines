@@ -36,7 +36,7 @@ Invoke when the user wants funny pushback, team levity, a character-voice review
 - **RESEARCH_CACHE_DIR**: `.mz/research/` (stack-wide web cache, 7-day staleness)
 - **MAX_FINDINGS**: 30 (upper bound on dossier entries per invocation)
   - Note: `MAX_FINDINGS=30` is the upper bound. Analysis should prefer 10-15 high-quality Critical/Nit findings over 30 weak Optional/FYI — reduces dispatch token cost and improves voice focus.
-- **DOSSIER_SEVERITY_LABELS**: `["Critical", "Nit", "Optional", "FYI"]` (Rule 20)
+- **DOSSIER_SEVERITY_LABELS**: `["Critical", "Nit", "Optional", "FYI"]`
 
 ## Available Personas
 
@@ -93,7 +93,7 @@ Output a visible block showing: task name, resolved target, persona chosen, find
 
 ## Phase 0: Setup
 
-Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case per Rule 8). Derive task name: `do_roast_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder. Create `TASK_DIR<task_name>/`. Write `state.md` with `Status: started`, `Phase: setup`, `Started: <ISO8601>`, `Persona: <chosen>`, `Target_raw: <remainder>`.
+Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case). Derive task name: `do_roast_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder. Create `TASK_DIR<task_name>/`. Write `state.md` with `Status: started`, `Phase: setup`, `Started: <ISO8601>`, `Persona: <chosen>`, `Target_raw: <remainder>`.
 
 ## Phase 0.5: Target Resolution Gate
 

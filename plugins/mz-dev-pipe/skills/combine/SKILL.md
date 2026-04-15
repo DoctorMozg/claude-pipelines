@@ -45,7 +45,7 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). The `sco
 
 Extract `output:<path>` from `$ARGUMENTS` if present — overrides the default report path.
 
-**Default**: `.mz/reports/combine_<YYYY_MM_DD>_<slug>.md`. On collision append `_v2`, `_v3` per Rule 11.
+**Default**: `.mz/reports/combine_<YYYY_MM_DD>_<slug>.md`. On collision append `_v2`, `_v3`.
 
 ## Sections Parameter
 
@@ -77,7 +77,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration skill per Rule 17, not discipline. See Rule 17.
+N/A — collaboration skill, not discipline.
 
 ## Red Flags
 

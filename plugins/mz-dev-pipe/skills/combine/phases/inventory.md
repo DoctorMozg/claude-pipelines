@@ -181,7 +181,7 @@ ______________________________________________________________________
 
 ## Phase 1.5 Gate
 
-**This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent.** The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 1.5. Delegating the read would defeat Rule 1 — an agent holding the gate body could make the approval decision on the user's behalf, which is exactly what Rule 1 exists to prevent.
+**This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent.** The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 1.5. Delegating the read would defeat the approval-gate guarantee — an agent holding the gate body could make the approval decision on the user's behalf, which is exactly what the approval gate exists to prevent.
 
 ### Presentation content
 
@@ -211,7 +211,7 @@ Unavailable buckets: <list with reasons, e.g., "git_history (no git repository)"
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
-The trailing line **must appear verbatim** — it is the canonical Rule 1 reply instruction and is checked by structural tests.
+The trailing line **must appear verbatim** — it is the canonical approval-gate reply instruction and is checked by structural tests.
 
 ### Response handling
 
@@ -225,7 +225,7 @@ The trailing line **must appear verbatim** — it is the canonical Rule 1 reply 
 
 ### Orchestrator-only notice
 
-This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 1.5. If a subagent is ever observed reading this file, it is a Rule 1 violation and the pipeline must abort.
+This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 1.5. If a subagent is ever observed reading this file, it is an approval-gate violation and the pipeline must abort.
 
 ______________________________________________________________________
 

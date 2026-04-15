@@ -92,7 +92,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17 & 23, not a discipline skill.
+N/A — collaboration/reference skill, not a discipline skill.
 
 ## Red Flags
 

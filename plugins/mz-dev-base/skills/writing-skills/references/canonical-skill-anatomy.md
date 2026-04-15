@@ -1,14 +1,14 @@
-# Canonical Skill Anatomy (Rule 16)
+# Canonical Skill Anatomy
 
 The 7-section skeleton every SKILL.md body must follow, with inline annotations for what each section contains.
-See `SKILL_GUIDELINES.md` Rule 16 for the authoritative spec and the pipeline exemption for multi-phase orchestrators.
+See `SKILL_GUIDELINES.md` for the authoritative spec and the pipeline exemption for multi-phase orchestrators.
 Pattern source: `addyosmani/superpowers` 7-section canonical anatomy.
 
 ## How to use this file
 
 Copy the skeleton below into a new `plugins/<plugin>/skills/<name>/SKILL.md`. Replace every `<placeholder>` and delete the HTML-comment annotations before shipping. The comment blocks describe what goes in each section — they are authoring notes, not runtime content.
 
-Every section is mandatory. A section that genuinely does not apply (e.g. `## Common Rationalizations` for a reference skill) must be explicitly marked `N/A — <reason>` with a rule citation. Never leave a section empty or omit the header.
+Every section is mandatory. A section that genuinely does not apply (e.g. `## Common Rationalizations` for a reference skill) must be explicitly marked `N/A — <reason>` with a rationale. Never leave a section empty or omit the header.
 
 ## Skeleton
 
@@ -65,7 +65,7 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
 
 <!--
   For single-step skills: a numbered list of non-negotiable steps.
-  For multi-phase skills: a Phase Overview table (Rule 5) with `phases/<file>.md` references.
+  For multi-phase skills: a Phase Overview table with `phases/<file>.md` references.
   Approval gates go in-phase as `.5` rows (e.g. Phase 1.5) or inline below the table.
 
   Single-step example:
@@ -91,14 +91,14 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
   Concrete patterns, tools, and decision trees the skill applies.
   Code snippets, grep recipes, dispatch prompt shapes, etc.
 
-  PIPELINE EXEMPTION (Rule 16, U1):
+  PIPELINE EXEMPTION:
     Multi-phase orchestrator skills with a Phase Overview table may replace this
     section's body with a single line:
 
       Techniques: delegated to phase files — see Phase Overview table above.
 
     This avoids duplicating content between SKILL.md and phase files and satisfies
-    Rule 2's progressive disclosure while still passing the "all 7 sections present"
+    progressive disclosure while still passing the "all 7 sections present"
     check. The header itself (`## Techniques`) must still be present.
 -->
 
@@ -107,8 +107,8 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
 ## Common Rationalizations
 
 <!--
-  Mandatory for DISCIPLINE skills per Rule 17 — minimum 3 rows.
-  OPTIONAL for collaboration and reference skills — use `N/A — <reason>` with a rule citation.
+  Mandatory for DISCIPLINE skills — minimum 3 rows.
+  OPTIONAL for collaboration and reference skills — use `N/A — <reason>` with a rationale.
 
   Rationalizations must be verbatim user excuses (observed in practice, not invented).
   Rebuttals must be specific — cite a failure mode, past incident, or concrete cost.
@@ -127,7 +127,7 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
 <!--
   For collaboration/reference skills, replace the table with:
 
-    N/A — collaboration skill per SKILL_GUIDELINES.md Rule 17, not discipline. See Rule 17.
+    N/A — collaboration skill, not discipline.
 -->
 
 ## Red Flags
@@ -146,8 +146,8 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
 
 <!--
   How to confirm the skill actually ran correctly.
-  Every check must produce VISIBLE output (Rule 4) — "silent checks get skipped".
-  Close with the Rule 21 pre-publish checklist result for skills that author artifacts.
+  Every check must produce VISIBLE output — "silent checks get skipped".
+  Close with the pre-publish checklist result for skills that author artifacts.
 -->
 
 <checklist or explicit verification steps, each producing visible output>
@@ -163,11 +163,11 @@ For a multi-phase orchestrator, the `## Techniques` section collapses to one lin
 Techniques: delegated to phase files — see Phase Overview table above.
 ```
 
-This is allowed only when the `## Core Process` section is a Phase Overview table (Rule 5) with at least one phase delegated to a `phases/<file>.md` file. Single-step skills cannot use the exemption — they must list concrete techniques.
+This is allowed only when the `## Core Process` section is a Phase Overview table with at least one phase delegated to a `phases/<file>.md` file. Single-step skills cannot use the exemption — they must list concrete techniques.
 
 ## Section order is non-negotiable
 
-Rule 16 requires these 7 sections in this exact order:
+These 7 sections are required in this exact order:
 
 1. `## Overview`
 1. `## When to Use` (with `### When NOT to use` sub-section)
@@ -183,21 +183,18 @@ Grep verification:
 grep -n '^## ' plugins/<plugin>/skills/<name>/SKILL.md
 ```
 
-The output must list the seven headers in order. Any deviation fails Rule 16's anatomy check.
+The output must list the seven headers in order. Any deviation fails the anatomy check.
 
 ## When a section genuinely does not apply
 
-- **Reference skills** often have no `## Common Rationalizations` — use `N/A — reference skill per Rule 17.`
+- **Reference skills** often have no `## Common Rationalizations` — use `N/A — reference skill.`
 - **Read-only skills** often have no `## Verification` gate beyond "output produced" — use `N/A — read-only skill; output is the verification.`
 - **Single-step skills** may have a trivial `## Core Process` — still use a numbered list, not free prose.
 
-Never omit a section header. The header must exist so that Rule 16's grep check passes; the body can be a one-line `N/A` explanation.
+Never omit a section header. The header must exist so that the grep check passes; the body can be a one-line `N/A` explanation.
 
 ## Links
 
-- `SKILL_GUIDELINES.md` Rule 16 — canonical anatomy spec and pipeline exemption.
-- `SKILL_GUIDELINES.md` Rule 17 — anti-rationalization table requirements.
-- `SKILL_GUIDELINES.md` Rule 18 — CSO description rules.
-- `SKILL_GUIDELINES.md` Rule 20 — persuasion-informed language per skill type.
+- `SKILL_GUIDELINES.md` — canonical anatomy spec, anti-rationalization table requirements, CSO description rules, and persuasion-informed language per skill type.
 - `writing-skills/references/anti-rationalization-library.md` — seed content for the rationalization table.
 - `writing-skills/references/persuasion-principles.md` — which Cialdini principles to apply per skill type.

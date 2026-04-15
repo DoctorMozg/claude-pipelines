@@ -51,7 +51,12 @@ Extract from `$ARGUMENTS`:
 
 ## Directory Structure
 
-Use `.mz/outreach/<run_name>/` with `state.json`, `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `outreach_<YYYY_MM_DD>_<goal_slug>.md`.
+Two separate directories are used:
+
+- **State** — `.mz/task/<task_name>/state.md`. This is the source of truth across phases; never rely on conversation memory.
+- **Outreach data** — `.mz/outreach/<run_name>/` holds `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `outreach_<YYYY_MM_DD>_<goal_slug>.md`.
+
+`task_name` follows the pattern `lead_gen_<slug>_<HHMMSS>`; `run_name` is the outreach output-dir name derived from the goal (`<goal_slug>_<YYYY-MM-DD>`). They are independent: `task_name` identifies the pipeline invocation, `run_name` identifies the outreach output bundle.
 
 ## Core Process
 
@@ -88,8 +93,8 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 **Response handling**:
 
-- **"approve"** → update `state.json` phase to `strategy_approved`, proceed to Phase 2.
-- **"reject"** → update `state.json` to `aborted_by_user` and stop. Do not proceed.
+- **"approve"** → update `.mz/task/<task_name>/state.md` phase to `strategy_approved`, proceed to Phase 2.
+- **"reject"** → update `.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Techniques
@@ -98,7 +103,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration/reference skill per Rule 17, not discipline. See Rule 17.
+N/A — collaboration/reference skill, not discipline.
 
 ## Red Flags
 
@@ -114,24 +119,27 @@ ______________________________________________________________________
 
 ## Phase 0: Setup
 
-Parse arguments. Derive run name: short snake_case + today's date, max 30 chars.
-Example: `"find DevOps clients in DACH"` → `devops_dach_2026-04-06`
+Parse arguments. Derive two names:
+
+- `task_name` (state dir) = `lead_gen_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the goal (max 20 chars) and `<HHMMSS>` is wall-clock time.
+- `run_name` (outreach output dir) = `<goal_slug>_<YYYY-MM-DD>`, max 30 chars. Example: `"find DevOps clients in DACH"` → `devops_dach_2026-04-06`.
 
 ```bash
+mkdir -p .mz/task/<task_name>
 mkdir -p .mz/outreach/<run_name>/companies
 ```
 
-Write `state.json`:
+Write `.mz/task/<task_name>/state.md`:
 
-```json
-{
-  "goal": "<goal>",
-  "sector": "<parsed or null>",
-  "limit": 20,
-  "run_name": "<run_name>",
-  "phase": "setup",
-  "started_at": "<ISO>"
-}
+```markdown
+# Lead Gen State
+- **Status**: running
+- **Phase**: 0
+- **Started**: <ISO timestamp>
+- **Goal**: <goal>
+- **Sector**: <parsed or null>
+- **Limit**: 20
+- **RunName**: <run_name> (outreach output dir)
 ```
 
 After setup completes, read `phases/discovery.md` and proceed to Phase 1.
@@ -140,11 +148,11 @@ ______________________________________________________________________
 
 ## Resume Support
 
-Before creating anything in Phase 0, check if `state.json` exists. If it does, read `phase` and resume from the next incomplete phase. All phases are idempotent — re-running overwrites output files.
+Before creating anything in Phase 0, check if `.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` field and resume from the next incomplete phase. All phases are idempotent — re-running overwrites output files.
 
 ## Error Handling
 
-- Agent fails or returns empty: log in `state.json` under `"errors": []`, continue with available data
-- ALL agents in a phase fail (zero results): stop the pipeline and report the failure
-- Never fabricate data — incomplete results are better than false results
-- Corrupted company JSON during any phase: log the error, skip that company, continue
+- Agent fails or returns empty: append an `Errors:` bullet in `.mz/task/<task_name>/state.md`, continue with available data.
+- ALL agents in a phase fail (zero results): stop the pipeline and report the failure.
+- Never fabricate data — incomplete results are better than false results.
+- Corrupted company JSON during any phase: log the error in state.md, skip that company, continue.

@@ -11,6 +11,12 @@ maxTurns: 60
 
 You produce the executive summary report for an outreach intelligence run. You do NOT write per-company analysis — that already lives in the company cards. Your job is the big picture: market landscape, cross-cutting patterns, scored ranking, and strategic recommendations.
 
+### When NOT to use
+
+Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch before all company dossier cards exist — reporter reads cards, not raw JSON.
+Do not dispatch for per-company cards — use `outreach-card-writer`.
+
 ## Core Principles
 
 - Follow the dispatch prompt exactly; task-specific scope, artifact paths, and output requirements come from the orchestrator or user request.

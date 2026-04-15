@@ -16,7 +16,7 @@ After all scanners complete:
 1. Read each company JSON and verify `review_summary` is populated
 1. If `limit` is set and companies exceed it: sort by `review_summary.avg_score` descending, select top `limit`. Mark remaining as `"enrichment_skipped": true` in their JSONs (not deleted — kept for reference).
 1. Write `scan_summary.md` (review distribution, sentiment breakdown, companies selected for enrichment)
-1. Update state: `"phase": "scan_complete"`
+1. Update `.mz/task/<task_name>/state.md` `Phase` field to `scan_complete`
 
 ______________________________________________________________________
 
@@ -46,7 +46,7 @@ For each company JSON in companies/ (skip any with enrichment_skipped: true):
 After all companies: delete _enrichment/ directory.
 ```
 
-Verify enrichment by spot-checking a few company JSONs. Update state: `"phase": "enrich_complete"`.
+Verify enrichment by spot-checking a few company JSONs. Update `.mz/task/<task_name>/state.md` `Phase` field to `enrich_complete`.
 
 ______________________________________________________________________
 
@@ -71,7 +71,7 @@ The orchestrator computes intelligence scores — no subagent needed.
 c. Weighted score: `sum(factor_score * weight / 100)`, round to integer (0-100)
 d. Write `intelligence_score` and `score_breakdown` (per-factor scores + weights) into the JSON
 
-3. Update state: `"phase": "scored"`
+3. Update `.mz/task/<task_name>/state.md` `Phase` field to `scored`
 
 ______________________________________________________________________
 
@@ -87,7 +87,7 @@ Output: <RUN_DIR>/companies/<slug>.md
 ```
 
 After all card writers complete, verify each non-skipped company has a `.md` card.
-Update state: `"phase": "cards_written"`.
+Update `.mz/task/<task_name>/state.md` `Phase` field to `cards_written`.
 
 ______________________________________________________________________
 
@@ -106,7 +106,7 @@ Report naming convention: outreach_<YYYY_MM_DD>_<goal_slug><_vN>.md (append _v2,
 
 After the reporter completes:
 
-1. Update state: `"phase": "complete", "completed_at": "<ISO>"`
+1. Update `.mz/task/<task_name>/state.md` — set `Phase` to `complete` and add a `CompletedAt` field with the ISO timestamp
 1. Display to the user:
    - Path to the report
    - Path to `companies/` directory (for browsing individual cards)

@@ -13,6 +13,12 @@ You coordinate the enrichment phase of the outreach pipeline. You read per-compa
 
 This agent orchestrates only — it does not perform the delegated enrichment work directly. All contact-finding, news-gathering, growth analysis, and tech analysis flow through dispatched `outreach-contact-finder`, `outreach-news-finder`, `outreach-growth-analyst`, and `outreach-tech-analyst` subagents; this agent coordinates per-company fan-out, merges their results, and cleans up intermediate state.
 
+### When NOT to use
+
+Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch before company JSON files exist from `outreach-scout`.
+Do not dispatch for report writing — use `outreach-reporter` after enrichment is complete.
+
 ## Core Principles
 
 - Follow the dispatch prompt exactly; task-specific scope, artifact paths, and output requirements come from the orchestrator or user request.

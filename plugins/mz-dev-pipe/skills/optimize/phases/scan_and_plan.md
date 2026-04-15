@@ -111,11 +111,11 @@ Also return a short textual summary:
 
 Using the import graph, group files into chunks under these rules:
 
-**Rule 1 — SCC atomicity**: every file in a strongly-connected component must be in the same chunk. Circular imports are atomic and cannot be split across optimizers.
+**SCC atomicity**: every file in a strongly-connected component must be in the same chunk. Circular imports are atomic and cannot be split across optimizers.
 
-**Rule 2 — Hard cap**: total chunks ≤ `MAX_OPTIMIZERS = 6`.
+**Hard cap**: total chunks ≤ `MAX_OPTIMIZERS = 6`.
 
-**Rule 3 — Balance**: chunks should be roughly balanced by file count (target: within ±30% of mean).
+**Balance**: chunks should be roughly balanced by file count (target: within ±30% of mean).
 
 **Algorithm**:
 
@@ -172,22 +172,36 @@ ______________________________________________________________________
 
 ### 2.1 Detect tooling
 
-Examine the project for:
+Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
-- **Test command**: look in `pyproject.toml`, `package.json`, `Makefile`, `Cargo.toml`, `go.mod`, `CMakeLists.txt`
-- **Lint command**: pre-commit config, ruff, eslint, clippy, golangci-lint, clang-tidy
+```
+Detect project tooling and write the result to:
+output_path: .mz/task/<task_name>/tooling.md
+```
 
-If neither is found, ask the user how to verify green state before proceeding. Do not skip the baseline — without it, regressions cannot be detected reliably.
+Read `.mz/task/<task_name>/tooling.md` when done.
+
+If both **Test command** and **Lint command** are "none detected": ask the user how to verify green state before proceeding. Do not skip the baseline — without it, regressions cannot be detected reliably.
 
 ### 2.2 Run baseline
 
-Run the test suite scoped to the files in `scan.md` if the test framework supports path filtering; otherwise run the full suite. Run the linters on the scope. Capture:
+Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls):
 
-- Test result: PASS / FAIL / PARTIAL
-- Failing tests (if any): names + one-line summary
-- Lint result: CLEAN / WARNINGS / ERRORS
-- Issue counts
-- Duration of each step
+```
+Run the baseline test suite.
+test_command: <Test command from tooling.md>
+specific_files: <test files matching scope from scan.md, if Scoped test command is supported; otherwise omit>
+output_path: .mz/task/<task_name>/baseline_test_results.md
+```
+
+```
+Run the baseline linters.
+lint_command: <Lint command from tooling.md, or "none detected">
+scope_files: <source files from scan.md>
+output_path: .mz/task/<task_name>/baseline_lint_results.md
+```
+
+Read both artifacts when done. Use these results to populate the baseline.md artifact.
 
 ### 2.3 Write baseline artifact
 

@@ -39,13 +39,22 @@ Read .mz/task/<task_name>/reproduction.md for how the bug manifests.
 
 ### 3.2 Verify test fails
 
-Run the new test. Expected outcomes:
+Dispatch a `pipeline-test-runner` agent (model: **haiku**):
 
-| Result                        | Action                                                                                        |
-| ----------------------------- | --------------------------------------------------------------------------------------------- |
-| **Fails (expected)**          | The test correctly captures the bug. Save to `regression_test.md`, proceed to Phase 4.        |
-| **Passes (unexpected)**       | Bug may already be fixed, or test doesn't exercise the right path. Re-dispatch with feedback. |
-| **Error (import/syntax/etc)** | Test is broken. Re-dispatch with the error output.                                            |
+```
+Run the new regression test to verify it fails against the current (buggy) code.
+test_command: <test_command from .mz/task/<task_name>/tooling.md>
+specific_files: <regression test file from 3.1>
+output_path: .mz/task/<task_name>/regression_run_initial.md
+```
+
+Read `.mz/task/<task_name>/regression_run_initial.md` and check each test result:
+
+| Result                        | Action                                                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Fails (expected)**          | The test correctly captures the bug. Save to `regression_test.md`, proceed to Phase 4.                    |
+| **Passes (unexpected)**       | Bug may already be fixed, or test doesn't exercise the right path. Re-dispatch test writer with feedback. |
+| **Error (import/syntax/etc)** | Test is broken. Re-dispatch test writer with the error output from the artifact.                          |
 
 **Retry limit**: 2 re-dispatches. If the test still doesn't fail correctly after 2 retries, escalate via AskUserQuestion:
 
@@ -131,15 +140,32 @@ Read .mz/task/<task_name>/regression_test.md for the test that must pass.
 
 ### 4.3 Verify fix
 
-Run the regression test:
+Dispatch a `pipeline-test-runner` agent (model: **haiku**) to run the regression test:
 
-- **Passes**: good. Run full test suite.
-- **Fails**: fix didn't work. Iterate (4.4).
+```
+Run the regression test to verify the fix.
+test_command: <test_command from .mz/task/<task_name>/tooling.md>
+specific_files: <regression test file from regression_test.md>
+output_path: .mz/task/<task_name>/regression_run_after_fix.md
+```
 
-Run full test suite:
+Read `regression_run_after_fix.md`:
 
-- **No regressions**: proceed to Phase 5.
-- **Regressions**: fix introduced new failures. Iterate (4.4).
+- **All pass**: good. Run the full suite.
+- **Any fail**: fix didn't work. Iterate (4.4).
+
+Dispatch a second `pipeline-test-runner` for the full suite:
+
+```
+Run the full test suite to check for regressions.
+test_command: <test_command from .mz/task/<task_name>/tooling.md>
+output_path: .mz/task/<task_name>/full_suite_after_fix.md
+```
+
+Read `full_suite_after_fix.md`:
+
+- **STATUS: DONE**: no regressions. Proceed to Phase 5.
+- **STATUS: DONE_WITH_CONCERNS**: fix introduced new failures. Iterate (4.4).
 
 ### 4.4 Fix iteration loop
 
@@ -182,13 +208,22 @@ ______________________________________________________________________
 
 ### 5.1 Full verification
 
-Run all available checks:
+Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls):
 
-- **Tests**: full test suite
-- **Linters**: project lint command (if detected)
-- **Type checkers**: project type check command (if detected)
+```
+Run the full test suite for final verification.
+test_command: <test_command from .mz/task/<task_name>/tooling.md>
+output_path: .mz/task/<task_name>/final_test_results.md
+```
 
-All must pass (or match pre-existing failure state). If anything new fails, return to Phase 4 for another fix iteration.
+```
+Run linters for final verification.
+lint_command: <lint_command from .mz/task/<task_name>/tooling.md, or "none detected">
+format_command: <format_command from .mz/task/<task_name>/tooling.md, or "none detected">
+output_path: .mz/task/<task_name>/final_lint_results.md
+```
+
+Read both artifacts. All must pass (or match pre-existing failure state). If anything new fails, return to Phase 4 for another fix iteration.
 
 ### 5.2 Code review
 
@@ -237,7 +272,7 @@ Review verdict parsing:
 - `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
 - `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
 
-Coder/planner status handling (Rule 21 four-status protocol):
+Coder/planner status handling (four-status protocol):
 
 - `DONE` — proceed to the next step.
 - `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.

@@ -79,6 +79,7 @@ Output the report path (`.mz/reviews/review_pr_<YYYY_MM_DD>_<owner>_<repo>_<pr_n
 ## Error Handling
 
 - **Empty / malformed PR argument** → escalate via AskUserQuestion; never guess, never fabricate a PR URL.
-- **Missing tooling** (`gh` not installed, not authenticated, `git worktree` unavailable, `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
+- **`gh` unavailable for Phase 0 validation** → before escalating, try `mcp__*github*` MCP tools if exposed, then direct GitHub REST API (`curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}/pulls/{number}"`). Only escalate via AskUserQuestion after all three tiers fail.
+- **Missing tooling** (`git worktree` unavailable, `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
 - **Empty agent result** (report file missing, empty, or no `VERDICT:` line) → retry the dispatch once with the same prompt; if still empty, escalate via AskUserQuestion with the failure mode.
 - Never guess — on any ambiguity (inaccessible PR, 404, merge conflict in worktree, missing base ref) escalate via AskUserQuestion rather than proceed silently.

@@ -45,43 +45,53 @@ Examples run after the main checks because they may depend on a working build.
 
 ### 3.2 Test execution
 
-Run the test suite using the command from `tooling.md`.
+Dispatch `pipeline-test-runner` agents (model: **haiku**) using the commands from `tooling.md`.
 
-**Scoped execution**: if the test framework supports path filtering and scope is narrowed, run scoped tests first, then the full suite:
+**If scope is narrowed and the Scoped test command is supported**: dispatch two runs in sequence:
 
-1. **Scoped run**: `<test command> <test files for scope>` — verifies the code in scope directly
-1. **Full run**: `<test command>` — catches regressions outside scope caused by changes in scope
+Scoped run first:
 
-If scope is global/roam, run the full suite once.
+```
+Run scoped tests for the code in scope.
+test_command: <Scoped test command from tooling.md, %FILES% replaced with test files from scope.md>
+specific_files: <test files from scope.md>
+output_path: .mz/task/<task_name>/test_results_scoped.md
+```
 
-**Capture**:
+Then full run:
 
-- Exit code (0 = pass, non-zero = fail)
-- stdout/stderr (truncate to last 500 lines if longer)
-- Individual test results if the framework supports structured output (pytest `--tb=short`, jest `--verbose`)
-- Duration
-- Count: total tests, passed, failed, skipped, errors
+```
+Run the full test suite to catch regressions outside scope.
+test_command: <Test command from tooling.md>
+output_path: .mz/task/<task_name>/test_results_full.md
+```
+
+**If scope is global/roam or scoped command is "not supported"**: dispatch one full run only:
+
+```
+Run the full test suite.
+test_command: <Test command from tooling.md>
+output_path: .mz/task/<task_name>/test_results_full.md
+```
+
+Read the resulting artifact(s) when done.
 
 ### 3.3 Linter execution
 
-Run the linter on source files in scope.
+Dispatch a `pipeline-lint-runner` agent (model: **haiku**):
 
-```bash
-<lint command> <scope files or directories>
+```
+Run linter on the source files in scope.
+lint_command: <Lint command from tooling.md, or "none detected">
+scope_files: <source files from scope.md>
+output_path: .mz/task/<task_name>/lint_results.md
 ```
 
-If the linter supports full-project mode and scope is global, run it once on the whole project.
-
-**Capture**:
-
-- Exit code
-- Individual findings: file, line, rule, severity, message
-- Count: errors, warnings, info
-- Duration
+Read `.mz/task/<task_name>/lint_results.md`.
 
 ### 3.4 Formatter check
 
-Run the formatter in **check mode** (not write mode) to detect unformatted files without modifying them.
+Derive the check-mode formatter command from `tooling.md`:
 
 | Formatter    | Check command                            |
 | ------------ | ---------------------------------------- |
@@ -92,11 +102,16 @@ Run the formatter in **check mode** (not write mode) to detect unformatted files
 | rustfmt      | `rustfmt --check <files>`                |
 | clang-format | `clang-format --dry-run -Werror <files>` |
 
-**Capture**:
+Dispatch a `pipeline-lint-runner` agent (model: **haiku**) with the check-mode command:
 
-- List of unformatted files
-- Count: formatted vs. unformatted
-- Duration
+```
+Check formatting without modifying files.
+format_command: <check-mode formatter command derived above, or "none detected">
+scope_files: <source files from scope.md>
+output_path: .mz/task/<task_name>/format_results.md
+```
+
+Read `.mz/task/<task_name>/format_results.md`.
 
 ### 3.5 Type checker execution
 

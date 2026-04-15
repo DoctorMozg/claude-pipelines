@@ -139,7 +139,7 @@ Output the final report block: reproducer command, root cause with file:line, re
 
 - **Can't reproduce**: report what was tried and findings via AskUserQuestion. Ask for more context. Do NOT proceed with guesswork.
 - **Ambiguous input**: ask the user to clarify before Phase 1.
-- **GitHub issue fetch fails**: ask the user to paste the bug description.
+- **GitHub issue fetch fails**: before asking the user to paste, try the fallback chain — (1) `mcp__*github*` MCP tools if exposed, (2) direct REST API (`curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}/issues/{number}"`). Only prompt the user after all three tiers fail.
 - **No test framework detected**: ask the user how to run tests.
 - **Domain research returns nothing**: note the gap and proceed with codebase-only diagnosis.
 - **Fix makes things worse**: revert immediately and try a different approach.

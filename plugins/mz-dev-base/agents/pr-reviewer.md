@@ -66,6 +66,16 @@ MAIN_REPO=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
 
 All file writes to `.mz/reviews/` must use `$MAIN_REPO/.mz/reviews/` as the target directory. When reading previous reports in Phase 3, also read from `$MAIN_REPO/.mz/reviews/`.
 
+## GitHub Access Fallback
+
+If any `gh` call in this agent fails (missing binary, unauthenticated, rate-limited, non-zero exit), try each tier before giving up:
+
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool.
+1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly with `curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/<path>"`. REST field names match `gh --json` output, so existing `jq` filters port directly (e.g., `gh pr view --json state` → `GET /repos/{owner}/{repo}/pulls/{number}` and read `.state`).
+1. Only emit `STATUS: BLOCKED` after all three tiers fail; state which tiers were tried.
+
+GraphQL operations (Phase 1's `reviewThreads` query) have no REST equivalent — if GraphQL fails via every tier, downgrade concern resolution detection to REST `pulls/{n}/comments` + `issues/{n}/comments` and note `UNVERIFIED: thread-resolution state unknown (GraphQL tiers all failed)`.
+
 ## Process
 
 ### Phase 0 — Eligibility Check
