@@ -6,11 +6,7 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract the command from JSON input
-CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
-if [[ -z "$CMD" ]]; then
-  CMD=$(echo "$INPUT" | grep -oP '"command"\s*:\s*"[^"]*"' | head -1 | sed 's/.*"command"\s*:\s*"//;s/"$//')
-fi
+CMD=$(jq -r '.tool_input.command // empty' <<< "$INPUT" 2>/dev/null || echo "")
 
 if [[ -z "$CMD" ]]; then
   exit 0

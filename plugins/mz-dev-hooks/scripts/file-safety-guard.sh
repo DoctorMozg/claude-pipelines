@@ -6,11 +6,7 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract file path
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-if [[ -z "$FILE_PATH" ]]; then
-  FILE_PATH=$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*"file_path"\s*:\s*"//;s/"$//')
-fi
+FILE_PATH=$(jq -r '.tool_input.file_path // empty' <<< "$INPUT" 2>/dev/null || echo "")
 
 if [[ -z "$FILE_PATH" ]]; then
   exit 0

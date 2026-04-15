@@ -6,11 +6,7 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract the command
-CMD=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
-if [[ -z "$CMD" ]]; then
-  CMD=$(echo "$INPUT" | grep -oP '"command"\s*:\s*"[^"]*"' | head -1 | sed 's/.*"command"\s*:\s*"//;s/"$//')
-fi
+CMD=$(jq -r '.tool_input.command // empty' <<< "$INPUT" 2>/dev/null || echo "")
 
 if [[ -z "$CMD" ]]; then
   exit 0
@@ -53,8 +49,8 @@ if echo "$MSG" | grep -qP '^(feat|fix|docs|style|refactor|perf|test|build|ci|cho
 fi
 
 if [[ -n "$WARNINGS" ]]; then
-  WARNINGS=${WARNINGS//\"/\\\"}
-  echo "{\"hookSpecificOutput\":{\"additionalContext\":\"Commit quality: ${WARNINGS}Expected format: type(scope): description (e.g., feat(auth): add OAuth2 flow)\"}}"
+  jq -n --arg msg "Commit quality: ${WARNINGS}Expected format: type(scope): description (e.g., feat(auth): add OAuth2 flow)" \
+    '{hookSpecificOutput: {additionalContext: $msg}}'
 fi
 
 exit 0

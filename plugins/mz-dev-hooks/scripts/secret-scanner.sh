@@ -6,11 +6,7 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-# Extract file path for allowlist check
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-if [[ -z "$FILE_PATH" ]]; then
-  FILE_PATH=$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*"file_path"\s*:\s*"//;s/"$//')
-fi
+FILE_PATH=$(jq -r '.tool_input.file_path // empty' <<< "$INPUT" 2>/dev/null || echo "")
 
 # Allowlist: skip scanning for test/example/mock files
 if [[ -n "$FILE_PATH" ]]; then
@@ -32,17 +28,11 @@ if [[ -n "$FILE_PATH" ]]; then
   fi
 fi
 
-# Extract content to scan — handles Write (content), Edit (new_string), MultiEdit (edits[].new_string)
-CONTENT=$(echo "$INPUT" | jq -r '
+CONTENT=$(jq -r '
   (.tool_input.content // empty),
   (.tool_input.new_string // empty),
   ((.tool_input.edits // [])[] | .new_string // empty)
-' 2>/dev/null)
-
-if [[ -z "$CONTENT" ]]; then
-  # Fallback: grab any string values that look like content
-  CONTENT=$(echo "$INPUT" | grep -oP '"(content|new_string)"\s*:\s*"[^"]*"' | sed 's/.*:\s*"//;s/"$//')
-fi
+' <<< "$INPUT" 2>/dev/null || echo "")
 
 if [[ -z "$CONTENT" ]]; then
   exit 0
@@ -120,9 +110,8 @@ fi
 
 if [[ -n "$WARNINGS" ]]; then
   WARNINGS="${WARNINGS}Consider using environment variables or a secrets manager instead."
-  # Escape for JSON
-  WARNINGS=${WARNINGS//\"/\\\"}
-  echo "{\"hookSpecificOutput\":{\"additionalContext\":\"Warning: ${WARNINGS}\"}}"
+  jq -n --arg msg "Warning: $WARNINGS" \
+    '{hookSpecificOutput: {additionalContext: $msg}}'
 fi
 
 exit 0

@@ -25,8 +25,8 @@ ACTIVE_TASKS=""
 for state_file in "$TASK_DIR"/*/state.md; do
   [[ -f "$state_file" ]] || continue
 
-  STATUS=$(grep -oP 'Status:\s*\K\S+' "$state_file" 2>/dev/null || echo "")
-  PHASE=$(grep -oP 'Phase:\s*\K\S+' "$state_file" 2>/dev/null || echo "")
+  STATUS=$(grep -oP 'Status\**:\s*\K\S+' "$state_file" 2>/dev/null || echo "")
+  PHASE=$(grep -oP 'Phase\**:\s*\K\S+' "$state_file" 2>/dev/null || echo "")
   TASK_NAME=$(basename "$(dirname "$state_file")")
 
   # Skip completed, aborted, or failed tasks

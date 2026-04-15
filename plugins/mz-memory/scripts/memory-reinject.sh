@@ -9,6 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=memory-inject.sh
 source "${SCRIPT_DIR}/memory-inject.sh" 2>/dev/null || true
 
-inject_memory "[PostCompact] Project memory" || exit 0
+inject_memory "PostCompact" "[PostCompact] Project memory" || exit 0
 
 exit 0

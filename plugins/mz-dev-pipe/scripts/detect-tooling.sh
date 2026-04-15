@@ -205,9 +205,12 @@ fi
 } >> "$OUTPUT_FILE"
 
 # Output additionalContext so Claude knows about detected tooling
-ECOSYSTEMS=$(jq -r '.ecosystems | keys[]' "$OUTPUT_FILE" 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
-if [[ -n "$ECOSYSTEMS" ]]; then
-  echo "{\"hookSpecificOutput\":{\"additionalContext\":\"Project tooling detected: ${ECOSYSTEMS}. Full details in .mz/tooling.json\"}}"
+if command -v jq &>/dev/null; then
+  ECOSYSTEMS=$(jq -r '.ecosystems | keys[]' "$OUTPUT_FILE" 2>/dev/null | tr '\n' ', ' | sed 's/,$//' || echo "")
+  if [[ -n "$ECOSYSTEMS" ]]; then
+    jq -n --arg eco "$ECOSYSTEMS" \
+      '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: ("Project tooling detected: " + $eco + ". Full details in .mz/tooling.json")}}'
+  fi
 fi
 
 exit 0
