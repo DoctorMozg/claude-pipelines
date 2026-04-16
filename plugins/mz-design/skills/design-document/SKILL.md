@@ -67,12 +67,23 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: the finalized design document draft (path + summary of iterations, aggregate verdict, WCAG gate result) after the critique loop has converged with `AGGREGATE: PASS` and zero WCAG violations. See `phases/finalization.md` Step 4.1 for extended presentation details and the revision-writer sub-loop.
+**Mandatory pre-read**: Read `.mz/design/<task_name>/design.md` with the Read tool, then read `wireframes.md` and `wcag-report.md` from the same directory. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires. See `phases/finalization.md` Step 4.1 for extended presentation rules and the revision-writer sub-loop.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `design.md`, `wireframes.md`, and `wcag-report.md` under labeled sections. Never substitute a path, line count, iteration summary, or `<verdict>` placeholder — the user must review the actual finalized design (including the contrast pairs) in the question itself, not have to open files separately. If any artifact is very long and would exceed AskUserQuestion's practical body size, surface that risk to the user via AskUserQuestion before truncating; never silently summarize.
+
+Invoke AskUserQuestion with this body (where each `<verbatim ...>` marker is replaced by the bytes you just read):
 
 ```
-Design document ready at .mz/design/<task_name>/design.md (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS).
+Design document ready (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS). Please review the finalized design:
+
+## Design Document (design.md)
+<verbatim design.md contents>
+
+## Wireframes (wireframes.md)
+<verbatim wireframes.md contents>
+
+## WCAG Contrast Report (wcag-report.md)
+<verbatim wcag-report.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -81,7 +92,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → update `state.md` to `complete`, proceed to write `final-summary.md`.
 - **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not write `final-summary.md`.
-- **Feedback** → dispatch `design-revision-writer` to apply the feedback, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
+- **Feedback** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to this gate, re-read the updated artifact(s), and re-present **via AskUserQuestion** with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
 
 ## Techniques
 

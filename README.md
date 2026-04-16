@@ -138,6 +138,45 @@ flowchart LR
 
 </details>
 
+<details>
+<summary><b>Build a knowledge base from scratch</b> &nbsp;·&nbsp; <code>mz-knowledge</code> + <code>mz-dev-base</code></summary>
+
+```mermaid
+flowchart LR
+    A["/obsidian-init"]:::know --> B["/vault-ingest"]:::know
+    B --> C["/vault-triage"]:::know
+    C --> D["/vault-connect"]:::know
+    D --> E["/vault-schema"]:::know
+    classDef know fill:#fff8c5,stroke:#9a6700,color:#9a6700
+```
+
+1. **`/obsidian-init`** — bootstrap vault with CLAUDE.md, folders, schema, templates
+1. **`/vault-ingest`** — capture voice memos, screenshots, PDFs, YouTube into fleeting notes
+1. **`/vault-triage`** — batch-score inbox, promote to permanent, merge duplicates, discard noise
+1. **`/vault-connect`** — suggest wikilinks between new and existing notes
+1. **`/vault-schema`** — validate all frontmatter against the schema, migrate violations
+
+</details>
+
+<details>
+<summary><b>Ingest research into a knowledge base</b> &nbsp;·&nbsp; <code>mz-knowledge</code> + <code>mz-dev-base</code></summary>
+
+```mermaid
+flowchart LR
+    A["/deep-research"]:::base --> B["/vault-research"]:::know
+    B --> C["/vault-provenance"]:::know
+    C --> D["/vault-answer"]:::know
+    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef know fill:#fff8c5,stroke:#9a6700,color:#9a6700
+```
+
+1. **`/deep-research`** — multi-agent web research on a topic, produces a structured report
+1. **`/vault-research`** — atomize the report into permanent notes with link suggestions
+1. **`/vault-provenance`** — classify each note's claims by epistemic status
+1. **`/vault-answer`** — query the vault with grounded, citation-backed answers
+
+</details>
+
 ## Quick Start
 
 ```bash
@@ -151,6 +190,7 @@ claude plugin install mz-dev-hooks      # Safety gates + workflow hooks
 claude plugin install mz-memory         # Cross-session project memory
 claude plugin install mz-biz-outreach   # Business lead generation
 claude plugin install mz-design         # UI/UX design documents
+claude plugin install mz-knowledge      # Obsidian knowledge base
 ```
 
 After installation, skills are available as slash commands:
@@ -279,6 +319,34 @@ Cross-session project memory that persists knowledge automatically. SessionStart
 Pairs with `mz-dev-pipe` agents that have native `memory: project` for per-agent persistent memory.
 
 **[Full documentation →](plugins/mz-memory/)**
+
+______________________________________________________________________
+
+### [`mz-knowledge`](plugins/mz-knowledge/) — Obsidian Knowledge Base
+
+Full lifecycle for a personal Obsidian vault — bootstrap, capture, atomize, triage, link, review, and query. Every skill reads the vault's CLAUDE.md for conventions and writes state to `.mz/task/`.
+
+| Skill                 | Command                             | What it does                                                             |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| **obsidian-init**     | `/obsidian-init <vault path>`       | Bootstrap vault with CLAUDE.md, PARA+Zettelkasten folders, schema        |
+| **vault-ingest**      | `/vault-ingest <path or URL>`       | Capture voice/image/PDF/YouTube → transcription → fleeting note          |
+| **process-notes**     | `/process-notes <note path>`        | Atomize fleeting notes into permanent notes with frontmatter             |
+| **vault-triage**      | `/vault-triage`                     | Batch-score inbox notes → promote / merge / discard / defer              |
+| **vault-research**    | `/vault-research <report path>`     | Ingest research reports → atomic permanent notes + link suggestions      |
+| **vault-schema**      | `/vault-schema [validate\|migrate]` | Validate frontmatter against YAML schema, propose migrations             |
+| **vault-connect**     | `/vault-connect <note path>`        | Suggest `[[wikilinks]]` between notes based on content similarity        |
+| **vault-provenance**  | `/vault-provenance <note path>`     | Classify claims by epistemic status (first-hand/cited/inferred/received) |
+| **vault-answer**      | `/vault-answer <question>`          | Grounded Q&A with inline `[[citations]]` from vault content              |
+| **vault-refactor**    | `/vault-refactor <rename spec>`     | Safe bulk renames with link-graph updates and rollback                   |
+| **vault-review**      | `/vault-review`                     | Periodic review of permanent notes for staleness and accuracy            |
+| **vault-health**      | `/vault-health`                     | Orphan detection, dead wikilinks, missing frontmatter                    |
+| **obsidian-bases**    | `/obsidian-bases`                   | Obsidian Bases `.base` file syntax reference (filters, formulas, views)  |
+| **obsidian-markdown** | `/obsidian-markdown`                | Obsidian-flavored markdown syntax reference                              |
+| **obsidian-cli**      | `/obsidian-cli`                     | Obsidian URI scheme and CLI reference                                    |
+
+11 agents (capture-normalizer, triage-scorer, atomization-proposer, link-suggester, provenance-tracer, schema-validator, vault-query-answerer, vault-refactor-scanner, vault-refactor-writer, vault-audit-collector, moc-gap-detector).
+
+**[Full documentation →](plugins/mz-knowledge/)**
 
 ______________________________________________________________________
 

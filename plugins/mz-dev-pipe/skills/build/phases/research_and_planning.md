@@ -195,12 +195,16 @@ Save review to `.mz/task/<task_name>/plan_review_<iteration>.md`.
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Use AskUserQuestion to present the final plan to the user:
+**Mandatory pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full file contents into context.
+
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `plan.md`. Never substitute a path, status summary, line count, or `<contents of plan.md>` placeholder — the user must review the actual plan in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim plan.md contents>` is replaced by the bytes you just read):
 
 ```
 The implementation plan is ready and passed review. Please review and approve:
 
-<contents of plan.md>
+<verbatim plan.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -209,7 +213,7 @@ Response handling:
 
 - **"approve"** → update state, proceed to next phase.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate, re-run upstream phase (spawn pipeline-planner with feedback), re-present via AskUserQuestion (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **Feedback** → incorporate, re-run upstream phase (spawn pipeline-planner with feedback), overwrite `plan.md`, return to this gate, re-read `plan.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 Do NOT re-run the review loop on feedback — the user's word is final.
 

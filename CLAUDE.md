@@ -47,6 +47,10 @@ See [AGENTS_GUIDELINES.md](guidelines/AGENTS_GUIDELINES.md) for detailed authori
 
 Standard Claude Code skill structure with `SKILL.md` containing YAML frontmatter and instructions. See [SKILL_GUIDELINES.md](guidelines/SKILL_GUIDELINES.md) for detailed authoring rules covering approval gates, progressive disclosure, dispatch prompts, error handling, and more.
 
+## Hook Format
+
+Plugin hooks live at `plugins/<name>/hooks/hooks.json` and dispatch shell scripts under `plugins/<name>/scripts/`. See [HOOKS_GUIDELINES.md](guidelines/HOOKS_GUIDELINES.md) for detailed authoring rules covering per-event output schemas (PostCompact requires plain stdout, not `hookSpecificOutput`), exit-code semantics, JSON escaping with `jq`, defensive input parsing, performance budget, and security caveats.
+
 ## Plugin Authoring Conventions
 
 Cross-cutting preferences that span both agent and skill authoring. These are the items most often forgotten mid-task and most expensive to fix in bulk later.

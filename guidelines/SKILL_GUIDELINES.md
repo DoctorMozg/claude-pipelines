@@ -7,14 +7,17 @@ Rules for writing skills in this repository. All skills must comply.
 Every approval gate must follow this exact structure:
 
 1. **Delegation guard**: `**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.`
-1. **Presentation**: what to show the user (plan, findings, diagnosis, decomposition).
-1. **AskUserQuestion prompt**: ends with `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+1. **Mandatory pre-read**: Before invoking AskUserQuestion, the gate text must instruct the orchestrator to Read the artifact (e.g., `Read .mz/task/<task_name>/plan.md and capture the full contents`). Name the exact artifact path (`plan.md`, `strategy.json`, `findings.md`, etc.) — do not say "the artifact" generically.
+1. **Inline-verbatim presentation**: The AskUserQuestion question body must contain the **verbatim file contents** (or the verbatim list/decomposition that was generated in the orchestrator's own context). Never substitute a path, status summary, line count, or `<placeholder>` token. The user reviews what they see in the question; they must not need to open any file. State this requirement explicitly in the gate using language like: `The question body must contain the verbatim contents of <artifact_path>. Do not substitute a path, summary, or placeholder.` See the `translate` skill (`phases/discovery_and_planning.md` Phase 1.5) for the canonical wording.
+1. **AskUserQuestion prompt**: ends literally with `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.` Do not shorten or rephrase — the literal string is what the response-handling bullets match against.
 1. **Response handling** as a labeled section with three bullets:
    - **"approve"** → update state, proceed to next phase.
    - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-   - **Feedback** → incorporate, re-run upstream phase if needed, return to this gate, re-present **via AskUserQuestion** (same format). Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
+   - **Feedback** → incorporate, re-run upstream phase if needed, return to this gate, re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations). Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
 
-All five elements are required. Do not omit the delegation guard, reject option, or loop language.
+All six elements are required. Do not omit the delegation guard, the pre-read step, the inline-verbatim requirement, the reject option, or the loop language.
+
+**Why the pre-read and inline-verbatim steps are mandatory**: An author writing `<contents of plan.md>` inside the AskUserQuestion text intends it as an instruction to the runtime orchestrator. In practice the orchestrator often passes that placeholder through literally, or substitutes a path / one-line status, leaving the user to open the file separately. That defeats the entire purpose of the gate. The fix is two-part: an explicit Read step that loads the bytes into context, and an explicit "verbatim, no summary, no path" instruction that forbids the orchestrator from shortcutting.
 
 Add gates before: code changes, expensive agent dispatches, web research. Read-only skills (like `explain`) don't need gates.
 

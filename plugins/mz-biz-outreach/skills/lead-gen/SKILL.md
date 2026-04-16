@@ -81,21 +81,27 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: the approved target profile, sector/geo scope, candidate-source plan, and estimated fan-out cost from `strategy.json` — the user confirms scope before any expensive research runs. See `phases/discovery.md` §Phase 1.5 for extended presentation details.
+**Mandatory pre-read**: Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents (target profile, sector/geo scope, candidate-source plan, estimated fan-out cost) into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block so structure is preserved. See `phases/discovery.md` §Phase 1.5 for the strategy.json schema.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `strategy.json` inside a fenced \`\`\`json block. Never substitute a path, target-profile summary, or one-line description — the user must review the actual strategy fields in the question itself, not have to open the file separately. The user confirms scope before any expensive research runs.
 
+Invoke AskUserQuestion with this body (where `<verbatim strategy.json contents>` is replaced by the bytes you just read):
+
+````
+Strategy drafted for "<goal>". Please review before discovery dispatch:
+
+```json
+<verbatim strategy.json contents>
 ```
-Strategy drafted for "<goal>". Target profile, sector filters, and candidate sources are in .mz/outreach/<run_name>/strategy.json.
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
-```
+````
 
 **Response handling**:
 
 - **"approve"** → update `.mz/task/<task_name>/state.md` phase to `strategy_approved`, proceed to Phase 2.
 - **"reject"** → update `.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **Feedback** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to this gate, re-read `strategy.json`, and re-present **via AskUserQuestion** with the full new contents inside the fenced json block — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Techniques
 

@@ -83,25 +83,29 @@ After setup, read `phases/investigate.md` and proceed to Phase 1.
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Use AskUserQuestion with:
+**Mandatory pre-read**: Read `.mz/task/<task_name>/diagnosis.md` with the Read tool. Capture the full file contents (Bug, Reproduction, Root Cause with file:line references, Proposed Fix, External Context from any domain research) into context. If Phase 2 wrote intermediate files (e.g., `reproduction.md`, `domain_findings.md`) the orchestrator must read those too and incorporate the verbatim content under the matching section headers below.
+
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim diagnosis content under each section header. Never substitute a path, status summary, line count, or `<placeholder>` token — the user must review the actual diagnosis in the question itself, not have to open the file separately. Omit the External Context section only if no domain research was performed.
+
+Invoke AskUserQuestion with this body (where each `<verbatim ... content>` marker is replaced by the bytes you just read):
 
 ```
 Bug investigation complete. Review the diagnosis before I proceed:
 
 ## Bug
-<original bug description>
+<verbatim original bug description>
 
 ## Reproduction
-<how the bug was reproduced, or "static confirmation only">
+<verbatim reproduction steps from diagnosis.md, or "static confirmation only">
 
 ## Root Cause
-<diagnosed root cause with file:line references>
+<verbatim root cause section with file:line references>
 
 ## Proposed Fix
-<minimal fix description>
+<verbatim minimal fix description>
 
 ## External Context
-<domain research findings — omit if none>
+<verbatim domain research findings — omit this entire section if no domain research>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -110,7 +114,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → read `phases/fix_and_verify.md`, proceed to Phase 3.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-run diagnosis (Phase 2) incorporating the user's input, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **Feedback** → re-run diagnosis (Phase 2) incorporating the user's input, overwrite `diagnosis.md`, return to this gate, re-read `diagnosis.md`, and re-present **via AskUserQuestion** with the full new contents under each section header — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
 ## Techniques
 

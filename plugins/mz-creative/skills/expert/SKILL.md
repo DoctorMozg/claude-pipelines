@@ -70,12 +70,16 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: the 5 selected panelist lenses with one-line rationale per pick, drawn from `panel.md`. The user confirms the panel composition before any of the 3 rounds dispatch. See `phases/intake_and_panel.md` Step 1.4 for extended presentation details.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/panel.md` with the Read tool. Capture the full file contents (5 selected panelist lenses with one-line rationale per pick — primary, adjacent, productive-tension picks all justified) into context. See `phases/intake_and_panel.md` Step 1.4 for the panel.md content schema.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `panel.md`. Never substitute a path, status summary, or `<5 lens names>` placeholder — the user must review the actual panel composition and rationale in the question itself, not have to open the file separately. The user confirms the panel composition before any of the 3 rounds dispatch.
+
+Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
 
 ```
-Panel assembled: <5 lens names>. Full rationale at .mz/task/<task_name>/panel.md.
+Panel assembled. Please review the composition before the 3 rounds begin:
+
+<verbatim panel.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -84,7 +88,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → update `state.md` to `panel_approved`, proceed to Phase 2 (Round Loop).
 - **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not run rounds.
-- **Feedback** → apply swaps/changes to `panel.md`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Feedback** → apply swaps/changes, overwrite `panel.md`, return to this gate, re-read `panel.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

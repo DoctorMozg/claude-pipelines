@@ -106,15 +106,28 @@ Update state phase to `panel_selected`.
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: the topic, the 5 selected panelists with justifications, and the 5 not selected.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/panel.md` with the Read tool. Capture the full file contents (5 selected panelist agents with one-sentence justifications) into context. Also list the 5 not-selected lenses inline (derive from the 16-lens table minus the 5 in `panel.md`).
 
-Use AskUserQuestion: `Panel assembled for "<topic>". Selected: <list with justifications>. Not selected: <list>. Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `panel.md` plus the inline list of not-selected lenses. Never substitute a path, status summary, or `<list with justifications>` placeholder — the user must review the actual panel composition in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
+
+```
+Panel assembled for "<topic>".
+
+Selected (with justifications):
+<verbatim panel.md contents>
+
+Not selected: <comma-separated list of 11 remaining lens names>
+
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+```
 
 **Response handling**:
 
 - **"approve"** → update state, proceed to Phase 2.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust panel per feedback, update `panel.md`, return to this gate and re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Feedback** → adjust panel per feedback, overwrite `panel.md`, return to this gate, re-read `panel.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Phase 2: Ideation
 

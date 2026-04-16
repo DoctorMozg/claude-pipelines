@@ -81,14 +81,16 @@ Derive `audit_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md`
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: summary counts by severity, scope used, ranked findings (file:line, severity, confidence, description, proposed fix), coder assignment preview.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/findings.md` with the Read tool. Capture the full file contents (every ranked finding with file:line, severity, confidence, description, proposed fix, plus the coder assignment preview block) into context.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `findings.md`. Never substitute a path, status summary, line count, or `<findings list>` placeholder — the user must review the actual ranked findings in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim findings.md contents>` is replaced by the bytes you just read):
 
 ```
 Found <N> actionable findings. Please review:
 
-<findings list>
+<verbatim findings.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 (e.g. "drop finding 3", "rerun research with security lens only", "narrow scope to src/api/").
@@ -98,7 +100,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → proceed to Phase 4.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** — *drop/adjust* → remove and re-present (no re-research). *Scope/lens changes* → Phase 1, then re-present. *Unclear* → ask follow-up. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
+- **Feedback** — *drop/adjust* → remove from `findings.md` and re-present (no re-research). *Scope/lens changes* → re-run Phase 1, overwrite `findings.md`, then re-present. *Unclear* → ask follow-up. After any change, re-read `findings.md` and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
 
 ### Phase 4–10: Fix, Review, Finalize
 

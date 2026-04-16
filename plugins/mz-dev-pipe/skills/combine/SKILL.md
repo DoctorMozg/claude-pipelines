@@ -103,12 +103,16 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: the source inventory summary (bucket counts, stale-excluded count, unavailable buckets) and the proposed lens decomposition (3–6 lenses with names and file counts) from `inventory.md`. See `phases/inventory.md §Phase 1.5 Gate` for extended presentation content and feedback handling rules.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full file contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context. See `phases/inventory.md §Phase 1.5 Gate` for the inventory.md content schema.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `inventory.md`. Never substitute a path, status summary, lens-name list, or `<lens names>` placeholder — the user must review the actual inventory and decomposition in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim inventory.md contents>` is replaced by the bytes you just read):
 
 ```
-Source inventory complete for "<task slug>". <N> lenses proposed: <lens names>. Full decomposition at .mz/task/<task_name>/inventory.md.
+Source inventory complete for "<task slug>". Please review the proposed decomposition:
+
+<verbatim inventory.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -117,7 +121,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → update `state.md` phase to `decomposition_approved`, proceed to Phase 2 (`phases/lens_dispatch.md`).
 - **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **Feedback** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-read `inventory.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Phase 3.5: Gap-Fill Approval Gate (conditional)
 
@@ -125,12 +129,16 @@ If the residual gap list produced by Phase 3 is empty, skip this gate and jump t
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: the residual gap list (one bullet per gap with context) and the estimated cost (number of web `pipeline-web-researcher` agents to dispatch, capped at `MAX_LENSES`). See `phases/synthesis.md §Phase 3.5 Gate` for extended presentation content and merge rules.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. If Phase 3 has not yet written `gaps.md`, write it now from the residual gap list — one numbered bullet per gap with surrounding context, plus a final `Estimated cost: <M> web researcher agent(s) (capped at MAX_LENSES)` line. Then re-Read it to capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `gaps.md`. Never substitute a path, count, `<short list>` placeholder, or one-line summary — the user must review the actual gaps and per-gap context in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim gaps.md contents>` is replaced by the bytes you just read):
 
 ```
-Synthesis left <N> residual gap(s): <short list>. Web gap-fill would dispatch <M> researcher agent(s).
+Synthesis left residual gaps. Please review before web gap-fill dispatches:
+
+<verbatim gaps.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -139,7 +147,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → update `state.md` phase to `gapfill_approved`, proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
 - **"reject"** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
-- **Feedback** → incorporate (drop/merge/rewrite gaps), return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
+- **Feedback** → incorporate (drop/merge/rewrite gaps), overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
 
 ## Error Handling
 

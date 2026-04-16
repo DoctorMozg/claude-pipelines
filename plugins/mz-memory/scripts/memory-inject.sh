@@ -27,8 +27,17 @@ inject_memory() {
 ...[memory truncated]"
   fi
 
-  jq -n --arg event "$event_name" --arg prefix "$prefix" --arg content "$content" \
-    '{hookSpecificOutput: {hookEventName: $event, additionalContext: ($prefix + " (.mz/memory/MEMORY.md):\n" + $content)}}'
+  local payload="${prefix} (.mz/memory/MEMORY.md):
+${content}"
+
+  # PostCompact rejects hookSpecificOutput per the hook schema; stdout is read as
+  # additional context for that event. JSON-aware events still use the envelope.
+  if [[ "$event_name" == "PostCompact" ]]; then
+    printf '%s\n' "$payload"
+  else
+    jq -n --arg event "$event_name" --arg payload "$payload" \
+      '{hookSpecificOutput: {hookEventName: $event, additionalContext: $payload}}'
+  fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

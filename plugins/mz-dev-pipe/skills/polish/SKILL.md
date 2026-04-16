@@ -82,16 +82,16 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present the Phase 1 assessment output: the criteria checklist showing which items are failing, the proposed quick-fix plan (one line per fix target), and the estimated file count in scope.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/assessment.md` with the Read tool. Capture the full file contents (criteria checklist showing which items are failing, proposed quick-fix plan with one line per fix target, estimated file count in scope) into context.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `assessment.md`. Never substitute a path, status summary, line count, or `<failing criteria list>` / `<proposed quick-fix plan>` / `<estimated file count>` placeholders — the user must review the actual assessment in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim assessment.md contents>` is replaced by the bytes you just read):
 
 ```
 Phase 1 assessment complete. Please review:
 
-<failing criteria list>
-<proposed quick-fix plan>
-<estimated file count>
+<verbatim assessment.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
@@ -100,7 +100,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → update state, proceed to Phase 2.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate, re-run Phase 1 if needed, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Feedback** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

@@ -63,12 +63,16 @@ Example for "State of WebAssembly in 2026":
 
 **This orchestrator** (not a subagent) must present the decomposition to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Use AskUserQuestion with:
+**Mandatory pre-write + capture**: Write the decomposition to `.mz/task/<task_name>/decomposition.md` as a numbered list of 3-7 subtopics, each with a 1-3 sentence description and rationale. Then Read that file with the Read tool to capture its full contents into context for the gate.
+
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `decomposition.md`. Never substitute a path, status summary, count, or `<numbered list of subtopics with descriptions>` placeholder — the user must review the actual decomposition in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim decomposition.md contents>` is replaced by the bytes you just read):
 
 ```
 Research decomposition ready. Please review:
 
-<numbered list of subtopics with descriptions>
+<verbatim decomposition.md contents>
 
 Feedback examples: add a subtopic, merge two topics, or drop one.
 
@@ -79,7 +83,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → proceed to Step 2 (dispatch researchers).
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust the decomposition accordingly, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
+- **Feedback** → adjust the decomposition accordingly, overwrite `decomposition.md`, return to this gate, re-read `decomposition.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
 
 ### 2. Dispatch parallel domain-researcher agents
 

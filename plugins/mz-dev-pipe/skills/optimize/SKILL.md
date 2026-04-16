@@ -73,14 +73,16 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying dete
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks. **If baseline was RED**: include prominently, ask whether to proceed/abort/run `polish` first.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
 
-Use AskUserQuestion with:
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `scan.md`. Never substitute a path, status summary, line count, or `<plan contents>` placeholder — the user must review the actual plan in the question itself, not have to open the file separately.
+
+Invoke AskUserQuestion with this body (where `<verbatim scan.md contents>` is replaced by the bytes you just read):
 
 ```
 The optimization plan is ready. Please review and approve:
 
-<plan contents>
+<verbatim scan.md contents>
 
 Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 (e.g. exclude a file, adjust chunking, change chunk count).
@@ -90,7 +92,7 @@ Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 
 - **"approve"** → proceed to Phase 3.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → apply changes, overwrite `scan.md`, re-present via AskUserQuestion. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **Feedback** → apply changes, overwrite `scan.md`, return to this gate, re-read `scan.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
 ### Phase 3: Parallel Optimization
 
