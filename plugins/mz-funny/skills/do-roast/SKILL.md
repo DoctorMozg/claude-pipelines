@@ -101,7 +101,18 @@ Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA
 
 Present: the resolved target candidates produced by the target resolution ladder in `phases/analyze.md` — file list, directory list, branch diff command, or raw-text blob (truncated to 1000 chars).
 
-Use AskUserQuestion: `I resolved "<target_raw>" to: <list>. Roast these as <persona>? Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Target Resolution Gate**
+Ready to roast the resolved target as <persona>. Confirm the file/directory list, or provide feedback to adjust the scope.
+
+- **Approve** → proceed to Phase 1 (structural/smell analysis)
+- **Reject** → abort the roast, no analysis performed
+- **Feedback** → adjust the target scope and re-present the gate
+```
+
+Use AskUserQuestion: `I resolved "<target_raw>" to: <list>. Roast these as <persona>? Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 **Response handling**:
 

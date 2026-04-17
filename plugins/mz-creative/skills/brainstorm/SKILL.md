@@ -110,6 +110,17 @@ Update state phase to `panel_selected`.
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `panel.md` plus the inline list of not-selected lenses. Never substitute a path, status summary, or `<list with justifications>` placeholder — the user must review the actual panel composition in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Panel Review**
+5-person panel selected for brainstorming "<topic>". Shows selected lenses with justifications and the 11 not-selected alternatives.
+
+- **Approve** → proceed to Phase 2 (Ideation), dispatch panel in parallel
+- **Reject** → mark task aborted, stop processing
+- **Feedback** → adjust panel selection per input, re-present for approval
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -120,7 +131,7 @@ Selected (with justifications):
 
 Not selected: <comma-separated list of 11 remaining lens names>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

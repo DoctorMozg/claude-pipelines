@@ -77,6 +77,17 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying dete
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `scan.md`. Never substitute a path, status summary, line count, or `<plan contents>` placeholder — the user must review the actual plan in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Approval Gate — Optimization Plan Review**
+Your scope has been scanned, chunked, and baselined. Review the plan below: N chunks, M files affected, baseline test/lint status shown.
+
+- **Approve** → proceed to Phase 3 (parallel optimization)
+- **Reject** → mark task aborted, no files written
+- **Feedback** → apply changes to scan.md, re-present via AskUserQuestion
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim scan.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -84,7 +95,7 @@ The optimization plan is ready. Please review and approve:
 
 <verbatim scan.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 (e.g. exclude a file, adjust chunking, change chunk count).
 ```
 

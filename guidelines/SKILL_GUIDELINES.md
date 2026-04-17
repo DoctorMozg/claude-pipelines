@@ -8,16 +8,33 @@ Every approval gate must follow this exact structure:
 
 1. **Delegation guard**: `**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.`
 1. **Mandatory pre-read**: Before invoking AskUserQuestion, the gate text must instruct the orchestrator to Read the artifact (e.g., `Read .mz/task/<task_name>/plan.md and capture the full contents`). Name the exact artifact path (`plan.md`, `strategy.json`, `findings.md`, etc.) — do not say "the artifact" generically.
+1. **Pre-gate emit block** (separate, chat-visible): Before invoking AskUserQuestion, the gate text must instruct the orchestrator to emit a standalone text block to the chat (outside the AskUserQuestion body) that summarizes what is being approved and what each response means. The block must contain: a bold title line; a 1–2 sentence summary of what's presented; and a bullet list with **Approve**, **Reject**, and **Feedback** outcomes. Keep the emit block under 8 lines — it is context, not a replay of the artifact. State the instruction explicitly using language like: `Before invoking AskUserQuestion, emit a text block to the user:` followed by a fenced template. The block is mandatory because AskUserQuestion bodies truncate in chat history and tend to disappear after context compaction; the pre-gate emit keeps the "why this matters" visible in chat even when the gate body is later compressed.
 1. **Inline-verbatim presentation**: The AskUserQuestion question body must contain the **verbatim file contents** (or the verbatim list/decomposition that was generated in the orchestrator's own context). Never substitute a path, status summary, line count, or `<placeholder>` token. The user reviews what they see in the question; they must not need to open any file. State this requirement explicitly in the gate using language like: `The question body must contain the verbatim contents of <artifact_path>. Do not substitute a path, summary, or placeholder.` See the `translate` skill (`phases/discovery_and_planning.md` Phase 1.5) for the canonical wording.
-1. **AskUserQuestion prompt**: ends literally with `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.` Do not shorten or rephrase — the literal string is what the response-handling bullets match against.
-1. **Response handling** as a labeled section with three bullets:
+1. **AskUserQuestion prompt closing**: the question body ends literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.` Do not shorten, rephrase, or revert to the old lowercase `'approve'` / `'reject'` form — the literal string is what the response-handling bullets and compliance checks match against.
+1. **Variant gates** (conditional): if the gate presents multiple selectable named options beyond the standard three paths — for example, a per-note review action menu (`Done | Skip | Edit | Promote | Archive | Abort`) or a strategy picker — each option must be presented as `**<Name>** — <one-sentence summary of what choosing this means>`. Do not use bare lettered or numbered lists without names and summaries. The canonical pattern lives in `plugins/mz-knowledge/skills/vault-review/phases/review_session.md` (per-note review action gate).
+1. **Response handling** as a labeled section with three bullets (or more, for variant gates):
    - **"approve"** → update state, proceed to next phase.
    - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
    - **Feedback** → incorporate, re-run upstream phase if needed, return to this gate, re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations). Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
 
-All six elements are required. Do not omit the delegation guard, the pre-read step, the inline-verbatim requirement, the reject option, or the loop language.
+All seven elements are required (element 6 only when variants are present). Do not omit the delegation guard, the pre-read step, the pre-gate emit block, the inline-verbatim requirement, the bold-`**Approve**`/`**Reject**` closing, the reject option, or the loop language.
 
 **Why the pre-read and inline-verbatim steps are mandatory**: An author writing `<contents of plan.md>` inside the AskUserQuestion text intends it as an instruction to the runtime orchestrator. In practice the orchestrator often passes that placeholder through literally, or substitutes a path / one-line status, leaving the user to open the file separately. That defeats the entire purpose of the gate. The fix is two-part: an explicit Read step that loads the bytes into context, and an explicit "verbatim, no summary, no path" instruction that forbids the orchestrator from shortcutting.
+
+**Why the pre-gate emit block is separate from AskUserQuestion**: The AskUserQuestion body is long (often thousands of chars of verbatim artifact content) and the "what am I approving, and what happens if I say no?" framing is buried inside it. A separate pre-gate emit keeps that framing short, chat-visible, and survivable across context compaction. Gate bodies are optimized for the user's review of the artifact; pre-gate emits are optimized for the user's orientation at the decision moment.
+
+**Canonical template** for the pre-gate emit block:
+
+```
+**[Gate title — e.g. "Plan ready for review"]**
+[1–2 sentence summary: what's presented, key metrics/counts]
+
+- **Approve** → [what happens next, e.g. "proceed to Phase 2 implementation"]
+- **Reject** → [what happens on abort, e.g. "task marked aborted, no files written"]
+- **Feedback** → [what happens, e.g. "re-run diagnosis with your input, loop back here"]
+```
+
+Reference implementations: `plugins/mz-design/skills/design-document/phases/finalization.md` (Step 4.1) and any SKILL.md under `plugins/mz-knowledge/skills/` (every approval gate).
 
 Add gates before: code changes, expensive agent dispatches, web research. Read-only skills (like `explain`) don't need gates.
 
@@ -201,6 +218,8 @@ Rationale: rule numbers are shared identifiers between the guidelines and the bo
 Before merging any new or modified skill:
 
 - [ ] Description follows Rule 3 (third person, directive, front-loaded, trigger phrases)
+- [ ] Every approval gate includes a pre-gate emit block + bold `**Approve**`/`**Reject**` closing (Rule 1)
+- [ ] Variant gates (multi-option menus) present each option as `**<Name>** — <summary>` (Rule 1)
 - [ ] SKILL.md under 150 lines, phase files under 400 lines
 - [ ] Scope parameter accepted with documented default if code-editing skill (Rule 6)
 - [ ] All bounds and paths declared as named constants, no inline hardcoded limits (Rule 7)

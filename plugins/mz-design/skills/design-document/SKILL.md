@@ -71,6 +71,17 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `design.md`, `wireframes.md`, and `wcag-report.md` under labeled sections. Never substitute a path, line count, iteration summary, or `<verdict>` placeholder — the user must review the actual finalized design (including the contrast pairs) in the question itself, not have to open files separately. If any artifact is very long and would exceed AskUserQuestion's practical body size, surface that risk to the user via AskUserQuestion before truncating; never silently summarize.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Design ready for approval**
+All four specialist critics have approved the design, and the WCAG contrast report shows zero violations. Please review the finalized design document, wireframes, and WCAG report below.
+
+- **Approve** → write `final-summary.md` and mark task complete
+- **Reject** → mark task aborted and stop
+- **Feedback** → dispatch design-revision-writer to apply changes, loop back to this gate
+```
+
 Invoke AskUserQuestion with this body (where each `<verbatim ...>` marker is replaced by the bytes you just read):
 
 ```
@@ -85,7 +96,7 @@ Design document ready (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS). Plea
 ## WCAG Contrast Report (wcag-report.md)
 <verbatim wcag-report.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

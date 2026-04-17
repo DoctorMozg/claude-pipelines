@@ -64,7 +64,18 @@ Before invoking AskUserQuestion, Read `.mz/task/<task_name>/claims_analysis.md` 
 
 Present the full verbatim contents of `claims_analysis.md` — each claim with its proposed classification, confidence hint, and suggested sources. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
-Invoke AskUserQuestion with the verbatim artifact body followed by a prompt ending literally with `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Claims analysis ready for review**
+[N] claims classified with epistemic status and source suggestions. Review the analysis below.
+
+- **Approve** → proceed to Phase 2 to back-fill frontmatter
+- **Reject** → abort task, no frontmatter written
+- **Feedback** → incorporate changes, re-run scan if needed, return to this gate
+```
+
+Invoke AskUserQuestion with the verbatim artifact body followed by a prompt ending literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 **Response handling**:
 

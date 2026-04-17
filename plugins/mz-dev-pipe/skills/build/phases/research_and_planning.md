@@ -199,6 +199,17 @@ Save review to `.mz/task/<task_name>/plan_review_<iteration>.md`.
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `plan.md`. Never substitute a path, status summary, line count, or `<contents of plan.md>` placeholder — the user must review the actual plan in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Implementation plan ready for approval**
+The plan has been generated and passed automated review. Please review the full plan below.
+
+- **Approve** → proceed to implementation phase
+- **Reject** → mark task aborted, no changes applied
+- **Feedback** → incorporate your input and loop back for re-review
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim plan.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -206,7 +217,7 @@ The implementation plan is ready and passed review. Please review and approve:
 
 <verbatim plan.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

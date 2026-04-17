@@ -87,6 +87,17 @@ After setup, read `phases/investigate.md` and proceed to Phase 1.
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim diagnosis content under each section header. Never substitute a path, status summary, line count, or `<placeholder>` token — the user must review the actual diagnosis in the question itself, not have to open the file separately. Omit the External Context section only if no domain research was performed.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Bug diagnosis ready for review**
+The investigation is complete with root cause identified. Review the diagnosis below before proceeding to the fix phase.
+
+- **Approve** → proceed to Phase 3 (write regression test)
+- **Reject** → abort the task, no files written
+- **Feedback** → re-run diagnosis with your input and loop back here
+```
+
 Invoke AskUserQuestion with this body (where each `<verbatim ... content>` marker is replaced by the bytes you just read):
 
 ```
@@ -107,7 +118,7 @@ Bug investigation complete. Review the diagnosis before I proceed:
 ## External Context
 <verbatim domain research findings — omit this entire section if no domain research>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

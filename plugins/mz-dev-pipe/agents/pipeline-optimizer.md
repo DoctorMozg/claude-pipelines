@@ -1,6 +1,6 @@
 ---
 name: pipeline-optimizer
-description: Cleans and optimizes code after implementation is functionally complete. Removes dead code, debug artifacts, unused imports, duplicated logic, and unnecessary complexity without changing behavior.
+description: Pipeline-only. Cleans and optimizes code after implementation is functionally complete. Removes dead code, debug artifacts, unused imports, duplicated logic, and unnecessary complexity without changing behavior.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: high

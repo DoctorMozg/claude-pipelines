@@ -70,7 +70,20 @@ Record answers in `state.md` under `VaultPurpose`, `PrimaryTopics`, `NoteTypes`,
 
 **This orchestrator** (not a subagent) must present the scaffold plan to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Build the plan from interview answers (or defaults). Present the full plan content in the question body. Do not reference an external file or provide a summary — present the complete plan text directly. Present:
+Build the plan from interview answers (or defaults). Present the full plan content in the question body. Do not reference an external file or provide a summary — present the complete plan text directly.
+
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Vault scaffold plan ready for review**
+Folder structure, CLAUDE.md, and schema templates generated from your interview answers. Existing content will be preserved.
+
+- **Approve** → proceed to Phase 1 and write all scaffolding files
+- **Reject** → abort the task and stop; no files will be created
+- **Feedback** → provide specific changes to the plan; we'll adjust and re-present for approval
+```
+
+Present:
 
 ```
 Scaffold plan for <vault path>:
@@ -90,7 +103,7 @@ Existing content preserved:
 - <list of files/folders that will NOT be overwritten>
 </if>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

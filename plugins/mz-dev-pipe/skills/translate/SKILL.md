@@ -73,9 +73,23 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated. Full detail in `phases/discovery_and_planning.md` under `Phase 1.5`; the five load-bearing elements are:
 
 - Show `<task_dir>/translation_plan.md` verbatim plus the verification cost block (chunks, judge batches via `MAX_JUDGE_BATCH`, Tier-3 caps via `MAX_WIKTIONARY_LOOKUPS` / `MAX_MYMEMORY_QUERIES`, wall-clock range, `INPLACE_DESTRUCTIVE` highlight).
-- Ask via AskUserQuestion ending literally with: `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+
+- Before invoking AskUserQuestion, emit a text block to the user:
+
+  **Translation plan ready for approval**
+
+  The discovery phase has completed. The plan below shows all files to be translated, estimated chunks, and verification cost. Review the plan and verify the scope is correct.
+
+  - **Approve** → proceed to Phase 2 (parallel translation and Tier-1 verification)
+  - **Reject** → task marked aborted, no files written
+  - **Feedback** → re-run affected Phase 1 sub-steps, loop back here for another review
+
+- Ask via AskUserQuestion ending literally with: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+
 - **"approve"** → state `plan_approved`, proceed to Phase 2.
+
 - **"reject"** → state `aborted_by_user`, stop. Do not proceed.
+
 - **Feedback** → re-run affected Phase 1 sub-steps, overwrite the plan, re-present **via AskUserQuestion**. Increment `approval_iterations`; bounded by `MAX_APPROVAL_ITERATIONS`. **This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.**
 
 ### Phases 2–6

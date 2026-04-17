@@ -56,9 +56,20 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 **This orchestrator** (not a subagent) must present the review queue to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/review_queue.md` in full. Present the full verbatim contents of `review_queue.md` — each note's title, score, and reason for surfacing, plus the MOC gaps summary. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+Before presenting, Read `.mz/task/<task_name>/review_queue.md` in full.
 
-Format:
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Review Queue Ready**
+Your queue of notes ranked by review due date, orphan status, and maturity. Review the queue below and approve to start the session.
+
+- **Approve** → proceed to Phase 2 (review session)
+- **Reject** → mark task as aborted, no notes updated
+- **Feedback** → adjust queue size or parameters, regenerate and re-present
+```
+
+Then invoke AskUserQuestion with this content:
 
 ```
 Review queue for today (N notes):
@@ -69,7 +80,7 @@ Review queue for today (N notes):
 
 MOC gaps detected: <N gaps from moc-gap-detector> — details in .mz/task/<task_name>/moc_gaps.md
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

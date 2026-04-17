@@ -107,6 +107,17 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `inventory.md`. Never substitute a path, status summary, lens-name list, or `<lens names>` placeholder — the user must review the actual inventory and decomposition in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Source inventory ready for review**
+Review the proposed lens decomposition. Proceed to parallel lens dispatch or request changes.
+
+- **Approve** → proceed to Phase 2 (parallel lens dispatch)
+- **Reject** → abort synthesis, task marked aborted
+- **Feedback** → re-run Phase 1.2/1.3 with your input and re-present
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim inventory.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -114,13 +125,13 @@ Source inventory complete for "<task slug>". Please review the proposed decompos
 
 <verbatim inventory.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:
 
-- **"approve"** → update `state.md` phase to `decomposition_approved`, proceed to Phase 2 (`phases/lens_dispatch.md`).
-- **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
+- **Approve** → update `state.md` phase to `decomposition_approved`, proceed to Phase 2 (`phases/lens_dispatch.md`).
+- **Reject** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-read `inventory.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Phase 3.5: Gap-Fill Approval Gate (conditional)
@@ -133,6 +144,17 @@ If the residual gap list produced by Phase 3 is empty, skip this gate and jump t
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `gaps.md`. Never substitute a path, count, `<short list>` placeholder, or one-line summary — the user must review the actual gaps and per-gap context in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Residual gaps identified**
+Synthesis found gaps not covered by local sources. Review gap details and estimated web research cost below.
+
+- **Approve** → proceed to Phase 4 (web gap-fill dispatch)
+- **Reject** → skip web research, proceed to Phase 5 with gaps unresolved
+- **Feedback** → edit gaps list and re-present for approval
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim gaps.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -140,13 +162,13 @@ Synthesis left residual gaps. Please review before web gap-fill dispatches:
 
 <verbatim gaps.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:
 
-- **"approve"** → update `state.md` phase to `gapfill_approved`, proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
-- **"reject"** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
+- **Approve** → update `state.md` phase to `gapfill_approved`, proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
+- **Reject** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
 - **Feedback** → incorporate (drop/merge/rewrite gaps), overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
 
 ## Error Handling

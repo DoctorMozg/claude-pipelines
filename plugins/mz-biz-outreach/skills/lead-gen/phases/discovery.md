@@ -36,6 +36,19 @@ The user must see, verbatim or summarized from `strategy.json`:
 
 Phase 2 (source research) and Phase 3 (scout fan-out) dispatch parallel agents per source and per candidate company; each dispatch costs tokens and time. User approval at Phase 1.5 is the cost cap — the user confirms the strategy is right before the expensive fan-out runs. If feedback is provided, the strategy is revised before any discovery starts.
 
+### Presentation block
+
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Strategy ready for review**
+The lead-generation strategy has been defined. Below are the target profile, search criteria, scoring weights, sources list, and signals that will drive discovery and outreach.
+
+- **Approve** → proceed to Phase 2 (source research)
+- **Reject** → abort the task, no sources will be researched
+- **Feedback** → provide changes, strategy will be revised and re-presented
+```
+
 ### AskUserQuestion prompt
 
 Use AskUserQuestion with the following message:
@@ -45,7 +58,7 @@ The target profile, search criteria, scoring weights, sources list, and signals 
 
 <contents of strategy.json, formatted as the five points above>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 ### Response handling

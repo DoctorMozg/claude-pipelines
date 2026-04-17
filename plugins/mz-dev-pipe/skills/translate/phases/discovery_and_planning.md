@@ -292,10 +292,22 @@ ______________________________________________________________________
 - `Output paths and mode (with INPLACE_DESTRUCTIVE highlighted if applicable)` — echo the plan's file list flag column so the user sees destructive writes up front.
 - `verification is always on; no opt-in flag`.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Translation Plan Ready for Review**
+
+You are about to approve (or request changes to) the complete translation plan. The plan specifies which files will be translated, the target language, output mode, seeded glossary, and the full cost of verification (Tier-1 structural, Tier-2 judge, Tier-3 uncertainty-driven).
+
+- **Approve** → proceed to Phase 2 (translator wave dispatch)
+- **Reject** → task marked aborted, no files written
+- **Feedback** → re-run discovery and planning steps incorporating your input, loop back here
+```
+
 **AskUserQuestion prompt**. Present the plan and cost block in the question body. The prompt ends literally with:
 
 ```
-Reply 'approve' to proceed with translation, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Do not shorten, rephrase, or add trailing text — the literal string is what the response-handling bullets match against.

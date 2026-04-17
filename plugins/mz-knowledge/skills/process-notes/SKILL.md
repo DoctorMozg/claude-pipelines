@@ -56,7 +56,18 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 
 **This orchestrator** (not a subagent) must present proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/proposals.md` in full. Present the full verbatim contents of `proposals.md` — a numbered list of proposed notes, each with its claim-style title and core idea. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+Before presenting, Read `.mz/task/<task_name>/proposals.md` in full. Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Proposed atomic notes ready for approval**
+Splitting your input into N atomic notes. Each note will carry claim-style title and status: draft frontmatter before writing to vault.
+
+- **Approve** → proceed to Phase 2, write all approved notes with links
+- **Reject** → abort, discard proposals, do not write
+- **Feedback** → describe changes, loop back to Phase 1 for re-atomization
+```
+
+Then invoke AskUserQuestion with the full verbatim contents of `proposals.md` — a numbered list of proposed notes, each with its claim-style title and core idea. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 ```
 Proposed atomic notes (N from your input):
@@ -67,7 +78,7 @@ Proposed atomic notes (N from your input):
 2. "<Second title>"
    Core: ...
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:
@@ -81,7 +92,18 @@ Response handling:
 
 **This orchestrator** (not a subagent) must present link proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/link_proposals.md` in full. Present the full verbatim contents of `link_proposals.md` — proposed links grouped per new note with the relationship type and reason. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+Before presenting, Read `.mz/task/<task_name>/link_proposals.md` in full. Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Proposed links ready for approval**
+N new notes ready to be linked to existing vault notes. Review relationship types and reasons before approving.
+
+- **Approve** → write all proposed links, complete the task
+- **Reject** → abort link writing, notes remain unlinked
+- **Feedback** → specify links to skip, re-present approved set
+```
+
+Then invoke AskUserQuestion with the full verbatim contents of `link_proposals.md` — proposed links grouped per new note with the relationship type and reason. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 ```
 Proposed links for <N> new notes:
@@ -90,7 +112,7 @@ Proposed links for <N> new notes:
   → [[Existing Note]] — <relationship: extends|supports|contradicts|example-of|prerequisite-for|see-also>
     Reason: one sentence...
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

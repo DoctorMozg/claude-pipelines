@@ -57,12 +57,23 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 
 Before invoking AskUserQuestion, Read `.mz/task/<task_name>/references_report.md` and capture the full contents.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**References ready for review**
+N file(s) affected with M total reference(s) to rewrite. Review the full proposal below.
+
+- **Approve** → proceed to Phase 2 (rewrite + rollback)
+- **Reject** → abort; state marked aborted_by_user, no vault files modified
+- **Feedback** → incorporate changes, re-run Phase 1, return to this gate with regenerated proposal
+```
+
 The question body must contain the verbatim contents of `references_report.md` — every affected file path, the reference count per file (up to `MAX_REFERENCES_PREVIEW`), and the exact before/after text of every proposed replacement. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. A silent diff is indistinguishable from a broken rename.
 
 The AskUserQuestion prompt ends literally with:
 
 ```
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

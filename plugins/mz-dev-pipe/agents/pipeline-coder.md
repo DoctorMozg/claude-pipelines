@@ -1,6 +1,6 @@
 ---
 name: pipeline-coder
-description: Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes.
+description: Pipeline-only. Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 memory: project

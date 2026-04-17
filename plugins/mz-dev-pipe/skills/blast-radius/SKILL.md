@@ -57,9 +57,18 @@ Orchestrates a read-only impact analysis pipeline. Given a target (file, functio
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present: resolved target (path + type), default analysis depth (`MAX_DEPTH`), estimated scope.
+Before invoking AskUserQuestion, emit a text block to the user:
 
-Use AskUserQuestion with:
+```
+**Scope Confirmation Required**
+Target and analysis depth have been resolved. Confirm the scope before proceeding to Phase 1.
+
+- **Approve** → proceed to Phase 1 (Discovery & Graph Building)
+- **Reject** → abort the task, no analysis performed
+- **Feedback** → adjust depth or scope, re-present for approval (loop until explicit approval)
+```
+
+Then use AskUserQuestion with:
 
 ```
 Impact analysis target resolved:
@@ -68,7 +77,7 @@ Impact analysis target resolved:
 - Analysis depth: <MAX_DEPTH> hops (transitive)
 - Estimated scope: <brief description of what will be searched>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

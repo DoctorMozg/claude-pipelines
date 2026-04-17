@@ -1,6 +1,6 @@
 ---
 name: pipeline-translator
-description: Translates one file or chunk with Bash-verified placeholder and structural fidelity. Preserves markdown, fenced code, and i18n tokens. Emits a per-chunk confidence report; supports lean back-translate round-trips.
+description: Pipeline-only. Translates one file or chunk with Bash-verified placeholder and structural fidelity. Preserves markdown, fenced code, and i18n tokens. Emits a per-chunk confidence report; supports lean back-translate round-trips.
 tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 model: opus
 memory: project

@@ -1,6 +1,6 @@
 ---
 name: pipeline-test-quality-reviewer
-description: Reviews test quality. Evaluates whether tests are meaningful, independent, well-structured, and would catch real regressions.
+description: Pipeline-only. Reviews test quality. Evaluates whether tests are meaningful, independent, well-structured, and would catch real regressions.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: medium

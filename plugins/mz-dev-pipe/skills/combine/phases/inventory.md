@@ -197,7 +197,18 @@ The presentation is **summary only** — do not dump the full file lists into th
 
 ### Verbatim AskUserQuestion prompt body template
 
-The orchestrator issues `AskUserQuestion` with this message body, filling the `<placeholders>` from the presentation content above:
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Inventory and decomposition ready for review**
+Source buckets: research, tasks, reports/reviews, codebase, git history (if available). Proposed lenses identify 3–6 focused research topics with explicit file lists.
+
+- **Approve** → proceed to Phase 2 (parallel lens dispatch)
+- **Reject** → task marked aborted, no further phases run
+- **Feedback** → incorporate your changes, re-run lens derivation, loop back for re-approval
+```
+
+The orchestrator then issues `AskUserQuestion` with this message body, filling the `<placeholders>` from the presentation content above:
 
 ```
 Inventory and lens decomposition ready. Please review:
@@ -208,7 +219,7 @@ Proposed lenses:
 Excluded: <list with reasons, or "none">
 Unavailable buckets: <list with reasons, e.g., "git_history (no git repository)", or "none">
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 The trailing line **must appear verbatim** — it is the canonical approval-gate reply instruction and is checked by structural tests.

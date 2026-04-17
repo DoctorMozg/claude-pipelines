@@ -67,6 +67,17 @@ Example for "State of WebAssembly in 2026":
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `decomposition.md`. Never substitute a path, status summary, count, or `<numbered list of subtopics with descriptions>` placeholder — the user must review the actual decomposition in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Decomposition ready for review**
+The research topic has been broken into 3–7 independent subtopics, each researchable independently and broad enough to warrant substantial research.
+
+- **Approve** → proceed to parallel dispatch of domain-researcher agents across all subtopics
+- **Reject** → abort the task and mark state as aborted_by_user
+- **Feedback** → adjust the decomposition and re-present the updated list for further review
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim decomposition.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -76,7 +87,7 @@ Research decomposition ready. Please review:
 
 Feedback examples: add a subtopic, merge two topics, or drop one.
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

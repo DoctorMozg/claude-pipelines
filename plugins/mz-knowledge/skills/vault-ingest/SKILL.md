@@ -64,6 +64,17 @@ Discipline skill for multimodal capture into the vault as fleeting notes. Detect
 
 Before presenting, Read `.mz/task/<task_name>/transcript.md` and capture the full contents into the orchestrator's context. The question body must contain the verbatim transcript text (truncated at `MAX_TRANSCRIPT_PREVIEW` words with a trailing `...` when longer). Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Transcript Ready for Review**
+Transcript produced from <input>. Modality: <modality>, transcription tool: <tool>, duration/pages: <detail>.
+
+- **Approve** → proceed to Phase 2 to write the fleeting note to the vault
+- **Reject** → task marked aborted, no fleeting note written
+- **Feedback** → re-run Phase 1 with adjusted tool choice, loop back here for re-review
+```
+
 Format the question body as:
 
 ```
@@ -71,7 +82,7 @@ Transcript ready for review (modality: <modality>, tool: <tool>, <duration or pa
 
 <verbatim transcript, truncated at MAX_TRANSCRIPT_PREVIEW words with "..." when longer>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

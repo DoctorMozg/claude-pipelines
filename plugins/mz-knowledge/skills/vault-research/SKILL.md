@@ -54,7 +54,20 @@ Discipline skill that atomizes a long research report into permanent notes, pre-
 
 ### Phase 1.5: User Approval — Noise Exclusion
 
-**This orchestrator** (not a subagent) must present the noise filter results via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/parsed_report.md` in full. Present the full verbatim contents of `parsed_report.md` — the noise-section exclusion list and the retained-section list — in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+**This orchestrator** (not a subagent) must present the noise filter results via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/parsed_report.md` in full.
+
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Noise filter results ready for review**
+Excluded sections: [list from parsed_report.md]. Retained sections: [list from parsed_report.md].
+
+- **Approve** → proceed to Phase 2 atomization
+- **Reject** → abort the task
+- **Feedback** → re-run with adjusted exclusions and loop back here
+```
+
+Then invoke AskUserQuestion with the full verbatim contents of `parsed_report.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 Response handling:
 
@@ -64,7 +77,20 @@ Response handling:
 
 ### Phase 2.5: User Approval — Atomization Proposals
 
-**This orchestrator** (not a subagent) must present the atomization proposals via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/proposals.md` in full. Present the full verbatim contents of `proposals.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+**This orchestrator** (not a subagent) must present the atomization proposals via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/proposals.md` in full.
+
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Atomization proposals ready for review**
+Generated N atomic notes from the report. Review the proposed titles, content, and metadata.
+
+- **Approve** → write notes to vault and proceed to Phase 3 link suggestions
+- **Reject** → abort the task, no vault writes have occurred
+- **Feedback** → adjust proposals (skip, merge, split, retitle) and loop back here
+```
+
+Then invoke AskUserQuestion with the full verbatim contents of `proposals.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 Response handling:
 
@@ -74,7 +100,20 @@ Response handling:
 
 ### Phase 3.5: User Approval — Link Suggestions
 
-**This orchestrator** (not a subagent) must present the link suggestions via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/link_suggestions.md` in full. Present the full verbatim contents of `link_suggestions.md` — every proposed `[[wikilink]]` insertion with its target, relationship, and reason — in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+**This orchestrator** (not a subagent) must present the link suggestions via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/link_suggestions.md` in full.
+
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Link suggestions ready for review**
+Generated N proposed `[[wikilink]]` insertions connecting notes to existing vault items. Review targets, relationships, and reasons.
+
+- **Approve** → apply all links and complete the task
+- **Reject** → skip all links, mark task complete with no Related sections added
+- **Feedback** → skip specified links, accept the rest, and loop back here
+```
+
+Then invoke AskUserQuestion with the full verbatim contents of `link_suggestions.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 Response handling:
 

@@ -1,6 +1,6 @@
 ---
 name: pipeline-test-coverage-reviewer
-description: Reviews test coverage completeness. Identifies untested functions, missing code paths, and gaps in edge case coverage.
+description: Pipeline-only. Reviews test coverage completeness. Identifies untested functions, missing code paths, and gaps in edge case coverage.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: medium

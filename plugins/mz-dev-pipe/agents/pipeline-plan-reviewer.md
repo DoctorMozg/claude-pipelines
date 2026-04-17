@@ -1,6 +1,6 @@
 ---
 name: pipeline-plan-reviewer
-description: Critically reviews implementation plans. Catches missing integration points, incorrect parallelism, incomplete test strategies, and architectural issues.
+description: Pipeline-only. Critically reviews implementation plans. Catches missing integration points, incorrect parallelism, incomplete test strategies, and architectural issues.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: medium

@@ -1,6 +1,6 @@
 ---
 name: pipeline-code-reviewer
-description: Reviews implementation code for bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly.
+description: Pipeline-only. Reviews implementation code for bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

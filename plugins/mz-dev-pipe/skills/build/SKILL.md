@@ -71,6 +71,17 @@ Generate detailed plan, run plan-review loop, get user approval. See `phases/res
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Plan ready for review**
+The implementation plan passed automated review and is ready for your approval. It covers all phases, files affected, and estimated scope.
+
+- **Approve** → proceed to Phase 3 implementation
+- **Reject** → task marked aborted, no files written
+- **Feedback** → re-run planning with your input, loop back here
+```
+
 Use AskUserQuestion with:
 
 ```
@@ -78,7 +89,7 @@ The implementation plan is ready and passed review. Please review and approve:
 
 <contents of plan.md>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

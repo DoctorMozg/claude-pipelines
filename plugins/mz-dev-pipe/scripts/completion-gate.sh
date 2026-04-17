@@ -55,7 +55,8 @@ if [[ -n "$ACTIVE_TASKS" ]]; then
   mkdir -p "$(dirname "$GATE_FLAG")"
   touch "$GATE_FLAG"
 
-  echo "{\"hookSpecificOutput\":{\"decision\":\"block\",\"reason\":\"Pipeline task still active: ${ACTIVE_TASKS}. Complete or abort the task first. Stop again to force quit.\"}}"
+  jq -n --arg reason "Pipeline task still active: ${ACTIVE_TASKS}. Complete or abort the task first. Stop again to force quit." \
+    '{decision: "block", reason: $reason}'
   exit 2
 fi
 

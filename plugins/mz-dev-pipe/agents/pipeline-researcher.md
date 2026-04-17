@@ -1,6 +1,6 @@
 ---
 name: pipeline-researcher
-description: Explores codebases and researches domains. Gathers context about project structure, patterns, conventions, and external domain knowledge needed for implementation planning.
+description: Pipeline-only. Explores codebases and researches domains. Gathers context about project structure, patterns, conventions, and external domain knowledge needed for implementation planning.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 model: sonnet
 effort: high

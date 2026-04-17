@@ -81,7 +81,7 @@ ______________________________________________________________________
 
 ### Presentation content
 
-Before issuing the `AskUserQuestion` call, compose a residual gap summary block containing:
+Before invoking AskUserQuestion, emit a text block to the user with:
 
 1. **Total residual gap count** — integer from the deduplicated list in Phase 3.4.
 1. **Per-gap lines** — one line per gap with three fields:
@@ -101,7 +101,7 @@ Residual gaps after local synthesis:
 
 Dispatch web gap-fill? (up to MAX_LENSES pipeline-web-researcher agents, single wave)
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 ### Response handling

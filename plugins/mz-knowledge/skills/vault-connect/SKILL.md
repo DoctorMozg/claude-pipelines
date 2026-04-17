@@ -58,6 +58,17 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 
 Read `.mz/task/<task_name>/link_proposals.md` in full. Present the full verbatim contents of `link_proposals.md` — proposals grouped by direction, each labelled with a letter for skip-list responses. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Review proposed links**
+Suggested N wikilinks categorized as outbound (to add to this note) and inbound (notes that should link back).
+
+- **Approve** → proceed to Phase 2, write all approved links
+- **Reject** → abort task, no links written
+- **Feedback** → pass to link-suggester, re-run Phase 1, loop back here
+```
+
 Format:
 
 ```
@@ -73,7 +84,7 @@ Notes that should link back (inbound):
   c. → [[Existing Note C]] — example-of
      Why: <one sentence>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 Response handling:

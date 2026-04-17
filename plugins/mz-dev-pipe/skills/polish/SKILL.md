@@ -86,6 +86,17 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `assessment.md`. Never substitute a path, status summary, line count, or `<failing criteria list>` / `<proposed quick-fix plan>` / `<estimated file count>` placeholders — the user must review the actual assessment in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Assessment Ready for Review**
+Initial assessment complete. The checklist below shows which criteria are passing and which are failing, along with the proposed quick-fix strategy.
+
+- **Approve** → proceed to Phase 2 (Quick Fixes)
+- **Reject** → mark task aborted, stop here
+- **Feedback** → incorporate changes, re-run Phase 1, loop back to this gate
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim assessment.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -93,7 +104,7 @@ Phase 1 assessment complete. Please review:
 
 <verbatim assessment.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

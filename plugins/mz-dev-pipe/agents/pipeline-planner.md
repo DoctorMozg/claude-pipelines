@@ -1,6 +1,6 @@
 ---
 name: pipeline-planner
-description: Creates detailed, parallelizable implementation plans. Breaks tasks into independent work units with clear file paths, changes, and dependencies.
+description: Pipeline-only. Creates detailed, parallelizable implementation plans. Breaks tasks into independent work units with clear file paths, changes, and dependencies.
 tools: Read, Grep, Glob, Bash
 model: opus
 memory: project

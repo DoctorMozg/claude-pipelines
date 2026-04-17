@@ -60,6 +60,17 @@ See `phases/collect.md`.
 
 Before presenting, Read `.mz/task/<task_name>/audit_data.md` in full. Present the full verbatim summary from `audit_data.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Vault Health Findings Ready**
+Your vault has been scanned for orphans, broken links, stubs, stale notes, and tag inconsistencies.
+
+- **Approve** → proceed to Phase 2 (write audit report to vault)
+- **Reject** → abort without writing, task marked cancelled
+- **Feedback** → describe changes you want; Phase 1 re-runs with your input, then return here
+```
+
 Use AskUserQuestion with:
 
 ```
@@ -71,7 +82,7 @@ Vault health findings ready. Please review:
 - Stale: N
 - Tags: N unique, N singletons
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

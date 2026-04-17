@@ -42,49 +42,49 @@ fi
 
 # AWS Access Key
 if echo "$CONTENT" | grep -qP 'AKIA[0-9A-Z]{16}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: AWS Access Key ID detected (AKIA...). Remove the key and use environment variables or a secrets manager."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: AWS Access Key ID detected (AKIA...). Remove the key and use environment variables or a secrets manager."}}'
   exit 2
 fi
 
 # GitHub Personal Access Token
 if echo "$CONTENT" | grep -qP 'ghp_[A-Za-z0-9]{36,}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: GitHub Personal Access Token detected (ghp_...). Remove the token and use environment variables."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: GitHub Personal Access Token detected (ghp_...). Remove the token and use environment variables."}}'
   exit 2
 fi
 
 # GitHub OAuth / App tokens
 if echo "$CONTENT" | grep -qP 'gho_[A-Za-z0-9]{36,}|ghu_[A-Za-z0-9]{36,}|ghs_[A-Za-z0-9]{36,}|ghr_[A-Za-z0-9]{36,}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: GitHub OAuth/App token detected. Remove the token and use environment variables."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: GitHub OAuth/App token detected. Remove the token and use environment variables."}}'
   exit 2
 fi
 
 # Private keys (PEM format)
 if echo "$CONTENT" | grep -qP '\-\-\-\-\-BEGIN\s+(RSA|DSA|EC|OPENSSH|PGP)?\s*PRIVATE KEY\-\-\-\-\-'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: Private key detected in PEM format. Never commit private keys — use a secrets manager."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: Private key detected in PEM format. Never commit private keys — use a secrets manager."}}'
   exit 2
 fi
 
 # Stripe secret keys
 if echo "$CONTENT" | grep -qP 'sk_(test|live)_[A-Za-z0-9]{20,}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: Stripe secret key detected (sk_...). Remove the key and use environment variables."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: Stripe secret key detected (sk_...). Remove the key and use environment variables."}}'
   exit 2
 fi
 
 # Slack tokens
 if echo "$CONTENT" | grep -qP 'xox[baprs]-[A-Za-z0-9\-]{10,}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: Slack token detected (xox...). Remove the token and use environment variables."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: Slack token detected (xox...). Remove the token and use environment variables."}}'
   exit 2
 fi
 
 # Google API keys
 if echo "$CONTENT" | grep -qP 'AIza[0-9A-Za-z\-_]{35}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: Google API key detected (AIza...). Remove the key and use environment variables."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: Google API key detected (AIza...). Remove the key and use environment variables."}}'
   exit 2
 fi
 
 # Generic JWT (3-part base64 with valid header)
 if echo "$CONTENT" | grep -qP 'eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
-  echo '{"hookSpecificOutput":{"decision":"block","reason":"Blocked: JWT token detected. Tokens should not be hardcoded — use environment variables or a secrets manager."}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: JWT token detected. Tokens should not be hardcoded — use environment variables or a secrets manager."}}'
   exit 2
 fi
 
@@ -111,7 +111,7 @@ fi
 if [[ -n "$WARNINGS" ]]; then
   WARNINGS="${WARNINGS}Consider using environment variables or a secrets manager instead."
   jq -n --arg msg "Warning: $WARNINGS" \
-    '{hookSpecificOutput: {additionalContext: $msg}}'
+    '{hookSpecificOutput: {hookEventName: "PreToolUse", additionalContext: $msg}}'
 fi
 
 exit 0

@@ -153,7 +153,18 @@ Expected bullets (all 20):
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present to the user:
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Skill draft ready for approval**
+The new skill passed the pre-publish checklist and is ready to save. Target: plugins/<plugin>/skills/<name>/SKILL.md
+
+- **Approve** → save the file to its final location, update state, report completion
+- **Reject** → delete the draft, update state to `aborted_by_user`, stop
+- **Feedback** → incorporate changes, re-run affected steps, re-present via AskUserQuestion
+```
+
+Then invoke AskUserQuestion with:
 
 ```
 The new skill draft is ready and passed the pre-publish checklist.
@@ -166,7 +177,7 @@ Pre-publish checklist: all PASS
 
 <contents of SKILL.md>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

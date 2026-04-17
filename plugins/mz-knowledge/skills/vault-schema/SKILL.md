@@ -69,9 +69,20 @@ See `phases/validate.md`.
 
 Before invoking AskUserQuestion, Read `.mz/task/<task_name>/validation_report.md` and capture its full contents.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Validation findings ready for review**
+Schema validation complete. Review the findings below and decide whether to proceed with migration or abort.
+
+- **Approve** → findings approved, proceed to Phase 2 (migration planning) if mode is migrate, otherwise mark complete
+- **Reject** → abort, no further action
+- **Feedback** → incorporate changes, re-run validation, loop back here
+```
+
 The question body must contain the verbatim contents of `.mz/task/<task_name>/validation_report.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
-Invoke AskUserQuestion with the verbatim report body followed by a prompt ending literally with `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+Invoke AskUserQuestion with the verbatim report body followed by a prompt ending literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 **Response handling**:
 
@@ -89,9 +100,20 @@ See `phases/migrate.md` (Step 1 + Step 2).
 
 Before invoking AskUserQuestion, Read `.mz/task/<task_name>/migration_plan.md` and capture its full contents.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Migration plan ready for review**
+The schema migration plan has been generated. Review the proposed changes and confirm all required placeholders are filled before proceeding.
+
+- **Approve** → plan approved, proceed to Phase 3 (apply patches)
+- **Reject** → abort, no vault writes occurred, rollback manifest preserved for reference
+- **Feedback** → revise plan and re-present here
+```
+
 The question body must contain the verbatim contents of `.mz/task/<task_name>/migration_plan.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
-Invoke AskUserQuestion with the verbatim plan body followed by a prompt ending literally with `Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.`
+Invoke AskUserQuestion with the verbatim plan body followed by a prompt ending literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
 
 **Response handling**:
 

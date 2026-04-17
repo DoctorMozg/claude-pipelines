@@ -81,7 +81,18 @@ Panel assembled. Please review the composition before the 3 rounds begin:
 
 <verbatim panel.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+```
+
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Panel ready for approval**
+5 expert lenses selected to critique your idea over 3 rounds. Review the composition below and confirm you want to proceed.
+
+- **Approve** → begin 3 rounds of expert critique
+- **Reject** → cancel task, no rounds will run
+- **Feedback** → request changes to panel composition, iterate until approved
 ```
 
 **Response handling**:

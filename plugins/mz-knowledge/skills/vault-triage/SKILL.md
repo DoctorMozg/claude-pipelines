@@ -56,6 +56,17 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 Before presenting, Read `.mz/task/<task_name>/triage_batch.md` in full and capture its contents into the orchestrator's context. Present the full verbatim contents of `triage_batch.md` — each note's title, preview, proposed decision, and rationale. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Triage batch ready for review**
+Inbox batch of N notes scored and proposed for triage decisions (promote/merge/discard/defer).
+
+- **Approve** → proceed to Phase 2 and execute all proposed decisions
+- **Reject** → abort the triage session, no vault changes
+- **Feedback** → override individual decisions and re-present for approval
+```
+
 Format the question body as:
 
 ```
@@ -63,7 +74,7 @@ Triage batch ready for review (N notes).
 
 <verbatim contents of triage_batch.md>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 The user may also reply with an override list such as `1=discard, 3=merge::Target Note Name`. Each override binds to the note's index in the batch.

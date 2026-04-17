@@ -11,7 +11,21 @@ Read `.mz/task/<task_name>/review_queue.md` and iterate through each entry in or
 ### For each note in the queue
 
 1. Read the note file from its `path`.
-1. Present to the user via AskUserQuestion:
+1. Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Note Review — <N>/<M>**
+Review this note and choose an action. You can update its maturity, make edits, or skip.
+
+- **Done** → mark as reviewed and update last_reviewed to today
+- **Skip** → leave the note unchanged
+- **Edit** → describe a change, I will apply it and re-prompt
+- **Promote** → advance maturity one stage (seedling→sapling→tree→ancient-tree)
+- **Archive** → flag for archiving at end of session
+- **Abort** → stop the session now
+```
+
+1. Invoke AskUserQuestion with:
 
 ```
 Reviewing note <N>/<M>:
@@ -21,13 +35,7 @@ Reviewing note <N>/<M>:
 
 Maturity: <seedling|sapling|tree|ancient-tree> | last_reviewed: <date or never> | outlinks: <N> | inlinks: <N> | score: <X>
 
-Reply:
-  'done'    — reviewed, update last_reviewed
-  'skip'    — skip, do NOT update last_reviewed
-  'edit'    — describe a change, I will apply it then prompt again
-  'promote' — advance maturity stage (seedling→sapling→tree→ancient-tree) and update last_reviewed
-  'archive' — move to archives (deferred to end of session)
-  'abort'   — stop the session now
+Type **Done**, **Skip**, **Edit**, **Promote**, **Archive**, or **Abort**.
 ```
 
 3. Handle the response:
@@ -65,7 +73,18 @@ entries:
 
 ### Archive confirmation (only if any `archive_pending`)
 
-Present the archive list via AskUserQuestion:
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Archive Confirmation**
+<N> notes are pending archival. Review the list and approve to move them to the archive folder, or reject to keep them in place.
+
+- **Approve** → move all flagged notes to <vault>/archive/
+- **Reject** → leave all notes in their current locations
+- **Selective** → specify note numbers (e.g. 1,3) to archive only those
+```
+
+Invoke AskUserQuestion with:
 
 ```
 <N> notes flagged for archive:
@@ -74,7 +93,7 @@ Present the archive list via AskUserQuestion:
 2. [[Title]] — <path>
 ...
 
-Reply 'approve' to move all to <vault>/archive/, 'reject' to leave them in place, or list numbers to archive a subset (e.g. '1,3').
+Type **Approve** to move all to <vault>/archive/, **Reject** to cancel, or type numbers (e.g. 1,3) to archive a subset.
 ```
 
 Response handling:

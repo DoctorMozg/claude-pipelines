@@ -85,6 +85,17 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `strategy.json` inside a fenced \`\`\`json block. Never substitute a path, target-profile summary, or one-line description — the user must review the actual strategy fields in the question itself, not have to open the file separately. The user confirms scope before any expensive research runs.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Strategy ready for review**
+Target profile, sector, region, and discovery plan drafted. Please review for feasibility before expensive research dispatch.
+
+- **Approve** → proceed to Phase 2 (source research and company discovery)
+- **Reject** → task marked aborted, no outreach data generated
+- **Feedback** → re-run strategy with your input, loop back here for re-review
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim strategy.json contents>` is replaced by the bytes you just read):
 
 ````
@@ -94,7 +105,7 @@ Strategy drafted for "<goal>". Please review before discovery dispatch:
 <verbatim strategy.json contents>
 ```
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ````
 
 **Response handling**:

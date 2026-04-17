@@ -85,6 +85,17 @@ Derive `audit_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md`
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `findings.md`. Never substitute a path, status summary, line count, or `<findings list>` placeholder — the user must review the actual ranked findings in the question itself, not have to open the file separately.
 
+Before invoking AskUserQuestion, emit a text block to the user:
+
+```
+**Findings Ready for Review**
+Completed multi-lens audit with N ranked findings. Severity distribution and coder assignments shown.
+
+- **Approve** → proceed to Phase 4 (parallel fix dispatch)
+- **Reject** → abort task, no files modified
+- **Feedback** → adjust findings list or scope, re-present via AskUserQuestion
+```
+
 Invoke AskUserQuestion with this body (where `<verbatim findings.md contents>` is replaced by the bytes you just read):
 
 ```
@@ -92,7 +103,7 @@ Found <N> actionable findings. Please review:
 
 <verbatim findings.md contents>
 
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 (e.g. "drop finding 3", "rerun research with security lens only", "narrow scope to src/api/").
 ```
 
