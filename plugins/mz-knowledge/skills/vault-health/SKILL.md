@@ -1,6 +1,6 @@
 ---
 name: vault-health
-description: ALWAYS invoke when auditing an Obsidian vault for orphan notes, broken links, stale content, stub notes, or tag inconsistencies. Triggers: vault audit, orphan notes, broken wikilinks, vault health check.
+description: 'ALWAYS invoke when auditing an Obsidian vault for orphan notes, broken links, stale content, stub notes, or tag inconsistencies. Triggers: vault audit, orphan notes, broken wikilinks, vault health check.'
 argument-hint: '[vault path or leave empty to use OBSIDIAN_VAULT_PATH env]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Glob, Grep, Write, AskUserQuestion
@@ -18,6 +18,13 @@ Invoke for weekly vault maintenance, before a knowledge review session, or after
 
 - Fixing the issues found — use `process-notes` or `vault-connect` after the audit.
 - Semantic search or note retrieval — this skill only inventories health, it does not answer content queries.
+
+## Constants
+
+- **TASK_DIR**: `.mz/task/`
+- **AUDIT_NOTE_PREFIX**: `_vault_audit_`
+- **STUB_WORD_THRESHOLD**: 100
+- **STALE_DAYS**: 90
 
 ## Arguments
 
@@ -51,13 +58,7 @@ See `phases/collect.md`.
 
 **This orchestrator** (not a subagent) must present findings to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present a compact summary from `.mz/task/<task_name>/audit_data.md`:
-
-- Orphan note count
-- Broken wikilink count
-- Stub note count
-- Stale note count
-- Tag totals (unique, singletons)
+Before presenting, Read `.mz/task/<task_name>/audit_data.md` in full. Present the full verbatim summary from `audit_data.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 Use AskUserQuestion with:
 
@@ -70,7 +71,7 @@ Vault health findings ready. Please review:
 - Stale: N
 - Tags: N unique, N singletons
 
-Reply 'approve' to write the audit note, 'reject' to abort, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 **Response handling**:

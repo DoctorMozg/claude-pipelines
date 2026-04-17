@@ -131,6 +131,14 @@ Then emit exactly one terminal line:
 - `STATUS: NEEDS_CONTEXT` — required dispatch field missing (`output_path` or `task_name`).
 - `STATUS: BLOCKED` — vault path not found or not accessible: `<path>`.
 
+## Common Rationalizations
+
+| Rationalization                                            | Rebuttal                                                                                                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| "Return results inline in the message — it saves a write." | "The orchestrator reads `audit_data.md` from disk; inline results bypass parsing and break the handoff. Write the file."                   |
+| "Skip the orphan check — wikilinks are rarely broken."     | "Orphan and broken-link detection is the core deliverable; omitting either check produces a health report the orchestrator cannot act on." |
+| "Count YAML frontmatter words as note content."            | "Frontmatter is metadata, not knowledge. Including it inflates word counts and causes metadata-rich notes to appear larger than they are." |
+
 ## Red Flags
 
 - Modifying any vault file during the scan.

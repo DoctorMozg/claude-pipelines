@@ -56,7 +56,7 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 
 **This orchestrator** (not a subagent) must present proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-From the atomization-proposer output, present a numbered list of proposed notes, each with its claim-style title and a one-sentence summary of the core idea:
+Before presenting, Read `.mz/task/<task_name>/proposals.md` in full. Present the full verbatim contents of `proposals.md` — a numbered list of proposed notes, each with its claim-style title and core idea. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 ```
 Proposed atomic notes (N from your input):
@@ -67,7 +67,7 @@ Proposed atomic notes (N from your input):
 2. "<Second title>"
    Core: ...
 
-Reply 'approve' to proceed, 'reject' to abort, list numbers to skip specific notes (e.g. '1,3'), or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 Response handling:
@@ -81,7 +81,7 @@ Response handling:
 
 **This orchestrator** (not a subagent) must present link proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-From the link-suggester output, present proposed links grouped per new note with the relationship type:
+Before presenting, Read `.mz/task/<task_name>/link_proposals.md` in full. Present the full verbatim contents of `link_proposals.md` — proposed links grouped per new note with the relationship type and reason. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 ```
 Proposed links for <N> new notes:
@@ -90,7 +90,7 @@ Proposed links for <N> new notes:
   → [[Existing Note]] — <relationship: extends|supports|contradicts|example-of|prerequisite-for|see-also>
     Reason: one sentence...
 
-Reply 'approve' to proceed, 'reject' to abort, list titles to skip specific links, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 Response handling:

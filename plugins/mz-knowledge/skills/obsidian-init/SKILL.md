@@ -70,7 +70,7 @@ Record answers in `state.md` under `VaultPurpose`, `PrimaryTopics`, `NoteTypes`,
 
 **This orchestrator** (not a subagent) must present the scaffold plan to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Build the plan from interview answers (or defaults). Present:
+Build the plan from interview answers (or defaults). Present the full plan content in the question body. Do not reference an external file or provide a summary — present the complete plan text directly. Present:
 
 ```
 Scaffold plan for <vault path>:

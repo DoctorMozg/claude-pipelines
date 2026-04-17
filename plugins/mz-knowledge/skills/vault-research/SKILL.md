@@ -60,7 +60,7 @@ Response handling:
 
 - **"approve"** → update `state.md` Status to `noise_filter_approved`, proceed to Phase 2.
 - **"reject"** → update `state.md` Status to `aborted_by_user` and stop.
-- **Feedback** → typical feedback adds or removes sections from the noise list. Apply the edits to the effective noise list, re-run Phase 1 (`phases/parse_report.md`), and re-present the refreshed `parsed_report.md` **via AskUserQuestion**. Repeat until explicit approval.
+- **Feedback** → typical feedback adds or removes sections from the noise list. Apply the edits to the effective noise list, re-run Phase 1 (`phases/parse_report.md`), and re-present the refreshed `parsed_report.md` **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2.5: User Approval — Atomization Proposals
 

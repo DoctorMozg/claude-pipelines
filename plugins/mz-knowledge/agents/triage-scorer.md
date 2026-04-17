@@ -22,14 +22,6 @@ haiku is justified here: the task is pure deterministic scoring — read a note,
 - **Defer on uncertainty.** Unknown modality, unreadable file, parse failure, ambiguous signals → always `defer`. Never fabricate a score to force a decision.
 - **Never modify notes.** This agent reads notes and writes only to `output_path`.
 
-### Common Rationalizations
-
-| Rationalization                                                       | Rebuttal                                                                                                                                    |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Pick the merge target for the user — it saves them a step."          | "Merge target requires user intent; assigning it silently bypasses the approval gate and turns a reversible proposal into a silent merge."  |
-| "Auto-discard stubs without surfacing them to the orchestrator."      | "Discard is irreversible; every discard must flow through the user approval gate in Phase 1.5, even when the heuristic is confident."       |
-| "Skip the mtime check — the ladder works the same regardless of age." | "Age is a primary triage signal; fresh notes should defer, stale stubs should discard. Collapsing the age dimension loses half the ladder." |
-
 ## Process
 
 ### Step 1 — Parse dispatch inputs
@@ -131,6 +123,14 @@ Then emit exactly one terminal line:
 - `STATUS: DONE_WITH_CONCERNS` — the input `note_paths` list was empty (the orchestrator is expected to pre-filter, so this should be rare).
 - `STATUS: NEEDS_CONTEXT` — dispatch prompt missing a required field (`note_paths`, `output_path`, `task_name`, or `thresholds`).
 - `STATUS: BLOCKED` — the inbox folder is unreadable, an individual note read errored at the filesystem level, or the output artifact failed to write.
+
+## Common Rationalizations
+
+| Rationalization                                                       | Rebuttal                                                                                                                                    |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Pick the merge target for the user — it saves them a step."          | "Merge target requires user intent; assigning it silently bypasses the approval gate and turns a reversible proposal into a silent merge."  |
+| "Auto-discard stubs without surfacing them to the orchestrator."      | "Discard is irreversible; every discard must flow through the user approval gate in Phase 1.5, even when the heuristic is confident."       |
+| "Skip the mtime check — the ladder works the same regardless of age." | "Age is a primary triage signal; fresh notes should defer, stale stubs should discard. Collapsing the age dimension loses half the ladder." |
 
 ## Red Flags
 

@@ -56,7 +56,7 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 **This orchestrator** (not a subagent) must present the review queue to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Present a ranked list of up to the mode's queue size, each with score and the reason for surfacing, plus a summary of MOC gaps detected in parallel by `moc-gap-detector`.
+Before presenting, Read `.mz/task/<task_name>/review_queue.md` in full. Present the full verbatim contents of `review_queue.md` — each note's title, score, and reason for surfacing, plus the MOC gaps summary. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 Format:
 
@@ -69,14 +69,14 @@ Review queue for today (N notes):
 
 MOC gaps detected: <N gaps from moc-gap-detector> — details in .mz/task/<task_name>/moc_gaps.md
 
-Reply 'approve' to start reviewing, 'reject' to abort, a number (e.g. '5') to change queue size, or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 Response handling:
 
 - **"approve"** → update state to `queue_approved`, proceed to Phase 2.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Number** → regenerate the queue with that size, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves.
+- **Number** (e.g. `5`) → regenerate the queue with that size, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves.
 - **Feedback** → adjust queue parameters (exclude a folder, change weights, filter by maturity), re-run Phase 1 if needed, return to this gate, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques

@@ -1,6 +1,6 @@
 ---
 name: vault-connect
-description: ALWAYS invoke when finding missing wikilinks for a note, suggesting connections between notes, discovering which vault notes should link to the current note, or improving a note's link density.
+description: "ALWAYS invoke when finding missing wikilinks for a note, suggesting connections between notes, discovering which vault notes should link to the current note, or improving a note's link density. Triggers: link notes, suggest wikilinks, find connections, improve link density."
 argument-hint: <note name or path to find links for>
 model: sonnet
 allowed-tools: Agent, Read, Write, Grep, Glob, AskUserQuestion
@@ -56,7 +56,7 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 
 **This orchestrator** (not a subagent) must present link proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Read `.mz/task/<task_name>/link_proposals.md` and present the proposals grouped by direction, each labelled with a letter for skip-list responses.
+Read `.mz/task/<task_name>/link_proposals.md` in full. Present the full verbatim contents of `link_proposals.md` — proposals grouped by direction, each labelled with a letter for skip-list responses. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
 Format:
 
@@ -73,7 +73,7 @@ Notes that should link back (inbound):
   c. → [[Existing Note C]] — example-of
      Why: <one sentence>
 
-Reply 'approve' for all, 'reject' to abort, list letters to skip (e.g. 'a,c'), or provide feedback for changes.
+Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
 ```
 
 Response handling:

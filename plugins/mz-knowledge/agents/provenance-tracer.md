@@ -129,12 +129,17 @@ After writing, print a one-line summary:
 Classified N claims in <note basename> — <first-hand>/<cited>/<inferred>/<received>/<unmarked>. Capped: <true|false>.
 ```
 
-Then emit exactly one terminal status line:
+Then emit exactly one terminal status line, followed immediately by one VERDICT line:
 
 - `STATUS: DONE` — artifact written, note scanned, at least 3 classified claims.
 - `STATUS: DONE_WITH_CONCERNS` — artifact written but the note has \<3 classified claims (low signal — the orchestrator surfaces this at the approval gate).
 - `STATUS: NEEDS_CONTEXT` — required dispatch field missing (`note_path` or `output_path`).
 - `STATUS: BLOCKED` — note file not readable: `<path>`.
+
+VERDICT line (always emit, even for NEEDS_CONTEXT/BLOCKED):
+
+- `VERDICT: PASS` — `unmarked_ratio` ≤ 0.30; provenance coverage is acceptable.
+- `VERDICT: FAIL` — `unmarked_ratio` > 0.30; more than 30% of claims lack attribution — the orchestrator must surface this at the approval gate with `Critical:` severity.
 
 ## Common Rationalizations
 

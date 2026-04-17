@@ -95,7 +95,11 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Red Flags
 
-Red Flags: delegated to phase files — see Phase Overview table above.
+- Applying any decision before Phase 1.5 approval — all vault writes are gated.
+- Auto-selecting a merge target instead of leaving `proposed_merge_target: null` and requiring the user to name it.
+- Processing more than `BATCH_SIZE` (7) notes in a session — batching prevents decision fatigue.
+- Deleting an inbox source file before verifying the destination write on promote or merge.
+- Proceeding to Phase 2 without explicit "approve" from the user at Phase 1.5.
 
 ## Verification
 
