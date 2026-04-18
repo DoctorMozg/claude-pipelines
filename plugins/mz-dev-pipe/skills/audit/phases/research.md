@@ -291,13 +291,13 @@ Each dispatched `pipeline-researcher` is read-only and returns its findings in i
 
 Mapping:
 
-| Lens            | Artifact path                                         |
-| --------------- | ----------------------------------------------------- |
-| correctness     | `.mz/task/<task_name>/findings_correctness.md`        |
-| security        | `.mz/task/<task_name>/findings_security.md`           |
-| performance     | `.mz/task/<task_name>/findings_performance.md`        |
-| maintainability | `.mz/task/<task_name>/findings_maintainability.md`    |
-| reliability     | `.mz/task/<task_name>/findings_reliability.md`        |
+| Lens            | Artifact path                                      |
+| --------------- | -------------------------------------------------- |
+| correctness     | `.mz/task/<task_name>/findings_correctness.md`     |
+| security        | `.mz/task/<task_name>/findings_security.md`        |
+| performance     | `.mz/task/<task_name>/findings_performance.md`     |
+| maintainability | `.mz/task/<task_name>/findings_maintainability.md` |
+| reliability     | `.mz/task/<task_name>/findings_reliability.md`     |
 
 If a researcher returned `BLOCKED` or `NEEDS_CONTEXT`, still write the response (so the blocker rationale is preserved) and mark that lens as not usable in the state file.
 

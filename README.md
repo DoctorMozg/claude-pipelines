@@ -217,7 +217,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | **deep-research** | `/deep-research <topic>`                                   | Multi-agent web research with parallel domain experts               |
 | **init-rules**    | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 
-6 agents (code-reviewer, branch-reviewer, pr-reviewer, pr-scanner, researcher, technical-writer) and 11 coding rules.
+14 agents total: 6 user-facing (code-reviewer, branch-reviewer, pr-reviewer, pr-scanner, domain-researcher, technical-writer) plus 8 internal support agents dispatched by the user-facing skills (branch-info-collector, code-lens-{architecture,bugs,maintainability,performance,security}, github-pr-data-fetcher, pr-info-scorer). Ships 11 curated coding rules installable via `/init-rules`.
 
 **[Full documentation →](plugins/mz-dev-base/)**
 
@@ -241,7 +241,7 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **combine**      | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report                                  |
 | **translate**    | `/translate <request>`      | NL request → discovery → glossary seed → plan → parallel translation → tiered verification (structural + judge + uncertainty-driven deep) |
 
-12 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-coverage-reviewer, test-quality-reviewer, optimizer, completeness-checker, translator).
+15 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-runner, test-coverage-reviewer, test-quality-reviewer, lint-runner, optimizer, completeness-checker, tooling-detector, translator).
 
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 

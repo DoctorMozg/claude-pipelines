@@ -155,8 +155,8 @@ Output:
 **Check the completeness-checker's STATUS first, before reading any artifact.**
 
 1. **If STATUS is `BLOCKED`**: escalate immediately via AskUserQuestion with the blocker details. Do NOT attempt to read `completeness_check.md` — the agent may not have produced it, and reading a missing or partial artifact leads to silent misjudgment. Do not restart the pipeline — restarting against a blocked state wastes all retry budget.
-2. **If STATUS is `NEEDS_CONTEXT`**: re-dispatch the completeness-checker once with the requested context, then re-check STATUS from the beginning of this step.
-3. **If STATUS is `DONE` or `DONE_WITH_CONCERNS`**: read `.mz/task/<task_name>/completeness_check.md` as the authoritative verdict, rather than parsing the inline response. Then apply the PASS/FAIL handling below.
+1. **If STATUS is `NEEDS_CONTEXT`**: re-dispatch the completeness-checker once with the requested context, then re-check STATUS from the beginning of this step.
+1. **If STATUS is `DONE` or `DONE_WITH_CONCERNS`**: read `.mz/task/<task_name>/completeness_check.md` as the authoritative verdict, rather than parsing the inline response. Then apply the PASS/FAIL handling below.
 
 **If PASS**:
 

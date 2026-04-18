@@ -42,7 +42,7 @@ Claude follows through on stated intent more reliably when the intent was declar
 **Example phrasings**:
 
 - `Before skipping the test, state out loud: "I accept responsibility for any regressions this introduces."`
-- `Reply 'approve' to proceed — this explicit approval is how the skill knows to continue.`
+- `Type **Approve** to proceed, **Reject** to cancel, or type your feedback — this explicit approval is how the skill knows to continue.`
 - `Name the reason you're skipping the RED step; if you cannot name it, do not skip.`
 - `Write the failing test first; only then commit to the fix.`
 
