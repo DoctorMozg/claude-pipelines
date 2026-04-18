@@ -12,7 +12,7 @@ The single most common bug class is emitting the wrong JSON envelope for the eve
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- |
 | `PreToolUse`       | `hookSpecificOutput` with `hookEventName`, optional `permissionDecision`, `permissionDecisionReason`, `updatedInput` | Yes (exit 2)  |
 | `PostToolUse`      | `hookSpecificOutput` with `hookEventName`, optional `additionalContext`                                              | No            |
-| `UserPromptSubmit` | `hookSpecificOutput` with `hookEventName` + **required** `additionalContext`                                         | No (decision) |
+| `UserPromptSubmit` | `hookSpecificOutput` with `hookEventName` + **required** `additionalContext`; top-level `decision: "block"` + `reason` to reject the prompt | Yes (top-level `decision`) |
 | `SessionStart`     | `hookSpecificOutput` with `hookEventName` + `additionalContext` (accepted in practice)                               | No            |
 | `SessionEnd`       | Typically silent. Top-level fields only.                                                                             | No            |
 | `Stop`             | Top-level `decision: "approve" \| "block"`, `reason`                                                                 | Yes (exit 2)  |
