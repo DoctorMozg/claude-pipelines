@@ -21,6 +21,8 @@ ______________________________________________________________________
 
 **Goal**: Validate every chunk's optimization against the behavior-preservation contract.
 
+**Initialize `review_iteration = 0` before entering the review loop.** This counter governs the Phase 6 respawn loop bound.
+
 ### 5.1 Dispatch reviewers
 
 Spawn M = N `pipeline-code-reviewer` agents (model: **opus**) in a **single message** using parallel tool calls. One reviewer per chunk (1:1 mirror with optimizers).
@@ -85,6 +87,8 @@ ______________________________________________________________________
 ## Phase 6: Handle Verdicts
 
 **Goal**: Decide whether to finalize, iterate, or escalate.
+
+**On re-entry after context compaction, read `review_iteration` from `state.md` before proceeding.** The counter must never be assumed to be in scope from prior phases.
 
 ### 6.1 Decision tree
 
@@ -196,3 +200,9 @@ Display:
 - Final test and lint status
 
 Update state file status to `completed`.
+
+______________________________________________________________________
+
+## Sub-agent status handling
+
+Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.

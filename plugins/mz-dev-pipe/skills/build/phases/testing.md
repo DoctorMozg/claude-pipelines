@@ -164,14 +164,14 @@ ______________________________________________________________________
 
 ### 7.1 Detect project tooling
 
-Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
+Read `.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If the file is absent (tooling was not detected at setup), dispatch `pipeline-tooling-detector` (model: **haiku**) now as a fallback:
 
 ```
 Detect project tooling and write the result to:
 output_path: .mz/task/<task_name>/tooling.md
 ```
 
-Read `.mz/task/<task_name>/tooling.md` when done. Use the detected commands in the steps below.
+If the fallback dispatch still fails (e.g., `pipeline-tooling-detector` returns `BLOCKED`), escalate via AskUserQuestion before proceeding to Phase 7.2. Use the detected commands in the steps below.
 
 ### 7.2 Run linters and formatters
 
@@ -206,7 +206,9 @@ Read `.mz/task/<task_name>/test_results.md`.
 
 - Extract the failed test list from `test_results.md`
 - Dispatch a `pipeline-coder` agent (model: **opus**) to fix the failing code or tests (use judgment on which needs fixing), providing the failed test details
+- **Check coder STATUS.** If `BLOCKED`: break the loop, escalate via AskUserQuestion with the blocker details and the failing test list. Do not continue iterating.
 - Re-dispatch `pipeline-test-runner` to re-run
+- **Check test-runner STATUS.** If `BLOCKED` (e.g., command not found, exit 127): break the loop, escalate via AskUserQuestion with the BLOCKED reason. Do not retry a permanently unavailable test command.
 - Repeat up to 3 iterations. If still failing after 3 attempts, escalate to user via AskUserQuestion
 
 ### 7.4 Re-run linters after fixes
@@ -221,3 +223,9 @@ output_path: .mz/task/<task_name>/lint_results_final.md
 ```
 
 Update state file phase to `tests_passing`.
+
+______________________________________________________________________
+
+## Sub-agent status handling
+
+Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.

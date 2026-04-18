@@ -137,7 +137,12 @@ Read .mz/task/<task_name>/optimization_<iteration>.md for full report.
 4. No NEW optimizations — regression repair only
 ```
 
-4. Re-run tests and linters.
+4. After dispatching the coder, check its STATUS:
+
+   - If `BLOCKED`: break the loop immediately. Do not re-run tests. Escalate via AskUserQuestion with: the blocker message from the coder, the number of `fix_attempts` consumed, the specific regression(s) still failing, and the optimization chunk that caused them.
+   - Only proceed to step 5 (re-run tests and linters) when the coder's STATUS is `DONE` or `DONE_WITH_CONCERNS`.
+
+5. Re-run tests and linters.
 
 1. If green → exit the inner loop, proceed to Phase 4.3.
 
@@ -192,14 +197,4 @@ ______________________________________________________________________
 
 ## Sub-agent status handling
 
-Review verdict parsing:
-
-- `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
-- `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
-
-Coder/planner status handling (four-status protocol):
-
-- `DONE` — proceed to the next step.
-- `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.
-- `NEEDS_CONTEXT` — re-dispatch the coder with the additional context included in the new prompt. Do not proceed to the next step until the coder returns with `DONE` or `DONE_WITH_CONCERNS`.
-- `BLOCKED` — escalate to the user via AskUserQuestion with the blocker details. Never auto-retry the same operation. Wait for user direction or abort.
+Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.

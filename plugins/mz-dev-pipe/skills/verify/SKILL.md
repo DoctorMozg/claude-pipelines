@@ -35,14 +35,10 @@ If empty, verify the entire project (roam mode with standard exclusions).
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` (case-insensitive), remove before parsing.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
-- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock, >5000 LOC.
-- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
-- **Default** — path/glob detection from argument, or roam entire project if empty.
-
-`scope:` determines **which source files** are under verification. Tests always run fully (not filtered) to catch regressions. Coverage and quality analysis focus on code within scope.
+- **Default** (no `scope:`): path/glob detection from argument, or roam entire project if empty.
+- `scope:` determines **which source files** are under verification. Tests always run fully (not filtered) to catch regressions. Coverage and quality analysis focus on code within scope.
 
 ## Constants
 

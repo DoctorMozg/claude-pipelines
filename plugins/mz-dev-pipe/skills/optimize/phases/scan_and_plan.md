@@ -82,7 +82,7 @@ Detect the project's language(s) and use the appropriate import syntax:
 - C/C++: `#include "X"`
 - Java: `import X.Y`
 
-Output as a JSON adjacency list saved to .mz/task/<task_name>/import_graph.json:
+Return the JSON adjacency list **inline in your response** — the orchestrator persists it to `.mz/task/<task_name>/import_graph.json`. Use this exact shape:
 
 {
   "files": {
@@ -97,13 +97,15 @@ Output as a JSON adjacency list saved to .mz/task/<task_name>/import_graph.json:
   ]
 }
 
-Also return a short textual summary:
+Wrap the JSON in a ```json fenced block so the orchestrator can extract it reliably. Also return a short textual summary below the JSON block:
 - Total files analyzed
 - Number of strongly-connected components
 - Largest SCC size
 - Files with no intra-scope imports (isolates — safe to chunk alone)
 - Any files the graph construction failed on, with reason
 ```
+
+After the researcher returns, the orchestrator extracts the JSON block from the response and writes it to `.mz/task/<task_name>/import_graph.json` via the Write tool.
 
 **Fallback**: if the researcher fails to build the graph (unsupported language mix, parse errors on most files), fall back to **directory-based chunking**: group files by their parent directory. Flag the fallback prominently in the Phase 2.5 approval plan so the user knows the chunking is less principled than an import graph.
 

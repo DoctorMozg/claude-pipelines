@@ -206,7 +206,7 @@ Spawn **two agents in parallel** in a single message:
 Review test coverage for the code in scope.
 Read .mz/task/<task_name>/scope.md for source and test file lists.
 Read .mz/task/<task_name>/execution.md for test results.
-Focus ONLY on files in scope.md. Save to .mz/task/<task_name>/coverage_review.md.
+Focus ONLY on files in scope.md. Return the coverage review as markdown in your response — the orchestrator persists to `.mz/task/<task_name>/coverage_review.md`.
 ```
 
 **`pipeline-test-quality-reviewer`** (model: **sonnet**):
@@ -215,8 +215,10 @@ Focus ONLY on files in scope.md. Save to .mz/task/<task_name>/coverage_review.md
 Review test quality for the code in scope.
 Read .mz/task/<task_name>/scope.md for the test file list.
 Read .mz/task/<task_name>/execution.md for test results.
-Focus ONLY on test files in scope.md. Save to .mz/task/<task_name>/quality_review.md.
+Focus ONLY on test files in scope.md. Return the quality review as markdown in your response — the orchestrator persists to `.mz/task/<task_name>/quality_review.md`.
 ```
+
+Both reviewers are read-only and return their reviews inline. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its artifact path via the Write tool — one Write call per returned reviewer, before Phase 4.2 reads the files.
 
 ### 4.2 Merge results
 
@@ -267,7 +269,7 @@ Read .mz/task/<task_name>/scope.md for source and test files.
 
 For each failure: determine root cause (bug in source? test? setup? environment?), category (logic_bug / missing_implementation / test_bug / configuration / environment / flaky), confidence (high/medium/low), and explanation (WHY it fails with file:line). Group tests failing for the same root cause. Do NOT propose fixes — diagnose only.
 
-Save to .mz/task/<task_name>/diagnosis_tests.md:
+Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `.mz/task/<task_name>/diagnosis_tests.md`. Use this structure:
 Per group: affected tests, root cause, category, confidence, explanation with file:line, impact.
 Summary: N failures from K root causes, category breakdown.
 ```
@@ -284,8 +286,10 @@ Read .mz/task/<task_name>/scope.md for source files.
 
 For each error, determine if it's: genuine type mismatch (real bug), missing type stubs (third-party), overly strict config, or systemic pattern. Group by root cause. Do NOT propose fixes.
 
-Save to .mz/task/<task_name>/diagnosis_types.md with same grouped format.
+Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `.mz/task/<task_name>/diagnosis_types.md` using the same grouped format.
 ```
+
+After either diagnostician returns, the orchestrator writes the response to the corresponding artifact via the Write tool before proceeding to Phase 6.
 
 Update state phase to `diagnosis_complete`.
 

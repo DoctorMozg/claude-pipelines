@@ -22,6 +22,7 @@ Orchestrates iterative polish of existing code against specific completion crite
 
 - Starting a new feature from scratch — use `build`.
 - A single isolated bug with a reproducer — use `debug`.
+- If the root cause of failures is known (e.g., a specific bug was identified) — use `debug` to fix the root cause first, then return to `polish` for quality criteria.
 - Read-only verification with no fix intent — use `verify`.
 - Map-reduce dead-code cleanup — use `optimize`.
 
@@ -38,14 +39,10 @@ If empty, ask the user what needs to be polished.
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` (case-insensitive), remove before parsing criteria.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
-- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock, >5000 LOC.
-- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
-- **Default** — all project files eligible for edits.
-
-`scope:` controls **which files agents may edit**. Tests and linters always run on the full project. Criteria determine **what to verify**; scope determines **where fixes may be applied**.
+- **Default** (no `scope:`): all project files eligible for edits.
+- `scope:` controls **which files agents may edit**. Tests and linters always run on the full project. Criteria determine **what to verify**; scope determines **where fixes may be applied**.
 
 ## Constants
 

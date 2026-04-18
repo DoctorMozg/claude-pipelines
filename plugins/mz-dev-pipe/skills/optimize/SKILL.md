@@ -21,6 +21,8 @@ Orchestrates a multi-agent optimization pass over existing code. Builds import-g
 ### When NOT to use
 
 - Failing tests that need fixing — use `polish`.
+- Failing tests with a known root cause — use `debug` first, then `optimize` on the fixed code.
+- Code that passes metrics but has UI/UX or test-quality issues — use `polish`.
 - Known bug investigation — use `debug`.
 - Bug and security hunt across lenses — use `audit`.
 - Impact analysis before a refactor — use `blast-radius`.
@@ -31,12 +33,10 @@ Orchestrates a multi-agent optimization pass over existing code. Builds import-g
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying detection logic.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
-- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock files, >5000 LOC.
-- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
-- **Default** — use existing detection (glob / directory / git range / free-text). If `scope:` given alongside explicit argument, they intersect.
+- **Default** (no `scope:`): use existing detection (glob / directory / git range / free-text).
+- If `scope:` is given alongside an explicit argument, they **intersect**.
 
 ## Core Principles
 
@@ -65,7 +65,7 @@ Extract `scope:<mode>` from `$ARGUMENTS` if present. Remove before applying dete
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `optimize_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started, Review iterations, Fix attempts, Files in scope, Chunks). TaskCreate per phase.
+- **Phase 0 — Setup**: derive `optimize_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started, `review_iteration: 0`, Fix attempts, Files in scope, Chunks). The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
 - **Phase 1 — Scan & Chunk**: resolve to file list, build import graph, group into 1-6 chunks (SCCs + module boundaries). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
 - **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 

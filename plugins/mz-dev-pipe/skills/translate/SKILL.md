@@ -31,11 +31,17 @@ Orchestrates a plan-approve-translate-verify flow for translating documents, REA
 
 ## Scope Parameter
 
-Extract `scope:branch|global|working` from `$ARGUMENTS`, case-insensitive. Default: `working` if paths are omitted, otherwise the explicit path list. Scope constrains **which files may be translated**; discovery may read the full project to resolve globs, detect formats, and seed glossary terms.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+
+- **Default**: if `$ARGUMENTS` contains path tokens or globs, those paths define the scope; if no path tokens are present, default to `global` (all eligible files in the repo).
+- `scope:working` is an explicit opt-in for translating only uncommitted changes — useful for iterating on a draft, but rarely the right default for docs that are usually committed.
+- `scope:branch` limits translation to files changed on the current branch vs base.
+- `scope:global` translates all eligible project files; discovery excludes vendored, generated, and binary files.
+- Scope constrains **which files may be translated**; discovery may read the full project to resolve globs, detect formats, and seed glossary terms.
 
 ## Constants
 
-- **MAX_PARALLEL_TRANSLATORS**: 6 | **MAX_CHUNK_LINES**: 500 | **MAX_VERIFICATION_ATTEMPTS**: 2 | **MAX_APPROVAL_ITERATIONS**: 3
+- **MAX_PARALLEL_TRANSLATORS**: 6 | **MAX_CHUNK_LINES**: 500 | **MAX_VERIFICATION_ATTEMPTS**: 2 | **MAX_CONTEXT_RETRIES**: 1 | **MAX_APPROVAL_ITERATIONS**: 3
 - **MAX_JUDGE_BATCH**: 6 (chunks per parallel judge dispatch)
 - **MAX_WIKTIONARY_LOOKUPS**: 10 (per-run cap across all chunks)
 - **MAX_MYMEMORY_QUERIES**: 9 (per-run cap, under MyMemory 5K-char/day free tier)
@@ -92,6 +98,8 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
 
 - **Feedback** → re-run affected Phase 1 sub-steps, overwrite the plan, re-present **via AskUserQuestion**. Increment `approval_iterations`; bounded by `MAX_APPROVAL_ITERATIONS`. **This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.**
 
+- **Cap reached** → when `approval_iterations` reaches `MAX_APPROVAL_ITERATIONS`, follow the escalation branch in `phases/discovery_and_planning.md` Phase 1.5 "Iteration accounting" — it is the single source of truth for the three-choice escalation (abort / approve as-is / one final narrow revision with counter reset). Do not re-state the logic here; the phase file owns it.
+
 ### Phases 2–6
 
 Read `phases/translation_and_verification.md` on entry to Phase 2 and keep it loaded through Phase 6. Each phase ends with a state transition:
@@ -100,7 +108,7 @@ Read `phases/translation_and_verification.md` on entry to Phase 2 and keep it lo
 - **Phase 3** — merge every `glossary_delta_<chunk_id>.json`, sweep for cross-file term drift, re-dispatch drifted chunks. State → `consistency_complete`.
 - **Phase 4** — LLM-as-Judge on every chunk via `ceil(total_chunks / MAX_JUDGE_BATCH)` parallel `pipeline-code-reviewer` dispatches. State → `judge_complete`.
 - **Phase 5** — Tier-3 only on chunks flagged uncertain or carrying a Tier-2 `Critical:`. Wiktionary and MyMemory bounded by their constants; back-translation only on chunks with a Tier-2 `Critical:`. State → `deep_verify_complete`.
-- **Phase 6** — bounded re-translation on chunks with an unresolved `Critical:` finding, capped per chunk by `MAX_VERIFICATION_ATTEMPTS` across all phases. State → `retranslation_complete`.
+- **Phase 6** — bounded re-translation on chunks with an unresolved `Critical:` finding, capped per chunk by `MAX_VERIFICATION_ATTEMPTS` shared with Phase 3.3 consistency re-dispatches. Phase 2.2 `NEEDS_CONTEXT` re-dispatches use a separate per-chunk `MAX_CONTEXT_RETRIES` counter. State → `retranslation_complete`.
 
 ### Phase 7: Finalization
 

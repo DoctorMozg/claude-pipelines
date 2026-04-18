@@ -28,6 +28,13 @@ Orchestrates a read-only impact analysis pipeline. Given a target (file, functio
 
 - `$ARGUMENTS` — A file path, function name, or module name. If empty or ambiguous, ask via AskUserQuestion. Never guess.
 
+## Scope Parameter
+
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+
+- This pipeline is read-only and takes a single target (`$ARGUMENTS`); scope narrows **only the graph-expansion file set**, not the grep-for-references universe. Cross-repo references must still be surfaced if they touch the target.
+- **Default** (no `scope:`): all project files are eligible for reference discovery.
+
 ## Constants
 
 - **MAX_DEPTH**: 3 | **MAX_RESEARCHERS**: 4 | **MAX_GRAPH_NODES**: 100
@@ -40,7 +47,6 @@ Orchestrates a read-only impact analysis pipeline. Given a target (file, functio
 | #   | Phase             | Reference                       | Loop? |
 | --- | ----------------- | ------------------------------- | ----- |
 | 0   | Setup             | inline below                    | —     |
-| 0.5 | Confirm Scope     | inline below                    | —     |
 | 1   | Discovery & Graph | `phases/discovery.md`           | hops  |
 | 2   | Analysis & Report | `phases/analysis_and_report.md` | —     |
 
@@ -52,39 +58,6 @@ Orchestrates a read-only impact analysis pipeline. Given a target (file, functio
    - **Module**: argument matches directory name → validate directory exists.
 1. If target not found: ask user to clarify via AskUserQuestion.
 1. Derive task name as `blast_radius_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the target basename and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Target, Target type, Started timestamp. Use TaskCreate for tracking.
-
-### Phase 0.5: Confirm Scope
-
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
-
-Before invoking AskUserQuestion, emit a text block to the user:
-
-```
-**Scope Confirmation Required**
-Target and analysis depth have been resolved. Confirm the scope before proceeding to Phase 1.
-
-- **Approve** → proceed to Phase 1 (Discovery & Graph Building)
-- **Reject** → abort the task, no analysis performed
-- **Feedback** → adjust depth or scope, re-present for approval (loop until explicit approval)
-```
-
-Then use AskUserQuestion with:
-
-```
-Impact analysis target resolved:
-- Target: <resolved path or identifier>
-- Type: <file | function | module>
-- Analysis depth: <MAX_DEPTH> hops (transitive)
-- Estimated scope: <brief description of what will be searched>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
-
-**Response handling**:
-
-- **"approve"** → proceed to Phase 1.
-- **"reject"** → update state to `aborted_by_user` and stop.
-- **Feedback** → adjust depth or scope constraints, re-present via AskUserQuestion. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
 
 ### Phase 1: Discovery & Graph Building
 
@@ -130,7 +103,7 @@ Output the final report block: target, graph node count, top risk dependents, sa
 - **Target not found**: ask user to clarify. Suggest similar files via Glob.
 - **Zero references found**: report that the target appears isolated. Note caveats (dynamic imports, reflection, external consumers).
 - **Graph exceeds MAX_GRAPH_NODES**: truncate at depth boundary, note truncation in report.
-- **Researcher returns empty**: retry once with broadened search terms. If still empty, proceed with remaining results and note the gap.
+- **Researcher returns empty**: retry once with broadened search terms. If still empty, proceed with remaining results and note the gap. After collecting all seed researcher results, if the total direct-dependent count across all researchers is 0, run a one-line smoke test to confirm isolation (e.g., `grep -r "<target basename>" --include="*.{js,ts,py,go,rs,java}" .` or equivalent for the target type). If the smoke test also returns no matches, emit `ZERO RESULTS VERIFIED` in the report and proceed to Phase 2 (Analysis & Report). If the smoke test returns matches (indicating a search gap in the researcher dispatch), escalate via AskUserQuestion before continuing — do not proceed to reporting.
 
 ## State Management
 

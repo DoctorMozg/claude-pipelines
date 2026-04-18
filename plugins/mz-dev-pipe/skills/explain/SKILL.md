@@ -33,17 +33,11 @@ If empty or ambiguous, ask the user via AskUserQuestion. Never guess.
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-| Mode      | Resolution                                          | Git command                                                                                                                                                                                            |
-| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion.                  |
-| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, >5000 LOC). **Requires a focusing question** — if no question tokens are present, ask the user what aspect to explain. |
-| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                                       |
-
-**Default** (no `scope:` parameter): use path/glob/free-text detection from the argument.
-
-The `scope:` parameter controls **which files** to analyze. The remaining argument text controls **what to focus on** within those files. They are orthogonal. Example: `scope:branch "how does error handling work"` analyzes only branch-changed files, focused on error handling.
+- **Default** (no `scope:`): use path/glob/free-text detection from the argument.
+- `global` mode in this skill **requires a focusing question** — if no question tokens are present, ask the user what aspect to explain.
+- The `scope:` parameter controls **which files** to analyze. The remaining argument text controls **what to focus on** within those files. They are orthogonal. Example: `scope:branch "how does error handling work"` analyzes only branch-changed files, focused on error handling.
 
 ## Output Parameter
 

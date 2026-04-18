@@ -179,6 +179,13 @@ This rule is repeated in the coder prompt above because it's the critical guard 
 
 ### 5.3 Collect reports
 
+**Wave-merge protocol (mixed-status handling)**: a parallel wave can return a mix of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, and `BLOCKED` statuses. Because coders run concurrently, do not block the whole wave on a single coder — handle each return value independently:
+
+1. As coders return, collect results from every `DONE` / `DONE_WITH_CONCERNS` coder and merge their reports into `.mz/task/<task_name>/fixes_<iteration>.md` immediately (see format below). For `DONE_WITH_CONCERNS`, also log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading.
+1. For any coder that returned `NEEDS_CONTEXT`, resolve the requested context (read the referenced files, pull the missing details from `findings.md` / `chunks.md` / `scope.md`) and re-dispatch ONLY that coder in a follow-up message with the requested context included. Other coders in the wave continue independently.
+1. For any coder that returned `BLOCKED`, escalate via AskUserQuestion with the blocker details. Do not auto-retry.
+1. Do not enter Phase 6 until every coder from the wave has returned `DONE` or `DONE_WITH_CONCERNS` (or has been escalated via `BLOCKED`). Re-dispatches triggered by `NEEDS_CONTEXT` are merged into the same `fixes_<iteration>.md` as they complete.
+
 After all coders in a wave complete, merge their reports into `.mz/task/<task_name>/fixes_<iteration>.md`:
 
 ```markdown
@@ -221,7 +228,9 @@ Detect and run:
 
 Capture baseline to compare: the pre-fix test state may have had some failures (unlike optimize, the scope here is bug hunting, so failing tests may be expected). Use git stash or a separate comparison:
 
-- **Before any fixes were applied**: run tests once to capture the pre-fix state into `.mz/task/<task_name>/pre_fix_tests.md` — this happens once at the START of Phase 6 on iteration 0, not on every iteration.
+- **Before any fixes were applied**: run tests once to capture the pre-fix state into `.mz/task/<task_name>/pre_fix_tests.md` — this happens once at the START of Phase 6 on iteration 0, not on every iteration. After dispatching the test runner, check its STATUS:
+  - If `BLOCKED` (e.g., test command not found, tooling missing, environment broken): escalate via AskUserQuestion explaining the test command is unavailable and include the runner's blocker message. Do NOT enter the fix dispatch loop or write a placeholder `pre_fix_tests.md` — a missing baseline means regression detection in Phase 6.2 cannot function. Wait for user direction or abort.
+  - If `DONE` or `DONE_WITH_CONCERNS`: write `pre_fix_tests.md` with the captured results and proceed. (For `DONE_WITH_CONCERNS`, log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading first.)
 - **After fixes**: compare to pre-fix state.
   - Tests that were failing and are now passing → good (fix worked)
   - Tests that were passing and are now failing → regression (must fix)
@@ -274,7 +283,13 @@ Read .mz/task/<task_name>/pre_fix_tests.md for the pre-fix test state (so you kn
 5. Report what you changed and why.
 ```
 
-4. Re-run tests and linters.
+4. After dispatching the coder, check its STATUS:
+
+   - If `BLOCKED`: break the loop immediately. Escalate via AskUserQuestion with the blocker message from the coder, the `fix_attempt` count consumed, the still-failing test list, and the chunk ID. Do not re-run tests/linters or consume further attempts.
+   - If `DONE` or `DONE_WITH_CONCERNS`: proceed to step 5. (For `DONE_WITH_CONCERNS`, log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading first.)
+   - If `NEEDS_CONTEXT`: re-dispatch the coder with the additional context included in the new prompt; do not proceed until it returns `DONE` or `DONE_WITH_CONCERNS`.
+
+1. Re-run tests and linters.
 
 1. If green (matches or improves pre-fix state) → exit the inner loop, proceed to Phase 6.3.
 
@@ -337,14 +352,4 @@ ______________________________________________________________________
 
 ## Sub-agent status handling
 
-Review verdict parsing:
-
-- `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
-- `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
-
-Coder/planner status handling (four-status protocol):
-
-- `DONE` — proceed to the next step.
-- `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.
-- `NEEDS_CONTEXT` — re-dispatch the coder with the additional context included in the new prompt. Do not proceed to the next step until the coder returns with `DONE` or `DONE_WITH_CONCERNS`.
-- `BLOCKED` — escalate to the user via AskUserQuestion with the blocker details. Never auto-retry the same operation. Wait for user direction or abort.
+Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.

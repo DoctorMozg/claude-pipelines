@@ -50,6 +50,8 @@ Record each emergent pattern as: pattern name, contributing lenses, one-sentence
 1. Normalize each gap text by trimming outer whitespace, collapsing internal whitespace runs, and lowercasing.
 1. Deduplicate on the normalized text. When the same gap surfaces from multiple lenses, keep one entry and record all contributing lenses.
 1. The deduplicated list is the **residual gap list**. This list feeds Phase 3.5.
+1. Write the consolidated residual gap list to `.mz/task/<task_name>/gaps.md`. Format: one gap per section with fields GAP_ID, Description, Lenses, Web_query. Assign `GAP_ID` as `G1`, `G2`, … in list order. `Description` is the normalized gap text from step 2. `Lenses` is a comma-separated list of the contributing lens names recorded in step 3. `Web_query` is a proposed web search query derived from the gap text (a short phrase a `pipeline-web-researcher` would use to resolve it). If the residual gap list is empty, skip this write — the Phase 3 → 3.5 Handoff below will short-circuit and no `gaps.md` is needed.
+1. If the deduplicated residual gap list is empty (no gaps found), update `state.md` to add `gap_fill: skipped_empty`, then proceed directly to Phase 5 (skipping Phase 3.5).
 
 ### Phase 3 artifact write
 

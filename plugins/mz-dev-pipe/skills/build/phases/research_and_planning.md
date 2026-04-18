@@ -22,6 +22,8 @@ ______________________________________________________________________
 
 ### 1.1 Codebase exploration
 
+Read `.mz/task/<task_name>/tooling.md` if it exists (written during Phase 0 setup). Include the detected test command and lint command in the context passed to `pipeline-planner` agents, so coders in Phase 3 know the correct commands.
+
 Spawn a `pipeline-researcher` agent (model: **sonnet**) with:
 
 ```

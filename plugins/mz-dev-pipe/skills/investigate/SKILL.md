@@ -35,17 +35,10 @@ If empty, ask the user what they want investigated.
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). Remove it from the remaining argument text before parsing the hypothesis.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-| Mode      | Resolution                                          | Git command                                                                                                                                                                           |
-| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `branch`  | Files changed on this branch vs base branch         | Detect base: try `main`, then `master`. Run `git diff $(git merge-base HEAD <base>)..HEAD --name-only`. If on the base branch itself (empty diff), warn the user via AskUserQuestion. |
-| `global`  | All source files in the repo                        | Honor `.gitignore`. Apply standard exclusions (vendored, generated, lock files, files >5000 LOC).                                                                                     |
-| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`. If no changes exist, warn the user.                                                                      |
-
-**Default** (no `scope:` parameter): all files in the project are eligible for investigation.
-
-The `scope:` parameter controls **where to focus the investigation**. Tests are always placed in the project's standard test location regardless of scope.
+- **Default** (no `scope:`): all files in the project are eligible for investigation.
+- The `scope:` parameter controls **where to focus the investigation**. Tests are always placed in the project's standard test location regardless of scope.
 
 ## Constants
 

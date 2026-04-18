@@ -56,7 +56,7 @@ You are the <LENS_NAME> lens of a /combine synthesis run.
 4. Gaps — facts the task seems to need that your files do not cover. Flag as `GAP: <what is missing>`.
 
 ## Output format
-Write to .mz/task/<TASK_NAME>/extract_<LENS_NAME>.md with sections:
+Return the extract as markdown **inline in your response** — the orchestrator persists it to `.mz/task/<TASK_NAME>/extract_<LENS_NAME>.md`. Use these sections:
 - ## Summary (3-sentence overview of what this lens found)
 - ## Extracts (numbered list: fact, source file:line, confidence)
 - ## Conflicts (from the CONFLICT DETECTED tokens, or "none")
@@ -64,6 +64,8 @@ Write to .mz/task/<TASK_NAME>/extract_<LENS_NAME>.md with sections:
 - ## Files read (plain list of paths actually opened)
 End your response with a final line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
+
+After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its `extract_<LENS_NAME>.md` artifact via the Write tool — one Write call per returned lens, before Phase 2.3 reads the extract files.
 
 **Why the ban is absolute**. The "Read ONLY the listed files" line has no escape clause. A prior draft allowed "unless a listed file references another file essential to understanding it" — that clause is banned because it lets the agent follow import chains indefinitely and detonates the context budget. If a referenced file is actually needed, Phase 1.3 should have included it; if Phase 1.3 missed it, the agent reports it as a `GAP` and the user adds it at the next decomposition pass.
 
@@ -138,7 +140,7 @@ You are filling a single gap for a /combine synthesis run.
 4. Output budget: <=150 lines.
 
 ## Output format
-Write to .mz/task/<TASK_NAME>/gapfill_<GAP_ID>.md with sections:
+Return the gap-fill as markdown **inline in your response** — the orchestrator persists it to `.mz/task/<TASK_NAME>/gapfill_<GAP_ID>.md`. Use these sections:
 - ## Gap (restated)
 - ## Answer (or UNVERIFIED)
 - ## Sources (primary sources only, cited with URL and publication date)
@@ -147,6 +149,8 @@ End your response with a final line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_C
 ```
 
 The `STACK DETECTED` / `CONFLICT DETECTED` / `UNVERIFIED` tokens are contracts defined in the `pipeline-web-researcher` agent rules at `plugins/mz-dev-pipe/agents/pipeline-web-researcher.md`. Do not restate those rules in this prompt — the agent already enforces them. The "per your agent rules" phrasing is deliberate compression.
+
+`pipeline-web-researcher` is read-only — it has no Write tool. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its `gapfill_<GAP_ID>.md` artifact via the Write tool — one Write call per returned gap, before Phase 4.3 reads the gap-fill files.
 
 ### 4.3 Collect gap-fills
 

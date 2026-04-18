@@ -85,7 +85,7 @@ Re-run linters and tests to ensure optimization didn't break anything.
 
 ### 9.3 Review optimization
 
-Spawn a `pipeline-code-reviewer` agent (model: **sonnet**) with:
+Spawn a `pipeline-code-reviewer` agent (model: **sonnet**) with: <!-- sonnet: heuristic structural pass checking only for behavioral drift introduced by the optimizer over already-opus-reviewed code, not full correctness; opus not required here -->
 
 ```
 Review the optimization changes made to this code.
@@ -134,6 +134,8 @@ Read the following files for context:
 - Code review: PASSED
 - Test review: PASSED
 
+output_path: .mz/task/<task_name>/completeness_check.md
+
 Evaluate:
 1. Does the implementation fulfill 100% of what was requested in the task description?
 2. Are there any aspects of the task that were planned but not implemented?
@@ -149,6 +151,12 @@ Output:
 ```
 
 ### 10.1 Handle verdict
+
+**Check the completeness-checker's STATUS first, before reading any artifact.**
+
+1. **If STATUS is `BLOCKED`**: escalate immediately via AskUserQuestion with the blocker details. Do NOT attempt to read `completeness_check.md` — the agent may not have produced it, and reading a missing or partial artifact leads to silent misjudgment. Do not restart the pipeline — restarting against a blocked state wastes all retry budget.
+2. **If STATUS is `NEEDS_CONTEXT`**: re-dispatch the completeness-checker once with the requested context, then re-check STATUS from the beginning of this step.
+3. **If STATUS is `DONE` or `DONE_WITH_CONCERNS`**: read `.mz/task/<task_name>/completeness_check.md` as the authoritative verdict, rather than parsing the inline response. Then apply the PASS/FAIL handling below.
 
 **If PASS**:
 

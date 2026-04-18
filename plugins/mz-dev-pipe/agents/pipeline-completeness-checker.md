@@ -1,7 +1,7 @@
 ---
 name: pipeline-completeness-checker
 description: Pipeline-only. Final quality gate. Verifies the task is 100% complete by checking implementation against requirements, plan, and all review feedback. Can trigger pipeline restart from any phase.
-tools: Read, Grep, Glob, Bash
+tools: Read, Write, Grep, Glob, Bash
 model: opus
 effort: high
 maxTurns: 30
@@ -34,6 +34,7 @@ You receive:
 1. Research findings
 1. List of all files changed
 1. Current status (linters passing, tests passing, reviews passed)
+1. `output_path` — Absolute or relative path where the completeness report must be written (e.g. `.mz/task/<task_name>/completeness_check.md`).
 
 ## Process
 
@@ -71,6 +72,8 @@ Check every item in the plan's verification criteria checklist:
 - Are there side effects the plan didn't account for?
 
 ## Output Format
+
+Write the full report to `output_path`. The orchestrator reads this file as the authoritative record; the inline STATUS line is a convenience signal only.
 
 ```markdown
 # Completeness Check
@@ -146,6 +149,7 @@ When verdict is FAIL, choose the restart phase carefully:
 - You are reviewing without reading the changed files, diff, or report artifacts in scope.
 - You are about to flag a finding without a concrete file, line, code path, or source.
 - The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- Dispatch prompt missing `output_path` — emit `STATUS: NEEDS_CONTEXT`.
 
 ## Status Protocol
 

@@ -101,18 +101,13 @@ ______________________________________________________________________
 
 **Goal**: Apply the minimal fix to make the regression test pass without breaking anything else.
 
-### 4.1 Assess fix complexity
+### 4.1 Dispatch coder
 
-Read `diagnosis.md` and determine fix complexity:
-
-- **Simple** (1-2 files, clear change): apply the fix directly in this orchestrator. No subagent needed.
-- **Complex** (multiple files, nuanced logic, or scope-constrained): dispatch a coder agent.
+Regardless of fix complexity, dispatch a `pipeline-coder` agent with the diagnosis context and a minimal-fix constraint. Do not apply fixes directly in the orchestrator — orchestrators only route, they never write code.
 
 ### 4.2 Apply fix
 
-**If simple**: edit the file(s) directly based on the diagnosis.
-
-**If complex**: dispatch a `pipeline-coder` agent (model: **opus**):
+Dispatch a `pipeline-coder` agent (model: **opus**):
 
 ```
 Fix a diagnosed bug. A regression test already exists and must pass after your fix.
@@ -169,16 +164,20 @@ Read `full_suite_after_fix.md`:
 
 ### 4.4 Fix iteration loop
 
-Set `fix_iteration = 1` after the first attempt. Max iterations: `MAX_FIX_ITERATIONS = 3`.
+Initialize `fix_iteration = 0` BEFORE the loop begins. Max iterations: `MAX_FIX_ITERATIONS = 3`.
 
 On each iteration:
 
+1. Increment `fix_iteration` at the START of the iteration (before dispatching the coder).
 1. Analyze what went wrong: read failing test output, compare to diagnosis.
 1. If regression test still fails: the fix is insufficient. Re-dispatch coder with the failure output and previous attempt context.
 1. If regression test passes but other tests regress: the fix is too broad. Re-dispatch coder with regression details and instruction to narrow the change.
+1. After the coder dispatch, check the coder's STATUS:
+   - If `BLOCKED`: break the loop immediately. Do not run verification. Escalate via AskUserQuestion with the blocker message, the number of iterations consumed (`fix_iteration`), and the still-failing test output.
+   - Only proceed to verification when STATUS is `DONE` or `DONE_WITH_CONCERNS`.
 1. Re-run verification (4.3).
 
-If `fix_iteration == MAX_FIX_ITERATIONS` and still failing, escalate via AskUserQuestion:
+If `fix_iteration >= MAX_FIX_ITERATIONS` and still failing, escalate via AskUserQuestion:
 
 ```
 The fix could not be stabilized after <N> iterations.
@@ -267,17 +266,7 @@ ______________________________________________________________________
 
 ## Sub-agent status handling
 
-Review verdict parsing:
-
-- `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
-- `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
-
-Coder/planner status handling (four-status protocol):
-
-- `DONE` — proceed to the next step.
-- `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.
-- `NEEDS_CONTEXT` — re-dispatch the coder with the additional context included in the new prompt. Do not proceed to the next step until the coder returns with `DONE` or `DONE_WITH_CONCERNS`.
-- `BLOCKED` — escalate to the user via AskUserQuestion with the blocker details. Never auto-retry the same operation. Wait for user direction or abort.
+Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.
 
 ______________________________________________________________________
 

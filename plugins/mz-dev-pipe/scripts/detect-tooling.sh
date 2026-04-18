@@ -10,6 +10,38 @@ OUTPUT_FILE="${OUTPUT_DIR}/tooling.json"
 
 mkdir -p "$OUTPUT_DIR"
 
+# Validate a command string sourced from project manifests against a conservative
+# allowlist. Untrusted values that fail validation are replaced with a placeholder
+# before being written to tooling.json to prevent downstream command injection.
+# Length is checked separately because bash 3.2 (ships with macOS) caps regex
+# bounded-repetition quantifiers at 255, so `{1,300}` in the character-class
+# regex silently fails there.
+validate_command() {
+    local val="$1"
+    if (( ${#val} < 1 || ${#val} > 300 )); then
+        return 1
+    fi
+    # Allow: alphanumeric, space, common path chars, flags, env vars
+    if [[ "$val" =~ ^[a-zA-Z0-9\ ./_@:\-]+$ ]]; then
+        return 0
+    fi
+    return 1
+}
+
+# Emit a JSON-escaped string literal for an arbitrary shell value. Falls back to
+# a minimal manual escape if jq is unavailable on the host.
+json_string() {
+  local val="$1"
+  if command -v jq &>/dev/null; then
+    jq -n --arg val "$val" '$val'
+  else
+    # Minimal fallback: escape backslashes, double quotes, and control chars.
+    local escaped="${val//\\/\\\\}"
+    escaped="${escaped//\"/\\\"}"
+    printf '"%s"' "$escaped"
+  fi
+}
+
 # Start building JSON
 echo '{' > "$OUTPUT_FILE"
 echo '  "detected_at": "'"$(date -Iseconds)"'",' >> "$OUTPUT_FILE"
@@ -25,19 +57,38 @@ add_ecosystem() {
   local type_cmd="$5"
   local install_cmd="$6"
 
+  # Validate any non-empty command value; reject unsafe characters so that
+  # attacker-controlled manifest values cannot be executed downstream.
+  local field
+  for field in test_cmd lint_cmd fmt_cmd type_cmd install_cmd; do
+    if [[ -n "${!field}" ]] && ! validate_command "${!field}"; then
+      printf -v "$field" '%s' "[UNSAFE_VALUE_REJECTED]"
+    fi
+  done
+
   if [[ "$FIRST_ECO" == "true" ]]; then
     FIRST_ECO=false
   else
     echo ',' >> "$OUTPUT_FILE"
   fi
 
+  # Use JSON-escaped literals so that even validated values cannot break JSON
+  # structure (e.g. stray quotes or backslashes).
+  local name_json test_json lint_json fmt_json type_json install_json
+  name_json=$(json_string "$name")
+  test_json=$(json_string "$test_cmd")
+  lint_json=$(json_string "$lint_cmd")
+  fmt_json=$(json_string "$fmt_cmd")
+  type_json=$(json_string "$type_cmd")
+  install_json=$(json_string "$install_cmd")
+
   cat >> "$OUTPUT_FILE" <<ENTRY
-    "$name": {
-      "test": "$test_cmd",
-      "lint": "$lint_cmd",
-      "format": "$fmt_cmd",
-      "typecheck": "$type_cmd",
-      "install": "$install_cmd"
+    ${name_json}: {
+      "test": ${test_json},
+      "lint": ${lint_json},
+      "format": ${fmt_json},
+      "typecheck": ${type_json},
+      "install": ${install_json}
     }
 ENTRY
 }
@@ -101,7 +152,8 @@ if [[ -f "$PROJECT_DIR/package.json" ]]; then
   [[ -f "$PROJECT_DIR/pnpm-lock.yaml" ]] && JS_INSTALL="pnpm install"
   [[ -f "$PROJECT_DIR/bun.lockb" ]] && JS_INSTALL="bun install"
 
-  # Parse package.json for tools
+  # Parse package.json for tools. $DEPS is manifest-sourced (untrusted) — always
+  # wrap in "$DEPS" to avoid word-splitting on attacker-chosen content.
   if command -v jq &>/dev/null; then
     DEPS=$(jq -r '(.dependencies // {}) + (.devDependencies // {}) | keys[]' "$PROJECT_DIR/package.json" 2>/dev/null || echo "")
 
@@ -178,16 +230,27 @@ add_tool() {
   local cmd="$2"
   local config="$3"
 
+  # Reject unsafe command strings so that manifest-derived values cannot be
+  # injected into shells that later execute `command` from tooling.json.
+  if [[ -n "$cmd" ]] && ! validate_command "$cmd"; then
+    cmd="[UNSAFE_VALUE_REJECTED]"
+  fi
+
   if [[ "$FIRST_TOOL" == "true" ]]; then
     FIRST_TOOL=false
   else
     echo ',' >> "$OUTPUT_FILE"
   fi
 
+  local name_json cmd_json config_json
+  name_json=$(json_string "$name")
+  cmd_json=$(json_string "$cmd")
+  config_json=$(json_string "$config")
+
   cat >> "$OUTPUT_FILE" <<ENTRY
-    "$name": {
-      "command": "$cmd",
-      "config": "$config"
+    ${name_json}: {
+      "command": ${cmd_json},
+      "config": ${config_json}
     }
 ENTRY
 }

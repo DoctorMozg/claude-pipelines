@@ -58,7 +58,7 @@ Collect every response from the wave. Parse the terminal `STATUS:` line per disp
 
 - **`DONE`** — record the output file path, confidence report path, and glossary delta path into `<task_dir>/wave_results.md`. Advance the chunk into Phase 3 eligibility.
 - **`DONE_WITH_CONCERNS`** — append the agent's `## Concerns` block to `<task_dir>/concerns.md` under a heading for this `chunk_id`. Still advance the chunk — Tier-2 may judge the concern harmless. Do not treat `DONE_WITH_CONCERNS` as a failure.
-- **`NEEDS_CONTEXT`** — re-dispatch **once** with the agent's `## Required Context` block resolved in the new prompt (e.g. missing glossary entry, ambiguous output path). The re-dispatch counts against `MAX_VERIFICATION_ATTEMPTS` for that chunk. If the re-dispatch also returns `NEEDS_CONTEXT`, escalate via AskUserQuestion.
+- **`NEEDS_CONTEXT`** — re-dispatch **once** with the agent's `## Required Context` block resolved in the new prompt (e.g. missing glossary entry, ambiguous output path). The re-dispatch counts against a separate per-chunk `MAX_CONTEXT_RETRIES` counter (not `MAX_VERIFICATION_ATTEMPTS`) so an early context miss does not exhaust the Phase 6 budget. If the re-dispatch also returns `NEEDS_CONTEXT`, escalate via AskUserQuestion.
 - **`BLOCKED`** — **never auto-retry**. Escalate immediately via AskUserQuestion, pasting the agent's `## Blocker` section verbatim. Halt the wave until the user responds.
 
 Worked example for a 4-dispatch wave: three `DONE`, one `DONE_WITH_CONCERNS` (two untranslated idioms). Record all four paths in `wave_results.md`, append the concerns block to `concerns.md` under the chunk id, advance all four to Phase 3. Do not stop the pipeline — Tier-2 may still accept, Phase 6 retries on `Critical:`.
@@ -249,7 +249,12 @@ Emit all Phase-6 dispatches for a single iteration in a **single orchestrator me
 
 Every Phase-6 re-dispatch counts against `MAX_VERIFICATION_ATTEMPTS` for its chunk. Once a chunk hits the cap, stop re-dispatching it: keep the current translation on disk, write a `DONE_WITH_CONCERNS` entry into `<task_dir>/concerns.md` listing the unresolved findings, and let it flow into the Phase 7 summary.
 
-Attempt-counter accounting is **global per chunk across all phases** — Phase 2.2 initial dispatches, Phase 2.2 `NEEDS_CONTEXT` re-dispatches, Phase 3.3 consistency-driven re-dispatches, and Phase 6 finding-driven re-dispatches all debit the same counter. Once a chunk exhausts `MAX_VERIFICATION_ATTEMPTS`, the next Phase 6 candidacy converts directly to a `DONE_WITH_CONCERNS` summary entry without another dispatch. Track per-chunk counts in `<task_dir>/wave_results.md`.
+Attempt-counter accounting uses two separate per-chunk counters:
+
+- **`MAX_VERIFICATION_ATTEMPTS`** is shared by Phase 3.3 consistency-driven re-dispatches and Phase 6 finding-driven re-dispatches. Phase 2.2 initial dispatches do **not** debit this counter (the initial dispatch is the baseline, not a retry).
+- **`MAX_CONTEXT_RETRIES`** is a separate per-chunk counter debited only by Phase 2.2 `NEEDS_CONTEXT` re-dispatches. Separating it ensures an early context miss does not exhaust the Phase 6 verification budget before any finding-driven re-translation can happen.
+
+Once a chunk exhausts `MAX_VERIFICATION_ATTEMPTS`, the next Phase 6 candidacy converts directly to a `DONE_WITH_CONCERNS` summary entry without another dispatch. Track both per-chunk counters in `<task_dir>/wave_results.md`.
 
 After a successful re-translation, the affected chunk **re-runs Tier-1 only**. Tier-2 and Tier-3 do **not** re-run on retried chunks — re-running Tier-2 would risk new `Critical:` findings and non-termination. The loop runs at most `MAX_VERIFICATION_ATTEMPTS` times per chunk and always terminates.
 

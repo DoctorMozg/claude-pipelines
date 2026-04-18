@@ -31,12 +31,11 @@ Orchestrates a multi-lens codebase audit. Parallel researchers scan across corre
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS`, remove before parsing lens/scope hints. `scope:` controls files, remaining text controls lenses (orthogonal).
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-- **`branch`** — `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (try `main`, then `master`). Warn if on base branch.
-- **`global`** — All source files, honoring `.gitignore`. Exclude vendored, generated, lock, test files, >5000 LOC.
-- **`working`** — `git diff HEAD --name-only` + `git ls-files --others --exclude-standard`. Warn if empty.
-- **Default** — path-like tokens → scope, no path tokens → roam.
+- `scope:` controls files, remaining argument text controls lenses (orthogonal).
+- **Default**: path-like tokens → scope, no path tokens → roam.
+- `global` mode additionally excludes test files in this skill.
 
 ## Core Principles
 

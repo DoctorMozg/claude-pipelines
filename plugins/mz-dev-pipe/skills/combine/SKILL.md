@@ -31,15 +31,10 @@ Invoke when the user asks to synthesize, consolidate, or pull together knowledge
 
 ## Scope Parameter
 
-Extract `scope:<mode>` from `$ARGUMENTS` if present (case-insensitive). The `scope:` parameter narrows **only the codebase lens file-list**, not the `.mz/` source harvest — prior research, reports, and task artifacts are always eligible regardless of scope.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
-| Mode      | Resolution                                          | Git command                                                                                |
-| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `branch`  | Files changed on this branch vs base branch         | `git diff $(git merge-base HEAD <base>)..HEAD --name-only` (base: `main`, then `master`)   |
-| `global`  | All source files in the repo                        | Honor `.gitignore`; apply standard exclusions (vendored, generated, lock files, >5000 LOC) |
-| `working` | Uncommitted changes (staged + unstaged + untracked) | `git diff HEAD --name-only` plus `git ls-files --others --exclude-standard`                |
-
-**Default** (no `scope:` parameter): codebase lens derived from task-text file-name hints via Grep/Glob.
+- The `scope:` parameter narrows **only the codebase lens file-list**, not the `.mz/` source harvest — prior research, reports, and task artifacts are always eligible regardless of scope.
+- **Default** (no `scope:`): codebase lens derived from task-text file-name hints via Grep/Glob.
 
 ## Output Parameter
 
@@ -136,11 +131,11 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 
 ## Phase 3.5: Gap-Fill Approval Gate (conditional)
 
-If the residual gap list produced by Phase 3 is empty, skip this gate and jump to Phase 5.
+If `state.md` contains `gap_fill: skipped_empty` (written by synthesis.md Phase 3.4 when no residual gaps were found), skip this gate and proceed to Phase 5.
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. If Phase 3 has not yet written `gaps.md`, write it now from the residual gap list — one numbered bullet per gap with surrounding context, plus a final `Estimated cost: <M> web researcher agent(s) (capped at MAX_LENSES)` line. Then re-Read it to capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
+**Mandatory pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. This file was written by `phases/synthesis.md §Phase 3.4`. Capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `gaps.md`. Never substitute a path, count, `<short list>` placeholder, or one-line summary — the user must review the actual gaps and per-gap context in the question itself, not have to open the file separately.
 

@@ -58,6 +58,14 @@ Read the full plan at .mz/task/<task_name>/plan.md for context.
 Be precise. Don't add features not in the plan. Don't refactor unrelated code.
 ```
 
+**After each wave completes (all coders in the wave return), update `.mz/task/<task_name>/state.md` with:**
+
+- `current_wave: N`
+- Per-coder results: STATUS (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) for each work unit
+- Cumulative list of files modified (from `implementation.md` or each coder's artifact)
+
+This state update is mandatory — it enables safe resumption if context is compacted between waves.
+
 ### 3.3 Collect results
 
 After all waves complete, collect the list of all files modified/created across all coders.
@@ -114,6 +122,8 @@ Save review to `.mz/task/<task_name>/code_review_<iteration>.md`.
 - Group critical issues by file/work-unit
 - Spawn `pipeline-coder` agents in parallel to fix issues, giving each agent the specific issues for its files
 - Each fix agent gets: the review feedback for its files, the plan for context, and instructions to fix ONLY the flagged issues
+- **After each coder dispatch, check the coder's STATUS.** If the coder returns `BLOCKED`: break the review loop immediately. Escalate via AskUserQuestion with: the coder's blocker message, the review iteration count consumed, and the current review failure details. Do not continue iterating.
+- Only proceed with the review loop on `DONE` or `DONE_WITH_CONCERNS`.
 - **Go to Loop start**
 
 **If FAIL and code_review_iteration >= 3**:
@@ -126,14 +136,4 @@ ______________________________________________________________________
 
 ## Sub-agent status handling
 
-Review verdict parsing:
-
-- `VERDICT: PASS` — proceed. A review is PASS if it contains zero `Critical:` findings, regardless of the count of `Nit:`, `Optional:`, or `FYI` entries.
-- `VERDICT: FAIL` — loop back and fix. Only `Critical:` findings block.
-
-Coder/planner status handling (four-status protocol):
-
-- `DONE` — proceed to the next step.
-- `DONE_WITH_CONCERNS` — log the concern block to `.mz/task/<task_name>/state.md` under a `## Concerns` heading, then proceed.
-- `NEEDS_CONTEXT` — re-dispatch the coder with the additional context included in the new prompt. Do not proceed to the next step until the coder returns with `DONE` or `DONE_WITH_CONCERNS`.
-- `BLOCKED` — escalate to the user via AskUserQuestion with the blocker details. Never auto-retry the same operation. Wait for user direction or abort.
+Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.

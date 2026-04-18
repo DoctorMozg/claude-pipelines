@@ -31,7 +31,10 @@ Orchestrates a full development lifecycle — research, plan, implement in paral
 
 ## Scope Parameter
 
-Extract `scope:branch|global|working` from `$ARGUMENTS`, case-insensitive. Default: `global`. Scope constrains **edits only**; researchers and verification commands may read the full project. Remove the scope token before deriving the task description.
+See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+
+- **Default**: `global`.
+- Scope constrains **edits only**; researchers and verification commands may read the full project.
 
 ## Constants
 
@@ -58,6 +61,8 @@ Extract `scope:branch|global|working` from `$ARGUMENTS`, case-insensitive. Defau
 ### Phase 0: Setup
 
 Derive task name as `build_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the description and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Iterations. Use TaskCreate for per-phase tracking.
+
+Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Write to `.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
 
 ### Phase 1: Research
 
@@ -101,6 +106,14 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ### Phase 3: Implementation
 
 Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). See `phases/implementation_and_review.md` → Phase 3. Update state to `implementation_complete`.
+
+**After each wave completes (all coders in the wave return), update `.mz/task/<task_name>/state.md` with:**
+
+- `current_wave: N`
+- Per-coder results: STATUS (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) for each work unit
+- Cumulative list of files modified (from `implementation.md` or each coder's artifact)
+
+This state update is mandatory — it enables safe resumption if context is compacted between waves.
 
 ### Phase 4: Code Review
 
