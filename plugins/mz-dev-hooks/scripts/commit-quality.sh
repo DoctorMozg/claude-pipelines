@@ -50,7 +50,7 @@ fi
 
 if [[ -n "$WARNINGS" ]]; then
   jq -n --arg msg "Commit quality: ${WARNINGS}Expected format: type(scope): description (e.g., feat(auth): add OAuth2 flow)" \
-    '{hookSpecificOutput: {additionalContext: $msg}}'
+    '{hookSpecificOutput: {hookEventName: "PreToolUse", additionalContext: $msg}}'
 fi
 
 exit 0

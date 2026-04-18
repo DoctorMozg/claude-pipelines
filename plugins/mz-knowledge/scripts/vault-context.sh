@@ -6,7 +6,7 @@
 VAULT="${OBSIDIAN_VAULT_PATH:-${MZ_VAULT_PATH:-}}"
 
 if [[ -z "$VAULT" || ! -d "$VAULT" ]]; then
-  echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'
+  echo '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":""}}'
   exit 0
 fi
 
@@ -41,4 +41,4 @@ fi
 # Build JSON — escape the context string
 CONTEXT_ESCAPED=$(printf '%s' "$CONTEXT" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' 2>/dev/null || echo '""')
 
-printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":%s}}\n' "$CONTEXT_ESCAPED"
+printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":%s}}\n' "$CONTEXT_ESCAPED"
