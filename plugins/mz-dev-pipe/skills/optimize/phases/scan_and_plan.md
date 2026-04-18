@@ -65,7 +65,7 @@ If the final list is empty, report to the user and exit.
 
 Spawn a `pipeline-researcher` agent (model: **sonnet**) with:
 
-```
+````
 Build an import/dependency graph for this file list:
 <resolved file list>
 
@@ -103,7 +103,7 @@ Wrap the JSON in a ```json fenced block so the orchestrator can extract it relia
 - Largest SCC size
 - Files with no intra-scope imports (isolates — safe to chunk alone)
 - Any files the graph construction failed on, with reason
-```
+````
 
 After the researcher returns, the orchestrator extracts the JSON block from the response and writes it to `.mz/task/<task_name>/import_graph.json` via the Write tool.
 

@@ -8,16 +8,16 @@ Hooks run synchronously inside the harness, block the event they fire on, and ca
 
 The single most common bug class is emitting the wrong JSON envelope for the event. Memorize this table before writing any hook.
 
-| Event              | Output mechanism                                                                                                     | Block?        |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------- |
-| `PreToolUse`       | `hookSpecificOutput` with `hookEventName`, optional `permissionDecision`, `permissionDecisionReason`, `updatedInput` | Yes (exit 2)  |
-| `PostToolUse`      | `hookSpecificOutput` with `hookEventName`, optional `additionalContext`                                              | No            |
+| Event              | Output mechanism                                                                                                                            | Block?                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| `PreToolUse`       | `hookSpecificOutput` with `hookEventName`, optional `permissionDecision`, `permissionDecisionReason`, `updatedInput`                        | Yes (exit 2)               |
+| `PostToolUse`      | `hookSpecificOutput` with `hookEventName`, optional `additionalContext`                                                                     | No                         |
 | `UserPromptSubmit` | `hookSpecificOutput` with `hookEventName` + **required** `additionalContext`; top-level `decision: "block"` + `reason` to reject the prompt | Yes (top-level `decision`) |
-| `SessionStart`     | `hookSpecificOutput` with `hookEventName` + `additionalContext` (accepted in practice)                               | No            |
-| `SessionEnd`       | Typically silent. Top-level fields only.                                                                             | No            |
-| `Stop`             | Top-level `decision: "approve" \| "block"`, `reason`                                                                 | Yes (exit 2)  |
-| `PostCompact`      | **Plain stdout text** — no `hookSpecificOutput` envelope                                                             | No            |
-| `PreCompact`       | **Plain stdout text** — no `hookSpecificOutput` envelope                                                             | No            |
+| `SessionStart`     | `hookSpecificOutput` with `hookEventName` + `additionalContext` (accepted in practice)                                                      | No                         |
+| `SessionEnd`       | Typically silent. Top-level fields only.                                                                                                    | No                         |
+| `Stop`             | Top-level `decision: "approve" \| "block"`, `reason`                                                                                        | Yes (exit 2)               |
+| `PostCompact`      | **Plain stdout text** — no `hookSpecificOutput` envelope                                                                                    | No                         |
+| `PreCompact`       | **Plain stdout text** — no `hookSpecificOutput` envelope                                                                                    | No                         |
 
 Top-level fields available on every event: `continue` (bool), `suppressOutput` (bool), `stopReason` (str), `systemMessage` (str). When in doubt, prefer `systemMessage` for surfacing notices.
 

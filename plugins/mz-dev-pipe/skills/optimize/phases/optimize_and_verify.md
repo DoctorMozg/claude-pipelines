@@ -142,7 +142,7 @@ Read .mz/task/<task_name>/optimization_<iteration>.md for full report.
    - If `BLOCKED`: break the loop immediately. Do not re-run tests. Escalate via AskUserQuestion with: the blocker message from the coder, the number of `fix_attempts` consumed, the specific regression(s) still failing, and the optimization chunk that caused them.
    - Only proceed to step 5 (re-run tests and linters) when the coder's STATUS is `DONE` or `DONE_WITH_CONCERNS`.
 
-5. Re-run tests and linters.
+1. Re-run tests and linters.
 
 1. If green → exit the inner loop, proceed to Phase 4.3.
 
