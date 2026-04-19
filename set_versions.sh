@@ -16,6 +16,16 @@ fi
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
+# sed -i is incompatible between GNU and BSD: GNU takes no argument, BSD
+# requires a backup-extension argument (and silently treats the next flag as
+# one if omitted — which is why running with -E creates *.json-E backups on
+# macOS). Detect once and build the correct invocation.
+if sed --version >/dev/null 2>&1; then
+  SED_INPLACE=(sed -i -E)
+else
+  SED_INPLACE=(sed -i '' -E)
+fi
+
 # Substitute every "version": "X.Y.Z" occurrence and verify the file actually
 # changed before accepting the rewrite. Fail fast on any file that was supposed
 # to carry a version but didn't.
@@ -35,7 +45,7 @@ rewrite_version() {
     exit 1
   fi
 
-  sed -i -E "s/\"version\":[[:space:]]*\"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$VERSION\"/g" "$file"
+  "${SED_INPLACE[@]}" "s/\"version\":[[:space:]]*\"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$VERSION\"/g" "$file"
   echo "Updated: ${file#"$REPO_ROOT"/} ($count occurrence(s))"
 }
 
