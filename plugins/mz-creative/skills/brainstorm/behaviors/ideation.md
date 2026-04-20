@@ -4,14 +4,14 @@ Dispatch contract for `/brainstorm` lens panelists. The brainstorm orchestrator 
 
 ## Template variables
 
-| Variable                  | Source                                             | Example                                                         |
-| ------------------------- | -------------------------------------------------- | --------------------------------------------------------------- |
-| `{topic}`                 | user's brainstorming topic                         | `how to onboard B2B users faster`                               |
-| `{round_n}`               | current iteration number                           | `1`                                                             |
-| `{previous_rounds_block}` | empty for round 1; formatted history for round > 1 | —                                                               |
+| Variable                  | Source                                             | Example                                                             |
+| ------------------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
+| `{topic}`                 | user's brainstorming topic                         | `how to onboard B2B users faster`                                   |
+| `{round_n}`               | current iteration number                           | `1`                                                                 |
+| `{previous_rounds_block}` | empty for round 1; formatted history for round > 1 | —                                                                   |
 | `{output_path}`           | absolute path where the agent writes its artifact  | `.mz/task/2026_04_20_brainstorm_xxx/ideas_round_1_lens-engineer.md` |
-| `{lens_name}`             | short lens label, no prefix                        | `engineer`                                                      |
-| `{step}`                  | `generate` or `vote`                               | `generate`                                                      |
+| `{lens_name}`             | short lens label, no prefix                        | `engineer`                                                          |
+| `{step}`                  | `generate` or `vote`                               | `generate`                                                          |
 
 When `{previous_rounds_block}` is empty (round 1 generation), substitute an empty string and collapse the surrounding blank line. When present, format as `## Previous rounds\n\n<history.md contents>`.
 
