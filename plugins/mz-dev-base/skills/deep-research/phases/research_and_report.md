@@ -41,7 +41,7 @@ After all agents complete:
 
 ## Step 4: Write the report
 
-Write the final report to `.mz/research/` using the naming convention: `research_<YYYY_MM_DD>_<slugified_topic><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists):
+Write the final report to `.mz/research/` using the naming convention: `<YYYY_MM_DD>_research_<slugified_topic><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists):
 
 ```markdown
 # Deep Research: <Topic>

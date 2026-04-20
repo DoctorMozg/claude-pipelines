@@ -52,7 +52,7 @@ Every run produces a self-contained directory:
 ├── strategy.json               # Target profile and scoring weights
 ├── sources.json                # Directories and platforms used
 ├── scout_summary.md            # Discovery results
-└── outreach_<date>_<goal>.md   # Executive summary report
+└── <date>_outreach_<goal>.md   # Executive summary report (date is YYYY_MM_DD)
 ```
 
 Each company gets exactly two permanent files — a JSON (for programmatic use) and a markdown card (for reading). No bulk arrays.

@@ -40,7 +40,7 @@ Discipline skill that bootstraps a new Obsidian vault (or retrofits an existing 
 1. Parse `$ARGUMENTS`. First argument is the vault path. If `--minimal` flag is present, skip interview and use defaults.
 1. If the vault path is empty, ask via AskUserQuestion.
 1. Check whether the path exists. If it does, scan for existing `.obsidian/`, `CLAUDE.md`, `.mz/`, and any folder structure. Record findings — the skill must not destroy existing content.
-1. Derive `task_name = obsidian-init_<slug>_<HHMMSS>` and create `TASK_DIR<task_name>/`.
+1. Derive `task_name = <YYYY_MM_DD>_obsidian-init_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the vault directory name (max 20 chars); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started`, `Vault`, `ExistingCLAUDE: true|false`, `ExistingSchema: true|false`, `ExistingFolders: [list]`.
 
 Unless `--minimal` was passed, ask the user via AskUserQuestion (single question, all items):

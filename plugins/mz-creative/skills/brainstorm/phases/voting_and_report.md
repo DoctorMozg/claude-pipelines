@@ -98,7 +98,7 @@ Append the tally to `.mz/task/<task_name>/history.md`.
 
 ### 4.1 Compile final report
 
-Write the report to `.mz/reports/brainstorm_<YYYY_MM_DD>_<topic_slug>.md` (append `_v2`, `_v3` if exists).
+Write the report to `.mz/reports/<YYYY_MM_DD>_brainstorm_<topic_slug>.md` (append `_v2`, `_v3` if exists).
 
 Template:
 

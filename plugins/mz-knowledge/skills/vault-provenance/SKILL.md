@@ -48,7 +48,7 @@ Invoke after drafting a research note, while auditing received-wisdom claims, or
 
 1. Parse `$ARGUMENTS` as `<note name or path>`.
 1. Resolve the note: if the argument is an absolute path, use it; if a relative path or bare name, resolve against the vault. If zero or multiple matches, escalate via AskUserQuestion with the candidate list. Never guess.
-1. Derive `task_name = vault-provenance_<slug>_<HHMMSS>` where `<slug>` is the note basename normalised to `[a-z0-9-]`. Create `TASK_DIR<task_name>/` on disk.
+1. Derive `task_name = <YYYY_MM_DD>_vault-provenance_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is the note basename normalised to `[a-z0-9-]`; on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `NotePath: <absolute path>`, `TaskName: <task_name>`.
 1. Print a visible setup block showing `task_name`, resolved note path, and the output artifact path `.mz/task/<task_name>/claims_analysis.md`.
 

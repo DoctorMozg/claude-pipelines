@@ -47,7 +47,7 @@ No approval gate — read-only skill, no vault writes.
 
 1. Capture `$ARGUMENTS` as the question. If empty, AskUserQuestion for the question — never guess.
 1. Resolve vault path from `OBSIDIAN_VAULT_PATH` env, then `MZ_VAULT_PATH` env, then walk up from the working directory until a `.obsidian/` folder is found. If nothing resolves, escalate via AskUserQuestion.
-1. Derive `task_name = vault-answer_<question-slug>_<HHMMSS>` where `<question-slug>` is a snake_case summary of the question (max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. Derive `task_name = <YYYY_MM_DD>_vault-answer_<question-slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<question-slug>` is a snake_case summary of the question (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `Question: <verbatim>`.
 

@@ -281,7 +281,7 @@ Disk-based state survives context compaction; conversation memory does not. Mult
 
 - Every cross-phase orchestrator writes `.mz/task/<task_name>/state.md` with: `Status`, `Phase`, `Started`, and any phase-specific fields.
 - Agents that produce artifacts for downstream phases write to `.mz/task/<task_name>/<artifact>.md` and return a path pointer (Rule 8).
-- Task naming convention: `<skill_or_agent>_<slug>_<HHMMSS>` (snake_case slug, max 20 chars). Prevents collisions across re-runs.
+- Task naming convention: `<YYYY_MM_DD>_<skill_or_agent>_<slug>` (date with underscores, then snake_case slug, max 20 chars). On same-day collision append `_v2`, `_v3`. Example: `2026_04_20_build_oauth_flow`.
 - Read `.mz/tooling.json` rather than re-detecting tooling. The SessionStart hook writes it; duplicating detection wastes tokens and can disagree with the hook.
 - PreCompact fires at ~95% context window — too late for proactive context management. Agents must self-manage context budget, not rely on PreCompact to save them.
 

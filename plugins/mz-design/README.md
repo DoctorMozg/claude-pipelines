@@ -52,7 +52,7 @@ The critique loop terminates successfully only when **all four critics return VE
 ## Output location
 
 ```
-.mz/design/<slug>_<HHMMSS>/
+.mz/design/<YYYY_MM_DD>_design_<slug>/
 ├── state.md
 ├── intake.md
 ├── research.md

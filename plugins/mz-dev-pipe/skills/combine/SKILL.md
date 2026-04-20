@@ -40,7 +40,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 Extract `output:<path>` from `$ARGUMENTS` if present — overrides the default report path.
 
-**Default**: `.mz/reports/combine_<YYYY_MM_DD>_<slug>.md`. On collision append `_v2`, `_v3`.
+**Default**: `.mz/reports/<YYYY_MM_DD>_combine_<slug>.md`. On collision append `_v2`, `_v3`.
 
 ## Sections Parameter
 
@@ -89,7 +89,7 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 - **0.1 Parse arguments** — extract `output:`, `sources:`, `scope:`, and `sections:` from `$ARGUMENTS` (case-insensitive); remove each matched parameter from the argument text — the remainder is the task description.
 - **0.2 Vague-task check** — count whitespace-separated tokens in the task text; if fewer than `MIN_TASK_QUERY_TOKENS`, or the task contains a banned token (`everything`, `all`, `whatever`), fire AskUserQuestion with a focusing prompt before proceeding. Never guess intent.
-- **0.3 Derive task name** — format `combine_<slug>_<HHMMSS>` where slug is a snake_case summary of the task text (max 20 chars) and HHMMSS is current wall-clock time.
+- **0.3 Derive task name** — format `<YYYY_MM_DD>_combine_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the task text (max 20 chars); on same-day collision append `_v2`, `_v3`.
 - **0.4 Create task directory and state** — `mkdir -p .mz/task/<task_name>/` and write `state.md` with fields: Status, Phase, Started, Task, Output, Lenses, Sections (source: `task-derived` | `user-supplied`).
 - **0.5 Create task tracking** — use TaskCreate for each pipeline phase.
 - **0.6 Transition** — read `phases/inventory.md` and proceed to Phase 1.

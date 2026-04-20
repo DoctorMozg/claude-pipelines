@@ -30,7 +30,7 @@ Triggers: "review branch", "review my changes", "check my branch", "what did I c
 
 ### Phase 0: Setup
 
-1. `task_name` = `review_branch_<slug>_<HHMMSS>` where `<slug>` is the current branch name (snake_case, max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_review_branch_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is the current branch name (snake_case, max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `BaseBranch: <base>`, `Branch: <current>`.
 1. Emit a visible setup block: `task_name`, base branch, current branch, report dir.
@@ -53,7 +53,7 @@ Dispatch `Agent(branch-reviewer)` in the foreground with the following prompt:
 Review the current branch against <base-branch>.
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
 Use researcher agents for domain research if the implementation topic is complex.
-Save the report to .mz/reviews/ using the naming convention: review_branch_<YYYY_MM_DD>_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
+Save the report to .mz/reviews/ using the naming convention: <YYYY_MM_DD>_review_branch_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```
 
 Update `state.md` to `Phase: 2` before dispatch and `Phase: 3` after the agent returns.
@@ -82,7 +82,7 @@ N/A — collaboration/reference skill, not discipline.
 
 ## Verification
 
-Output the report path (`.mz/reviews/review_branch_<YYYY_MM_DD>_<branch><_vN>.md`), confirm the file exists, and print the verdict line plus the top critical findings.
+Output the report path (`.mz/reviews/<YYYY_MM_DD>_review_branch_<branch><_vN>.md`), confirm the file exists, and print the verdict line plus the top critical findings.
 
 ## Error Handling
 

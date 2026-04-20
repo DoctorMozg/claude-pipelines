@@ -72,7 +72,7 @@ Every skill reads the vault's `CLAUDE.md` for conventions (folder layout, frontm
   ├─ Phase 1.5: Approval gate — batch decisions
   └─ Phase 2: Execute decisions (move, merge, delete, defer)
 
-/vault-research .mz/research/research_2026_04_17_topic.md
+/vault-research .mz/research/2026_04_17_research_topic.md
   │
   ├─ Phase 1: Parse report → classify sections → partition into ≤450-word windows
   ├─ Phase 1.5: Approval gate — window boundaries
@@ -101,7 +101,7 @@ Every skill reads the vault's `CLAUDE.md` for conventions (folder layout, frontm
 
 ## Output location
 
-Skills write state and intermediate artifacts to `.mz/task/<skill>_<slug>_<HHMMSS>/`. Vault notes are written to the vault's folder structure as defined in CLAUDE.md.
+Skills write state and intermediate artifacts to `.mz/task/<YYYY_MM_DD>_<skill>_<slug>/`. Vault notes are written to the vault's folder structure as defined in CLAUDE.md.
 
 ## Install
 

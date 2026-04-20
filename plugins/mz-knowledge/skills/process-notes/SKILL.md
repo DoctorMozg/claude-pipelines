@@ -49,7 +49,7 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 1. Read vault CLAUDE.md if present at the vault root — extract folder structure, frontmatter schema, naming conventions, and tag taxonomy.
 1. Resolve input: if the argument is a note name, Read the note. If it matches `YYYY-MM-DD`, try `<vault>/daily/YYYY-MM-DD.md`. If it is raw text, use directly.
 1. If the resolved input is empty, ask the user what to process via AskUserQuestion — never guess.
-1. Derive `task_name = process-notes_<slug>_<HHMMSS>` and create `TASK_DIR<task_name>/` on disk.
+1. Derive `task_name = <YYYY_MM_DD>_process-notes_<slug>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `VaultClaude: <path or none>`.
 
 ### Phase 1.5: User Approval — Proposed Atomic Notes

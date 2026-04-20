@@ -146,8 +146,8 @@ Write the decomposition to `.mz/task/<task_name>/inventory.md` using this templa
 
 | Path | Type | Age (days) | Fresh? | Slug-match? | Threshold |
 | ---- | ---- | ---------- | ------ | ----------- | --------- |
-| .mz/research/deep_research_2026_03_14_auth.md | research | 28 | fresh | yes | RESEARCH_STALE_DAYS=90 |
-| .mz/task/investigate_auth_091233/findings.md  | task     | 12 | fresh | yes | TASK_ARTIFACT_STALE_DAYS=30 |
+| .mz/research/2026_03_14_deep_research_auth.md | research | 28 | fresh | yes | RESEARCH_STALE_DAYS=90 |
+| .mz/task/2026_04_08_investigate_auth/findings.md | task  | 12 | fresh | yes | TASK_ARTIFACT_STALE_DAYS=30 |
 | ...                                           | ...      | .. | ...   | ...  | ... |
 
 ## Proposed lenses

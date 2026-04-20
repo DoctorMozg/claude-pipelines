@@ -299,7 +299,7 @@ ______________________________________________________________________
 
 ### 6.1 Report template
 
-Read all artifacts from `.mz/task/<task_name>/`. Compile into a single report using the naming convention from SKILL.md (`test_<YYYY_MM_DD>_<detailed_name><_vN>.md` in `.mz/reports/`):
+Read all artifacts from `.mz/task/<task_name>/`. Compile into a single report using the naming convention from SKILL.md (`<YYYY_MM_DD>_test_<detailed_name><_vN>.md` in `.mz/reports/`):
 
 ```markdown
 # Verification Report: <scope summary>

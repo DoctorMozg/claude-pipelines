@@ -96,7 +96,7 @@ If a `scope:` parameter was extracted, resolve it to a concrete file list. Save 
 
 ### 0.3 Create task directory and state
 
-Task name format: `investigate_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the hypothesis and HHMMSS is current time.
+Task name format: `<YYYY_MM_DD>_investigate_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the hypothesis; on same-day collision append `_v2`, `_v3`.
 
 ```bash
 mkdir -p .mz/task/<task_name>

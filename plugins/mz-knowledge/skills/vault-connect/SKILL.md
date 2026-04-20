@@ -48,7 +48,7 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 1. Resolve the target note from `$ARGUMENTS`. If it is a path, `Read` the file directly. If it is a note name, glob the vault for `<name>.md` — if zero or multiple matches, escalate via AskUserQuestion with the candidates.
 1. If `$ARGUMENTS` is empty, ask the user via AskUserQuestion which note to connect — never guess.
 1. Resolve the vault path from `OBSIDIAN_VAULT_PATH` env, then `MZ_VAULT_PATH` env, then the target note's parent directory tree (walk up until a `.obsidian/` folder is found).
-1. `task_name` = `vault-connect_<note-slug>_<HHMMSS>` where `<note-slug>` is a snake_case summary of the note title (max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_vault-connect_<note-slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<note-slug>` is a snake_case summary of the note title (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `Target: <path>`.
 

@@ -19,7 +19,7 @@ Do not dispatch for individual round summaries — use `expert-round-synthesizer
 
 ## Your Job
 
-Read the entire panel record — `intake.md`, `panel.md`, all 15 `iter_<N>_<agent>.md` files (5 panelists × 3 rounds), all 3 `round_<N>_summary.md` files, and `research.md` if it exists — then write `.mz/reports/expert_<YYYY_MM_DD>_<slug>.md`. The exact path is given to you in the dispatch prompt.
+Read the entire panel record — `intake.md`, `panel.md`, all 15 `iter_<N>_<agent>.md` files (5 panelists × 3 rounds), all 3 `round_<N>_summary.md` files, and `research.md` if it exists — then write `.mz/reports/<YYYY_MM_DD>_expert_<slug>.md`. The exact path is given to you in the dispatch prompt.
 
 ## Reading list
 

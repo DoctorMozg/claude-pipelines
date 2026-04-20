@@ -39,7 +39,7 @@ Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is 
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`. If the research topic is empty, escalate via AskUserQuestion — never guess.
-1. `task_name` = `deep_research_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the topic (max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_deep_research_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the topic (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Topic: <original argument>`, `Subtopics: []`.
 1. Emit a visible setup block: `task_name`, topic, working dir, report dir (`.mz/research/`).
@@ -106,7 +106,7 @@ After all agents complete, cross-reference findings, identify emergent patterns,
 
 ### 4. Write the report
 
-Write the final report to `.mz/research/` using the naming convention `research_<YYYY_MM_DD>_<slugified_topic>.md`. **See `phases/research_and_report.md` → Step 4** for the template.
+Write the final report to `.mz/research/` using the naming convention `<YYYY_MM_DD>_research_<slugified_topic>.md`. **See `phases/research_and_report.md` → Step 4** for the template.
 
 ### 5. Report to user
 
@@ -128,7 +128,7 @@ N/A — collaboration/reference skill, not discipline.
 
 ## Verification
 
-Output the final report path (`.mz/research/research_<YYYY_MM_DD>_<slug>.md`), confirm the file exists on disk, and print the number of subtopics researched alongside the top 3-5 findings.
+Output the final report path (`.mz/research/<YYYY_MM_DD>_research_<slug>.md`), confirm the file exists on disk, and print the number of subtopics researched alongside the top 3-5 findings.
 
 ## Error Handling
 

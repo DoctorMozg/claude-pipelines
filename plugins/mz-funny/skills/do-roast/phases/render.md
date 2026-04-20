@@ -129,7 +129,7 @@ Inputs:
 Base path:
 
 ```
-REPORT_DIR + "roast_" + today + "_" + persona + "_" + target_slug + ".md"
+REPORT_DIR + today + "_roast_" + persona + "_" + target_slug + ".md"
 ```
 
 ### 6.2 Collision handling

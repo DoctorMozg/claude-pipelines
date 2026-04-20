@@ -62,7 +62,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 ### Phase 0: Setup
 
 1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
-1. **Task name** — `verify_<slug>_<HHMMSS>` (slug = snake_case, max 20 chars).
+1. **Task name** — `<YYYY_MM_DD>_verify_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. **Task dir & state** — create `.mz/task/<task_name>/`, write `state.md` with Status, Phase, Started.
 1. **Task tracking** — TaskCreate per pipeline phase.
 
@@ -73,7 +73,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **Phase 3 — Execution**: run all detected tools, capture results. See `phases/checks.md` → Phase 3. Update state to `checks_executed`.
 - **Phase 4 — Coverage & Quality Analysis**: dispatch coverage and quality reviewer agents for code in scope. See `phases/checks.md` → Phase 4. Update state to `analysis_complete`.
 - **Phase 5 — Failure Diagnosis**: if any Phase 3 check failed, dispatch researchers; skip if green. See `phases/checks.md` → Phase 5. Update state to `diagnosis_complete`.
-- **Phase 6 — Report**: compile results, write to `.mz/reports/test_<YYYY_MM_DD>_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Update state to `completed`.
+- **Phase 6 — Report**: compile results, write to `.mz/reports/<YYYY_MM_DD>_test_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Update state to `completed`.
 
 ## Techniques
 

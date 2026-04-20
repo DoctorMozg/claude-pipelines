@@ -88,7 +88,7 @@ Before completing, output a visible block showing: selected panel (5 names), ite
 
 ## Phase 0: Setup
 
-Derive task name as `brainstorm_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the topic and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Started: timestamp, Iteration: 0.
+Derive task name as `<YYYY_MM_DD>_brainstorm_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the topic; on same-day collision append `_v2`, `_v3`. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Started: timestamp, Iteration: 0.
 
 ## Phase 1: Panel Selection
 
@@ -154,7 +154,7 @@ If majority reached → proceed to Phase 4. If not and iteration < MAX_ITERATION
 
 ## Phase 4: Report
 
-Compile final report with winning ideas, all perspectives, and voting history. **See `phases/voting_and_report.md` → Phase 4** for report template. Write to `.mz/reports/brainstorm_<YYYY_MM_DD>_<topic_slug>.md` (append `_v2`, `_v3` if exists). Present summary to user.
+Compile final report with winning ideas, all perspectives, and voting history. **See `phases/voting_and_report.md` → Phase 4** for report template. Write to `.mz/reports/<YYYY_MM_DD>_brainstorm_<topic_slug>.md` (append `_v2`, `_v3` if exists). Present summary to user.
 
 ## Error Handling
 

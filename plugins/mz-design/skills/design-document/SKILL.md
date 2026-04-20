@@ -38,7 +38,7 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 - **MAX_DESIGN_ITERATIONS**: 5
 - **DESIGN_DIR**: `.mz/design/`
-- **TASK_NAME_FORMAT**: `design_<slug>_<HHMMSS>`
+- **TASK_NAME_FORMAT**: `<YYYY_MM_DD>_design_<slug>`
 - **WCAG_AA_NORMAL**: 4.5
 - **WCAG_AA_LARGE**: 3.0
 
@@ -58,7 +58,7 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 1. Parse `$ARGUMENTS`. Extract brief, `scope:`, `@image:` refs, `@doc:` refs.
 1. If brief is empty → `AskUserQuestion` asking for the brief. Do not guess.
-1. Derive task name as `design_<slug>_<HHMMSS>` where slug is a snake_case summary of the brief (max 20 chars) and HHMMSS is wall-clock time.
+1. Derive task name as `<YYYY_MM_DD>_design_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the brief (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/design/<task_name>/`.
 1. Write `state.md` with `Status`, `Phase`, `Started`, `Iteration: 0`, `FilesWritten: []`.
 1. Output a visible setup block showing: `task_name`, `DESIGN_DIR` path, detected modifiers.

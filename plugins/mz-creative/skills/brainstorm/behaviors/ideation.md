@@ -9,7 +9,7 @@ Dispatch contract for `/brainstorm` lens panelists. The brainstorm orchestrator 
 | `{topic}`                 | user's brainstorming topic                         | `how to onboard B2B users faster`                               |
 | `{round_n}`               | current iteration number                           | `1`                                                             |
 | `{previous_rounds_block}` | empty for round 1; formatted history for round > 1 | —                                                               |
-| `{output_path}`           | absolute path where the agent writes its artifact  | `.mz/task/brainstorm_xxx_HHMMSS/ideas_round_1_lens-engineer.md` |
+| `{output_path}`           | absolute path where the agent writes its artifact  | `.mz/task/2026_04_20_brainstorm_xxx/ideas_round_1_lens-engineer.md` |
 | `{lens_name}`             | short lens label, no prefix                        | `engineer`                                                      |
 | `{step}`                  | `generate` or `vote`                               | `generate`                                                      |
 
