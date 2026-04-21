@@ -54,9 +54,9 @@ Extract from `$ARGUMENTS`:
 Two separate directories are used:
 
 - **State** — `.mz/task/<task_name>/state.md`. This is the source of truth across phases; never rely on conversation memory.
-- **Outreach data** — `.mz/outreach/<run_name>/` holds `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `outreach_<YYYY_MM_DD>_<goal_slug>.md`.
+- **Outreach data** — `.mz/outreach/<run_name>/` holds `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `<YYYY_MM_DD>_outreach_<goal_slug>.md`.
 
-`task_name` follows the pattern `lead_gen_<slug>_<HHMMSS>`; `run_name` is the outreach output-dir name derived from the goal (`<goal_slug>_<YYYY-MM-DD>`). They are independent: `task_name` identifies the pipeline invocation, `run_name` identifies the outreach output bundle.
+`task_name` follows the pattern `<YYYY_MM_DD>_lead_gen_<slug>`; `run_name` is `<YYYY_MM_DD>_lead_gen_<goal_slug>` (same leading-date convention). They are independent: `task_name` identifies the pipeline invocation, `run_name` identifies the outreach output bundle.
 
 ## Core Process
 
@@ -138,8 +138,8 @@ ______________________________________________________________________
 
 Parse arguments. Derive two names:
 
-- `task_name` (state dir) = `lead_gen_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the goal (max 20 chars) and `<HHMMSS>` is wall-clock time.
-- `run_name` (outreach output dir) = `<goal_slug>_<YYYY-MM-DD>`, max 30 chars. Example: `"find DevOps clients in DACH"` → `devops_dach_2026-04-06`.
+- `task_name` (state dir) = `<YYYY_MM_DD>_lead_gen_<slug>` where `<slug>` is a snake_case summary of the goal (max 20 chars) and `<YYYY_MM_DD>` is today's date with underscores.
+- `run_name` (outreach output dir) = `<YYYY_MM_DD>_lead_gen_<goal_slug>`, max 30 chars total (keep `<goal_slug>` short to fit). Example: `"find DevOps clients in DACH"` → `2026_04_06_lead_gen_devops_dach`.
 
 ```bash
 mkdir -p .mz/task/<task_name>

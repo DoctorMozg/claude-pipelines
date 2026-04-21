@@ -105,7 +105,7 @@ Assess overall refactor safety based on the graph:
 
 ## 2.5 Generate report
 
-Write the final report to `.mz/reports/blast_radius_<YYYY_MM_DD>_<target_slug>.md` (append `_v2`, `_v3` if exists).
+Write the final report to `.mz/reports/<YYYY_MM_DD>_blast_radius_<target_slug>.md` (append `_v2`, `_v3` if exists).
 
 ```markdown
 # Blast Radius: <target>

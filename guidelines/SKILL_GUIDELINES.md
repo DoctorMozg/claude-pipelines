@@ -86,7 +86,7 @@ Define all bounds and paths as named constants in SKILL.md. Every loop must refe
 
 Multi-phase skills persist state to `.mz/task/<task_name>/state.md`. Required fields: Status, Phase, Started. Update after every phase transition. Critical: never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
 
-**Task naming convention**: `<skill>_<slug>_<HHMMSS>` where `<skill>` is the skill name, `<slug>` is a snake_case summary of the argument (max 20 chars), and `<HHMMSS>` is wall-clock time. This prevents collisions across skills and re-runs. Example: `build_oauth_flow_143022`, `debug_payment_err_150511`.
+**Task naming convention**: `<YYYY_MM_DD>_<skill>_<slug>` where `<YYYY_MM_DD>` is the current date (underscores, not dashes), `<skill>` is the skill name, and `<slug>` is a snake_case summary of the argument (max 20 chars). On same-day collision append `_v2`, `_v3`. Example: `2026_04_20_build_oauth_flow`, `2026_04_20_debug_payment_err`.
 
 ## 9. Dispatch Prompt Compression
 
@@ -98,7 +98,7 @@ Detect → escalate via AskUserQuestion → never guess. Handle: empty args, mis
 
 ## 11. Report Naming
 
-`.mz/reports/<type>_<YYYY_MM_DD>_<detail>.md` — append `_v2`, `_v3` if exists.
+`.mz/reports/<YYYY_MM_DD>_<type>_<detail>.md` — leading date (underscores, not dashes). On same-day collision append `_v2`, `_v3`. Example: `2026_04_20_debug_auth_bug.md`.
 
 ## 12. Model Selection
 

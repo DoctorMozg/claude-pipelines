@@ -4,7 +4,7 @@ Full detail for dispatching `expert-report-writer` and producing the polished re
 
 ## Goal
 
-Produce a single structured report at `.mz/reports/expert_<YYYY_MM_DD>_<slug>.md` synthesising the 3 rounds into a multi-sided analysis.
+Produce a single structured report at `.mz/reports/<YYYY_MM_DD>_expert_<slug>.md` synthesising the 3 rounds into a multi-sided analysis.
 
 ## Inputs
 
@@ -29,7 +29,7 @@ ls .mz/task/<task_name>/iter_{1,2,3}_*.md .mz/task/<task_name>/round_{1,2,3}_sum
 Slug = same as `task_name` slug portion. Date = today's date in `YYYY_MM_DD`.
 
 ```
-report_path = .mz/reports/expert_<YYYY_MM_DD>_<slug>.md
+report_path = .mz/reports/<YYYY_MM_DD>_expert_<slug>.md
 ```
 
 If the file already exists, append `_v2`, `_v3`, … until a free slot is found. Ensure `.mz/reports/` exists (`mkdir -p`) before dispatch.
@@ -136,4 +136,4 @@ Do not print the full report inline — it is on disk, and the user knows where 
 - There is no user approval gate at Phase 3 by design (confirmed with user). The panel was already gated at Phase 1.5. A second gate would add friction without new information.
 - If the user wants iterative feedback on the report, they can re-run `/expert` with a narrower follow-up brief that references the prior report.
 - The report writer is sonnet (not opus) because synthesis benefits from breadth-over-depth and sonnet handles long-context reliably at lower cost.
-- `.mz/reports/` is the same directory brainstorm uses. Naming convention `expert_<date>_<slug>.md` avoids collision with `brainstorm_<date>_<slug>.md` via the prefix.
+- `.mz/reports/` is the same directory brainstorm uses. Naming convention `<date>_expert_<slug>.md` avoids collision with `<date>_brainstorm_<slug>.md` via the type segment.

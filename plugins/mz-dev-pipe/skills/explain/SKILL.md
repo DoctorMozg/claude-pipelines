@@ -43,9 +43,9 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 Extract `output:<path>` from `$ARGUMENTS` if present. This is where the final report will be written.
 
-**Default** (no `output:` parameter): `.mz/reports/explain_<YYYY_MM_DD>_<scope_name>.md` (append `_v2`, `_v3` if exists).
+**Default** (no `output:` parameter): `.mz/reports/<YYYY_MM_DD>_explain_<scope_name>.md` (append `_v2`, `_v3` if exists).
 
-Example: `explain_2026_04_06_src_auth_token_refresh.md`
+Example: `2026_04_20_explain_src_auth_token_refresh.md`
 
 ## Constants
 
@@ -94,7 +94,7 @@ Split `$ARGUMENTS` (after removing `scope:`, `output:` parameters) into:
 
 ### 0.2 Derive task name
 
-Task name format: `explain_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) and HHMMSS is current time. Examples: `explain_src_auth_143022`, `explain_payment_flow_150511`.
+Task name format: `<YYYY_MM_DD>_explain_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars); on same-day collision append `_v2`, `_v3`. Examples: `2026_04_20_explain_src_auth`, `2026_04_20_explain_payment_flow`.
 
 ### 0.3 Create task directory and state
 

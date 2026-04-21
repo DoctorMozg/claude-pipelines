@@ -46,7 +46,7 @@ Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; neve
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`: scope (`project`/`global`), target (`rules`/`claudemd`), `--force`, `--uninstall`. Unknown token → AskUserQuestion.
-1. `task_name` = `init_rules_<scope>_<target>_<HHMMSS>`.
+1. `task_name` = `<YYYY_MM_DD>_init_rules_<scope>_<target>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO>`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `Installed: []`, `Replaced: []`, `Skipped: []`, `Removed: []`.
 1. Emit setup block: task_name, resolved target path, mode flags.

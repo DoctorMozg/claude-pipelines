@@ -60,7 +60,7 @@ If `$ARGUMENTS` is empty, escalate via AskUserQuestion — never guess the brief
 ### Phase 0: Setup
 
 1. If `$ARGUMENTS` is empty, escalate via AskUserQuestion with a prompt requesting the free-form brief. Never fabricate one.
-1. `task_name` = `batch-fix_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the brief (max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_batch-fix_<slug>` where `<YYYY_MM_DD>` is today's date (underscores, not dashes) and `<slug>` is a snake_case summary of the brief (max 20 chars). On same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/` and the subdirectory `.mz/task/<task_name>/proposals/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Brief: <original $ARGUMENTS>`, `Scan globs: <list>`.
 1. Emit a visible setup block showing `task_name`, working dir, and scan globs.

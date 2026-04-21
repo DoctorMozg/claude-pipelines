@@ -47,7 +47,7 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 1. Resolve the vault path from `$ARGUMENTS` suffix, then `OBSIDIAN_VAULT_PATH` env, then `MZ_VAULT_PATH` env, then walk up from the current directory until a `.obsidian/` folder is found.
 1. Resolve `old` to an existing `.md` file in the vault (basename match). If zero or multiple matches, escalate via AskUserQuestion with the candidates.
 1. Collision check: confirm no existing file already matches `new` (same basename in the target folder). If `new` contains a path component, verify the target folder exists or can be created.
-1. `task_name = vault-refactor_<old-slug>_<HHMMSS>` where `<old-slug>` is a snake_case summary of the old basename (max 20 chars) and `<HHMMSS>` is wall-clock time.
+1. `task_name = <YYYY_MM_DD>_vault-refactor_<old-slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<old-slug>` is a snake_case summary of the old basename (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `OldPath: <path>`, `NewNameOrPath: <value>`.
 

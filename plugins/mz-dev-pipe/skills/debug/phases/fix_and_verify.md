@@ -276,7 +276,7 @@ ______________________________________________________________________
 
 ### 6.1 Generate report
 
-Write to `.mz/reports/debug_<YYYY_MM_DD>_<bug_summary>.md`.
+Write to `.mz/reports/<YYYY_MM_DD>_debug_<bug_summary>.md`.
 
 If a file with that name exists, append `_v2`, `_v3`, etc.
 

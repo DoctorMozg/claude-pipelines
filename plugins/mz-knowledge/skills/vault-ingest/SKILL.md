@@ -55,7 +55,7 @@ Discipline skill for multimodal capture into the vault as fleeting notes. Detect
    - If the second argument is present, it overrides the detected modality.
    - If modality cannot be inferred and no hint was given, ask via AskUserQuestion.
 1. Resolve the vault path with precedence: `$OBSIDIAN_VAULT_PATH` → `$MZ_VAULT_PATH` → walk up from cwd to the nearest `.obsidian/` directory. If none found, ask via AskUserQuestion.
-1. Derive `task_name = vault-ingest_<modality>_<HHMMSS>` and create `TASK_DIR<task_name>/` on disk.
+1. Derive `task_name = <YYYY_MM_DD>_vault-ingest_<modality>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Input: <path or URL>`, `Modality: <voice|image|pdf|youtube>`, `Vault: <absolute path>`.
 
 ### Phase 1.5: User Approval — Transcript

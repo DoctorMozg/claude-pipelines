@@ -27,7 +27,7 @@ Before creating anything, read these files in order:
 
 1. `SKILL_GUIDELINES.md` — the 16 rules all skills must follow
 1. `researches/claude-plugin-authoring-guide.md` — detailed reference on plugin structure, frontmatter fields, anti-patterns, and review criteria
-1. `.mz/research/research_2026_04_07_claude_plugin_best_practices.md` — latest research on description quality, activation patterns, token efficiency, and testing
+1. `.mz/research/2026_04_07_research_claude_plugin_best_practices.md` — latest research on description quality, activation patterns, token efficiency, and testing
 
 Extract the relevant rules for the component type being created. For skills: Rules 1-16. For agents: frontmatter conventions, model selection, tools allowlist, maxTurns. For plugins: manifest format, directory layout.
 

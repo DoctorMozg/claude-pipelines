@@ -154,7 +154,7 @@ Confidence level:
 
 ### 4.2 Generate report
 
-Write to `.mz/reports/investigate_<YYYY_MM_DD>_<hypothesis_summary>.md`.
+Write to `.mz/reports/<YYYY_MM_DD>_investigate_<hypothesis_summary>.md`.
 
 If a file with that name exists, append `_v2`, `_v3`, etc.
 

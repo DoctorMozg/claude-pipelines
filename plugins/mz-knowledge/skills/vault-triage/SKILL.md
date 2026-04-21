@@ -48,7 +48,7 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 1. **Resolve the batch.** Glob `<vault>/<INBOX_FOLDER>/*.md` sorted by mtime ascending; take the first `BATCH_SIZE` notes. If zero notes are found, update `state.md` to `Status: empty_inbox` and tell the user the inbox is empty, then stop.
 
-1. **Create the task directory.** Derive `task_name = vault-triage_<slug>_<HHMMSS>` where `<slug>` is a short mode tag (e.g., `weekly`) and `<HHMMSS>` is wall-clock time. Create `TASK_DIR<task_name>/` on disk. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <absolute path>`, `PERMANENT_FOLDER: <resolved path>`, `BatchPaths: <list of absolute paths>`.
+1. **Create the task directory.** Derive `task_name = <YYYY_MM_DD>_vault-triage_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a short mode tag (e.g., `weekly`); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <absolute path>`, `PERMANENT_FOLDER: <resolved path>`, `BatchPaths: <list of absolute paths>`.
 
 ### Phase 1.5: User approval — Triage Decisions
 

@@ -42,7 +42,7 @@ If no argument is provided, ask the user for a PR URL.
 
 1. Parse `$ARGUMENTS`. If the PR reference is empty or malformed, escalate via AskUserQuestion — never guess, never fabricate a PR URL.
 1. Normalize the reference to `<owner>_<repo>_<pr_number>` form.
-1. `task_name` = `review_pr_<slug>_<HHMMSS>` where `<slug>` is `<owner>_<repo>_<pr_number>` truncated to 20 chars, snake_case, and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_review_pr_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is `<owner>_<repo>_<pr_number>` truncated to 20 chars, snake_case; on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `PR: <reference>`, `Owner: <owner>`, `Repo: <repo>`, `Number: <pr_number>`.
 1. Emit a visible setup block: `task_name`, PR reference, report dir (`.mz/reviews/`).
@@ -74,7 +74,7 @@ N/A — this is a reference/collaboration skill that dispatches a specialist age
 
 ## Verification
 
-Output the report path (`.mz/reviews/review_pr_<YYYY_MM_DD>_<owner>_<repo>_<pr_number><_vN>.md`), confirm the file exists, and print the `VERDICT:` line plus the count of `Critical:` findings.
+Output the report path (`.mz/reviews/<YYYY_MM_DD>_review_pr_<owner>_<repo>_<pr_number><_vN>.md`), confirm the file exists, and print the `VERDICT:` line plus the count of `Critical:` findings.
 
 ## Error Handling
 

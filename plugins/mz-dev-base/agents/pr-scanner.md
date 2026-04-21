@@ -186,7 +186,7 @@ If any pr-info-scorer artifact is malformed (missing `tier` or `score`), drop it
 Generate the report in the **main repo**:
 
 ```
-$MAIN_REPO/.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_slugs>.md
+$MAIN_REPO/.mz/reviews/<YYYY_MM_DD>_pr_scan_<repo_slugs>.md
 ```
 
 Where `<repo_slugs>` is a short snake_case summary of the scanned repos (e.g., `anthropics_claude_code`, or `multi_repo` if > 2). Append `_v2`, `_v3` etc. if a report with the same base name already exists.

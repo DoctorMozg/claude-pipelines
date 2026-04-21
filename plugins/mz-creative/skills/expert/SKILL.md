@@ -61,7 +61,7 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 
 1. Parse `$ARGUMENTS`. Extract brief, `scope:`, `@doc:` refs.
 1. If brief is empty → `AskUserQuestion`. Never guess.
-1. `task_name` = `expert_<slug>_<HHMMSS>` (snake_case summary, max 20 chars).
+1. `task_name` = `<YYYY_MM_DD>_expert_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status`, `Phase`, `Started`, `Round: 0`, `FilesWritten: []`.
 1. Emit a visible setup block: `task_name`, working dir, report dir, detected modifiers.
@@ -125,7 +125,7 @@ At the end of Phase 3, output a visible block:
 ```
 Expert consultation finalized.
 Task dir:   .mz/task/<task_name>/
-Report:     .mz/reports/expert_<YYYY_MM_DD>_<slug>.md
+Report:     .mz/reports/<YYYY_MM_DD>_expert_<slug>.md
 Panel:      <5 agent names>
 Rounds:     3/3
 Files:

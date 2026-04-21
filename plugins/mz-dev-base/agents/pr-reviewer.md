@@ -262,7 +262,7 @@ The map built in Phase 1 sub-step 1.7 (`$MAIN_REPO/.mz/task/<task_name>/phase1_k
 Generate a markdown report with the structure below and save it to the **main repo** (not the worktree):
 
 ```
-$MAIN_REPO/.mz/reviews/review_pr_<YYYY_MM_DD>_<owner>_<repo>_<pr_number><_vN>.md
+$MAIN_REPO/.mz/reviews/<YYYY_MM_DD>_review_pr_<owner>_<repo>_<pr_number><_vN>.md
 ```
 
 Where:

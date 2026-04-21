@@ -100,8 +100,8 @@ Generate the executive summary report.
 Companies directory: <RUN_DIR>/companies/
 Strategy: <RUN_DIR>/strategy.json
 Original goal: <goal>
-Output: <RUN_DIR>/outreach_<YYYY_MM_DD>_<goal_slug>.md
-Report naming convention: outreach_<YYYY_MM_DD>_<goal_slug><_vN>.md (append _v2, _v3 if same base name exists)
+Output: <RUN_DIR>/<YYYY_MM_DD>_outreach_<goal_slug>.md
+Report naming convention: <YYYY_MM_DD>_outreach_<goal_slug><_vN>.md (append _v2, _v3 if same base name exists)
 ```
 
 After the reporter completes:

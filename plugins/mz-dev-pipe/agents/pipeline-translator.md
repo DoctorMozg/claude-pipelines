@@ -56,7 +56,7 @@ Emit disclosure tokens in the artifact or final response:
 
 The orchestrator sends a task-specific dispatch prompt containing:
 
-1. **task_dir** — absolute path to the active `.mz/task/translate_<slug>_<HHMMSS>/` directory.
+1. **task_dir** — absolute path to the active `.mz/task/<YYYY_MM_DD>_translate_<slug>/` directory.
 1. **unit spec** — file path plus optional `chunk_range: <start_line>-<end_line>` and a stable `chunk_id` used for all emitted artifacts.
 1. **source_lang** / **target_lang** — ISO 639-1 two-letter codes (already normalized upstream).
 1. **output_path** — where to write the translated file (may differ from source per `output_mode`).

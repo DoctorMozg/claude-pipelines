@@ -93,7 +93,7 @@ Output a visible block showing: task name, resolved target, persona chosen, find
 
 ## Phase 0: Setup
 
-Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case). Derive task name: `do_roast_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder. Create `TASK_DIR<task_name>/`. Write `state.md` with `Status: started`, `Phase: setup`, `Started: <ISO8601>`, `Persona: <chosen>`, `Target_raw: <remainder>`.
+Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case). Derive task name: `<YYYY_MM_DD>_do_roast_<slug>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder, and `<YYYY_MM_DD>` is today's date with underscores. Create `TASK_DIR<task_name>/`. Write `state.md` with `Status: started`, `Phase: setup`, `Started: <ISO8601>`, `Persona: <chosen>`, `Target_raw: <remainder>`.
 
 ## Phase 0.5: Target Resolution Gate
 

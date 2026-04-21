@@ -37,7 +37,7 @@ If no argument is provided, detect the current repository from `gh repo view --j
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS` — list of GitHub repositories. If empty, resolve current repo via `gh repo view --json nameWithOwner -q .nameWithOwner`; if that fails, escalate via AskUserQuestion. Never guess.
-1. `task_name` = `scan_prs_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the repo list (max 20 chars, e.g. `owner_repo` or `multi_repo`) and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_scan_prs_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the repo list (max 20 chars, e.g. `owner_repo` or `multi_repo`); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Repos: [<list>]`, `ScannedPRs: 0`, `ScoredPRs: 0`.
 1. Emit a visible setup block: `task_name`, repo list, report dir (`.mz/reviews/`).
@@ -47,7 +47,7 @@ If no argument is provided, detect the current repository from `gh repo view --j
 1. Launch the `pr-scanner` agent with the repository list as the prompt.
 1. The agent scans for PRs where the user is requested for review, mentioned, assigned, or has changes requested on their own PRs, then fans out one `pr-info-scorer` haiku agent per PR (in parallel waves of up to 6) to gather metadata, complexity signals, and unanswered-question state.
 1. Every PR returned by the scan is scored into one of three tiers — Tier 1 (directly asked, unanswered), Tier 2 (review or action requested), or Tier 3 (informational) — and ranked within its tier by complexity and age.
-1. After completion, display the path to the triage report at `.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).
+1. After completion, display the path to the triage report at `.mz/reviews/<YYYY_MM_DD>_pr_scan_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).
 
 ## Techniques
 
@@ -65,7 +65,7 @@ N/A — collaboration/reference skill, not discipline.
 
 ## Verification
 
-Output the triage report path (`.mz/reviews/pr_scan_<YYYY_MM_DD>_<repo_names><_vN>.md`), confirm the file exists, and confirm Tier 1 items (if any) appear above Tier 2 and Tier 3 in the report. The report should end with a `How to Deep-Review` footer pointing users to `/review-pr <url>` for any single PR that warrants a thorough read.
+Output the triage report path (`.mz/reviews/<YYYY_MM_DD>_pr_scan_<repo_names><_vN>.md`), confirm the file exists, and confirm Tier 1 items (if any) appear above Tier 2 and Tier 3 in the report. The report should end with a `How to Deep-Review` footer pointing users to `/review-pr <url>` for any single PR that warrants a thorough read.
 
 ## Error Handling
 

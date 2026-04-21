@@ -4,7 +4,7 @@
 
 ## Numeric thresholds (pre-registered)
 
-Source: `.mz/reports/expert_2026_04_13_pr_reviewer_multi.md` (expert panel R3 convergence).
+Source: `.mz/reports/2026_04_13_expert_pr_reviewer_multi.md` (expert panel R3 convergence).
 
 | Metric               | Kill threshold                     | Measurement window |
 | -------------------- | ---------------------------------- | ------------------ |

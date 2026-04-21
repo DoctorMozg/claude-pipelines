@@ -167,7 +167,7 @@ Regardless of whether 5.1 took the user-supplied or task-derived branch, append 
 
 ### Phase 5.3: Write the report
 
-Use the `output:` override from `state.md` if present; otherwise use the default path `.mz/reports/combine_<YYYY_MM_DD>_<slug>.md` where `<YYYY_MM_DD>` is today's date and `<slug>` is the snake_case task slug from Phase 0.3.
+Use the `output:` override from `state.md` if present; otherwise use the default path `.mz/reports/<YYYY_MM_DD>_combine_<slug>.md` where `<YYYY_MM_DD>` is today's date and `<slug>` is the snake_case task slug from Phase 0.3.
 
 Write the report using this template (fill placeholders; adapt the task-adaptive section list to the result of 5.1; keep the meta-section headers exactly as written):
 

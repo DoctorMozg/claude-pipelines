@@ -231,7 +231,7 @@ Before flagging anything here, read existing similar code in the repository to e
 Generate a markdown report saved to:
 
 ```
-$REPO_ROOT/.mz/reviews/review_branch_<YYYY_MM_DD>_<BRANCH_SLUG><_vN>.md
+$REPO_ROOT/.mz/reviews/<YYYY_MM_DD>_review_branch_<BRANCH_SLUG><_vN>.md
 ```
 
 Where:

@@ -48,7 +48,7 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 1. Resolve vault path from `$ARGUMENTS`, then `OBSIDIAN_VAULT_PATH` env, then `MZ_VAULT_PATH` env. If none resolve, ask the user via AskUserQuestion — never guess.
 1. Detect review mode: if `$ARGUMENTS` contains `daily`, `weekly`, or `monthly`, use that mode. Otherwise use `smart`.
-1. `task_name` = `vault-review_<mode>_<HHMMSS>` where `<mode>` is the resolved review mode and `<HHMMSS>` is wall-clock time.
+1. `task_name` = `<YYYY_MM_DD>_vault-review_<mode>` where `<YYYY_MM_DD>` is today's date (underscores) and `<mode>` is the resolved review mode; on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `Mode: <mode>`.
 

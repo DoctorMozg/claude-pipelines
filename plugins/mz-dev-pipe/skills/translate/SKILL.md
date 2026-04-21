@@ -65,7 +65,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0: Setup
 
-- Derive task name `translate_<slug>_<HHMMSS>` where `<slug>` is a snake_case summary of the raw argument (max 20 chars).
+- Derive task name `<YYYY_MM_DD>_translate_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the raw argument (max 20 chars); on same-day collision append `_v2`, `_v3`.
 - Create `TASK_DIR/<task_name>/` on disk.
 - Write initial `state.md` with `Status: running`, `Phase: setup`, `Started: <ISO 8601>`, `approval_iterations: 0`.
 - TaskCreate a top-level task for the run so progress is visible to the user.

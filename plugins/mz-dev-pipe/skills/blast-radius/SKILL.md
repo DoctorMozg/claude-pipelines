@@ -57,7 +57,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
    - **Function**: argument matches identifier pattern (no path separators) → grep to locate definition, resolve to file + line.
    - **Module**: argument matches directory name → validate directory exists.
 1. If target not found: ask user to clarify via AskUserQuestion.
-1. Derive task name as `blast_radius_<slug>_<HHMMSS>` where slug is a snake_case summary (max 20 chars) of the target basename and HHMMSS is current time. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Target, Target type, Started timestamp. Use TaskCreate for tracking.
+1. Derive task name as `<YYYY_MM_DD>_blast_radius_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the target basename; on same-day collision append `_v2`, `_v3`. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Target, Target type, Started timestamp. Use TaskCreate for tracking.
 
 ### Phase 1: Discovery & Graph Building
 
@@ -73,7 +73,7 @@ Overlay git age data on every node in the graph. Compute risk scores. Generate t
 
 **See `phases/analysis_and_report.md`** for age analysis commands, risk scoring formula, report template, and safety verdict criteria.
 
-Write report to `.mz/reports/blast_radius_<YYYY_MM_DD>_<target_slug>.md`. Present summary to user. Update state to `completed`.
+Write report to `.mz/reports/<YYYY_MM_DD>_blast_radius_<target_slug>.md`. Present summary to user. Update state to `completed`.
 
 ## Techniques
 

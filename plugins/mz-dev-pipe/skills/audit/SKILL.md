@@ -68,7 +68,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0: Setup
 
-Derive `audit_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started, Review iterations, Fix attempts, Lenses, Findings). TaskCreate per phase.
+Derive `<YYYY_MM_DD>_audit_<slug>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started, Review iterations, Fix attempts, Lenses, Findings). TaskCreate per phase.
 
 ### Phase 1–3: Research
 

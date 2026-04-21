@@ -55,7 +55,7 @@ Phases 2, 2.5, and 3 run only when `<mode>` is `migrate`. In `validate` mode the
 1. Resolve vault path via the ladder in the Arguments section. Escalate via AskUserQuestion if nothing resolves.
 1. Compute `SCHEMA_PATH` as `<vault>/.mz/vault-schema.yml`.
 1. If `SCHEMA_PATH` does not exist, present the bootstrap template from `references/schema-dsl-syntax.md` via AskUserQuestion: "No schema found at `<path>`. A v1 template is below — reply `accept` to write it to `SCHEMA_PATH` and continue, `edit` to provide your own schema text, or `abort` to stop." On `accept`, write the template. On `edit`, accept the user's pasted YAML. On `abort`, halt cleanly. Never fabricate a schema.
-1. Derive `task_name = vault-schema_<mode>_<HHMMSS>` and create `TASK_DIR<task_name>/` on disk.
+1. Derive `task_name = <YYYY_MM_DD>_vault-schema_<mode>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Mode: <validate|migrate>`, `Vault: <path>`, `SchemaPath: <path>`.
 1. Print a visible setup block showing `task_name`, resolved vault path, mode, and schema path.
 

@@ -42,7 +42,7 @@ Each dispatch description contains only:
 Example dispatch shape (fill task-specific fields per unit):
 
 ```text
-task_dir: /home/.../.mz/task/translate_docs_143022
+task_dir: /home/.../.mz/task/2026_04_20_translate_docs
 unit: docs/guide.md chunk_id=guide_md_h2_install lines 42-118
 source_lang: en  target_lang: ru
 output_path: docs/guide.ru.md  output_mode: sidecar
@@ -125,7 +125,7 @@ One short, task-specific description block per reviewer. Each block names only:
 Example dispatch shape:
 
 ```text
-task_dir: /home/.../.mz/task/translate_docs_143022
+task_dir: /home/.../.mz/task/2026_04_20_translate_docs
 batch: 1 of 2  chunks: guide_md_h2_install, guide_md_h2_config, api_md_h2_endpoints
 source files: docs/guide.md, docs/api.md (read relevant line ranges per chunk)
 translated files: docs/guide.ru.md, docs/api.ru.md
@@ -283,7 +283,7 @@ Write `<task_dir>/summary.md` with the following sections, in order:
 Full `summary.md` shape:
 
 ```text
-# Translation Summary — translate_docs_143022
+# Translation Summary — 2026_04_20_translate_docs
 
 Language pair: en → ru
 Files translated: 4 sources → 4 outputs (sidecar mode)
