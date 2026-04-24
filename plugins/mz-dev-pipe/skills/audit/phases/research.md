@@ -328,9 +328,9 @@ Apply per-tier caps:
 - **Critical**: include ALL (no cap)
 - **High**: top `HIGH_CAP = 10`
 - **Medium**: top `MEDIUM_CAP = 5`
-- **Low**: skip entirely from the fix plan (record the count only)
+- **Low**: skip entirely from the report (record the count only)
 
-Findings that exceed a cap are NOT discarded — they move into a "Deferred" section of the summary and are reported to the user at the approval gate as "N additional <severity> findings not included in this plan".
+Findings that exceed a cap are NOT discarded — they move into a "Deferred" section of the summary and are reported to the user as "N additional <severity> findings not included in this report".
 
 ### 3.3 Write findings artifact
 
@@ -361,24 +361,21 @@ Write `.mz/task/<task_name>/findings.md`:
 ### Medium (top 5 of <total>)
 #### F<id> — ...
 
-## Deferred (not in fix plan)
+## Deferred (not in report)
 - N additional high findings not included (below top 10)
 - M additional medium findings not included (below top 5)
 - K low findings skipped entirely
 
-## Chunk preview
-Findings grouped by affected file:
-
-- **Chunk 1** (`path/to/file_a.py`): F1, F4, F7 — 3 findings
-- **Chunk 2** (`path/to/file_b.py`): F2 — 1 finding
-- **Chunk 3** (`path/to/file_c.py`): F3, F5 — 2 findings
+## Files with findings
+- `path/to/file_a.py`: F1, F4, F7 — 3 findings
+- `path/to/file_b.py`: F2 — 1 finding
+- `path/to/file_c.py`: F3, F5 — 2 findings
 ...
 
-Total chunks: C
-Waves required: ceil(C / MAX_CODERS) = W
+Total files with findings: K of N scanned
 ```
 
-Update state file phase to `findings_ranked` and record total findings + chunk count.
+Update state file phase to `findings_ranked` and record total findings + files-with-findings count.
 
 **If the plan has zero findings at severity ≥ medium**: before exiting cleanly, perform a file-count sanity check to distinguish a genuinely clean codebase from a scope resolution error (e.g., `.gitignore` over-exclusion that produced an empty file list).
 

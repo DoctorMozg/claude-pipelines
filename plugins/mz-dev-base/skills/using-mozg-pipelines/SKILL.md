@@ -39,26 +39,27 @@ Invoke when the user:
 
 Routing table. Phrases are indicative, not exact matches.
 
-| Task phrase                                                    | Skill                | Plugin          |
-| -------------------------------------------------------------- | -------------------- | --------------- |
-| "build a feature", "implement X", "add capability"             | build                | mz-dev-pipe     |
-| "fix this bug", "debug", "why is this broken"                  | debug                | mz-dev-pipe     |
-| "security review", "audit for vulns", "threat model"           | audit                | mz-dev-pipe     |
-| "verify this works", "prove correctness", "check behavior"     | verify               | mz-dev-pipe     |
-| "polish this", "clean up", "finalize"                          | polish               | mz-dev-pipe     |
-| "optimize", "make it faster", "profile hotspot"                | optimize             | mz-dev-pipe     |
-| "explain this code", "what does this do"                       | explain              | mz-dev-pipe     |
-| "investigate", "dig into", "find root cause"                   | investigate          | mz-dev-pipe     |
-| "blast radius", "what breaks if I change X", "impact analysis" | blast-radius         | mz-dev-pipe     |
-| "research topic deeply", "survey the field"                    | deep-research        | mz-dev-base     |
-| "bootstrap rules", "init project rules"                        | init-rules           | mz-dev-base     |
-| "review my branch", "what changed locally"                     | review-branch        | mz-dev-base     |
-| "review this PR", "what's wrong with this PR"                  | review-pr            | mz-dev-base     |
-| "scan open PRs", "triage PRs"                                  | scan-prs             | mz-dev-base     |
-| "help me author a new skill", "write a SKILL.md"               | writing-skills       | mz-dev-base     |
-| "which skill fits", "route this", "what plugins do I have"     | using-mozg-pipelines | mz-dev-base     |
-| "find leads", "customers matching X", "outreach list"          | lead-gen             | mz-biz-outreach |
-| "brainstorm", "generate ideas", "creative options"             | brainstorm           | mz-creative     |
+| Task phrase                                                                           | Skill                | Plugin          |
+| ------------------------------------------------------------------------------------- | -------------------- | --------------- |
+| "build a feature", "implement X", "add capability"                                    | build                | mz-dev-pipe     |
+| "fix this bug", "debug", "why is this broken"                                         | debug                | mz-dev-pipe     |
+| "security review", "audit for vulns", "threat model"                                  | audit                | mz-dev-pipe     |
+| "verify this works", "prove correctness", "check behavior"                            | verify               | mz-dev-pipe     |
+| "polish this", "clean up", "finalize"                                                 | polish               | mz-dev-pipe     |
+| "optimize", "make it faster", "profile hotspot"                                       | optimize             | mz-dev-pipe     |
+| "explain this code", "what does this do"                                              | explain              | mz-dev-pipe     |
+| "investigate", "dig into", "find root cause"                                          | investigate          | mz-dev-pipe     |
+| "blast radius", "what breaks if I change X", "impact analysis"                        | blast-radius         | mz-dev-pipe     |
+| "deep audit", "pre-PR audit", "ship audit", "before publishing", "before I open a PR" | deep-audit           | mz-dev-pipe     |
+| "research topic deeply", "survey the field"                                           | deep-research        | mz-dev-base     |
+| "bootstrap rules", "init project rules"                                               | init-rules           | mz-dev-base     |
+| "review my branch", "what changed locally"                                            | review-branch        | mz-dev-base     |
+| "review this PR", "what's wrong with this PR"                                         | review-pr            | mz-dev-base     |
+| "scan open PRs", "triage PRs"                                                         | scan-prs             | mz-dev-base     |
+| "help me author a new skill", "write a SKILL.md"                                      | writing-skills       | mz-dev-base     |
+| "which skill fits", "route this", "what plugins do I have"                            | using-mozg-pipelines | mz-dev-base     |
+| "find leads", "customers matching X", "outreach list"                                 | lead-gen             | mz-biz-outreach |
+| "brainstorm", "generate ideas", "creative options"                                    | brainstorm           | mz-creative     |
 
 mz-dev-hooks contributes safety gates (pre-tool checks) and has no user-facing skills. mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
 
