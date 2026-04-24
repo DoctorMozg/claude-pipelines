@@ -60,6 +60,8 @@ See `phases/collect.md`.
 
 Before presenting, Read `.mz/task/<task_name>/audit_data.md` in full. Present the full verbatim summary from `audit_data.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
 
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `audit_data.md`. Never substitute `N` counts, a status summary, or a path — the user must review the actual audit data (orphans, broken wikilinks, stubs, stale notes, tag inconsistencies with note names) in the question itself, not have to open the file separately.
+
 Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
@@ -71,16 +73,12 @@ Your vault has been scanned for orphans, broken links, stubs, stale notes, and t
 - **Feedback** → describe changes you want; Phase 1 re-runs with your input, then return here
 ```
 
-Use AskUserQuestion with:
+Use AskUserQuestion with this body (where `<verbatim audit_data.md contents>` is replaced by the bytes you just read):
 
 ```
 Vault health findings ready. Please review:
 
-- Orphans: N
-- Broken wikilinks: N
-- Stubs: N
-- Stale: N
-- Tags: N unique, N singletons
+<verbatim audit_data.md contents>
 
 Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```

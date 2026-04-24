@@ -74,16 +74,6 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `panel.md`. Never substitute a path, status summary, or `<5 lens names>` placeholder — the user must review the actual panel composition and rationale in the question itself, not have to open the file separately. The user confirms the panel composition before any of the 3 rounds dispatch.
 
-Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
-
-```
-Panel assembled. Please review the composition before the 3 rounds begin:
-
-<verbatim panel.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
-
 Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
@@ -93,6 +83,16 @@ Before invoking AskUserQuestion, emit a text block to the user:
 - **Approve** → begin 3 rounds of expert critique
 - **Reject** → cancel task, no rounds will run
 - **Feedback** → request changes to panel composition, iterate until approved
+```
+
+Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
+
+```
+Panel assembled. Please review the composition before the 3 rounds begin:
+
+<verbatim panel.md contents>
+
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 **Response handling**:

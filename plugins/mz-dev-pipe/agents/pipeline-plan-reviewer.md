@@ -2,7 +2,7 @@
 name: pipeline-plan-reviewer
 description: Pipeline-only. Critically reviews implementation plans. Catches missing integration points, incorrect parallelism, incomplete test strategies, and architectural issues.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: opus
 effort: medium
 maxTurns: 25
 color: yellow

@@ -92,7 +92,9 @@ ______________________________________________________________________
 
 ### 3.1 Dispatch scouts
 
-Spawn one `outreach-scout` per source, all parallel:
+- **MAX_SCOUTS_PER_WAVE**: 6
+
+Spawn one `outreach-scout` per source, in parallel **waves of ≤MAX_SCOUTS_PER_WAVE (6) concurrent agents per single assistant message**. If `sources.json` contains more than 6 sources, dispatch in sequential waves until every source has been scouted. Scouts are writer agents (they write `<RUN_DIR>/_scout/<source_slug>.json`), so never dispatch with `run_in_background: true` — the 6-agent cap and the foreground requirement both come from `CLAUDE.md` Plugin Authoring Conventions.
 
 ```
 Scout companies from this data source:

@@ -76,6 +76,10 @@ Generate detailed plan, run plan-review loop, get user approval. See `phases/res
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
+**Mandatory pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full plan body (work units, test strategy, risks, verification criteria) into context. The plan must already have passed automated review before this gate fires.
+
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `plan.md`. Never substitute a path, work-unit count, or `<contents of plan.md>` placeholder — the user must review the actual plan bytes in the question itself, not have to open the file separately.
+
 Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
@@ -92,7 +96,7 @@ Use AskUserQuestion with:
 ```
 The implementation plan is ready and passed review. Please review and approve:
 
-<contents of plan.md>
+<verbatim plan.md contents>
 
 Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```

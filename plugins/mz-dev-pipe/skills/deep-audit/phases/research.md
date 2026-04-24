@@ -4,13 +4,13 @@
 
 ## Wave A — Context-Aware Lenses
 
-Dispatch 6 `pipeline-researcher` agents (model: **opus**) in a **single message** using parallel tool calls.
+Dispatch 6 `pipeline-researcher` agents in a **single message** using parallel tool calls. Model tiers are split by lens: security and STRIDE-delta use **opus** (attacker-path traced evidence, highest accuracy stakes); correctness, performance, maintainability, and reliability use **sonnet** (research archetype default per `AGENTS_GUIDELINES.md`).
 
 All Wave A researchers receive the full context: they should read `.mz/task/<task_name>/scope.md` for the file list, tier, trust boundary delta, output format, and severity/confidence scales.
 
 ### Wave A Researcher Prompts
 
-**Correctness researcher** (`pipeline-researcher`, model: opus):
+**Correctness researcher** (`pipeline-researcher`, model: sonnet — research-archetype default, breadth over attacker-path precision):
 
 ```
 You are the CORRECTNESS lens of a multi-lens deep audit.
@@ -34,7 +34,7 @@ For each finding, include an `evidence_tier` field (T0=PoC/reproducer, T1=SAST C
 Return findings as markdown in your response.
 ```
 
-**Security researcher** (`pipeline-researcher`, model: opus):
+**Security researcher** (`pipeline-researcher`, model: opus — attacker-path evidence tracing is accuracy-critical):
 
 ```
 You are the SECURITY lens of a multi-lens deep audit.
@@ -59,7 +59,7 @@ For each finding, include an `evidence_tier` field. For High+ findings, cite the
 Return findings as markdown in your response.
 ```
 
-**Performance researcher** (`pipeline-researcher`, model: opus):
+**Performance researcher** (`pipeline-researcher`, model: sonnet — research-archetype default, breadth of hot-path scan):
 
 ```
 You are the PERFORMANCE lens of a multi-lens deep audit.
@@ -85,7 +85,7 @@ For each finding, include an `evidence_tier` field.
 Return findings as markdown in your response.
 ```
 
-**Maintainability researcher** (`pipeline-researcher`, model: opus):
+**Maintainability researcher** (`pipeline-researcher`, model: sonnet — research-archetype default, pattern scan):
 
 ```
 You are the MAINTAINABILITY lens of a multi-lens deep audit.
@@ -111,7 +111,7 @@ For each finding, include an `evidence_tier` field.
 Return findings as markdown in your response.
 ```
 
-**Reliability researcher** (`pipeline-researcher`, model: opus):
+**Reliability researcher** (`pipeline-researcher`, model: sonnet — research-archetype default, failure-mode scan):
 
 ```
 You are the RELIABILITY lens of a multi-lens deep audit.
@@ -135,7 +135,7 @@ For every finding, specify the failure scenario ("when X happens, Y breaks"). In
 Return findings as markdown in your response.
 ```
 
-**Trust-Boundary STRIDE Delta researcher** (`pipeline-researcher`, model: opus):
+**Trust-Boundary STRIDE Delta researcher** (`pipeline-researcher`, model: opus — STRIDE-per-boundary accuracy on the mutated trust surface):
 
 At T0/T1: dispatch this researcher with the instruction `SKIP — blast-radius tier is T0/T1, no trust boundary analysis required. Return an empty findings list.`
 

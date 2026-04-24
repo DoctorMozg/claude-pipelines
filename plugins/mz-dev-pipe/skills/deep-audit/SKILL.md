@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdat
 
 ## Overview
 
-Orchestrates a deep pre-PR scan and produces a ranked findings report. Uses blast-radius tier gating (T0–T3), evidence-tiered severity caps, trust-boundary STRIDE delta analysis, three blinded adversarial lenses (production breakage, security adversary, ops/reliability), rollback rehearsal that flags missing rollback stories as BLOCKING, and a cognitive-load budget. Writes `findings.md`, `rollback_plan.md`, and `summary.md`. Appends BLOCKING findings to a persistent `findings_ledger.md` across audit runs. All researchers run on opus. Default scope is `scope:branch`. No code is modified — hand the report to `build`, `debug`, or `polish` to act on it.
+Orchestrates a deep pre-PR scan and produces a ranked findings report. Uses blast-radius tier gating (T0–T3), evidence-tiered severity caps, trust-boundary STRIDE delta analysis, three blinded adversarial lenses (production breakage, security adversary, ops/reliability), rollback rehearsal that flags missing rollback stories as BLOCKING, and a cognitive-load budget. Writes `findings.md`, `rollback_plan.md`, and `summary.md`. Appends BLOCKING findings to a persistent `findings_ledger.md` across audit runs. Wave A splits model tiers — opus for security and STRIDE-delta lenses, sonnet for correctness / performance / maintainability / reliability (research archetype default). Wave B blinded adversarial researchers all run on opus. Default scope is `scope:branch`. No code is modified — hand the report to `build`, `debug`, or `polish` to act on it.
 
 ## When to Use
 
@@ -55,7 +55,7 @@ Derive `deep-audit_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `stat
 ### Phases 1–3: Research and Consolidation
 
 - **Phase 1** — See `phases/scope_and_tier.md`. Parse scope argument (default `scope:branch`), materialise file list, classify T0–T3, identify trust boundary delta at T2+, write `scope.md`.
-- **Phase 2** — See `phases/research.md`. Wave A = 6 opus researchers (5 standard lenses + STRIDE-delta). Wave B = 3 opus blinded adversarial researchers dispatched AFTER Wave A in a separate message. Writes per-lens findings artifacts.
+- **Phase 2** — See `phases/research.md`. Wave A = 6 researchers (split model tiers: opus for security + STRIDE-delta, sonnet for correctness / performance / maintainability / reliability). Wave B = 3 opus blinded adversarial researchers dispatched AFTER Wave A in a separate message. Writes per-lens findings artifacts.
 - **Phase 3** — See `phases/consolidate.md`. Merge, dedupe, blinded cross-reference, evidence-tier cap, rollback rehearsal (BLOCKING findings for missing down-migrations/migration plans), cognitive-load score (SPLIT RECOMMENDATION if >40). Writes `findings.md` and `rollback_plan.md`.
 
 Note: ignore any references in the phase files to a later fix/approval phase — this skill stops at the report. Blinded invariant still applies: Wave B must be dispatched in a separate message AFTER Wave A completes.

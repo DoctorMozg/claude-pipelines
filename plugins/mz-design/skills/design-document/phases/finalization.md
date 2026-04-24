@@ -17,82 +17,48 @@ From Phase 3:
 
 ## Step 4.1 — User approval gate
 
-**This orchestrator** (not a subagent) must present to the user via `AskUserQuestion`. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
-Use `AskUserQuestion` with this structure:
+**Mandatory pre-read**: Read `.mz/design/<task_name>/design.md`, `.mz/design/<task_name>/wireframes.md`, and `.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires.
 
-```
-question: "The design document is ready. Approve, reject, or provide feedback?"
-header: "Approve doc"
-options:
-  1. Approve — finalize
-     "Write final-summary.md and stop. Files will be left at .mz/design/<task_name>/."
-  2. Reject — abort
-     "Do not finalize. Mark state as aborted_by_user. Files remain on disk but are marked abandoned."
-  3. Provide feedback (use Other)
-     "Type changes you want. One more revision round, then re-present. No further critique loop — your word is final."
-```
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `design.md`, `wireframes.md`, and `wcag-report.md` under labeled sections. Never substitute a path, line count, iteration summary, or `<verdict>` placeholder — the user must review the actual finalized design (including the contrast pairs) in the question itself, not have to open files separately.
 
-Before the question, emit a presentation block so the user sees what they are approving:
+Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
-Design document is ready at:
-  .mz/design/<task_name>/
+**Design ready for approval**
+All four specialist critics have approved the design, and the WCAG contrast report shows zero violations. Please review the finalized design document, wireframes, and WCAG report below.
 
-Iterations used: <N>/5
-Aggregate verdict: <PASS|ACCEPTED_WITH_UNRESOLVED>
+- **Approve** → write `final-summary.md` and mark task complete
+- **Reject** → mark task aborted and stop
+- **Feedback** → dispatch design-revision-writer to apply changes, loop back to this gate
+```
 
-  ui-designer:              <status>
-  ux-designer:              <status>
-  art-designer:             <status>
-  accessibility-specialist: <status>
-  WCAG_GATE:                <status>
+Invoke AskUserQuestion with this body (where each `<verbatim ...>` marker is replaced by the bytes you just read):
 
-Files:
-- design.md       (<line count> lines, <section count> sections)
-- wireframes.md   (<line count> lines, <diagram count> diagrams)
-- wcag-report.md  (<line count> lines, <pair count> pairs)
+```
+Design document ready (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS). Please review the finalized design:
 
-Key decisions (from design.md §13 Design Rationale):
-<first 5 bullets of §13>
+## Design Document (design.md)
 
-Open questions (from design.md §14):
-<first 5 bullets of §14>
+<verbatim design.md contents>
+
+## Wireframes (wireframes.md)
+
+<verbatim wireframes.md contents>
+
+## WCAG Contrast Report (wcag-report.md)
+
+<verbatim wcag-report.md contents>
+
+Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 ```
 
 ## Step 4.2 — Response handling
 
 - **"approve"** → update state to `complete`, proceed to Step 4.3.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not write `final-summary.md`.
-- **Feedback (Other)** → apply the feedback, then **return to Step 4.1** with the revised doc. This is a loop — repeat until the user explicitly approves. Never proceed to Step 4.3 without explicit approval.
-
-### Feedback sub-loop
-
-When the user provides feedback instead of approving:
-
-1. Spawn `design-revision-writer` (model: **opus**) with:
-
-```
-The user has provided final feedback on the design. Apply it verbatim.
-
-## Task Directory
-.mz/design/<task_name>/
-
-## User feedback
-<the user's text>
-
-## Read
-- .mz/design/<task_name>/design.md
-- .mz/design/<task_name>/wireframes.md
-- .mz/design/<task_name>/wcag-report.md
-
-## Your Job
-Apply the user's feedback. Touch only what the feedback addresses. If the feedback changes colors, regenerate wcag-report.md. Terminal STATUS: line per your agent spec.
-```
-
-2. On `DONE` or `DONE_WITH_CONCERNS`, re-present via `AskUserQuestion` (return to Step 4.1).
-1. Do **not** re-run the critique loop. The user's word is final after Phase 3.
-1. Do **not** accept partial approval. Every round must end in explicit `approve` or `reject`.
+- **Feedback** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to Step 4.1, re-read the updated artifact(s), and re-present **via AskUserQuestion** with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Step 4.3 without explicit approval.
 
 ## Step 4.3 — Write `final-summary.md`
 

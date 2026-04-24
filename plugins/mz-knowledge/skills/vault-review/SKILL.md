@@ -58,6 +58,8 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 Before presenting, Read `.mz/task/<task_name>/review_queue.md` in full.
 
+**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `review_queue.md`. Never substitute a template, placeholder list, or status summary — the user must review the actual ranked queue (note titles, scores, maturity, outlinks) in the question itself, not have to open the file separately.
+
 Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
@@ -69,14 +71,12 @@ Your queue of notes ranked by review due date, orphan status, and maturity. Revi
 - **Feedback** → adjust queue size or parameters, regenerate and re-present
 ```
 
-Then invoke AskUserQuestion with this content:
+Then invoke AskUserQuestion with this body (where `<verbatim review_queue.md contents>` is replaced by the bytes you just read):
 
 ```
-Review queue for today (N notes):
+Review queue for today:
 
-1. [[Note Title]] — score: 8.5 — last reviewed: 45 days ago, 0 outlinks
-2. [[Note Title]] — score: 7.1 — maturity: seedling, 92 days old
-...
+<verbatim review_queue.md contents>
 
 MOC gaps detected: <N gaps from moc-gap-detector> — details in .mz/task/<task_name>/moc_gaps.md
 

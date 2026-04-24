@@ -1,7 +1,7 @@
 ---
 name: outreach-news-finder
 description: Finds recent news, press releases, funding rounds, partnerships, and public announcements for companies. Surfaces timing signals for outreach. Used by the lead-gen skill.
-tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
+tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
 maxTurns: 40
