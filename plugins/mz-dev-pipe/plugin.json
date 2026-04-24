@@ -2,5 +2,5 @@
   "description": "Full development pipeline \u2014 autonomous coding, reviewing, testing, and research agents with orchestrating skills",
   "license": "MIT",
   "name": "mz-dev-pipe",
-  "version": "0.24.0"
+  "version": "0.25.0"
 }

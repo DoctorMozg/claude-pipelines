@@ -24,6 +24,7 @@ Read `.mz/task/<task_name>/findings.md` and `.mz/task/<task_name>/rollback_plan.
 - Findings in report (after caps): <count>
 - BLOCKING findings (rollback analysis): R
 - Cognitive-load score: S [SPLIT RECOMMENDED if >40]
+- Skeptic pass: <challenged> challenged, <downgraded> downgraded, <verified> verified, <fix_unclear> FIX_UNCLEAR
 
 ## BLOCKING Findings
 #### ROLLBACK-<n> — <file:line>

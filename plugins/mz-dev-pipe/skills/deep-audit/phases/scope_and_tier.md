@@ -90,7 +90,31 @@ Collect:
 
 These are passed to `scope.md` for Phase 3's cognitive-load budget calculation.
 
-## 1.7 Write scope.md
+## 1.7 Compute hotspot scores
+
+**Goal**: Identify the most-changed scoped files over the last `HOTSPOT_LOOKBACK_DAYS` days (default: 90). This data is written into `scope.md` so Wave A researchers can prioritise high-churn files. Wave B never reads `scope.md` — blinded invariant is preserved.
+
+Run the following pipeline, substituting the actual lookback value:
+
+```bash
+git log --invert-grep \
+  --author='\[bot\]\|dependabot\|renovate\|github-actions' \
+  --format=format: --name-only \
+  --since="90 days ago" \
+  | sort | grep -v '^$' | uniq -c | sort -rn
+```
+
+This filters out bot commits (patterns: `[bot]`, `dependabot`, `renovate`, `github-actions`) before counting. Output format: `<count> <filepath>`.
+
+**Filter to scoped files only**: from the output, keep only files that appear in the scoped file list materialised in §1.2. Discard any file not in scope.
+
+**Take top 10** by `commit_count`. Assign `hotspot_rank` = 1-indexed position after sort (rank 1 = most changed).
+
+**Shallow-clone fallback**: If the 90-day result produces an empty list (common in CI shallow clones), re-run the same pipeline without the `--since` flag to use full history. Annotate the scope.md table with `lookback: all-history` when the fallback fires.
+
+**Empty-result after filtering**: If no scoped files appear in the hotspot output (e.g., all changed files are new and have no prior commits), write a placeholder row `| (none) | 0 | — |` with the note `no hotspot data for scoped files in this window`.
+
+## 1.8 Write scope.md
 
 Write `.mz/task/<task_name>/scope.md`:
 
@@ -137,6 +161,17 @@ Write `.mz/task/<task_name>/scope.md`:
 - File count: N
 - Diff LOC: M
 - Distinct concerns (top-level modules/dirs): K
+
+## Hotspot Scores
+
+*(Top 10 most-changed scoped files in the last HOTSPOT_LOOKBACK_DAYS days, bot commits excluded. Used by Wave A researchers to prioritise deeper inspection. Lookback: <N> days | all-history if fallback fired.)*
+
+| file | commit_count | hotspot_rank |
+| ---- | ------------ | ------------ |
+| path/to/hot_file.py | 14 | 1 |
+| path/to/another.py | 9 | 2 |
+
+*(If no hotspot data is available: `| (none) | 0 | — |`)*
 
 ## Findings Output Format
 

@@ -2,5 +2,5 @@
   "description": "Personal Obsidian knowledge base skills and agents \u2014 vault bootstrap (init), vault maintenance, note processing, multimodal capture (voice/image/PDF/YouTube), vault triage, research ingestion, schema validation, safe refactoring, epistemic provenance, grounded Q&A, review, link suggestions, and Obsidian syntax reference",
   "license": "MIT",
   "name": "mz-knowledge",
-  "version": "0.24.0"
+  "version": "0.25.0"
 }

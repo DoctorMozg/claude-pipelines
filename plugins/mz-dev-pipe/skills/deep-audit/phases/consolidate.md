@@ -19,7 +19,16 @@ Assign each unique finding a stable numeric ID (`F1`, `F2`, ...).
 For each Wave B finding (blinded_production, blinded_security, blinded_ops):
 
 1. Check if it maps to an existing finding from Wave A (same file:line or same described behavior)
-1. If a match exists → merge (note the blind-spot corroboration, treat as confidence boost)
+1. If a match exists → merge. Apply role-corroboration tier boost:
+   - Determine the Wave B researcher's adversarial role:
+     - `blinded_production` → corroborating lenses: `correctness`, `reliability`
+     - `blinded_security` → corroborating lenses: `security`, `stride_delta`
+     - `blinded_ops` → corroborating lenses: `reliability`, `performance`
+   - If the matched Wave A finding's lens is in the role's corroborating list → boost `evidence_tier` one step (T3 → T2, T2 → T1, T1 stays T1, T0 is a no-op)
+   - Record on the finding: `corroborated_by: blinded_<role>` and `tier_boosted: true`
+   - If a finding is matched by multiple Wave B researchers, boost evidence_tier only once (record all corroborators as a list: `corroborated_by: [blinded_security, blinded_ops]`)
+   - If the matched Wave A finding's lens is NOT in the role's corroborating list → merge without tier boost; still record `corroborated_by: blinded_<role>`
+   - The boosted tier is subject to standard evidence-tier capping in §3.3 — the boost never bypasses the cap ladder
 1. If NO match exists → this is a **blind spot** — a gap that context-aware analysis missed
 
 All unmatched Wave B findings are promoted to a dedicated "Blind Spots" section in `findings.md`. They receive a minimum evidence tier of T2 if they cite a specific file:line, T3 otherwise. They are NOT given severity ranks by Wave B researchers — the consolidation agent assigns severity based on the description, at the evidence-tier-capped maximum.
@@ -117,7 +126,25 @@ For each finding in the report, estimate `reviewer_minutes_saved_if_fixed`:
 
 This estimate helps reviewers prioritize which findings to request fixes for most urgently.
 
-## 3.6 Write findings.md
+## 3.6 Skeptic Pass
+
+**Goal**: Challenge each High+ finding before it is written to `findings.md` to eliminate false positives. This is inline orchestrator logic — do not dispatch a new agent.
+
+For each finding in the merged list where `severity_capped ∈ {critical, high}` (after §3.3 capping and §3.5 cognitive-load scoring), apply all three checks independently. Each check records a separate property of the finding — none short-circuits the others:
+
+1. **Single-lens, no corroboration**: Is `corroborated_by` unset AND did only one Wave A lens flag this finding? If yes → lower `confidence` to `medium` unless `evidence_tier` is T0 or T1.
+1. **Missing file:line reference**: Does the finding fail to cite a specific `file:line`? If yes → demote `evidence_tier` to T3, then re-apply §3.3 severity capping with the new tier.
+1. **Vague proposed fix**: Is `proposed_fix` generic (no file, function, symbol, or concrete action mentioned)? If yes → annotate `[FIX_UNCLEAR]` on the finding. Do not demote — this is advisory only.
+
+After applying the checklist to all High+ findings:
+
+- Findings that passed all checks with no changes → annotate `skeptic_verified: true`.
+- Findings that triggered any demotion (checks 1 or 2) → annotate `skeptic_challenged: true` and append `skeptic-challenged` to `cap_reason` (do not overwrite existing `cap_reason`).
+- Findings with vague fix only (check 3) → annotate `[FIX_UNCLEAR]` only; do not set `skeptic_challenged`.
+
+Maintain a running `skeptic_challenges` summary counter with four fields: `challenged`, `downgraded`, `verified`, `fix_unclear`. Write it to the findings.md Summary block in §3.7.
+
+## 3.7 Write findings.md
 
 Write `.mz/task/<task_name>/findings.md`:
 
@@ -130,6 +157,7 @@ Write `.mz/task/<task_name>/findings.md`:
 - Severity breakdown (after capping): critical=A, high=B (of B_total), medium=C (of C_total), low=D (advisory, skipped)
 - BLOCKING findings (rollback analysis): R
 - Cognitive-load score: S [SPLIT RECOMMENDED if >40]
+- Skeptic pass: <challenged> challenged, <downgraded> downgraded, <verified> verified, <fix_unclear> FIX_UNCLEAR
 - Lenses run: correctness, security, performance, maintainability, reliability, stride_delta, blinded_production, blinded_security, blinded_ops
 - Files with findings: K (of N scanned)
 
@@ -153,6 +181,8 @@ Write `.mz/task/<task_name>/findings.md`:
 - **Description**: <one paragraph>
 - **Proposed fix**: <one paragraph>
 - **Reviewer minutes saved**: <estimate>
+- **Skeptic**: verified | challenged *(if challenged, see cap_reason)*
+- **Fix clarity**: specific | FIX_UNCLEAR *(only rendered when set)*
 
 ### High (top 10 of <total>)
 #### F<id> — ...
@@ -160,6 +190,9 @@ Write `.mz/task/<task_name>/findings.md`:
 - **Severity capped**: high
 - **Evidence tier**: T1
 - **Cap reason**: <if capped>
+- **Reviewer minutes saved**: <estimate>
+- **Skeptic**: verified | challenged *(if challenged, see cap_reason)*
+- **Fix clarity**: specific | FIX_UNCLEAR *(only rendered when set)*
 ...
 
 ### Medium (top 10 of <total>)

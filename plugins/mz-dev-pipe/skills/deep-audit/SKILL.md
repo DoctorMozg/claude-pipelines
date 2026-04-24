@@ -34,6 +34,7 @@ Orchestrates a deep pre-PR scan and produces a ranked findings report. Uses blas
 - **MAX_RESEARCHERS_WAVE_A**: 6 | **MAX_RESEARCHERS_WAVE_B**: 3
 - **HIGH_CAP**: unlimited | **MEDIUM_CAP**: 10 | **LOW_CAP**: 0 (count only)
 - **TASK_DIR**: `.mz/task/` | **LEDGER_PATH**: `.mz/audit/findings_ledger.md`
+- **HOTSPOT_LOOKBACK_DAYS**: 90 *(git log lookback window for scope.md hotspot table; falls back to all-history on shallow clones)*
 
 ## Core Process
 
@@ -49,7 +50,7 @@ Orchestrates a deep pre-PR scan and produces a ranked findings report. Uses blas
 
 ### Phase 0: Setup
 
-Derive `deep-audit_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started). TaskCreate per phase. Dispatch `pipeline-tooling-detector` to detect test/lint commands for informational purposes only (no tests are run); write to `.mz/task/<task_name>/tooling.md`.
+Derive `deep-audit_<slug>_<HHMMSS>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started). TaskCreate per phase. Dispatch `pipeline-tooling-detector` to detect test/lint commands for informational purposes only (no tests are run); write to `.mz/task/<task_name>/tooling.md`. Phase 1 additionally computes git hotspot scores (commit counts over the last `HOTSPOT_LOOKBACK_DAYS` days, bot commits filtered) and records them in `scope.md` so Wave A researchers can prioritise high-churn files.
 
 ### Phases 1–3: Research and Consolidation
 
