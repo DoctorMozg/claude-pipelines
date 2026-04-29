@@ -263,16 +263,19 @@ Autonomous lead generation pipeline that discovers companies, scans reputations,
 
 ______________________________________________________________________
 
-### [`mz-creative`](plugins/mz-creative/) — Multi-Perspective Panels
+### [`mz-creative`](plugins/mz-creative/) — Multi-Perspective Panels & Creative Writing
 
-Two panel-driven skills sharing a unified roster of **16 lens agents** (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian, cto, data, devops, product, security, seo). Each lens is a fixed intellectual personality; per-dispatch behavior (ideation vs. critique) is injected by the calling skill. **Brainstorm** picks 5 lenses and runs them through a vote-to-consensus ideation loop. **Expert** picks 5 lenses and runs a Delphi-style 3-round critique with inter-round synthesis and a final written report.
+Two flavors of skill share this plugin. **Panels** — `/brainstorm` and `/expert` — drive a unified roster of **16 lens agents** (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian, cto, data, devops, product, security, seo) through ideation or Delphi-style critique. **Writing pipelines** — `/document`, `/naturalize`, `/copywrite` — produce technical documentation, naturalize AI-generated prose, and write promotional copy, with the `document` and `copywrite` skills running an automatic naturalize pass on every output.
 
-| Skill          | Command               | What it does                                                                  |
-| -------------- | --------------------- | ----------------------------------------------------------------------------- |
-| **brainstorm** | `/brainstorm <topic>` | Panel selection → parallel ideation → synthesis → voting rounds               |
-| **expert**     | `/expert <idea>`      | Panel selection → 3 rounds (view → summary → react) → dedicated report writer |
+| Skill          | Command                     | What it does                                                                   |
+| -------------- | --------------------------- | ------------------------------------------------------------------------------ |
+| **brainstorm** | `/brainstorm <topic>`       | Panel selection → parallel ideation → synthesis → voting rounds                |
+| **expert**     | `/expert <idea>`            | Panel selection → 3 rounds (view → summary → react) → dedicated report writer  |
+| **document**   | `/document <topic>`         | Codebase research → user approval → expert-technical-writer → auto-naturalize  |
+| **naturalize** | `/naturalize <text\|@file>` | AI-pattern analysis → user approval → expert-naturalizer (+ optional in-place) |
+| **copywrite**  | `/copywrite <topic>`        | Positioning research → brief approval → expert-copywriter → auto-naturalize    |
 
-19 agents total: 16 lens personas (shared between brainstorm and expert) plus 3 support agents (researcher, round-synthesizer, report-writer).
+22 agents total: 16 lens personas (shared between brainstorm and expert) plus 6 support agents (expert-researcher, expert-round-synthesizer, expert-report-writer, expert-technical-writer, expert-naturalizer, expert-copywriter).
 
 **[Full documentation →](plugins/mz-creative/)**
 
