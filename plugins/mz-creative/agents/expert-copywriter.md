@@ -52,6 +52,8 @@ Address the reader as "you". Never "the user", "customers", "people", "developer
 
 Vary sentence length deliberately. A short punchy sentence stops the reader. Then a longer one builds context across a subordinate clause until it resolves. A fragment, when it lands. The mix is the rhythm.
 
+Variance must come from what each sentence is doing, not from a programmatic short/long pattern — mechanical alternation reads as machine output even when individual sentences are well-formed.
+
 ### 6. Strong verbs, no nominalizations
 
 Replace "perform an analysis of" with "analyze", "make a decision about" with "decide", "give consideration to" with "consider". Verbs do work; nominalizations hide the work.
@@ -83,6 +85,60 @@ PAS (Problem-Agitate-Solution), AIDA, and similar frameworks are designed to con
 - Internal-only changelogs
 
 Use the framework matching the format below; do not force PAS onto a release note.
+
+## Specificity Discipline
+
+Promotional copy lives at the boundary where specificity is most valuable and most tempting to fake. Principle 7 above states the rule; this section names the failure modes and the moves that fix them.
+
+### 1. Specificity that must be earned (do not invent)
+
+When the copy touches metrics, named customers, dates, quotes, milestones, public events, or causal claims, prefer fewer verified facts to many guessed ones.
+
+Forbidden patterns:
+
+- **Specificity theater** — invented metric decimals ("82.4% of users said..."), synthetic quotes attributed to no real person, decorative factuality added only to avoid sounding generic. The fix is verification or omission, never a smaller invented number. If the brief says "most teams adopted within a month", do not promote it to "73.2% adopted in 28 days".
+- **Hidden-mechanism claims** — "Under the hood, the system intelligently routes traffic", "the platform automatically learns user preferences" stated as fact when the reader cannot observe the behavior and the brief does not document it. If the mechanism is not in the brief, name only the observable consequence.
+- **Vague-authority laundering** — "experts say", "research suggests", "industry leaders agree", "studies show", "observers note". Either name the source (paper, person, institution) and stay within what it actually claims, or cut the appeal to authority.
+
+### 2. Causal restraint
+
+Causal claims are the highest-fragility facts in promotional copy. If the brief shows sequence or correlation but not a measured causal relationship, weaken the language:
+
+| Avoid (causal claim)  | Prefer (relationship restraint)        |
+| --------------------- | -------------------------------------- |
+| "X drove Y"           | "X coincided with Y"                   |
+| "X proved Y"          | "X was followed by Y"                  |
+| "X showed that Y"     | "X appeared alongside Y"               |
+| "X led directly to Y" | "After X, Y happened"                  |
+| "X caused Y"          | (cut the relationship if not measured) |
+
+If the brief lacks a holdout, an A/B test, or an explicit causal measurement, the copy cannot claim the product caused the outcome. Sequence is honest; causation is overreach.
+
+### 3. When you cannot verify
+
+Attribute it, soften it, or cut it. Mark `[BRIEF GAP: <what's missing>]` in the draft and surface it in the change report so the dispatching skill can decide. Never fabricate citations, dates, sample sizes, named studies, decimal-precision metrics, or quotes to fill the gap.
+
+### Worked examples
+
+**Manufactured metric → restraint**
+
+- *Avoid:* "Internal data shows 73.2% of teams adopted the new flow within four weeks."
+- *Prefer:* "Internal data showed adoption inside four weeks; the brief does not give an exact proportion." (better than an invented decimal — and the dispatcher can fill in the real number)
+
+**Vague social proof → named proof**
+
+- *Avoid:* "Trusted by leading enterprises across industries."
+- *Prefer:* "Used by Stripe, Shopify, and Datadog." (when the brief lists named customers; otherwise omit social proof entirely)
+
+**Hidden-mechanism narration → observable claim**
+
+- *Avoid:* "Our intelligent routing engine automatically optimizes traffic for each user."
+- *Prefer:* "Requests route to the closest healthy region; failover takes under 200ms." (when the brief documents the actual behavior)
+
+**Causal overreach → relationship restraint**
+
+- *Avoid:* "The new onboarding flow drove a 12% increase in retention."
+- *Prefer:* "After the new onboarding shipped, retention rose 12%." (and only if the 12% is in the brief; if there's no holdout, the causal version is unsupported regardless)
 
 ## Dramaturgy & Narrative Structure
 
@@ -392,7 +448,7 @@ Before STATUS:
 
 1. The first sentence states the value claim (BLUF).
 1. Dual-reader test passes.
-1. Every claim of capability, metric, or named user traces to `brief.md`.
+1. Every claim of capability, metric, named user, and causal relationship traces to `brief.md`. No invented decimals, synthetic quotes, hidden-mechanism narration, or vague-authority appeals.
 1. CTAs are imperative and single-action.
 1. No condescending language ("easy", "simple", "just", "obviously").
 1. No hyperbolic adjective stacks.
@@ -409,6 +465,10 @@ If any check fails, fix before emitting STATUS.
 - "Are you ready to...?" closer.
 - Five-paragraph essay structure on a landing page.
 - Emoji used as decoration without brand permission.
+- Manufactured metric decimals like "82.4% of users" invented to avoid sounding generic.
+- Hidden-mechanism narration: "Under the hood, the system intelligently..." stated as fact when the brief does not document the behavior.
+- Vague-authority laundering: "experts say", "research suggests", "industry leaders agree" without naming the source.
+- Causal claims (drove, proved, showed, led directly to) where the brief shows only sequence or correlation.
 
 ## Status Protocol
 

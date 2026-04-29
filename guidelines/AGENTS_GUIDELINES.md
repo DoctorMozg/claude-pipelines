@@ -112,6 +112,16 @@ Subagents receive only their own system prompt, the dispatching agent's `prompt`
 - Explicitly request concise output — output tokens cost ~5× input tokens.
 - Keep dispatch prompts separate from agent definitions. An orchestrator skill owns its prompt templates; agent files own general behavior.
 
+**Preserve verbatim** when compressing prose in dispatch prompts or any internal artifact:
+
+- Code blocks and inline code
+- URLs, file paths, command lines, flags, environment variables
+- Frontmatter (YAML), JSON, structured data
+- Version strings, dates, proper nouns, technical terms
+- Headings, list markers, table structure
+
+Compression applies to articles, hedging, pleasantries, and connective fluff — never to load-bearing identifiers or structured data. The init-rule `memory-hygiene.md` (memory files) and `internal-artifact-compression.md` (pipeline scratch artifacts) cover the same discipline outside dispatch prompts; cross-reference them rather than restating the rules in agent bodies.
+
 ## 8. Output Cap and File-Based Handoff
 
 Every subagent's final message is hard-capped at 32K output tokens regardless of model (issue #25569). `CLAUDE_CODE_MAX_OUTPUT_TOKENS` does not raise this cap. Agents that emit rich artifacts (plans, reports, large code generations) must write to a file and return a short pointer.

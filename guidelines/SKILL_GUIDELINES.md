@@ -92,6 +92,16 @@ Multi-phase skills persist state to `.mz/task/<task_name>/state.md`. Required fi
 
 Agent files already contain general process/rules/format. Dispatch prompts provide **only** task-specific context: what to work on, artifact pointers, scope constraints, output format overrides. Don't repeat agent instructions. Explicitly request concise output — output tokens cost 5x input.
 
+When compressing prose in dispatch prompts (or any internal artifact), preserve verbatim:
+
+- Code blocks and inline code
+- URLs, file paths, command lines, flags, environment variables
+- Frontmatter (YAML), JSON, structured data
+- Version strings, dates, proper nouns, technical terms
+- Headings, list markers, table structure
+
+Compression applies to articles, hedging, pleasantries, and connective fluff — never to load-bearing identifiers or structured data. The init-rule `memory-hygiene.md` (memory files) and `internal-artifact-compression.md` (pipeline scratch artifacts) cover the same discipline outside dispatch prompts; cross-reference them rather than restating the rules in skill bodies.
+
 ## 10. Error Handling
 
 Detect → escalate via AskUserQuestion → never guess. Handle: empty args, missing test framework, zero-file scope, empty agent results (retry once then escalate), max iterations hit (summarize attempts + offer options).

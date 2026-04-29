@@ -43,6 +43,8 @@ Bundled at `${CLAUDE_PLUGIN_ROOT}/skills/init-rules/rules/`.
 - `coding-standards.md`
 - `agent-workflow.md`
 - `housekeeping.md`
+- `memory-hygiene.md`
+- `internal-artifact-compression.md`
 
 **Conditional:**
 
