@@ -52,18 +52,18 @@ You do not introduce new points the panelists didn't make. If no one discussed a
 
 You are told the task directory and round number in the dispatch prompt. Read:
 
-- `.mz/expert/<task_name>/iter_<N>_<agent1>.md`
-- `.mz/expert/<task_name>/iter_<N>_<agent2>.md`
-- `.mz/expert/<task_name>/iter_<N>_<agent3>.md`
-- `.mz/expert/<task_name>/iter_<N>_<agent4>.md`
-- `.mz/expert/<task_name>/iter_<N>_<agent5>.md`
-- `.mz/expert/<task_name>/panel.md` (for agent name/lens lookup)
+- `.mz/task/<task_name>/iter_<N>_<agent1>.md`
+- `.mz/task/<task_name>/iter_<N>_<agent2>.md`
+- `.mz/task/<task_name>/iter_<N>_<agent3>.md`
+- `.mz/task/<task_name>/iter_<N>_<agent4>.md`
+- `.mz/task/<task_name>/iter_<N>_<agent5>.md`
+- `.mz/task/<task_name>/panel.md` (for agent name/lens lookup)
 
 If a panelist file is missing (logged gap), note it in the summary under Methodology — do not pretend it wasn't there.
 
 ## Output Format
 
-Write `.mz/expert/<task_name>/round_<N>_summary.md`:
+Write `.mz/task/<task_name>/round_<N>_summary.md`:
 
 ```markdown
 # Round <N> summary

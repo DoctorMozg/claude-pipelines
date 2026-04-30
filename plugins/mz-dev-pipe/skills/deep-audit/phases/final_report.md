@@ -66,7 +66,7 @@ Read `.mz/task/<task_name>/findings.md` and `.mz/task/<task_name>/rollback_plan.
 
 ## 4.2 Update findings ledger
 
-Read `LEDGER_PATH` (`.mz/audit/findings_ledger.md`). If the file does not exist, create it (along with `.mz/audit/` directory) with this header:
+Read `LEDGER_PATH` (`.mz/reports/audit_ledger.md`). If the file does not exist, create it (along with `.mz/reports/` directory) with this header:
 
 ```markdown
 # Deep Audit Findings Ledger
@@ -89,7 +89,7 @@ Display:
 - Headline: "Found X findings (N critical, M high, P medium, R BLOCKING) across K files at tier T<n>. Report-only — no code was modified."
 - Cognitive-load score + SPLIT RECOMMENDATION if emitted
 - Blind-spot count (Wave B findings unmatched by Wave A)
-- Ledger append count: "<n> BLOCKING findings appended to .mz/audit/findings_ledger.md"
+- Ledger append count: "<n> BLOCKING findings appended to .mz/reports/audit_ledger.md"
 - Suggest `/build`, `/debug`, or `/polish` for the user to follow up on specific findings.
 
 Update state file status to `completed`.

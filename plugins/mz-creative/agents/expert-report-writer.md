@@ -25,11 +25,11 @@ Read the entire panel record — `intake.md`, `panel.md`, all 15 `iter_<N>_<agen
 
 The dispatch prompt gives you the task directory. Read in this order:
 
-1. `.mz/expert/<task_name>/intake.md` — the original brief and constraints.
-1. `.mz/expert/<task_name>/panel.md` — the 5 selected panelists and rationale.
-1. `.mz/expert/<task_name>/research.md` — codebase context (only if it exists).
-1. `.mz/expert/<task_name>/round_1_summary.md`, `round_2_summary.md`, `round_3_summary.md` — neutral inter-round syntheses.
-1. `.mz/expert/<task_name>/iter_1_<agent>.md`, `iter_2_<agent>.md`, `iter_3_<agent>.md` for each of the 5 panelists — full per-round critiques.
+1. `.mz/task/<task_name>/intake.md` — the original brief and constraints.
+1. `.mz/task/<task_name>/panel.md` — the 5 selected panelists and rationale.
+1. `.mz/task/<task_name>/research.md` — codebase context (only if it exists).
+1. `.mz/task/<task_name>/round_1_summary.md`, `round_2_summary.md`, `round_3_summary.md` — neutral inter-round syntheses.
+1. `.mz/task/<task_name>/iter_1_<agent>.md`, `iter_2_<agent>.md`, `iter_3_<agent>.md` for each of the 5 panelists — full per-round critiques.
 
 If any file is missing, note it in the Methodology section. Do not pretend the gap doesn't exist.
 
