@@ -18,13 +18,17 @@ Record results for each criterion: PASS or FAIL with details.
 
 Categorize each failing criterion:
 
-| Criterion   | Status    | Failure Type                                                 | Complexity                  |
-| ----------- | --------- | ------------------------------------------------------------ | --------------------------- |
-| <criterion> | PASS/FAIL | test_failure / lint_error / missing_feature / behavioral_bug | simple / moderate / complex |
+| Criterion   | Status    | Failure Type                                                 | Coverage              | Complexity                  |
+| ----------- | --------- | ------------------------------------------------------------ | --------------------- | --------------------------- |
+| <criterion> | PASS/FAIL | test_failure / lint_error / missing_feature / behavioral_bug | covered / uncovered   | simple / moderate / complex |
 
-**Simple**: formatting, unused import, typo — fix directly without subagent.
-**Moderate**: logic bug, missing error handling — needs a coder agent.
-**Complex**: architectural issue, missing feature, unclear requirement — needs research first.
+- **Failure type**:
+  - `simple`: formatting, unused import, typo — fix directly without subagent.
+  - `moderate`: logic bug, missing error handling — needs a coder agent.
+  - `complex`: architectural issue, missing feature, unclear requirement — needs research first.
+- **Coverage**: applies to behavioral criteria (`missing_feature`, `behavioral_bug`). Mark `covered` if at least one existing test would fail when the criterion is unmet; otherwise `uncovered`. To check, search for tests referencing the relevant module/function/behavior. When in doubt, mark `uncovered` and let Phase 1.5 expose it to the user.
+
+Behavioral criteria flagged `uncovered` enter the **TDD lane**: in Phase 4, the orchestrator writes the missing test first, verifies it fails, and only then dispatches the coder. This pins the fix against a regression-catching assertion.
 
 ### 1.3 Handle unclear criteria
 
@@ -42,7 +46,7 @@ Do NOT proceed with unclear criteria. Get clarity first.
 
 ### 1.4 Save assessment
 
-Write `.mz/task/<task_name>/assessment.md` with the triage table, all test/lint output, and the verification commands for each criterion.
+Write `.mz/task/<task_name>/assessment.md` with the triage table, all test/lint output, the verification commands for each criterion, and an explicit **TDD lane** section listing every behavioral criterion marked `uncovered`. The Phase 1.5 user approval gate must surface this section so the user knows which fixes will be preceded by a new test.
 
 Update state phase to `assessed`.
 

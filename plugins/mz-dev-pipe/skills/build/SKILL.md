@@ -6,11 +6,13 @@ model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
-# Autonomous Development Pipeline
+# Autonomous Development Pipeline (TDD)
 
 ## Overview
 
-Orchestrates a full development lifecycle — research, plan, implement in parallel waves, review, test, optimize, and verify — using specialized sub-agents. Takes a task description and produces reviewed, tested, green code with explicit user approval at the plan gate.
+Orchestrates a full test-driven development lifecycle — research, plan, write failing tests (RED), implement to pass them (GREEN), review, refactor, and verify — using specialized sub-agents. Takes a task description and produces reviewed, tested, green code with explicit user approval at the plan gate.
+
+The pipeline enforces red-green-refactor: tests are written and verified failing **before** any implementation code is allowed. Coders make tests pass without modifying them; refactor happens only after the green bar is restored.
 
 ## When to Use
 
@@ -49,14 +51,15 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 | 0   | Setup                              | inline below                          | —                   |
 | 1   | Research                           | `phases/research_and_planning.md`     | —                   |
 | 2   | Planning + User Approval           | `phases/research_and_planning.md`     | plan review (max 3) |
-| 3   | Implementation (parallel waves)    | `phases/implementation_and_review.md` | —                   |
-| 4   | Code Review                        | `phases/implementation_and_review.md` | max 3               |
-| 5   | Test Writing                       | `phases/testing.md`                   | —                   |
-| 6   | Test Review (3 parallel reviewers) | `phases/testing.md`                   | max 3               |
-| 7   | Lint, Format, and Test Run         | `phases/testing.md`                   | —                   |
-| 8   | Final Code Review                  | `phases/finalization.md`              | max 2               |
-| 9   | Optimization                       | `phases/finalization.md`              | max 2               |
-| 10  | Completeness Check                 | `phases/finalization.md`              | restart-from-phase  |
+| 3   | Test Writing (RED)                 | `phases/testing.md`                   | —                   |
+| 4   | Test Review (3 parallel reviewers) | `phases/testing.md`                   | max 3               |
+| 5   | Verify RED                         | `phases/testing.md`                   | max 2               |
+| 6   | Implementation (GREEN, parallel waves) | `phases/implementation_and_review.md` | —               |
+| 7   | Code Review                        | `phases/implementation_and_review.md` | max 3               |
+| 8   | Lint, Format, and Verify GREEN     | `phases/implementation_and_review.md` | —                   |
+| 9   | Final Code Review                  | `phases/finalization.md`              | max 2               |
+| 10  | Refactor (Optimization)            | `phases/finalization.md`              | max 2               |
+| 11  | Completeness Check                 | `phases/finalization.md`              | restart-from-phase  |
 
 ### Phase 0: Setup
 
@@ -86,7 +89,7 @@ Before invoking AskUserQuestion, emit a text block to the user:
 **Plan ready for review**
 The implementation plan passed automated review and is ready for your approval. It covers all phases, files affected, and estimated scope.
 
-- **Approve** → proceed to Phase 3 implementation
+- **Approve** → proceed to Phase 3 (Test Writing — TDD/RED)
 - **Reject** → task marked aborted, no files written
 - **Feedback** → re-run planning with your input, loop back here
 ```
@@ -107,9 +110,21 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → spawn `pipeline-planner` with feedback, overwrite `plan.md`, re-present via AskUserQuestion. Do NOT re-run plan review — user's word is final. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 
-### Phase 3: Implementation
+### Phase 3: Test Writing (RED)
 
-Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). See `phases/implementation_and_review.md` → Phase 3. Update state to `implementation_complete`.
+Create tests **before any implementation** with `pipeline-test-writer` (model: opus). Tests assert the correct behavior the plan requires; since no production code exists yet, they will fail. See `phases/testing.md` → Phase 3.
+
+### Phase 4: Test Review
+
+Spawn THREE review agents in parallel (model: sonnet): coverage, quality, code. The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Update state to `test_review_passed`.
+
+### Phase 5: Verify RED
+
+Run the new tests and confirm they FAIL (or error with `not implemented` / missing-symbol errors). A test that passes against zero implementation is broken — it would not catch a regression. Re-dispatch `pipeline-test-writer` with the unexpectedly-passing test names if any pass. See `phases/testing.md` → Phase 5. Update state to `red_verified`.
+
+### Phase 6: Implementation (GREEN)
+
+Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). Each coder is told the relevant failing tests and instructed to make them pass **without modifying any test file**. See `phases/implementation_and_review.md` → Phase 6. Update state to `implementation_complete`.
 
 **After each wave completes (all coders in the wave return), update `.mz/task/<task_name>/state.md` with:**
 
@@ -119,33 +134,25 @@ Parse work units into execution waves and dispatch parallel `pipeline-coder` age
 
 This state update is mandatory — it enables safe resumption if context is compacted between waves.
 
-### Phase 4: Code Review
+### Phase 7: Code Review
 
-Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 4. Update state to `code_review_passed`.
+Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 7. Update state to `code_review_passed`.
 
-### Phase 5: Test Writing
+### Phase 8: Lint, Format, and Verify GREEN
 
-Create tests with `pipeline-test-writer` (model: opus). See `phases/testing.md` → Phase 5.
+Detect tooling, run linters/formatters, then run the **full test suite** including the Phase 3 tests. All target tests must now pass; no pre-existing tests may regress. See `phases/implementation_and_review.md` → Phase 8. Update state to `tests_passing`.
 
-### Phase 6: Test Review
+### Phase 9: Final Code Review
 
-Spawn THREE review agents in parallel (model: sonnet): coverage, quality, code. See `phases/testing.md` → Phase 6. Update state to `test_review_passed`.
+Last validation pass over ALL code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 9. Update state to `final_review_passed`.
 
-### Phase 7: Lint, Format, and Test Run
+### Phase 10: Refactor (Optimization)
 
-Detect tooling, run linters/formatters, then run tests. See `phases/testing.md` → Phase 7. Update state to `tests_passing`.
+Clean up dead code, debug artifacts, unused imports — the refactor leg of red-green-refactor. Tests must remain green; no behavior change. Re-verify then review. See `phases/finalization.md` → Phase 10. Update state to `optimized`.
 
-### Phase 8: Final Code Review
+### Phase 11: Completeness Check
 
-Last validation pass over ALL code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 8. Update state to `final_review_passed`.
-
-### Phase 9: Optimization
-
-Clean up dead code, debug artifacts, unused imports. Re-verify then review. See `phases/finalization.md` → Phase 9. Update state to `optimized`.
-
-### Phase 10: Completeness Check
-
-Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is done. See `phases/finalization.md` → Phase 10. Max 2 iterations.
+Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is done. See `phases/finalization.md` → Phase 11. Max 2 iterations.
 
 ## Techniques
 
@@ -153,17 +160,21 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-| Rationalization                         | Rebuttal                                                                      |
-| --------------------------------------- | ----------------------------------------------------------------------------- |
-| "plan is fine without review"           | "plan review catches integration gaps that become 3 review cycles downstream" |
-| "tests can wait until after first ship" | "missing tests on Day 1 become 'why is this flaky?' in Week 2"                |
-| "one big commit is easier"              | "atomic commits are the only way to bisect a regression cheaply"              |
+| Rationalization                              | Rebuttal                                                                                                  |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| "plan is fine without review"                | "plan review catches integration gaps that become 3 review cycles downstream"                             |
+| "tests can wait until after first ship"      | "missing tests on Day 1 become 'why is this flaky?' in Week 2"                                            |
+| "one big commit is easier"                   | "atomic commits are the only way to bisect a regression cheaply"                                          |
+| "I'll write code first, tests are easier after" | "tests written after the code mirror the implementation; tests written first describe the behavior" |
+| "skip the RED check, of course they fail"   | "tests that pass against missing code are silently broken — Phase 5 catches mock-only or import-only tests" |
 
 ## Red Flags
 
 - You dispatched coders without user approval of the plan.
 - Plan review was skipped or truncated to save time.
-- Tests were deferred to "later" instead of written in Phase 5.
+- A coder agent was dispatched before tests were written and verified RED.
+- A coder modified or deleted a test to make it pass.
+- Phase 5 was skipped on the assumption that tests "must" fail without implementation.
 
 ## Verification
 

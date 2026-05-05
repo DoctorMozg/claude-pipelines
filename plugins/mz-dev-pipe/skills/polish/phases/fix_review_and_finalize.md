@@ -15,6 +15,49 @@ Group failures by file/component for parallel fixing.
 
 If no failures remain → proceed to Phase 5.
 
+### 4.1.5 TDD lane — write missing tests first
+
+Read `.mz/task/<task_name>/assessment.md`'s **TDD lane** section. For every behavioral criterion still marked `uncovered` AND still failing:
+
+1. Dispatch a `pipeline-test-writer` agent (model: **opus**) in **TDD / RED mode**:
+
+```
+Write a regression test that captures this behavioral criterion. The test must FAIL against the current (broken) code — that's the RED bar.
+
+## Criterion
+<verbatim uncovered criterion text from assessment.md>
+
+## Context
+Read .mz/task/<task_name>/assessment.md for the failure output and triage notes.
+Read .mz/task/<task_name>/research.md if it exists.
+
+## Instructions
+1. Read existing tests to learn the project's framework, fixtures, and naming conventions.
+2. Write ONE focused test that asserts the CORRECT behavior for this criterion.
+3. The test must FAIL against the current code (otherwise it doesn't capture the criterion).
+4. Do NOT modify any production code.
+5. Do NOT mock the function/class under test — that defeats the assertion.
+
+## Report
+- Test file path and test name
+- What the test asserts (expected correct behavior)
+- Why it will fail against current code
+```
+
+2. Dispatch a `pipeline-test-runner` agent to verify the new test FAILS:
+
+```
+Run the new regression test to verify it fails against the current code.
+test_command: <test_command>
+specific_files: <test file from step 1>
+output_path: .mz/task/<task_name>/red_run_<criterion_slug>.md
+```
+
+3. If the test unexpectedly passes against current code: re-dispatch the test writer with the unexpected-pass note (max 2 retries), then escalate via AskUserQuestion if it still passes — the criterion may already be met or the test isn't capturing it.
+4. Once each newly-written test is RED, mark its criterion as `covered` in state.md and proceed. The fix dispatched in 4.2 must turn it green without modifying it.
+
+If no `uncovered` criteria remain (all already had tests, or this loop has run before), skip 4.1.5.
+
 ### 4.2 Fix
 
 Determine fix strategy based on failure count and complexity. All fixes MUST be performed by dispatching a `pipeline-coder` agent — the orchestrator never edits code directly.
@@ -53,7 +96,8 @@ Read .mz/task/<task_name>/research.md if it exists for root cause analysis.
 2. Fix ONLY the specific issues listed — do not refactor or improve other code
 3. Do not touch code unrelated to the failures
 4. If a scope constraint is set, do not edit files outside it
-5. After fixing, list all files you modified
+5. Do NOT modify any test file — including tests written in this task's TDD lane (Phase 4.1.5). If a test seems wrong, return STATUS: NEEDS_CONTEXT instead.
+6. After fixing, list all files you modified
 
 Focus on making the criteria pass. Nothing more.
 ```
