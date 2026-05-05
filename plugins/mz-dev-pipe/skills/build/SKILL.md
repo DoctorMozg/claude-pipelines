@@ -40,7 +40,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ## Constants
 
-- **MAX_REVIEW_ITERATIONS**: 3 | **TASK_DIR**: `.mz/task/`
+- **MAX_REVIEW_ITERATIONS**: 3 | **MAX_RED_ITERATIONS**: 2 | **MAX_GREEN_ITERATIONS**: 3 | **TASK_DIR**: `.mz/task/`
 
 ## Core Process
 
@@ -124,15 +124,7 @@ Run the new tests and confirm they FAIL (or error with `not implemented` / missi
 
 ### Phase 6: Implementation (GREEN)
 
-Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). Each coder is told the relevant failing tests and instructed to make them pass **without modifying any test file**. See `phases/implementation_and_review.md` → Phase 6. Update state to `implementation_complete`.
-
-**After each wave completes (all coders in the wave return), update `.mz/task/<task_name>/state.md` with:**
-
-- `current_wave: N`
-- Per-coder results: STATUS (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) for each work unit
-- Cumulative list of files modified (from `implementation.md` or each coder's artifact)
-
-This state update is mandatory — it enables safe resumption if context is compacted between waves.
+Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). Each coder is told the relevant failing tests and instructed to make them pass **without modifying any test file**. After each wave, update state with `current_wave: N`, per-coder STATUS, and cumulative files modified — required for safe resumption if context compacts. See `phases/implementation_and_review.md` → Phase 6. Update state to `implementation_complete`.
 
 ### Phase 7: Code Review
 

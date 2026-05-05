@@ -206,7 +206,7 @@ Read `.mz/task/<task_name>/test_results.md`.
 
 **If STATUS: DONE_WITH_CONCERNS** (failures exist):
 
-Set `green_iteration = 0`. Max iterations: 3.
+Set `green_iteration = 0`. Max iterations: `MAX_GREEN_ITERATIONS`.
 
 - Extract the failed test list from `test_results.md`. Classify each:
   - **TDD test (from `.mz/task/<task_name>/tests.md`) failing** — implementation does not yet satisfy that test. Coder must finish the work; do NOT delete or weaken the test.
@@ -216,7 +216,7 @@ Set `green_iteration = 0`. Max iterations: 3.
 - **Check coder STATUS.** If `BLOCKED`: break the loop, escalate via AskUserQuestion with the blocker details and the failing test list. Do not continue iterating.
 - Re-dispatch `pipeline-test-runner` to re-run.
 - **Check test-runner STATUS.** If `BLOCKED` (e.g., command not found, exit 127): break the loop, escalate via AskUserQuestion. Do not retry a permanently unavailable test command.
-- Repeat up to 3 iterations. If still failing after 3 attempts, escalate via AskUserQuestion.
+- Repeat up to `MAX_GREEN_ITERATIONS` iterations. If still failing after `MAX_GREEN_ITERATIONS` attempts, escalate via AskUserQuestion.
 
 ### 8.4 Re-run linters after fixes
 
