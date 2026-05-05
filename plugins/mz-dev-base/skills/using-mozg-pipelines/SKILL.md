@@ -1,6 +1,6 @@
 ---
 name: using-mozg-pipelines
-description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-hooks, mz-memory, mz-biz-outreach, mz-creative.
+description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-memory, mz-biz-outreach, mz-creative.
 argument-hint: '[task description]'
 model: haiku
 allowed-tools: Read, AskUserQuestion
@@ -61,7 +61,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "find leads", "customers matching X", "outreach list"                                 | lead-gen             | mz-biz-outreach |
 | "brainstorm", "generate ideas", "creative options"                                    | brainstorm           | mz-creative     |
 
-mz-dev-hooks contributes safety gates (pre-tool checks) and has no user-facing skills. mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
+mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
 
 ## Common Rationalizations
 

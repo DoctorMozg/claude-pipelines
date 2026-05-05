@@ -42,7 +42,6 @@ At session start, the first 200 lines of `MEMORY.md` are injected as `additional
 ## Pair With
 
 - **mz-dev-pipe**: Pipeline agents (planner, coder) have `memory: project` for agent-specific persistent memory
-- **mz-dev-hooks**: Safety gates work alongside memory hooks without conflict
 
 ## Per-Agent Native Memory
 

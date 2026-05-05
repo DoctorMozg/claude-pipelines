@@ -78,19 +78,18 @@ Plugin-level hooks live at `plugins/<name>/hooks/hooks.json`. The structure has 
 ```json
 {
   "hooks": {
-    "PreToolUse": [
+    "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          {"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/secret-scanner.sh"},
-          {"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/file-safety-guard.sh"}
+          {"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/frontmatter-normalize.sh"}
         ]
-      },
+      }
+    ],
+    "SessionStart": [
       {
-        "matcher": "Bash",
-        "if": "Bash(git commit*)",
         "hooks": [
-          {"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/commit-quality.sh"}
+          {"type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/vault-context.sh", "once": true}
         ]
       }
     ]
@@ -175,7 +174,7 @@ inject_memory "PostCompact" "[PostCompact] Project memory" || exit 0
 Hooks run synchronously and block the event. A slow hook is felt as latency on every tool call.
 
 - Target: under 100ms per hook on warm cache. Never invoke network calls, language servers, or full project scans.
-- For matchers that fire on every `Bash` call (like `dangerous-cmd-guard.sh`), every regex you add is paid on every shell command. Order patterns most-likely-first and `exit 0` early.
+- For matchers that fire on every tool call, every regex you add is paid on every invocation. Order patterns most-likely-first and `exit 0` early.
 - Linters, type-checkers, and test runners belong in skills or `Stop` hooks — not in `PreToolUse`.
 
 ## 13. Failure Discipline
@@ -216,8 +215,8 @@ Every hook script must be runnable without the harness. Provide a manual invocat
 CLAUDE_PROJECT_DIR=. bash plugins/mz-memory/scripts/memory-inject.sh
 
 # PreToolUse smoke — feed a synthetic event on stdin
-echo '{"tool_input":{"command":"rm -rf /"}}' \
-  | bash plugins/mz-dev-hooks/scripts/dangerous-cmd-guard.sh
+echo '{"tool_input":{"file_path":"note.md","content":"---\ntitle: x\n---"}}' \
+  | bash plugins/mz-knowledge/scripts/frontmatter-normalize.sh
 echo "exit=$?"
 ```
 

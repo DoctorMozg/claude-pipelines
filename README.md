@@ -186,7 +186,6 @@ claude plugin marketplace add DoctorMozg/claude-pipelines
 # Install the plugins you need
 claude plugin install mz-dev-base       # Standalone agents + rules
 claude plugin install mz-dev-pipe       # Autonomous dev pipelines
-claude plugin install mz-dev-hooks      # Safety gates + workflow hooks
 claude plugin install mz-memory         # Cross-session project memory
 claude plugin install mz-biz-outreach   # Business lead generation
 claude plugin install mz-design         # UI/UX design documents
@@ -350,23 +349,6 @@ Full lifecycle for a personal Obsidian vault — bootstrap, capture, atomize, tr
 11 agents (capture-normalizer, triage-scorer, atomization-proposer, link-suggester, provenance-tracer, schema-validator, vault-query-answerer, vault-refactor-scanner, vault-refactor-writer, vault-audit-collector, moc-gap-detector).
 
 **[Full documentation →](plugins/mz-knowledge/)**
-
-______________________________________________________________________
-
-### [`mz-dev-hooks`](plugins/mz-dev-hooks/) — Development Workflow Hooks
-
-Deterministic safety gates. Shell scripts block dangerous actions at zero token cost.
-
-| Hook                    | Event      | Type    | Behavior                                               |
-| ----------------------- | ---------- | ------- | ------------------------------------------------------ |
-| Dangerous command guard | PreToolUse | command | **Blocks** rm -rf /, force push main, DROP TABLE, etc. |
-| Secret scanner          | PreToolUse | command | **Blocks** API keys, tokens, private keys in code      |
-| File safety guard       | PreToolUse | command | **Blocks** edits to lock files, .env, vendor dirs      |
-| Commit quality          | PreToolUse | command | **Warns** on non-conventional commit messages          |
-
-No configuration required — hooks activate automatically on install.
-
-**[Full documentation →](plugins/mz-dev-hooks/)**
 
 ## How It Works
 
