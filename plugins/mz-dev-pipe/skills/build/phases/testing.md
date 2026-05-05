@@ -192,7 +192,7 @@ Read `.mz/task/<task_name>/red_run.md`.
 
 ### 5.3 Handle results
 
-Set `red_iteration = 0`. Max iterations: 2.
+Set `red_iteration = 0`. Max iterations: `MAX_RED_ITERATIONS`.
 
 Classify each test in the run output:
 
@@ -206,7 +206,7 @@ Classify each test in the run output:
 
 **If every test failed or errored as expected**: save snapshot (5.4) and proceed to Phase 6.
 
-**If any tests unexpectedly passed AND `red_iteration < 2`**:
+**If any tests unexpectedly passed AND `red_iteration < MAX_RED_ITERATIONS`**:
 
 - Increment `red_iteration`.
 - Re-dispatch `pipeline-test-writer` (model: **opus**) with the unexpected-pass list and the instruction:
@@ -221,7 +221,7 @@ Rewrite each of these tests so they assert the actual behavior the plan promises
 
 - After the rewrite returns, jump back to 5.2.
 
-**If `red_iteration >= 2` and tests still unexpectedly pass**: escalate via AskUserQuestion with the unexpected-pass list and plan excerpts. Do not proceed to Phase 6 — silently broken tests defeat the entire pipeline.
+**If `red_iteration >= MAX_RED_ITERATIONS` and tests still unexpectedly pass**: escalate via AskUserQuestion with the unexpected-pass list and plan excerpts. Do not proceed to Phase 6 — silently broken tests defeat the entire pipeline.
 
 ### 5.4 Save RED snapshot
 
