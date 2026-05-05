@@ -94,21 +94,6 @@
     },
     {
       "category": "development",
-      "description": "Development workflow hooks \u2014 safety gates, secret scanning, formatting reminders, and test awareness for any project type",
-      "keywords": [
-        "hooks",
-        "safety",
-        "secrets",
-        "formatting",
-        "testing",
-        "commit-quality"
-      ],
-      "name": "mz-dev-hooks",
-      "source": "./plugins/mz-dev-hooks",
-      "version": "0.28.0"
-    },
-    {
-      "category": "development",
       "description": "Cross-session project memory \u2014 automatic knowledge persistence, injection, and compaction recovery",
       "keywords": [
         "memory",
