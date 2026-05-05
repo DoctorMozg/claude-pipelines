@@ -58,11 +58,19 @@ For every file path in the plan:
 
 ### Step 4: Evaluate Test Strategy
 
+The downstream pipeline (build skill) writes tests BEFORE any implementation exists, so the plan must support test-first authorship.
+
 - Does every work unit have at least one test?
 - Are edge cases realistic and comprehensive?
 - Are negative/error cases covered?
 - Would these tests actually catch regressions?
 - Is the test strategy achievable with the project's test infrastructure?
+- **Test-first authorability**: for each work unit, can a test writer with NO reference implementation author the listed tests from the plan alone? Specifically:
+  - Is the public interface (signatures, inputs, outputs, error types) concrete?
+  - Are inputs and expected outputs specified with concrete values, or only as "valid input → correct result" abstractions that require reading an implementation to instantiate?
+  - Are error tests pinned to specific exception classes or sentinel values?
+  - Do any test descriptions implicitly assume access to the implementation ("asserts the same result the function returns", "matches the cache eviction policy")?
+- A plan that fails any test-first authorability check is `Critical:` — it cannot drive TDD.
 
 ### Step 5: Architecture Assessment
 
@@ -81,7 +89,7 @@ For every file path in the plan:
 
 Prefix every finding title with exactly one severity label:
 
-- `Critical:` — plan flaw that will cause incorrect implementation, missed requirements, broken integration, unsafe parallelism, or a test strategy that cannot catch regressions. Blocks verdict.
+- `Critical:` — plan flaw that will cause incorrect implementation, missed requirements, broken integration, unsafe parallelism, a test strategy that cannot catch regressions, or a test strategy whose tests cannot be authored without first reading an implementation that does not yet exist. Blocks verdict.
 - `Nit:` — minor wording or organization issue; advisory only.
 - `Optional:` — improvement suggestion; advisory only.
 - `FYI:` — informational observation; advisory only.

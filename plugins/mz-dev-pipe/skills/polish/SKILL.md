@@ -12,6 +12,8 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdat
 
 Orchestrates iterative polish of existing code against specific completion criteria. Unlike `build` which builds from scratch, polish works with what's already there — running tests, diagnosing failures, fixing issues with review loops, and optimizing.
 
+When a behavioral criterion is not yet covered by any test, polish writes the test first (TDD-style), verifies it fails against the current code, then fixes. This keeps every fix anchored to a regression-catching assertion.
+
 ## When to Use
 
 - User has existing code that needs to meet specific criteria or quality standards.

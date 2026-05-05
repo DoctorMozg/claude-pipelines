@@ -22,7 +22,7 @@ ______________________________________________________________________
 
 ### 1.1 Codebase exploration
 
-Read `.mz/task/<task_name>/tooling.md` if it exists (written during Phase 0 setup). Include the detected test command and lint command in the context passed to `pipeline-planner` agents, so coders in Phase 3 know the correct commands.
+Read `.mz/task/<task_name>/tooling.md` if it exists (written during Phase 0 setup). Include the detected test command and lint command in the context passed to `pipeline-planner` agents, so the test writer (Phase 3), coders (Phase 6), and lint/test runners (Phase 8) all use the right commands.
 
 Spawn a `pipeline-researcher` agent (model: **sonnet**) with:
 
@@ -126,25 +126,33 @@ ______________________________________________________________________
 Spawn a `pipeline-planner` agent (model: **opus**) with:
 
 ```
-You are planning the implementation of this task:
+You are planning the implementation of this task using test-driven development:
 <task description>
 
 Read the research file at .mz/task/<task_name>/research.md for codebase context, feasibility analysis, and the recommended approach.
+
+The pipeline runs in TDD order: tests are written and verified failing BEFORE any implementation code. Your plan must produce work units that are testable before they exist.
 
 Create a detailed implementation plan with:
 
 1. **Chosen Approach** — Which approach from the research you're building on and why. If you deviate from the recommended approach, explain the reasoning. List alternatives considered (from research) so the user can evaluate the choice.
 2. **Summary** — What we're building and why
-3. **Work Units** — Break the implementation into independent, parallelizable units where possible. Each unit should specify:
+3. **Work Units** — Break the implementation into independent, parallelizable units where possible. Each unit must specify:
    - Files to create or modify (with paths)
+   - The PUBLIC INTERFACE the unit will expose: function/method/class signatures, inputs, outputs, error modes, side effects. The test writer will turn this directly into assertions before any implementation exists, so the interface must be concrete.
    - What changes to make (specific enough for a developer to implement without guessing)
    - Dependencies on other work units (if any)
-4. **Test Strategy** — What tests to write, what to cover, edge cases
+4. **Test Strategy** — Per work unit, list the specific tests required:
+   - Happy-path tests (one or more)
+   - Boundary / edge-case tests with concrete input values
+   - Error-path tests with the exact error class or sentinel expected
+   - Integration tests for cross-unit interactions
+   Each test must be specified in enough detail that the test writer can author it from the plan alone, with NO access to a reference implementation. Avoid "TBD — see implementation".
 5. **Risk Assessment** — What could go wrong, what to watch out for. Address risks identified in the feasibility analysis.
-6. **Verification Criteria** — How we know the task is truly complete
+6. **Verification Criteria** — How we know the task is truly complete (these become assertions, not just prose).
 
 Mark each work unit as either PARALLEL (can run simultaneously with others) or SEQUENTIAL (depends on prior units).
-Be specific about file paths and function signatures. Vague plans waste time.
+Be specific about file paths and function signatures. Vague plans waste time — and in TDD they break Phase 3 entirely.
 ```
 
 Save output to `.mz/task/<task_name>/plan.md`.
@@ -158,9 +166,11 @@ Set `plan_iteration = 0`.
 Spawn a `pipeline-plan-reviewer` agent (model: **sonnet**) with:
 
 ```
-Review this implementation plan for the task: <task description>
+Review this TDD implementation plan for the task: <task description>
 
 Read the plan at .mz/task/<task_name>/plan.md and the research at .mz/task/<task_name>/research.md.
+
+The downstream pipeline writes tests BEFORE any production code. The plan must support that — tests must be authorable from the plan alone, with no reference implementation.
 
 Evaluate:
 1. **Feasibility** — Is the chosen approach achievable? Does it respect the constraints identified in research? If the plan deviates from the recommended approach, is the reasoning sound?
@@ -168,8 +178,15 @@ Evaluate:
 3. **Correctness** — Are the proposed changes technically sound?
 4. **Architecture** — Does it fit the existing codebase patterns? Any anti-patterns?
 5. **Parallelizability** — Are work units properly split for parallel execution?
-6. **Testability** — Is the test strategy comprehensive? Missing edge cases?
-7. **Risk** — Are risks properly identified? Does it address risks from the feasibility analysis?
+6. **Test-first authorability** — Critical for TDD. For each work unit, can a test writer with NO reference implementation write the listed tests from the plan alone? Specifically:
+   - Is the public interface concrete (signatures, inputs, outputs, error types)?
+   - Are inputs and expected outputs specified for each test, with concrete values rather than "valid input → correct result"?
+   - Are error tests pinned to specific exception types or sentinel values?
+   - Do any test descriptions implicitly assume access to the implementation (e.g. "asserts the same value the function computes")?
+7. **Test coverage** — Does every work unit have happy-path, edge-case, and error-path tests? Is integration coverage adequate?
+8. **Risk** — Are risks properly identified? Does it address risks from the feasibility analysis?
+
+A plan that fails any "Test-first authorability" check is FAIL — it cannot drive TDD.
 
 Output a structured review:
 - **VERDICT**: PASS or FAIL

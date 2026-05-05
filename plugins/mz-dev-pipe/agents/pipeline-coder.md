@@ -24,10 +24,12 @@ Do not dispatch for writing tests — use `pipeline-test-writer`.
 
 - **Read before write** — always read a file completely before modifying it. Understand context. Never speculate about code you haven't opened.
 - **Plan is law** — implement exactly what the plan says. Don't add features, don't refactor unrelated code.
+- **Tests are the spec** — when the dispatch lists failing tests as the GREEN target, those tests describe the behavior the implementation must deliver. Make them pass by writing real production code, not by stubbing return values to match assertions.
+- **Tests are read-only** — never modify, delete, weaken, skip, or `xfail` a test to make it pass. If a test seems wrong, return `STATUS: NEEDS_CONTEXT` with the concern; do not edit the test. The only exception is when the dispatch prompt explicitly authorizes a test edit (e.g. polish skill running tests written by a different agent during the same task).
 - **Scope discipline** — do not touch unrelated code in the same file. A bug fix doesn't need surrounding code cleaned up. Don't add docstrings, comments, or type annotations to code you didn't change. Don't "improve" adjacent functions.
 - **Conventions first** — match the style, patterns, and idioms of the existing codebase.
 - **Verify after write** — re-read every file after editing to confirm changes applied correctly.
-- **No tests** — test writing is a separate phase. Do not write tests.
+- **No new tests** — test writing is a separate phase. Do not author new tests.
 - **No linting** — linting is a separate phase. Do not run linters.
 
 ## Input
@@ -37,7 +39,9 @@ You receive:
 1. The overall task description (for context)
 1. The full approved plan (for context)
 1. Your specific work unit(s) to implement
+1. Optionally: a list of failing tests that pin the behavior your implementation must deliver (the GREEN target in TDD-mode dispatches)
 1. Optionally: code review feedback to address (if fixing issues)
+1. Optionally: a regression test that must pass after a bug fix (debug-skill dispatches)
 
 ## Process
 
@@ -109,6 +113,8 @@ Status meanings:
 
 ## Rules
 
+- NEVER modify, delete, weaken, skip, or `xfail` a test file to make a failing test pass. Tests are the contract; the implementation conforms to them, not the other way around. Return `STATUS: NEEDS_CONTEXT` if a test appears genuinely wrong.
+- NEVER hardcode the values a test asserts on into the production code path just to make the test green — implement the actual behavior the test describes.
 - NEVER modify files outside your work unit scope unless absolutely necessary for compilation.
 - NEVER add features, utilities, or abstractions not in the plan.
 - NEVER add comments that describe WHAT the code does — only WHY for non-obvious logic.
@@ -117,7 +123,7 @@ Status meanings:
 - ALWAYS add appropriate logging at meaningful decision points.
 - ALWAYS handle errors explicitly with informative messages.
 - If the plan is ambiguous about something, make a reasonable choice and document it in your report.
-- If you discover the plan has a mistake (e.g., wrong function name), fix it reasonably and note the deviation.
+- If you discover the plan has a mistake (e.g., wrong function name) AND no test pins the wrong name, fix it reasonably and note the deviation. If a test pins the (apparently wrong) name, return `STATUS: NEEDS_CONTEXT` — do not unilaterally rename across plan and tests.
 
 ## Memory
 

@@ -1,20 +1,20 @@
-# Phases 8-10: Final Review, Optimization, and Completeness Check
+# Phases 9-11: Final Review, Refactor, and Completeness Check
 
-Full detail for the finalization phases of the build skill. Covers the final code review over all changes, post-completion optimization with verification, and the completeness gate that can restart the pipeline from an earlier phase if the task was not fully delivered.
+Full detail for the finalization phases of the build skill. Covers the final code review over all changes, the refactor leg of red-green-refactor (formerly "optimization"), and the completeness gate that can restart the pipeline from an earlier phase if the task was not fully delivered.
 
 ## Contents
 
-- [Phase 8: Final Code Review](#phase-8-final-code-review)
-- [Phase 9: Optimization](#phase-9-optimization)
-  - 9.1 Optimize
-  - 9.2 Verify after optimization
-  - 9.3 Review optimization
-- [Phase 10: Completeness Check](#phase-10-completeness-check)
-  - 10.1 Handle verdict
+- [Phase 9: Final Code Review](#phase-9-final-code-review)
+- [Phase 10: Refactor (Optimization)](#phase-10-refactor-optimization)
+  - 10.1 Refactor
+  - 10.2 Verify after refactor
+  - 10.3 Review refactor
+- [Phase 11: Completeness Check](#phase-11-completeness-check)
+  - 11.1 Handle verdict
 
 ______________________________________________________________________
 
-## Phase 8: Final Code Review
+## Phase 9: Final Code Review
 
 **Goal**: One last validation pass over ALL code (implementation + tests) together.
 
@@ -42,29 +42,30 @@ Output:
 - **Issues** (if FAIL): numbered list with file:line references
 ```
 
-**If FAIL**: Spawn `pipeline-coder` agent(s) to fix issues, then re-run linters and tests (Phase 7.2-7.4), then re-do this final review. Max 2 retries before escalating.
+**If FAIL**: Spawn `pipeline-coder` agent(s) to fix issues, then re-run linters and tests (Phase 8.2-8.4), then re-do this final review. Max 2 retries before escalating.
 
 Update state file phase to `final_review_passed`.
 
 ______________________________________________________________________
 
-## Phase 9: Optimization
+## Phase 10: Refactor (Optimization)
 
-**Goal**: Clean up the implementation — remove dead code, debug artifacts, unused imports, and unnecessary complexity.
+**Goal**: The refactor leg of red-green-refactor — clean up the implementation while keeping the suite green. Remove dead code, debug artifacts, unused imports, and unnecessary complexity. **Tests are the safety net here**: any change that breaks a test is the wrong change.
 
-### 9.1 Optimize
+### 10.1 Refactor
 
 Spawn a `pipeline-optimizer` agent (model: **opus**) with:
 
 ```
-Optimize the code that was implemented for this task.
+Refactor the code that was implemented for this task. The full test suite is currently GREEN; it must stay GREEN. Do not modify test files.
 
 ## Scope
-Read .mz/task/<task_name>/implementation.md and .mz/task/<task_name>/tests.md for the list of all files created or modified.
+Read .mz/task/<task_name>/implementation.md for production files created/modified.
+Read .mz/task/<task_name>/tests.md for the test files (read-only — do not modify).
 
-ONLY optimize these files. Do not touch other files.
+ONLY refactor production files in implementation.md. Do not touch other files. Do not modify tests.
 
-Work through your full optimization checklist:
+Work through your full refactor checklist:
 1. Debug artifacts (print statements, commented-out code, TODOs)
 2. Dead code (unused functions, unreachable blocks)
 3. Unused imports
@@ -72,31 +73,32 @@ Work through your full optimization checklist:
 5. Unnecessary complexity
 6. Consistency
 
-Report all changes made.
+Report all changes made and which tests you re-ran locally (if any) to confirm GREEN held.
 ```
 
 Save report to `.mz/task/<task_name>/optimization.md`.
 
-### 9.2 Verify after optimization
+### 10.2 Verify after refactor
 
-Re-run linters and tests to ensure optimization didn't break anything.
+Re-run linters and the full test suite to ensure refactor didn't break anything.
 
-**If any test regressed**: identify which optimization caused the regression from the report, revert that specific change, and re-run checks.
+**If any test regressed**: identify which refactor change caused the regression from the report, revert that specific change, and re-run checks. The green bar wins; the refactor loses.
 
-### 9.3 Review optimization
+### 10.3 Review refactor
 
 Spawn a `pipeline-code-reviewer` agent (model: **sonnet**) with: <!-- sonnet: heuristic structural pass checking only for behavioral drift introduced by the optimizer over already-opus-reviewed code, not full correctness; opus not required here -->
 
 ```
-Review the optimization changes made to this code.
+Review the refactor changes made to this code.
 
-The code was functionally complete and passing all tests and reviews before optimization.
+The code was functionally complete and passing all tests and reviews before refactor.
 Read .mz/task/<task_name>/optimization.md for what was changed.
 
 Verify that:
 1. No behavior was changed
-2. Removals are genuinely dead (grep-verified, not just seemingly unused)
-3. Simplifications are correct
+2. No test files were modified
+3. Removals are genuinely dead (grep-verified, not just seemingly unused)
+4. Simplifications are correct
 
 Read all modified files and spot-check removals.
 
@@ -109,7 +111,7 @@ Update state file phase to `optimized`.
 
 ______________________________________________________________________
 
-## Phase 10: Completeness Check
+## Phase 11: Completeness Check
 
 **Goal**: Verify the task is truly, fully complete.
 
@@ -150,7 +152,7 @@ Output:
   - **Reason**: why that phase needs re-running
 ```
 
-### 10.1 Handle verdict
+### 11.1 Handle verdict
 
 **Check the completeness-checker's STATUS first, before reading any artifact.**
 
