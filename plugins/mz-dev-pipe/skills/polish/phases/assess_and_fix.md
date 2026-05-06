@@ -18,9 +18,9 @@ Record results for each criterion: PASS or FAIL with details.
 
 Categorize each failing criterion:
 
-| Criterion   | Status    | Failure Type                                                 | Coverage              | Complexity                  |
-| ----------- | --------- | ------------------------------------------------------------ | --------------------- | --------------------------- |
-| <criterion> | PASS/FAIL | test_failure / lint_error / missing_feature / behavioral_bug | covered / uncovered   | simple / moderate / complex |
+| Criterion   | Status    | Failure Type                                                 | Coverage            | Complexity                  |
+| ----------- | --------- | ------------------------------------------------------------ | ------------------- | --------------------------- |
+| <criterion> | PASS/FAIL | test_failure / lint_error / missing_feature / behavioral_bug | covered / uncovered | simple / moderate / complex |
 
 - **Failure type**:
   - `simple`: formatting, unused import, typo — fix directly without subagent.
