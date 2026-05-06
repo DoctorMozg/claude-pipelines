@@ -46,20 +46,20 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase Overview
 
-| #   | Phase                              | Reference                             | Loop?               |
-| --- | ---------------------------------- | ------------------------------------- | ------------------- |
-| 0   | Setup                              | inline below                          | —                   |
-| 1   | Research                           | `phases/research_and_planning.md`     | —                   |
-| 2   | Planning + User Approval           | `phases/research_and_planning.md`     | plan review (max 3) |
-| 3   | Test Writing (RED)                 | `phases/testing.md`                   | —                   |
-| 4   | Test Review (3 parallel reviewers) | `phases/testing.md`                   | max 3               |
-| 5   | Verify RED                         | `phases/testing.md`                   | max 2               |
-| 6   | Implementation (GREEN, parallel waves) | `phases/implementation_and_review.md` | —               |
-| 7   | Code Review                        | `phases/implementation_and_review.md` | max 3               |
-| 8   | Lint, Format, and Verify GREEN     | `phases/implementation_and_review.md` | —                   |
-| 9   | Final Code Review                  | `phases/finalization.md`              | max 2               |
-| 10  | Refactor (Optimization)            | `phases/finalization.md`              | max 2               |
-| 11  | Completeness Check                 | `phases/finalization.md`              | restart-from-phase  |
+| #   | Phase                                  | Reference                             | Loop?               |
+| --- | -------------------------------------- | ------------------------------------- | ------------------- |
+| 0   | Setup                                  | inline below                          | —                   |
+| 1   | Research                               | `phases/research_and_planning.md`     | —                   |
+| 2   | Planning + User Approval               | `phases/research_and_planning.md`     | plan review (max 3) |
+| 3   | Test Writing (RED)                     | `phases/testing.md`                   | —                   |
+| 4   | Test Review (3 parallel reviewers)     | `phases/testing.md`                   | max 3               |
+| 5   | Verify RED                             | `phases/testing.md`                   | max 2               |
+| 6   | Implementation (GREEN, parallel waves) | `phases/implementation_and_review.md` | —                   |
+| 7   | Code Review                            | `phases/implementation_and_review.md` | max 3               |
+| 8   | Lint, Format, and Verify GREEN         | `phases/implementation_and_review.md` | —                   |
+| 9   | Final Code Review                      | `phases/finalization.md`              | max 2               |
+| 10  | Refactor (Optimization)                | `phases/finalization.md`              | max 2               |
+| 11  | Completeness Check                     | `phases/finalization.md`              | restart-from-phase  |
 
 ### Phase 0: Setup
 
@@ -152,13 +152,13 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-| Rationalization                              | Rebuttal                                                                                                  |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| "plan is fine without review"                | "plan review catches integration gaps that become 3 review cycles downstream"                             |
-| "tests can wait until after first ship"      | "missing tests on Day 1 become 'why is this flaky?' in Week 2"                                            |
-| "one big commit is easier"                   | "atomic commits are the only way to bisect a regression cheaply"                                          |
-| "I'll write code first, tests are easier after" | "tests written after the code mirror the implementation; tests written first describe the behavior" |
-| "skip the RED check, of course they fail"   | "tests that pass against missing code are silently broken — Phase 5 catches mock-only or import-only tests" |
+| Rationalization                                 | Rebuttal                                                                                                    |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| "plan is fine without review"                   | "plan review catches integration gaps that become 3 review cycles downstream"                               |
+| "tests can wait until after first ship"         | "missing tests on Day 1 become 'why is this flaky?' in Week 2"                                              |
+| "one big commit is easier"                      | "atomic commits are the only way to bisect a regression cheaply"                                            |
+| "I'll write code first, tests are easier after" | "tests written after the code mirror the implementation; tests written first describe the behavior"         |
+| "skip the RED check, of course they fail"       | "tests that pass against missing code are silently broken — Phase 5 catches mock-only or import-only tests" |
 
 ## Red Flags
 

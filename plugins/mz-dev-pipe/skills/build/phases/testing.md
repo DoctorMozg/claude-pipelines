@@ -196,11 +196,11 @@ Set `red_iteration = 0`. Max iterations: `MAX_RED_ITERATIONS`.
 
 Classify each test in the run output:
 
-| Result                              | Interpretation                                                | Action                                                    |
-| ----------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
-| **Fails (assertion or exception)**  | Correctly RED. Implementation does not exist yet.             | Good. Counts toward RED bar.                              |
-| **Errors (import / collection)**    | Production module not present. Acceptable RED form.           | Good. Counts toward RED bar.                              |
-| **Passes**                          | Test asserts something already true (e.g. `assert True`, mock-only, no real assertion). | **Broken test.** Add to "unexpected pass" list. |
+| Result                             | Interpretation                                                                          | Action                                          |
+| ---------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **Fails (assertion or exception)** | Correctly RED. Implementation does not exist yet.                                       | Good. Counts toward RED bar.                    |
+| **Errors (import / collection)**   | Production module not present. Acceptable RED form.                                     | Good. Counts toward RED bar.                    |
+| **Passes**                         | Test asserts something already true (e.g. `assert True`, mock-only, no real assertion). | **Broken test.** Add to "unexpected pass" list. |
 
 **If the entire run failed to execute** (e.g. `STATUS: BLOCKED`, exit 127, missing test runner): escalate via AskUserQuestion. Do not retry a permanently unavailable test command.
 

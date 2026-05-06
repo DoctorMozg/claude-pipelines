@@ -54,7 +54,7 @@ output_path: .mz/task/<task_name>/red_run_<criterion_slug>.md
 ```
 
 3. If the test unexpectedly passes against current code: re-dispatch the test writer with the unexpected-pass note (max 2 retries), then escalate via AskUserQuestion if it still passes — the criterion may already be met or the test isn't capturing it.
-4. Once each newly-written test is RED, mark its criterion as `covered` in state.md and proceed. The fix dispatched in 4.2 must turn it green without modifying it.
+1. Once each newly-written test is RED, mark its criterion as `covered` in state.md and proceed. The fix dispatched in 4.2 must turn it green without modifying it.
 
 If no `uncovered` criteria remain (all already had tests, or this loop has run before), skip 4.1.5.
 
