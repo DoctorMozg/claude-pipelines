@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read, Write
 
 ## Overview
 
-Conduct exhaustive, multi-agent research on a topic by decomposing it into independent domains, dispatching parallel domain-researcher agents, and synthesizing findings into a single report under `.mz/research/`.
+Conduct exhaustive, multi-agent research on a topic by decomposing it into independent domains, dispatching parallel pipeline-web-researcher agents, and synthesizing findings into a single report under `.mz/research/`.
 
 ## When to Use
 
@@ -19,7 +19,7 @@ Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is 
 ### When NOT to use
 
 - The user wants a one-line factual answer — use plain web search.
-- The topic is narrow enough for a single domain-researcher agent — dispatch directly.
+- The topic is narrow enough for a single pipeline-web-researcher agent — dispatch directly.
 - The user wants a code review or audit — use `review-branch` or `audit`.
 
 ## Arguments
@@ -73,7 +73,7 @@ Before invoking AskUserQuestion, emit a text block to the user:
 **Decomposition ready for review**
 The research topic has been broken into 3–7 independent subtopics, each researchable independently and broad enough to warrant substantial research.
 
-- **Approve** → proceed to parallel dispatch of domain-researcher agents across all subtopics
+- **Approve** → proceed to parallel dispatch of pipeline-web-researcher agents across all subtopics
 - **Reject** → abort the task and mark state as aborted_by_user
 - **Feedback** → adjust the decomposition and re-present the updated list for further review
 ```
@@ -96,9 +96,9 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → adjust the decomposition accordingly, overwrite `decomposition.md`, return to this gate, re-read `decomposition.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
 
-### 2. Dispatch parallel domain-researcher agents
+### 2. Dispatch parallel pipeline-web-researcher agents
 
-Launch a `domain-researcher` agent per subtopic in parallel. **See `phases/research_and_report.md` → Step 2** for the dispatch prompt template.
+Launch a `pipeline-web-researcher` agent per subtopic in parallel. **See `phases/research_and_report.md` → Step 2** for the dispatch prompt template.
 
 ### 3. Collect and synthesize
 

@@ -142,7 +142,7 @@ The three writing pipelines share a phase pattern. Every output goes through nat
 
 A few sensible chains across this plugin and the rest of the marketplace:
 
-- **Research → docs**: `/deep-research` (mz-dev-base) → `/document type:reference` — survey the field, then write the reference doc grounded in research findings.
+- **Research → docs**: `/deep-research` (mz-dev-pipe) → `/document type:reference` — survey the field, then write the reference doc grounded in research findings.
 - **Brainstorm → copy**: `/brainstorm <positioning angles>` → `/copywrite format:landing` — explore positioning ideas across lenses, then write the landing page from the winning angle.
 - **De-AI a draft**: `/naturalize @file:draft.md` — standalone clean-up of any AI-generated prose, with an optional in-place overwrite gate.
 - **Build a feature with documentation**: `/build` (mz-dev-pipe) → `/document type:reference` — ship the feature, then auto-document it.

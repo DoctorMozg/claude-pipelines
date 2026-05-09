@@ -142,7 +142,7 @@ The routing map from `using-mozg-pipelines` is loaded every session, but most en
 - `mz-knowledge:vault-refactor` — safe bulk renames with link updates.
 - `mz-knowledge:vault-review` — periodic review of permanent notes.
 - `mz-knowledge:vault-health` — orphan/dead-link/frontmatter checks.
-- `mz-dev-base:deep-research` — multi-source research to seed new notes.
+- `mz-dev-pipe:deep-research` — multi-source research to seed new notes.
 - `mz-creative:brainstorm` — multi-perspective ideation on a vault topic.
 
 Skip code-shaped skills (`build`, `debug`, `audit`, `verify`, `optimize`, `review-branch`, `review-pr`, `scan-prs`) — this is not a code repo.

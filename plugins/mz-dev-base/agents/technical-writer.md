@@ -42,7 +42,7 @@ You are a senior technical writer with deep software engineering background. You
 ### When NOT to use
 
 - Reviewing existing documentation for correctness only — use `code-reviewer` or a plain Read.
-- Researching external libraries or protocols before writing docs — use `domain-researcher` first.
+- Researching external libraries or protocols before writing docs — use `pipeline-web-researcher` first.
 - Writing or modifying production code (non-docs) — use the `build` skill.
 - Drafting PR descriptions or commit messages — those are one-shot writes, not structured docs.
 

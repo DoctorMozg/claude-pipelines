@@ -12,7 +12,7 @@ Multi-agent plugins for [Claude Code](https://claude.com/claude-code). Autonomou
 
 ```mermaid
 flowchart LR
-    A["/deep-research"]:::base --> B["/build"]:::pipe
+    A["/deep-research"]:::pipe --> B["/build"]:::pipe
     B --> C["/verify"]:::pipe
     C --> D["/review-branch"]:::base
     classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
@@ -103,14 +103,14 @@ flowchart LR
 </details>
 
 <details>
-<summary><b>Outreach package in one evening</b> &nbsp;·&nbsp; <code>mz-biz-outreach</code> + <code>mz-dev-base</code> + <code>mz-creative</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
+<summary><b>Outreach package in one evening</b> &nbsp;·&nbsp; <code>mz-biz-outreach</code> + <code>mz-dev-pipe</code> + <code>mz-creative</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
 
 ```mermaid
 flowchart LR
-    A["/lead-gen"]:::outreach --> B["/deep-research"]:::base
+    A["/lead-gen"]:::outreach --> B["/deep-research"]:::pipe
     B --> C["/brainstorm"]:::creative
     classDef outreach fill:#fff1e5,stroke:#bc4c00,color:#bc4c00
-    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
     classDef creative fill:#fbefff,stroke:#8250df,color:#8250df
 ```
 
@@ -159,14 +159,14 @@ flowchart LR
 </details>
 
 <details>
-<summary><b>Ingest research into a knowledge base</b> &nbsp;·&nbsp; <code>mz-knowledge</code> + <code>mz-dev-base</code></summary>
+<summary><b>Ingest research into a knowledge base</b> &nbsp;·&nbsp; <code>mz-knowledge</code> + <code>mz-dev-pipe</code></summary>
 
 ```mermaid
 flowchart LR
-    A["/deep-research"]:::base --> B["/vault-research"]:::know
+    A["/deep-research"]:::pipe --> B["/vault-research"]:::know
     B --> C["/vault-provenance"]:::know
     C --> D["/vault-answer"]:::know
-    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
     classDef know fill:#fff8c5,stroke:#9a6700,color:#9a6700
 ```
 
@@ -213,10 +213,9 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | **review-branch** | `/review-branch`                                           | Reviews all changes on the current branch against main              |
 | **review-pr**     | `/review-pr <URL>`                                         | Deep-reviews a GitHub PR for bugs and architecture issues           |
 | **scan-prs**      | `/scan-prs [repos]`                                        | Scans repos for PRs needing your attention, produces a daily report |
-| **deep-research** | `/deep-research <topic>`                                   | Multi-agent web research with parallel domain experts               |
 | **init-rules**    | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 
-14 agents total: 6 user-facing (code-reviewer, branch-reviewer, pr-reviewer, pr-scanner, domain-researcher, technical-writer) plus 8 internal support agents dispatched by the user-facing skills (branch-info-collector, code-lens-{architecture,bugs,maintainability,performance,security}, github-pr-data-fetcher, pr-info-scorer). Ships 11 curated coding rules installable via `/init-rules`.
+13 agents total: 5 user-facing (code-reviewer, branch-reviewer, pr-reviewer, pr-scanner, technical-writer) plus 8 internal support agents dispatched by the user-facing skills (branch-info-collector, code-lens-{architecture,bugs,maintainability,performance,security}, github-pr-data-fetcher, pr-info-scorer). Ships 11 curated coding rules installable via `/init-rules`.
 
 **[Full documentation →](plugins/mz-dev-base/)**
 
@@ -226,19 +225,20 @@ ______________________________________________________________________
 
 Multi-agent orchestration skills that run full development workflows. Each skill coordinates specialized agents through phased pipelines with user approval gates.
 
-| Skill            | Command                     | What it does                                                                                                                              |
-| ---------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **build**        | `/build <task>`             | Research → plan → code → review → test                                                                                                    |
-| **audit**        | `/audit [focus]`            | Multi-lens codebase scan (correctness, security, performance, maintainability, reliability) → ranked fixes                                |
-| **debug**        | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify                                                                               |
-| **investigate**  | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                                                             |
-| **verify**       | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                                                     |
-| **polish**       | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                                                     |
-| **optimize**     | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                                                           |
-| **blast-radius** | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                                                         |
-| **explain**      | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                                                         |
-| **combine**      | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report                                  |
-| **translate**    | `/translate <request>`      | NL request → discovery → glossary seed → plan → parallel translation → tiered verification (structural + judge + uncertainty-driven deep) |
+| Skill             | Command                     | What it does                                                                                                                              |
+| ----------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **build**         | `/build <task>`             | Research → plan → code → review → test                                                                                                    |
+| **audit**         | `/audit [focus]`            | Multi-lens codebase scan (correctness, security, performance, maintainability, reliability) → ranked fixes                                |
+| **debug**         | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify                                                                               |
+| **investigate**   | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                                                             |
+| **verify**        | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                                                     |
+| **polish**        | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                                                     |
+| **optimize**      | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                                                           |
+| **blast-radius**  | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                                                         |
+| **explain**       | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                                                         |
+| **combine**       | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report                                  |
+| **deep-research** | `/deep-research <topic>`    | Multi-agent web research with parallel domain experts (decomposition gate → fan-out → synthesis report)                                   |
+| **translate**     | `/translate <request>`      | NL request → discovery → glossary seed → plan → parallel translation → tiered verification (structural + judge + uncertainty-driven deep) |
 
 15 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-runner, test-coverage-reviewer, test-quality-reviewer, lint-runner, optimizer, completeness-checker, tooling-detector, translator).
 

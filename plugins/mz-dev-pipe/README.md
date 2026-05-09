@@ -147,6 +147,19 @@ Synthesizes prior pipeline output — `.mz/research/` reports, `.mz/task/*/` art
 
 ______________________________________________________________________
 
+### `/deep-research` — Multi-Agent Research
+
+Splits a research topic into 3-7 independent subtopics, presents the decomposition for approval, then dispatches parallel `pipeline-web-researcher` agents that each scan 20-100 web pages and verify against primary sources. Synthesizes findings into a comprehensive report under `.mz/research/`.
+
+```
+/deep-research best practices for gRPC error handling in Go
+/deep-research comparison of vector databases for RAG pipelines
+```
+
+**Pipeline**: Decompose → User Approval → Parallel Web Research (one agent per subtopic) → Cross-Reference Synthesis → Report
+
+______________________________________________________________________
+
 ### `/translate` — Translation & Localization Pipeline
 
 Parses a natural-language request to identify source files, target language, and output mode. Seeds a glossary from the source, presents a translation plan for approval, then dispatches parallel `pipeline-translator` agents that preserve markdown structure, code blocks, and i18n placeholders. Verification is always on and organized into three tiers: Tier-1 structural checks inside the translator agent, Tier-2 LLM-as-Judge on every chunk (wave-split), and Tier-3 uncertainty-driven deep verification (Wiktionary + MyMemory + back-translation) on flagged chunks only.

@@ -51,7 +51,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "investigate", "dig into", "find root cause"                                          | investigate          | mz-dev-pipe     |
 | "blast radius", "what breaks if I change X", "impact analysis"                        | blast-radius         | mz-dev-pipe     |
 | "deep audit", "pre-PR audit", "ship audit", "before publishing", "before I open a PR" | deep-audit           | mz-dev-pipe     |
-| "research topic deeply", "survey the field"                                           | deep-research        | mz-dev-base     |
+| "research topic deeply", "survey the field"                                           | deep-research        | mz-dev-pipe     |
 | "bootstrap rules", "init project rules"                                               | init-rules           | mz-dev-base     |
 | "review my branch", "what changed locally"                                            | review-branch        | mz-dev-base     |
 | "review this PR", "what's wrong with this PR"                                         | review-pr            | mz-dev-base     |

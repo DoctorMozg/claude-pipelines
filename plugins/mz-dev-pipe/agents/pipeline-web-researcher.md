@@ -1,6 +1,6 @@
 ---
 name: pipeline-web-researcher
-description: Pipeline-only. Web-first research agent for pipeline skills. Conducts multi-source research, cross-references primary sources, and produces structured findings. Used by /combine for gap-fill and any pipeline skill that needs external verification.
+description: Web-first research agent. Multi-source research with strict source-hierarchy discipline and structured findings (Key Findings with confidence levels, Trend Analysis, Risks). Dispatched by /deep-research for parallel multi-subtopic fan-out, by /combine for gap-fill, and by branch-reviewer / pr-reviewer / technical-writer when unfamiliar domains need authoritative external research.
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high

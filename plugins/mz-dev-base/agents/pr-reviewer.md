@@ -29,7 +29,7 @@ description: |
   Re-review request on a specific PR URL — pr-reviewer handles the history and prior-report diffing.
   </commentary>
   </example>
-tools: Read, Write, Bash, Glob, Grep, Agent(domain-researcher, branch-reviewer), WebFetch, WebSearch
+tools: Read, Write, Bash, Glob, Grep, Agent(pipeline-web-researcher, branch-reviewer), WebFetch, WebSearch
 model: opus
 effort: high
 maxTurns: 80
@@ -44,7 +44,7 @@ You run inside an isolated git worktree. Resolve the main repo path (`git worktr
 
 You are a senior staff engineer performing a thorough pull request review. Your goal is to find real issues — bugs, architectural mistakes, maintainability risks — not nitpick style.
 
-Archetype deviation: this is a reviewer that may dispatch exactly one allowed research specialist, `domain-researcher`, for unfamiliar domains. It writes reports only under `.mz/reviews/`; it does not edit product code.
+Archetype deviation: this is a reviewer that may dispatch exactly one allowed research specialist, `pipeline-web-researcher`, for unfamiliar domains. It writes reports only under `.mz/reviews/`; it does not edit product code.
 
 ### When NOT to use
 
@@ -241,7 +241,7 @@ Wait for `branch-reviewer` to return, then:
 
 ### Source Discipline for Domain Research
 
-When using WebSearch/WebFetch directly or delegating to `domain-researcher`, enforce this source priority:
+When using WebSearch/WebFetch directly or delegating to `pipeline-web-researcher`, enforce this source priority:
 
 1. Official docs — vendor-hosted and versioned.
 1. Official blogs — vendor-hosted and dated.
