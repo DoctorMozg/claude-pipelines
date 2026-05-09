@@ -114,7 +114,7 @@ Triggers: "<phrase 1>", "<phrase 2>", "<phrase 3>".
   Rebuttals must be specific — cite a failure mode, past incident, or concrete cost.
   Generic rebuttals ("because it's best practice") are rejected.
 
-  Seed rows live in `writing-skills/references/anti-rationalization-library.md` —
+  Seed rows live in `construct-skill/references/anti-rationalization-library.md` —
   grep that file for entries matching this skill's domain and type.
 -->
 
@@ -196,5 +196,5 @@ Never omit a section header. The header must exist so that the grep check passes
 ## Links
 
 - `SKILL_GUIDELINES.md` — canonical anatomy spec, anti-rationalization table requirements, CSO description rules, and persuasion-informed language per skill type.
-- `writing-skills/references/anti-rationalization-library.md` — seed content for the rationalization table.
-- `writing-skills/references/persuasion-principles.md` — which Cialdini principles to apply per skill type.
+- `construct-skill/references/anti-rationalization-library.md` — seed content for the rationalization table.
+- `construct-skill/references/persuasion-principles.md` — which Cialdini principles to apply per skill type.

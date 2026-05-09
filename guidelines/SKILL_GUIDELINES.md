@@ -142,7 +142,7 @@ Every SKILL.md body must contain these 7 sections in order:
 
 Pattern source: addyosmani/superpowers 7-section canonical anatomy.
 
-**Skill types** (referenced by Rules 17, 20): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, lead-gen, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, writing-skills). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
+**Skill types** (referenced by Rules 17, 20): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, lead-gen, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, construct-skill). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
 
 ## 17. Anti-Rationalization Tables
 
@@ -160,7 +160,7 @@ Format under `## Common Rationalizations`:
 - Rationalizations must be empirically grounded (observed user excuses), not invented.
 - Rebuttals must be specific — no generic "because it's best practice".
 
-Canonical seed: `plugins/mz-dev-base/skills/writing-skills/references/anti-rationalization-library.md`.
+Canonical seed: `plugins/mz-dev-base/skills/construct-skill/references/anti-rationalization-library.md`.
 
 ## 18. CSO (Critical Skill Orientation)
 

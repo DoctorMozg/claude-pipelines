@@ -1,12 +1,12 @@
 ---
-name: writing-skills
-description: ALWAYS invoke when the user asks to "write a skill", "author a new skill", "create a SKILL.md", or "add a skill to the plugin". Enforces SKILL_GUIDELINES.md via a TDD-style authoring workflow.
+name: construct-skill
+description: ALWAYS invoke when the user asks to "write a skill", "author a new skill", "construct a skill", "create a SKILL.md", or "add a skill to the plugin".
 argument-hint: <skill name or intent>
 allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
 model: sonnet
 ---
 
-# Writing Skills
+# Construct Skill
 
 Meta-skill for authoring new skills in this repository. Applies SKILL_GUIDELINES.md through a TDD-style authoring loop: RED (enumerate rationalizations the skill will face), GREEN (write the counter-arguments into the canonical 7-section anatomy), REFACTOR (re-read as a skeptic and stress-test the description, triggers, and rationalization table).
 
@@ -20,7 +20,7 @@ Triggers: "write a skill", "author a new skill", "create a SKILL.md", "add a ski
 
 ### When NOT to use
 
-- Auditing or fixing an already-merged skill's CSO/anatomy compliance — use `review-branch` or `review-pr` instead.
+- Auditing or fixing an already-merged skill's CSO/anatomy compliance — use `/review-branch` or `/github-review-pr` instead.
 - Editing phase files inside an existing skill without changing its SKILL.md or references — just edit directly.
 - Writing non-skill markdown (rules, agent files, plan docs) — this skill is scoped to `plugins/<plugin>/skills/<name>/SKILL.md` authoring only.
 
@@ -45,7 +45,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-N/A — collaboration skill, not discipline.
+N/A — reference skill, not discipline. The rationalizations this skill cares about live in `references/anti-rationalization-library.md` and are seeded into every new skill it authors.
 
 ## Red Flags
 

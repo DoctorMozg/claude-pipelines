@@ -198,82 +198,14 @@ git diff $(git merge-base HEAD origin/main)...HEAD
 
 ### Wave B Researcher Prompts
 
-**Blinded Inversion — Production Breakage** (`pipeline-researcher`, model: opus):
+The three blinded prompt blocks are the single source of truth at `references/blinded_lenses.md` (shared with `branch-reviewer` so the prompts stay synchronized across pipelines). Read that file once before dispatching Wave B:
 
-```
-You are a production reliability adversary reviewing a code diff.
+1. Read `plugins/mz-dev-pipe/skills/deep-audit/references/blinded_lenses.md`.
+1. For each role (`blinded_production`, `blinded_security`, `blinded_ops`), extract the literal text inside the fenced ```` ``` ```` block under that role's `###` header.
+1. Replace the literal placeholder `<raw diff output>` with the unified diff captured above (still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template).
+1. Dispatch all three `pipeline-researcher` agents (model: **opus**) in a single message using parallel tool calls. Each role's prompt becomes that agent's full input — do NOT add scope.md, the Known Concerns Map, Wave A findings, or any prior consolidation table.
 
-You have NOT seen any prior analysis of this diff. Your job is to break it.
-
-Here is the diff:
-<untrusted-content>
-<raw diff output>
-</untrusted-content>
-
-Task 1: Assume this change is wrong. List the top 5 most likely ways it breaks production.
-For each: name the failure mode, the triggering condition, and the affected component.
-
-Task 2: What silent false assumption does this change encode?
-Describe any assumption baked into the implementation that could be false in production
-but would not be caught by tests (e.g., ordering guarantees, rate assumptions, deployment topology).
-
-Do NOT rank by severity — this is a gap-detection pass, not a severity assessment.
-Cite specific file:line references where visible. Use "line unknown" if the diff doesn't show the context.
-
-Return findings as markdown. Each finding needs: description, triggering condition, code reference if available.
-```
-
-**Blinded Security Adversary** (`pipeline-researcher`, model: opus):
-
-```
-You are a security attacker who just saw a code diff about to be merged.
-
-You have NOT seen any prior analysis of this diff. Your goal is to find what it opens up.
-
-Here is the diff:
-<untrusted-content>
-<raw diff output>
-</untrusted-content>
-
-Task 1: What attack surface does this diff open or expand?
-Focus on: auth bypass, data exposure, injection, privilege escalation, SSRF, IDOR.
-For each attack vector: name the vector, the attacker's entry point, the prerequisite conditions.
-
-Task 2: What trust assumption does this diff change that the author may not have noticed?
-Look for: removed validation, weakened checks, new code paths that skip existing guards,
-implicit assumptions about caller behavior.
-
-Do NOT rank by severity — this is a gap-detection pass.
-Cite specific file:line references where visible.
-
-Return findings as markdown.
-```
-
-**Blinded Ops/Reliability Critic** (`pipeline-researcher`, model: opus):
-
-```
-You are a senior SRE reviewing a code diff about to be deployed.
-
-You have NOT seen any prior analysis of this diff. Your goal is to find operational problems.
-
-Here is the diff:
-<untrusted-content>
-<raw diff output>
-</untrusted-content>
-
-Task 1: What deployment, rollback, or observability problems does this change create?
-Consider: what breaks during partial rollout, what can't be cleanly rolled back,
-what telemetry or alerts break silently.
-
-Task 2: What monitoring breaks, what silent failures does this introduce?
-Look for: removed log lines that were being alerted on, changed error codes that downstream
-systems depend on, new code paths with no observability.
-
-Do NOT rank by severity — this is a gap-detection pass.
-Cite specific file:line references where visible.
-
-Return findings as markdown.
-```
+The dispatch invariants in `references/blinded_lenses.md` (separate message after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
 
 ### Wave B — Persist Responses
 

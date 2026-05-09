@@ -1,34 +1,7 @@
 ---
-name: pr-reviewer
+name: github-pr-reviewer
 description: |
-  Use this agent when the user asks to review a specific GitHub pull request by URL or `owner/repo#number`, wants a second-pair-of-eyes read on a PR, or needs existing PR feedback cross-referenced with a fresh review. Triggers include "review this PR", "take a look at <github PR URL>", or "what do you think about <owner/repo>#<n>". Examples:
-
-  <example>
-  Context: User pastes a GitHub PR URL and asks for a thorough review.
-  user: "Review https://github.com/acme/widgets/pull/482 for me"
-  assistant: "I'll use the pr-reviewer agent to check out the PR in an isolated worktree, analyze the diff, cross-reference existing comments, and save a report in .mz/reviews/."
-  <commentary>
-  Direct GitHub PR URL with explicit review request — pr-reviewer's primary trigger (not branch-reviewer, which handles local branches).
-  </commentary>
-  </example>
-
-  <example>
-  Context: User references a PR via short form and wants an independent read because CoPilot/Codacy already weighed in.
-  user: "acme/widgets#482 — CoPilot already reviewed it but I want an independent look"
-  assistant: "I'll use the pr-reviewer agent to do an independent review and cross-reference CoPilot's existing comments."
-  <commentary>
-  PR review with cross-reference discipline — pr-reviewer's strength over a generic read.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User asks about a re-review after new commits have been pushed to a PR they previously reviewed.
-  user: "I already reviewed PR #482 last week but new commits landed — can you re-review?"
-  assistant: "I'll use the pr-reviewer agent to re-read the PR, compare against the prior review report in .mz/reviews/, and flag what's new."
-  <commentary>
-  Re-review request on a specific PR URL — pr-reviewer handles the history and prior-report diffing.
-  </commentary>
-  </example>
+  Use this agent when the user asks to review a specific GitHub pull request by URL or `owner/repo#number`, wants a second-pair-of-eyes read on a PR, or needs existing PR feedback cross-referenced with a fresh review. Triggers include "review this PR", "take a look at <github PR URL>", or "what do you think about <owner/repo>#<n>".
 tools: Read, Write, Bash, Glob, Grep, Agent(pipeline-web-researcher, branch-reviewer), WebFetch, WebSearch
 model: opus
 effort: high
@@ -49,7 +22,7 @@ Archetype deviation: this is a reviewer that may dispatch exactly one allowed re
 ### When NOT to use
 
 - Reviewing a local feature branch that has not been pushed — use `branch-reviewer`.
-- Scanning multiple repositories for PRs needing attention — use `pr-scanner`.
+- Scanning multiple repositories for PRs needing attention — use `github-pr-scanner`.
 - Single-file uncommitted code review — use `code-reviewer`.
 - Answering questions about a PR without producing a review report — read the PR directly.
 

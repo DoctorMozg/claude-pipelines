@@ -1,5 +1,5 @@
 ---
-name: review-pr
+name: github-review-pr
 description: ALWAYS invoke when the user wants to review a GitHub pull request. Triggers:"review PR","review pull request","check this PR","PR review". Provide a PR URL or owner/repo#number as argument.
 argument-hint: <PR URL or owner/repo#number>
 model: sonnet
@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read
 
 ## Overview
 
-Dispatch the `pr-reviewer` agent to perform a thorough review of a GitHub pull request in an isolated worktree. Produces a report under `.mz/reviews/` with severity-labeled findings and a verdict.
+Dispatch the `github-pr-reviewer` agent to perform a thorough review of a GitHub pull request in an isolated worktree. Produces a report under `.mz/reviews/` with severity-labeled findings and a verdict.
 
 ## When to Use
 
@@ -19,7 +19,7 @@ Triggers: "review PR", "review pull request", "check this PR", "PR review".
 ### When NOT to use
 
 - The changes live on a local branch, not a GitHub PR — use `review-branch`.
-- The user wants to triage many PRs at once — use `scan-prs`.
+- The user wants to triage many PRs at once — use `github-scan-prs`.
 - The PR reference is ambiguous or missing — ask for a URL or `owner/repo#number`.
 
 ## Arguments
@@ -33,16 +33,16 @@ If no argument is provided, ask the user for a PR URL.
 
 ## Core Process
 
-| Phase | Goal                       | Details      |
-| ----- | -------------------------- | ------------ |
-| 0     | Setup                      | Inline below |
-| 1     | Dispatch pr-reviewer agent | Inline below |
+| Phase | Goal                              | Details      |
+| ----- | --------------------------------- | ------------ |
+| 0     | Setup                             | Inline below |
+| 1     | Dispatch github-pr-reviewer agent | Inline below |
 
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`. If the PR reference is empty or malformed, escalate via AskUserQuestion — never guess, never fabricate a PR URL.
 1. Normalize the reference to `<owner>_<repo>_<pr_number>` form.
-1. `task_name` = `<YYYY_MM_DD>_review_pr_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is `<owner>_<repo>_<pr_number>` truncated to 20 chars, snake_case; on same-day collision append `_v2`, `_v3`.
+1. `task_name` = `<YYYY_MM_DD>_github_review_pr_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is `<owner>_<repo>_<pr_number>` truncated to 20 chars, snake_case; on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `PR: <reference>`, `Owner: <owner>`, `Repo: <repo>`, `Number: <pr_number>`.
 1. Emit a visible setup block: `task_name`, PR reference, report dir (`.mz/reviews/`).
@@ -50,7 +50,7 @@ If no argument is provided, ask the user for a PR URL.
 ### 1. Dispatch
 
 1. Validate via `gh pr view` that the normalized PR reference is accessible. On failure, escalate via AskUserQuestion.
-1. Launch the `pr-reviewer` agent with the PR reference as the prompt.
+1. Launch the `github-pr-reviewer` agent with the PR reference as the prompt.
 1. After the agent completes, parse its final message for the `STATUS:` line:
    - `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS` → update `state.md` to `Status: complete`, `Phase: 1`. On `DONE_WITH_CONCERNS`, also log the concerns block into `state.md`.
    - `STATUS: NEEDS_CONTEXT` → re-dispatch **once** with the requested context; on a second `NEEDS_CONTEXT`, escalate via AskUserQuestion.
@@ -59,22 +59,22 @@ If no argument is provided, ask the user for a PR URL.
 
 ## Techniques
 
-Delegated to phase files — see Phase Overview table above. Detailed technique (worktree isolation, diff-plus-context reading, multi-lens fan-out, two-signal Critical gate, CI-result cross-referencing, severity labeling) lives in `plugins/mz-dev-base/agents/pr-reviewer.md` and the code-lens-\* agent files.
+Delegated to phase files — see Phase Overview table above. Detailed technique (worktree isolation, diff-plus-context reading, multi-lens fan-out, two-signal Critical gate, CI-result cross-referencing, severity labeling) lives in `plugins/mz-dev-git/agents/github-pr-reviewer.md` and the code-lens-\* agent files.
 
 ## Common Rationalizations
 
-N/A — this is a reference/collaboration skill that dispatches a specialist agent. It does not enforce discipline decisions itself. Discipline pressure is enforced inside `pr-reviewer` and the code-lens-\* agents.
+N/A — this is a reference/collaboration skill that dispatches a specialist agent. It does not enforce discipline decisions itself. Discipline pressure is enforced inside `github-pr-reviewer` and the code-lens-\* agents.
 
 ## Red Flags
 
 - The PR argument is missing or malformed and you are guessing a URL instead of asking.
-- You dispatched `pr-reviewer` without first validating PR accessibility via `gh pr view`.
+- You dispatched `github-pr-reviewer` without first validating PR accessibility via `gh pr view`.
 - The agent returned `STATUS: BLOCKED` or `NEEDS_CONTEXT` and you retried more than once instead of escalating.
 - The agent's final message had no `STATUS:` line and you proceeded anyway.
 
 ## Verification
 
-Output the report path (`.mz/reviews/<YYYY_MM_DD>_review_pr_<owner>_<repo>_<pr_number><_vN>.md`), confirm the file exists, and print the `VERDICT:` line plus the count of `Critical:` findings.
+Output the report path (`.mz/reviews/<YYYY_MM_DD>_github_review_pr_<owner>_<repo>_<pr_number><_vN>.md`), confirm the file exists, and print the `VERDICT:` line plus the count of `Critical:` findings.
 
 ## Error Handling
 

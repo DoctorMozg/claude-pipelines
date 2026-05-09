@@ -1,6 +1,6 @@
 ---
 name: using-mozg-pipelines
-description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-memory, mz-biz-outreach, mz-creative.
+description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-git, mz-memory, mz-biz-outreach, mz-creative.
 argument-hint: '[task description]'
 model: haiku
 allowed-tools: Read, AskUserQuestion
@@ -53,10 +53,10 @@ Routing table. Phrases are indicative, not exact matches.
 | "deep audit", "pre-PR audit", "ship audit", "before publishing", "before I open a PR" | deep-audit           | mz-dev-pipe     |
 | "research topic deeply", "survey the field"                                           | deep-research        | mz-dev-pipe     |
 | "bootstrap rules", "init project rules"                                               | init-rules           | mz-dev-base     |
-| "review my branch", "what changed locally"                                            | review-branch        | mz-dev-base     |
-| "review this PR", "what's wrong with this PR"                                         | review-pr            | mz-dev-base     |
-| "scan open PRs", "triage PRs"                                                         | scan-prs             | mz-dev-base     |
-| "help me author a new skill", "write a SKILL.md"                                      | writing-skills       | mz-dev-base     |
+| "review my branch", "what changed locally"                                            | review-branch        | mz-dev-git      |
+| "review this PR", "what's wrong with this PR"                                         | github-review-pr     | mz-dev-git      |
+| "scan open PRs", "triage PRs"                                                         | github-scan-prs      | mz-dev-git      |
+| "help me author a new skill", "write a SKILL.md", "construct a skill"                 | construct-skill      | mz-dev-base     |
 | "which skill fits", "route this", "what plugins do I have"                            | using-mozg-pipelines | mz-dev-base     |
 | "find leads", "customers matching X", "outreach list"                                 | lead-gen             | mz-biz-outreach |
 | "brainstorm", "generate ideas", "creative options"                                    | brainstorm           | mz-creative     |

@@ -42,7 +42,7 @@ You are a senior code reviewer with deep expertise in identifying bugs, security
 ### When NOT to use
 
 - Reviewing an entire feature branch with multiple commits — use `branch-reviewer`.
-- Reviewing a remote GitHub PR by URL — use `pr-reviewer`.
+- Reviewing a remote GitHub PR by URL — use `github-pr-reviewer`.
 - Writing a new feature from scratch — use the `build` skill instead.
 - Generating documentation for reviewed code — use `technical-writer`.
 

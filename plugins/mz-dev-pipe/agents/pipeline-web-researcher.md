@@ -1,6 +1,6 @@
 ---
 name: pipeline-web-researcher
-description: Web-first research agent. Multi-source research with strict source-hierarchy discipline and structured findings (Key Findings with confidence levels, Trend Analysis, Risks). Dispatched by /deep-research for parallel multi-subtopic fan-out, by /combine for gap-fill, and by branch-reviewer / pr-reviewer / technical-writer when unfamiliar domains need authoritative external research.
+description: Web-first research agent. Multi-source research with strict source-hierarchy discipline and structured findings (Key Findings with confidence levels, Trend Analysis, Risks). Dispatched by /deep-research for parallel multi-subtopic fan-out, by /combine for gap-fill, and by branch-reviewer / github-pr-reviewer / technical-writer when unfamiliar domains need authoritative external research.
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high

@@ -11,32 +11,6 @@ claude plugin install mz-dev-base
 
 ## Skills
 
-### `/review-branch` — Branch Review
-
-Reviews all changes on the current branch against its base branch. Analyzes every modified file for bugs, architecture issues, missing functionality, and test coverage gaps. Produces a structured report saved to `.mz/reviews/`.
-
-```
-/review-branch              # compare against main
-/review-branch develop      # compare against develop
-```
-
-### `/review-pr` — Pull Request Review
-
-Deep-reviews a GitHub PR: reads the diff, comments, and discussions, checks out the code in an isolated worktree, reviews for bugs and maintainability, cross-references existing feedback, and writes a report.
-
-```
-/review-pr https://github.com/owner/repo/pull/123
-/review-pr owner/repo#123
-```
-
-### `/scan-prs` — PR Scanner
-
-Scans GitHub repositories for PRs needing your attention — review requested, mentioned, assigned, or your own PRs with changes requested. Dispatches deep reviewers for the top 5 priority PRs and produces a consolidated daily report.
-
-```
-/scan-prs owner/repo1, owner/repo2
-```
-
 ### `/init-rules` — Rule Installer
 
 Detects project languages and installs relevant coding rules. Two delivery modes: rule files in `.claude/rules/` (default) or sentinel-wrapped blocks injected directly into `CLAUDE.md`. Rules cover code quality, typing, git conventions, edit safety, and language-specific patterns.
@@ -52,17 +26,24 @@ Detects project languages and installs relevant coding rules. Two delivery modes
 
 `--target=claudemd` wraps each rule in a `<!-- mz-rule:<id> ... -->` sentinel block so re-runs are idempotent and `--uninstall` can remove them cleanly. `--force` replaces existing blocks in place.
 
+### `/construct-skill` — Skill Authoring Helper
+
+Helps draft new skills following the conventions in `guidelines/SKILL_GUIDELINES.md`. Walks you through frontmatter, dispatch prompts, approval gates, and progressive disclosure via a TDD-style RED/GREEN/REFACTOR loop.
+
+### `/using-mozg-pipelines` — Routing Map
+
+Loaded into every session via SessionStart hook. Maps natural-language task phrases to the right skill across all `mz-*` plugins. Invoked when the user asks "which skill fits", "route this", or "what plugins do I have".
+
 ## Agents
 
 Agents are specialized workers that can be invoked directly or used by skills.
 
-| Agent                | Purpose                                                                                                                |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **code-reviewer**    | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability                       |
-| **branch-reviewer**  | Analyzes all branch changes file-by-file, delegates to mz-dev-pipe's pipeline-web-researcher for complex domain topics |
-| **pr-reviewer**      | Deep PR review in an isolated worktree with structured markdown report                                                 |
-| **pr-scanner**       | Scans repos for PRs needing attention, dispatches pr-reviewer for top priorities                                       |
-| **technical-writer** | Creates and improves technical documentation grounded in actual code                                                   |
+| Agent                | Purpose                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------ |
+| **code-reviewer**    | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability |
+| **technical-writer** | Creates and improves technical documentation grounded in actual code                             |
+
+For local branch review (`/review-branch`) and GitHub PR workflows (`/github-review-pr`, `/github-scan-prs`) plus their lens agents and PR collectors, see [`mz-dev-git`](../mz-dev-git/).
 
 ## Rules
 

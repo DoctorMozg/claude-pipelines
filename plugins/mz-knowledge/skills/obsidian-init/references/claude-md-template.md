@@ -145,7 +145,7 @@ The routing map from `using-mozg-pipelines` is loaded every session, but most en
 - `mz-dev-pipe:deep-research` — multi-source research to seed new notes.
 - `mz-creative:brainstorm` — multi-perspective ideation on a vault topic.
 
-Skip code-shaped skills (`build`, `debug`, `audit`, `verify`, `optimize`, `review-branch`, `review-pr`, `scan-prs`) — this is not a code repo.
+Skip code-shaped skills (`build`, `debug`, `audit`, `verify`, `optimize`, `review-branch`, `github-review-pr`, `github-scan-prs`) — this is not a code repo.
 
 <!-- END TEMPLATE -->
 

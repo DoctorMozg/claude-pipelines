@@ -30,4 +30,4 @@ TBD — must be a maintainer **independent** of the builder(s) of this pipeline.
 
 ## Rollback mechanism
 
-Revert `pr-reviewer.md` to the pre-multi-lens contract: restore the legacy three-stage in-agent analysis (recover from git history at commit preceding this pipeline's merge) and remove `branch-reviewer` from its `tools:` allowlist. The lens agent files and `branch-reviewer` fan-out remain in place so the feature can be re-enabled via a single frontmatter + Phase-2 edit once thresholds recover.
+Revert `github-pr-reviewer.md` to the pre-multi-lens contract: restore the legacy three-stage in-agent analysis (recover from git history at commit preceding this pipeline's merge) and remove `branch-reviewer` from its `tools:` allowlist. The lens agent files and `branch-reviewer` fan-out remain in place so the feature can be re-enabled via a single frontmatter + Phase-2 edit once thresholds recover.

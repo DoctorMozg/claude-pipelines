@@ -8,15 +8,15 @@ Multi-agent plugins for [Claude Code](https://claude.com/claude-code). Autonomou
 > Skills compose. Most real tasks span 3–4 commands across multiple plugins — chain them end-to-end instead of reaching for any single skill in isolation. Click any workflow below to see the flow.
 
 <details open>
-<summary><b>Ship a new feature end-to-end</b> &nbsp;·&nbsp; <code>mz-dev-base</code> + <code>mz-dev-pipe</code></summary>
+<summary><b>Ship a new feature end-to-end</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code> + <code>mz-dev-git</code></summary>
 
 ```mermaid
 flowchart LR
     A["/deep-research"]:::pipe --> B["/build"]:::pipe
     B --> C["/verify"]:::pipe
-    C --> D["/review-branch"]:::base
-    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    C --> D["/review-branch"]:::git
     classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+    classDef git fill:#ddf6f5,stroke:#1f7373,color:#1f7373
 ```
 
 1. **`/deep-research`** — survey trade-offs, cite references, pick an approach
@@ -64,15 +64,15 @@ flowchart LR
 </details>
 
 <details>
-<summary><b>Security sweep and remediation</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code> + <code>mz-dev-base</code></summary>
+<summary><b>Security sweep and remediation</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code> + <code>mz-dev-git</code></summary>
 
 ```mermaid
 flowchart LR
     A["/audit"]:::pipe --> B["/investigate"]:::pipe
     B --> C["/debug"]:::pipe
-    C --> D["/review-branch"]:::base
-    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    C --> D["/review-branch"]:::git
     classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+    classDef git fill:#ddf6f5,stroke:#1f7373,color:#1f7373
 ```
 
 1. **`/audit`** — prioritized vulnerabilities with file:line evidence
@@ -208,16 +208,29 @@ After installation, skills are available as slash commands:
 
 Standalone agents and skills for everyday development. No pipeline orchestration — each tool works independently.
 
-| Skill             | Command                                                    | What it does                                                        |
-| ----------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
-| **review-branch** | `/review-branch`                                           | Reviews all changes on the current branch against main              |
-| **review-pr**     | `/review-pr <URL>`                                         | Deep-reviews a GitHub PR for bugs and architecture issues           |
-| **scan-prs**      | `/scan-prs [repos]`                                        | Scans repos for PRs needing your attention, produces a daily report |
-| **init-rules**    | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
+| Skill          | Command                                                    | What it does                                                        |
+| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| **init-rules** | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 
-13 agents total: 5 user-facing (code-reviewer, branch-reviewer, pr-reviewer, pr-scanner, technical-writer) plus 8 internal support agents dispatched by the user-facing skills (branch-info-collector, code-lens-{architecture,bugs,maintainability,performance,security}, github-pr-data-fetcher, pr-info-scorer). Ships 11 curated coding rules installable via `/init-rules`.
+2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs). Ships 11 curated coding rules installable via `/init-rules`.
 
 **[Full documentation →](plugins/mz-dev-base/)**
+
+______________________________________________________________________
+
+### [`mz-dev-git`](plugins/mz-dev-git/) — Git & GitHub Review Workflows
+
+Multi-lens deep review for local branches and GitHub pull requests. Runs five parallel code-review specialists (bugs, security, architecture, performance, maintainability) per change, plus a daily GitHub PR triage and per-PR deep-review pipeline.
+
+| Skill                | Command                    | What it does                                                                         |
+| -------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
+| **review-branch**    | `/review-branch [base]`    | Walks every branch change, fans out 5 code-lens agents, produces a structured report |
+| **github-review-pr** | `/github-review-pr <URL>`  | Deep-reviews a GitHub PR in an isolated worktree, with severity-labeled findings     |
+| **github-scan-prs**  | `/github-scan-prs [repos]` | Triages PRs across repos (review-requested, mentioned, assigned, changes-requested)  |
+
+11 agents total: 2 orchestrators (branch-reviewer, github-pr-reviewer) plus 9 support agents (branch-info-collector, github-pr-scanner, github-pr-info-scorer, github-pr-data-fetcher, code-lens-{bugs,security,architecture,performance,maintainability}). Cross-plugin: branch-reviewer and github-pr-reviewer dispatch `pipeline-web-researcher` from `mz-dev-pipe` for unfamiliar domain topics — install both plugins for the full experience.
+
+**[Full documentation →](plugins/mz-dev-git/)**
 
 ______________________________________________________________________
 
