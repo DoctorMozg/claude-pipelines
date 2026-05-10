@@ -19,7 +19,7 @@ Invoke when the user wants creative ideation, multi-perspective thinking, or div
 ### When NOT to use
 
 - The user wants a single concrete decision or implementation — use `build` or `explain` instead.
-- The user wants verification of an existing idea — use `investigate` instead.
+- The user wants verification of an existing idea — use `debug certainty:low` instead.
 - The problem has one objectively correct answer knowable from docs — look it up instead of ideating.
 
 ## Input

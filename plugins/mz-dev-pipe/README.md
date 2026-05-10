@@ -2,6 +2,23 @@
 
 Autonomous multi-agent development pipelines for Claude Code. Each skill orchestrates specialized agents through phased workflows — research, plan, implement, review, test — with user approval gates and iterative convergence.
 
+## Pick a skill in 5 seconds
+
+| You want to…                                  | Run                                                          |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| Fix a known bug                               | `/debug`                                                     |
+| Investigate a suspected bug (no fix)          | `/debug certainty:low`                                       |
+| Build a new feature end-to-end                | `/build`                                                     |
+| Sweep code before opening a PR                | `/audit` (or `/audit depth:deep` for ship)                   |
+| Iterate fix-test-review until clean           | `/polish`                                                    |
+| Optimize / clean existing code                | `/optimize`                                                  |
+| Verify the project (tests, lint, types)       | `/verify`                                                    |
+| See what breaks if you change X               | `/audit depth:deep scope:branch` (auto-invokes blast-radius) |
+| Understand existing code                      | `/explain` (now in `mz-research-pipe`)                       |
+| Research a topic across the web               | `/deep-research` (now in `mz-research-pipe`)                 |
+| Synthesize prior pipeline output into one doc | `/combine` (now in `mz-research-pipe`)                       |
+| Translate files preserving structure          | `/translate` (now in `mz-research-pipe`)                     |
+
 ## Installation
 
 ```bash
@@ -41,9 +58,11 @@ Scans code through 5 independent lenses — correctness, security, performance, 
 
 ______________________________________________________________________
 
-### `/debug` — Reactive Bug Investigation
+### `/debug` — Reactive Bug Investigation & Hypothesis Verification
 
-Given a bug report (error message, stack trace, failing test, or description), reproduces the bug, diagnoses root cause with optional domain research for external dependencies, writes a regression test before the fix (TDD), applies a minimal fix, and verifies.
+Two modes selected by the `certainty:` parameter.
+
+**`certainty:high` (default — TDD bug fix)**: given a bug report (error message, stack trace, failing test, or description), reproduces the bug, diagnoses root cause with optional domain research, writes a regression test before the fix (TDD), applies a minimal fix, and verifies.
 
 ```
 /debug "KeyError: 'user_id' in process_payment"
@@ -54,23 +73,19 @@ Given a bug report (error message, stack trace, failing test, or description), r
 
 **Pipeline**: Reproduce → Diagnose (+ Domain Research) → User Approval → Regression Test (must fail) → Fix (test passes) → Verify & Review
 
-**Accepts**: free text, failing test names, stack traces, error messages, GitHub issue URLs.
-
-______________________________________________________________________
-
-### `/investigate` — Hypothesis-Driven Investigation
-
-Receives a suspected issue or behavioral question, analyzes the code for evidence, runs domain research when complex external behavior is involved, writes exploratory tests to prove or disprove, and reports a verdict. No code fixes — output is a report only.
+**`certainty:low` (hypothesis investigation — no fix)**: receives a suspected issue or behavioral question, analyzes the code for evidence, runs domain research when complex external behavior is involved, writes exploratory tests to prove or disprove, and reports a verdict. **No code fixes** — output is a report only.
 
 ```
-/investigate the caching layer might not invalidate on concurrent writes
-/investigate does the retry logic actually back off exponentially?
-/investigate scope:branch the auth middleware might not handle expired refresh tokens
+/debug certainty:low the caching layer might not invalidate on concurrent writes
+/debug certainty:low does the retry logic actually back off exponentially?
+/debug certainty:low scope:branch the auth middleware might not handle expired refresh tokens
 ```
 
-**Pipeline**: Code Analysis → Domain Research (conditional) → Exploratory Tests → Verdict Report
+**Pipeline**: Code Analysis → Domain Research (conditional) → Exploratory Tests → Verdict Report (no user-approval gate)
 
-**Verdicts**: confirmed, disproved, inconclusive, partially confirmed. If confirmed, the report suggests running `/debug` to fix it.
+**Verdicts**: confirmed, disproved, inconclusive, partially confirmed. If confirmed, the report suggests running `/debug` (high certainty, the default) to fix it.
+
+**Accepts**: free text, hypotheses, failing test names, stack traces, error messages, GitHub issue URLs.
 
 ______________________________________________________________________
 
@@ -118,62 +133,9 @@ Scans a scope, builds an import graph, groups files into parallel-safe chunks, d
 
 ______________________________________________________________________
 
-### `/explain` — Code Explainer
+### `/combine`, `/deep-research`, `/explain`, `/translate` — moved to `mz-research-pipe`
 
-Researches a scope across structure, execution flow, and domain context, then produces a comprehensive report with Mermaid diagrams documenting how the code works, design rationale, and observations.
-
-```
-/explain src/auth/
-/explain how does the payment flow work
-/explain scope:branch
-/explain output:docs/architecture.md the event bus module
-```
-
-**Pipeline**: Scope Analysis → Parallel Researchers (structure, flow, domain) → Synthesis → Report with Diagrams
-
-______________________________________________________________________
-
-### `/combine` — Local Source Combiner
-
-Synthesizes prior pipeline output — `.mz/research/` reports, `.mz/task/*/` artifacts, `.mz/reports/`, `.mz/reviews/`, codebase files, git history — into a unified report with task-derived sections (or user-supplied sections via `sections:`). Local-first: only calls web research to fill residual gaps, and only after your approval.
-
-```
-/combine consolidate what we learned about the auth refactor
-/combine sections:Context,Findings,Risks synthesize our findings on the WebSocket reconnection work
-/combine output:docs/caching_summary.md pull together everything about cache invalidation
-```
-
-**Pipeline**: Inventory → Lens Decomposition → User Approval → Parallel Lens Dispatch → Synthesis → (optional) Gap-Fill Approval → Web Gap-Fill → Task-Adaptive Report
-
-______________________________________________________________________
-
-### `/deep-research` — Multi-Agent Research
-
-Splits a research topic into 3-7 independent subtopics, presents the decomposition for approval, then dispatches parallel `pipeline-web-researcher` agents that each scan 20-100 web pages and verify against primary sources. Synthesizes findings into a comprehensive report under `.mz/research/`.
-
-```
-/deep-research best practices for gRPC error handling in Go
-/deep-research comparison of vector databases for RAG pipelines
-```
-
-**Pipeline**: Decompose → User Approval → Parallel Web Research (one agent per subtopic) → Cross-Reference Synthesis → Report
-
-______________________________________________________________________
-
-### `/translate` — Translation & Localization Pipeline
-
-Parses a natural-language request to identify source files, target language, and output mode. Seeds a glossary from the source, presents a translation plan for approval, then dispatches parallel `pipeline-translator` agents that preserve markdown structure, code blocks, and i18n placeholders. Verification is always on and organized into three tiers: Tier-1 structural checks inside the translator agent, Tier-2 LLM-as-Judge on every chunk (wave-split), and Tier-3 uncertainty-driven deep verification (Wiktionary + MyMemory + back-translation) on flagged chunks only.
-
-```
-/translate README.md to Russian
-/translate locales/en.json to fr mode:i18n
-/translate docs/**/*.md to Japanese
-/translate CHANGELOG.md to de mode:inplace
-```
-
-**Pipeline**: Discovery → Language Detect → Glossary Seed → Plan → User Approval → Parallel Translation + Tier-1 → Cross-File Consistency → Tier-2 Judge → Tier-3 Deep Verify (flagged chunks only) → Re-Translation Loop → Summary
-
-**Output modes**: `sidecar` (default, writes `README.ru.md`), `i18n` (rewrites `locales/<lang>/…`), `inplace` (overwrites — destructive, requires explicit flag).
+These research and content skills now live in the [`mz-research-pipe`](../mz-research-pipe/README.md) plugin. Install both plugins together for full functionality — `/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` agents from `mz-dev-pipe`.
 
 ## Scope Parameter
 
@@ -191,20 +153,18 @@ Scope restricts edits, not investigation — researchers and tests always read t
 
 Specialized worker agents used by the pipeline skills. You don't invoke these directly — the skills orchestrate them.
 
-| Agent                               | Role                                                                                           |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **pipeline-researcher**             | Codebase exploration + domain research via web search                                          |
-| **pipeline-web-researcher**         | Web-first research with primary-source verification                                            |
-| **pipeline-planner**                | Creates parallelizable implementation plans                                                    |
-| **pipeline-plan-reviewer**          | Validates plans for completeness and correctness                                               |
-| **pipeline-coder**                  | Implements specific work units from an approved plan                                           |
-| **pipeline-code-reviewer**          | Reviews code for bugs, security, conventions                                                   |
-| **pipeline-test-writer**            | Writes unit, edge case, and integration tests                                                  |
-| **pipeline-test-coverage-reviewer** | Identifies untested functions and missing code paths                                           |
-| **pipeline-test-quality-reviewer**  | Evaluates test meaningfulness and independence                                                 |
-| **pipeline-optimizer**              | Removes dead code, simplifies logic, cleans artifacts                                          |
-| **pipeline-completeness-checker**   | Final quality gate — verifies 100% task completion                                             |
-| **pipeline-translator**             | Translates a single file or chunk with Tier-1 structural verification and confidence reporting |
+| Agent                             | Role                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| **pipeline-researcher**           | Codebase exploration + domain research via web search                                    |
+| **pipeline-web-researcher**       | Web-first research with primary-source verification                                      |
+| **pipeline-planner**              | Creates parallelizable implementation plans                                              |
+| **pipeline-plan-reviewer**        | Validates plans for completeness and correctness                                         |
+| **pipeline-coder**                | Implements specific work units from an approved plan                                     |
+| **pipeline-code-reviewer**        | Reviews code for bugs, security, conventions                                             |
+| **pipeline-test-writer**          | Writes unit, edge case, and integration tests                                            |
+| **pipeline-test-reviewer**        | Unified test review — coverage gaps + test quality (assertions, independence, fragility) |
+| **pipeline-optimizer**            | Removes dead code, simplifies logic, cleans artifacts                                    |
+| **pipeline-completeness-checker** | Final quality gate — verifies 100% task completion                                       |
 
 ## Architecture
 

@@ -19,7 +19,7 @@ Invoke when the user asks to understand, document, diagram, or walk through exis
 ### When NOT to use
 
 - The user wants code modified, debugged, or fixed — use `debug` or `build` instead.
-- The user wants a hypothesis verified — use `investigate` instead.
+- The user wants a hypothesis verified — use `debug certainty:low` instead.
 - The user asks a one-line clarifying question answerable without opening files.
 
 ## Input

@@ -103,7 +103,7 @@ Based on the analysis results, determine if domain research is needed. Triggers:
 - Evidence is ambiguous because correct behavior depends on external documentation
 - The hypothesis type was classified as `external` in Phase 0
 
-If **no domain research needed**: update state, skip to Phase 3. Read `phases/test_and_report.md`.
+If **no domain research needed**: update state, skip to Phase 3. Read `phases/explore_test_and_report.md`.
 
 If **domain research needed**: proceed to Phase 2.
 
@@ -190,4 +190,4 @@ Save to `.mz/task/<task_name>/domain_research.md`:
 
 Update state phase to `domain_researched`.
 
-Proceed to Phase 3. Read `phases/test_and_report.md`.
+Proceed to Phase 3. Read `phases/explore_test_and_report.md`.

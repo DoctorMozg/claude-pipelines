@@ -40,7 +40,7 @@ Read `.mz/task/<task_name>/findings.md` and write `.mz/task/<task_name>/summary.
 
 ## Next Steps
 - To have these findings fixed, pass this summary to `build`, `debug`, or `polish`.
-- For a deeper pre-PR audit with blast-radius tiering and blinded adversarial lenses, use `deep-audit`.
+- For a deeper pre-PR audit with blast-radius tiering and blinded adversarial lenses, run `audit depth:deep`.
 ```
 
 ## 4.2 Report to user

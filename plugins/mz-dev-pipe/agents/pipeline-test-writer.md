@@ -21,7 +21,7 @@ The dispatch prompt tells you which mode applies. When unclear, return `STATUS: 
 
 Do not dispatch standalone by user sessions — dispatched by orchestrator skills only.
 Do not dispatch for running tests — use `pipeline-test-runner`.
-Do not dispatch for reviewing existing tests — use `pipeline-test-coverage-reviewer` or `pipeline-test-quality-reviewer`.
+Do not dispatch for reviewing existing tests — use `pipeline-test-reviewer`.
 
 ## Core Principles
 

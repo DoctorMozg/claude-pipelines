@@ -6,6 +6,7 @@ Full detail for the pre-optimization phases of the optimize skill. Covers resolv
 
 - [Phase 1: Scan & Chunk](#phase-1-scan--chunk)
   - 1.1 Resolve scope
+  - 1.1.5 Auto-invoke blast radius (always)
   - 1.2 Build import graph
   - 1.3 Chunk files
   - 1.4 Write scan artifact
@@ -60,6 +61,22 @@ If the researcher returns low confidence or multiple plausible interpretations, 
 - Exclude files > 5000 LOC — flag them separately; optimizing files that large is risky and usually needs a targeted pass
 
 If the final list is empty, report to the user and exit.
+
+### 1.1.5 Auto-invoke blast radius (always)
+
+Optimize is always bounded by definition (it operates on a specific scope, never the whole repo at once), so blast-radius **always runs** here — no scope check, no opt-out.
+
+Execute the algorithm in [`../../shared/blast-radius.md`](../../shared/blast-radius.md) **inline** using the orchestrator's Grep/Read/Bash tools. Pass the resolved file list from §1.1 as `input_files`.
+
+Persist the YAML output to `.mz/task/<task_name>/blast_radius.yml`.
+
+**How optimize uses the blast-radius output**:
+
+1. **Identify high-blast-radius targets** — every entry in `impacted[]` with `risk_level >= high` is flagged as needing extra-careful review. The Phase 2.5 user-approval plan must list these files prominently and their downstream callers, so the user understands what an "optimization" of these files actually touches.
+1. **Gate the user-approval verdict** — pass `blast_radius.yml`'s `verdict` (SAFE / CAUTION / RISKY / DANGEROUS) into the Phase 2.5 approval gate. The gate must surface the verdict to the user. RISKY or DANGEROUS verdicts SHOULD be presented as: "Optimizing this scope will affect N downstream files (verdict: RISKY). Consider narrowing the scope, or run `/audit depth:deep scope:<scope>` first to verify safety."
+1. **Influence chunking** — keep blast-radius's high-risk targets isolated in their own chunk where possible (do not merge them with low-risk files in §1.3) so an optimizer agent can apply more conservative transforms when working on a high-impact file.
+
+The blast-radius output is **complementary** to the import graph built in §1.2 — the import graph is intra-scope (which scoped files depend on which other scoped files), while blast-radius is project-wide (which files outside the scope depend on the scope). Both are needed: the import graph drives chunking, blast-radius drives risk-aware review.
 
 ### 1.2 Build import graph
 
@@ -159,9 +176,18 @@ Write `.mz/task/<task_name>/scan.md`:
 - <file> is imported by N files across N chunks — cross-chunk edits likely
 - <SCC> has M members — optimizing this as one unit
 
+## Blast Radius
+- Verdict: SAFE / CAUTION / RISKY / DANGEROUS
+- Impacted files (project-wide, risk >= medium): K
+- High-risk targets in scope (risk_level >= high): <list>
+- Cap reached: yes / no (truncated_at: depth | files | null)
+- Languages skipped: <list, if any>
+- Full report: `.mz/task/<task_name>/blast_radius.yml`
+
 ## Chunking strategy
 - Algorithm used: import-graph SCC grouping (or directory fallback)
 - Merges / splits applied: <list>
+- Blast-radius isolation: <files isolated to their own chunk because risk_level >= high>
 ```
 
 Update state file phase to `scanned` and record the chunk count.

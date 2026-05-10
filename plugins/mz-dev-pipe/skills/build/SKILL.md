@@ -24,7 +24,7 @@ The pipeline enforces red-green-refactor: tests are written and verified failing
 
 - Fixing a known bug — use `debug`.
 - Making existing code meet quality criteria — use `polish`.
-- Read-only analysis or impact mapping — use `blast-radius` or `audit`.
+- Read-only analysis or impact mapping — use `audit` (or `audit depth:deep` for blast-radius-driven impact analysis).
 - One-line edits or trivial tweaks — just edit directly.
 
 ## Input
@@ -63,7 +63,15 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0: Setup
 
-Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the description; on same-day collision append `_v2`, `_v3`. Create `.mz/task/<task_name>/`. Write `state.md` with Status, Phase, Started, Iterations. Use TaskCreate for per-phase tracking.
+Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the description; on same-day collision append `_v2`, `_v3`.
+
+**Resume check** (before creating the task directory): apply the entry contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md). Check for `.mz/task/<task_name>/state.md`:
+
+- **No file** → fresh task. Proceed with directory creation and state write below.
+- **Status: complete or aborted_by_user** → auto-suffix `_v2` / `_v3`, log the bump to chat, proceed as fresh task.
+- **Status: running or failed** → present the Resume gate from `shared/resume-protocol.md`. On `Resume`, re-enter at the recorded `Phase` per the phase-idempotency rules. On `Restart`, archive the directory to `<task_name>_archived_<YYYY_MM_DD_HHMMSS>/` and start fresh. On `New`, suffix `_v2` and proceed fresh. Honor `MZ_DEV_PIPE_AUTO_APPROVE=1` per the protocol's auto-decision rules.
+
+**Fresh-task setup**: create `.mz/task/<task_name>/`. Write `state.md` per the v1 schema in [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`. Use TaskCreate for per-phase tracking.
 
 Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Write to `.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
 
@@ -79,9 +87,17 @@ Generate detailed plan, run plan-review loop, get user approval. See `phases/res
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
 
+See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
+
 **Mandatory pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full plan body (work units, test strategy, risks, verification criteria) into context. The plan must already have passed automated review before this gate fires.
 
 **Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `plan.md`. Never substitute a path, work-unit count, or `<contents of plan.md>` placeholder — the user must review the actual plan bytes in the question itself, not have to open the file separately.
+
+**Compute the cost preview** before emitting the pre-gate block:
+
+- Count `N` from the plan: `N = 1 (test-writer) + 3 (test-reviewers) + W (parallel coder waves from plan.md work units) + 1 (code-reviewer) + 1 (final-reviewer) + 1 (optimizer) + 1 (completeness-checker)` where `W` is the number of work units in `plan.md`.
+- Default per-agent budget: ~20k tokens (mixed Sonnet + Opus). For a typical 5-work-unit plan, `N ≈ 12`, total ≈ 240k tokens.
+- Use the formula in `shared/approval-gate.md` to convert to a dollar estimate at the active price.
 
 Before invoking AskUserQuestion, emit a text block to the user:
 
@@ -92,6 +108,8 @@ The implementation plan passed automated review and is ready for your approval. 
 - **Approve** → proceed to Phase 3 (Test Writing — TDD/RED)
 - **Reject** → task marked aborted, no files written
 - **Feedback** → re-run planning with your input, loop back here
+
+Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet+Opus
 ```
 
 Use AskUserQuestion with:
@@ -109,6 +127,7 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 - **"approve"** → proceed to Phase 3.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → spawn `pipeline-planner` with feedback, overwrite `plan.md`, re-present via AskUserQuestion. Do NOT re-run plan review — user's word is final. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. The pre-gate block (with cost preview) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ### Phase 3: Test Writing (RED)
 
@@ -116,7 +135,7 @@ Create tests **before any implementation** with `pipeline-test-writer` (model: o
 
 ### Phase 4: Test Review
 
-Spawn THREE review agents in parallel (model: sonnet): coverage, quality, code. The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Update state to `test_review_passed`.
+Spawn TWO review agents in parallel (model: sonnet): the unified `pipeline-test-reviewer` (covers gaps + quality in one pass) and `pipeline-code-reviewer` (test-code craftsmanship). The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Update state to `test_review_passed`.
 
 ### Phase 5: Verify RED
 

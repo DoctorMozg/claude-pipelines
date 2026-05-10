@@ -24,8 +24,7 @@ Orchestrates a multi-agent optimization pass over existing code. Builds import-g
 - Failing tests with a known root cause — use `debug` first, then `optimize` on the fixed code.
 - Code that passes metrics but has UI/UX or test-quality issues — use `polish`.
 - Known bug investigation — use `debug`.
-- Bug and security hunt across lenses — use `audit`.
-- Impact analysis before a refactor — use `blast-radius`.
+- Bug and security hunt across lenses — use `audit`. Use `audit depth:deep` for pre-PR impact analysis on a bounded scope (it auto-invokes `shared/blast-radius.md`).
 
 ## Input
 
@@ -37,11 +36,13 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 - **Default** (no `scope:`): use existing detection (glob / directory / git range / free-text).
 - If `scope:` is given alongside an explicit argument, they **intersect**.
+- Optimize is **always bounded** by definition, so Phase 1 unconditionally invokes [`shared/blast-radius.md`](../shared/blast-radius.md) to identify high-impact targets and gate the user-approval verdict.
 
 ## Core Principles
 
 1. **Behavior preservation is non-negotiable.** Tests and linters run between every batch.
 1. **Parallel where safe, sequential where necessary.** Ask when unclear.
+1. **Blast-radius drives risk-aware review.** Files with `risk_level >= high` are isolated to their own chunk and surfaced in the approval gate so optimizers can apply more conservative transforms.
 
 ## Constants
 
@@ -65,13 +66,15 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_optimize_<slug>`, create `.mz/task/<task_name>/`, write `state.md` (Status, Phase, Started, `review_iteration: 0`, Fix attempts, Files in scope, Chunks). The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
-- **Phase 1 — Scan & Chunk**: resolve to file list, build import graph, group into 1-6 chunks (SCCs + module boundaries). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
+- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_optimize_<slug>`. Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
+- **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
 - **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 
 ### Phase 2.5: User Approval Gate
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Mandatory pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
 
@@ -86,7 +89,11 @@ Your scope has been scanned, chunked, and baselined. Review the plan below: N ch
 - **Approve** → proceed to Phase 3 (parallel optimization)
 - **Reject** → mark task aborted, no files written
 - **Feedback** → apply changes to scan.md, re-present via AskUserQuestion
+
+Approve cost (estimated): <N> agents × ~24k tokens ≈ ~$<Y.YY> on Sonnet
 ```
+
+Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
 
 Invoke AskUserQuestion with this body (where `<verbatim scan.md contents>` is replaced by the bytes you just read):
 
@@ -104,6 +111,7 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 - **"approve"** → proceed to Phase 3.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → apply changes, overwrite `scan.md`, return to this gate, re-read `scan.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. The pre-gate block (with cost preview) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ### Phase 3: Parallel Optimization
 

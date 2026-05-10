@@ -6,7 +6,7 @@ Single source of truth for the three blinded adversarial researcher prompts disp
 
 Multiple pipelines run a blinded adversarial wave to break confirmation bias from their context-aware Wave A:
 
-- `plugins/mz-dev-pipe/skills/deep-audit/phases/research.md` — Wave B section
+- `plugins/mz-dev-pipe/skills/audit/phases/research_deep.md` — Wave B section
 - `plugins/mz-dev-git/agents/branch-reviewer.md` — Phase 3.6
 
 Both dispatch `pipeline-researcher` (model: opus) with role-specific adversarial prompts that receive ONLY the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
@@ -111,26 +111,26 @@ Return findings as markdown.
 
 ## Role-to-Lens Corroboration Mapping
 
-When a Wave B finding matches a Wave A finding (same `file:line`, overlapping line range, or behavioral equivalence on the same file), the consolidator applies a corroboration boost iff the matched Wave A lens is in the role's corroborating list. The boost varies by consumer (deep-audit boosts evidence tier; branch-reviewer increments replication_count for its two-signal Critical gate). The corroborating-lens lists below are authoritative — consumers MUST honor them and not invent their own mappings.
+When a Wave B finding matches a Wave A finding (same `file:line`, overlapping line range, or behavioral equivalence on the same file), the consolidator applies a corroboration boost iff the matched Wave A lens is in the role's corroborating list. The boost varies by consumer (`audit depth:deep` boosts evidence tier; branch-reviewer increments replication_count for its two-signal Critical gate). The corroborating-lens lists below are authoritative — consumers MUST honor them and not invent their own mappings.
 
-| Blinded role         | Adversarial focus         | deep-audit Wave A lenses that corroborate | branch-reviewer lenses that corroborate |
-| -------------------- | ------------------------- | ----------------------------------------- | --------------------------------------- |
-| `blinded_production` | production reliability    | `correctness`, `reliability`              | `bugs`                                  |
-| `blinded_security`   | adversarial security      | `security`, `stride_delta`                | `security`                              |
-| `blinded_ops`        | ops / SRE / observability | `reliability`, `performance`              | `performance`, `bugs`                   |
+| Blinded role         | Adversarial focus         | audit depth:deep Wave A lenses that corroborate | branch-reviewer lenses that corroborate |
+| -------------------- | ------------------------- | ----------------------------------------------- | --------------------------------------- |
+| `blinded_production` | production reliability    | `correctness`, `reliability`                    | `bugs`                                  |
+| `blinded_security`   | adversarial security      | `security`, `stride_delta`                      | `security`                              |
+| `blinded_ops`        | ops / SRE / observability | `reliability`, `performance`                    | `performance`, `bugs`                   |
 
 Notes:
 
 - branch-reviewer's lens set is `bugs | security | architecture | performance | maintainability` (no separate reliability/stride lens). `bugs` covers the correctness + reliability axes; `architecture` and `maintainability` are NEVER in any blinded role's corroborator list.
-- deep-audit's lens set is `correctness | security | performance | maintainability | reliability | stride_delta`. The mapping above mirrors `references/evidence-tier-rules.md` lines 52-54 — if the two ever drift, this file is authoritative and the other must be reconciled.
+- `audit depth:deep`'s lens set is `correctness | security | performance | maintainability | reliability | stride_delta`. The mapping above mirrors `references/evidence-tier-rules.md` lines 52-54 — if the two ever drift, this file is authoritative and the other must be reconciled.
 - A finding matched by multiple Wave B roles boosts at most once. Record all corroborators as a list (e.g., `corroborated_by: [blinded_security, blinded_ops]`); the boost itself applies once.
 
 ## Unmatched Wave B Findings — Blind Spots
 
 A Wave B finding with NO Wave A match is a **blind spot** — a gap that context-aware analysis missed because of confirmation bias. Each consumer promotes unmatched Wave B findings into a dedicated "Blind Spots" section in its final report. Severity is assigned by the consolidator based on description, capped by evidence quality:
 
-- `file:line` cited → may be assigned up to `Optional:` (deep-audit: T2-equivalent)
-- `line unknown` → capped at `FYI:` (deep-audit: T3-equivalent)
+- `file:line` cited → may be assigned up to `Optional:` (`audit depth:deep`: T2-equivalent)
+- `line unknown` → capped at `FYI:` (`audit depth:deep`: T3-equivalent)
 - `Critical:` is NEVER assigned to a blind-spot finding without independent Wave A signal — by definition, no Wave A lens caught it, so the two-signal gate cannot fire from the blinded source alone.
 
 Blind spots still must populate all five required fields (severity, file/expected location, TL;DR, description, suggested fix). When `file:line` is unknown, use the changed-file path with `:line unknown` and surface the missing-anchor caveat in the description.

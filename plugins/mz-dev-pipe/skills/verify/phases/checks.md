@@ -196,37 +196,34 @@ ______________________________________________________________________
 
 Only run this phase if tests passed or partially passed (at least some tests ran successfully). If the entire test suite crashed during execution, skip to Phase 5.
 
-### 4.1 Dispatch reviewers
+### 4.1 Dispatch reviewer
 
-Spawn **two agents in parallel** in a single message:
+Spawn one agent:
 
-**`pipeline-test-coverage-reviewer`** (model: **sonnet**):
+**`pipeline-test-reviewer`** (model: **sonnet** — combined coverage + quality review):
 
 ```
-Review test coverage for the code in scope.
+Review tests for the code in scope. Cover BOTH axes in one pass:
+- Coverage gaps (untested public functions, missing code paths, missing edge cases, untested error paths)
+- Quality defects (weak assertions, order dependence, over-mocking, fragility)
+
 Read .mz/task/<task_name>/scope.md for source and test file lists.
 Read .mz/task/<task_name>/execution.md for test results.
-Focus ONLY on files in scope.md. Return the coverage review as markdown in your response — the orchestrator persists to `.mz/task/<task_name>/coverage_review.md`.
+Focus ONLY on files in scope.md.
+
+Return the unified Test Review as markdown in your response — the orchestrator persists to `.mz/task/<task_name>/test_review.md`.
+The review must include both the Coverage section (with gap-count summary) and the Quality section, ending with a single VERDICT line.
 ```
 
-**`pipeline-test-quality-reviewer`** (model: **sonnet**):
-
-```
-Review test quality for the code in scope.
-Read .mz/task/<task_name>/scope.md for the test file list.
-Read .mz/task/<task_name>/execution.md for test results.
-Focus ONLY on test files in scope.md. Return the quality review as markdown in your response — the orchestrator persists to `.mz/task/<task_name>/quality_review.md`.
-```
-
-Both reviewers are read-only and return their reviews inline. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its artifact path via the Write tool — one Write call per returned reviewer, before Phase 4.2 reads the files.
+The reviewer is read-only and returns the review inline. After it returns, the **orchestrator** (not a sub-agent) writes the response to `.mz/task/<task_name>/test_review.md` via the Write tool before Phase 4.2 reads the file.
 
 ### 4.2 Merge results
 
-After both reviewers complete, read their output files. Extract:
+After the reviewer completes, read its output file. Extract:
 
-- Coverage verdict: PASS / FAIL
-- Quality verdict: PASS / FAIL
-- Combined gap count and severity
+- Combined verdict: PASS / FAIL (single line — `Critical:` in either Coverage or Quality forces FAIL)
+- Coverage gap count and severity breakdown
+- Quality issue count and severity breakdown
 - Key findings to surface in the final report
 
 Update state phase to `analysis_complete`.

@@ -12,7 +12,7 @@ allowed-tools: Agent, Bash, Read, Glob, Grep
 
 Launch the `branch-reviewer` agent to perform a comprehensive review of all changes on the current git branch against a base branch (default `main`). Produces a report under `.mz/reviews/`.
 
-The agent runs a two-wave analysis: Wave A is a 5-lens parallel fan-out (bugs, security, architecture, performance, maintainability) with full repo context; Wave B is a 3-researcher blinded adversarial pass (production reliability, security adversary, ops/SRE) dispatched in a separate message with only the raw diff. Wave B is always-on — there is no opt-out — and surfaces "Blind Spots" that Wave A missed because of confirmation bias. Wave B's blinded prompts are shared with `deep-audit` via `plugins/mz-dev-pipe/skills/deep-audit/references/blinded_lenses.md` (single source of truth, no duplication).
+The agent runs a two-wave analysis: Wave A is a 5-lens parallel fan-out (bugs, security, architecture, performance, maintainability) with full repo context; Wave B is a 3-researcher blinded adversarial pass (production reliability, security adversary, ops/SRE) dispatched in a separate message with only the raw diff. Wave B is always-on — there is no opt-out — and surfaces "Blind Spots" that Wave A missed because of confirmation bias. Wave B's blinded prompts are shared with `audit depth:deep` via `plugins/mz-dev-pipe/skills/audit/references/blinded_lenses.md` (single source of truth, no duplication).
 
 ## When to Use
 
@@ -54,7 +54,7 @@ Dispatch `Agent(branch-reviewer)` in the foreground with the following prompt:
 ```
 Review the current branch against <base-branch>.
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
-Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers in a SEPARATE assistant message after Phase 3.5 returns, reading the prompts from plugins/mz-dev-pipe/skills/deep-audit/references/blinded_lenses.md, and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1.
+Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers in a SEPARATE assistant message after Phase 3.5 returns, reading the prompts from plugins/mz-dev-pipe/skills/audit/references/blinded_lenses.md, and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1.
 Use researcher agents for domain research if the implementation topic is complex.
 Save the report to .mz/reviews/ using the naming convention: <YYYY_MM_DD>_review_branch_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```

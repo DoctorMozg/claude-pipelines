@@ -20,7 +20,7 @@ Invoke when the user asks to synthesize, consolidate, or pull together knowledge
 
 - Zero prior local research exists — use `/deep-research` instead.
 - The user wants to understand how code works — use `/explain` instead.
-- The user wants to verify a hypothesis or run exploratory tests — use `/investigate`. If the user then wants to synthesize prior `/investigate` output, `/combine` is the right follow-up.
+- The user wants to verify a hypothesis or run exploratory tests — use `/debug certainty:low`. If the user then wants to synthesize prior investigation output, `/combine` is the right follow-up.
 - The user needs a fixed-template compliance report — use a dedicated audit skill.
 
 ## Input

@@ -32,6 +32,23 @@ For `scope:global`: use the roam-mode exclusions from the existing audit skill (
 
 If the file list is empty after materialisation, report to the user and exit. Do NOT proceed with an empty scope — this is almost always a scope resolution error.
 
+## 1.2.5 Auto-invoke blast radius (bounded scopes only)
+
+**Skip this step if `scope:global`.** Global deep-audit already covers the whole repo, so blast-radius adds no signal.
+
+**Run for `scope:branch` and `scope:working`** (the two bounded modes). Deep-audit decisions about tier, reversibility, and trust-boundary impact are stronger when downstream callers are visible to the lenses.
+
+Execute the algorithm in [`../../shared/blast-radius.md`](../../shared/blast-radius.md) **inline** using the orchestrator's Grep/Read/Bash tools. Pass the file list materialised in §1.2 as `input_files`.
+
+Persist YAML output to `.mz/task/<task_name>/blast_radius.yml`.
+
+**Expand the file list before tier classification**: any `impacted[]` entry with `risk_level >= medium` joins the file list for §1.3 (tier classification) and §1.5 (reversibility). This way a `T1` file that calls into a `T2` boundary is correctly assigned `T2` overall, and a `reversible` change that imports a `data-migrating` module is flagged.
+
+- Cap the expansion at **2× the original scoped file count** of impacted files (highest-risk first if exceeded).
+- Tag expanded files in `scope.md` with `expanded_via: blast_radius` so reviewers can distinguish them from the user's stated scope.
+
+Surface `verdict`, `cap_reached`, and the count of expanded files in `scope.md` (see §1.8). The verdict is informational and never gates progression.
+
 ## 1.3 Classify files by blast-radius tier
 
 Read `references/blast-radius-tier-rules.md` for the full tier definitions.
@@ -161,6 +178,14 @@ Write `.mz/task/<task_name>/scope.md`:
 - File count: N
 - Diff LOC: M
 - Distinct concerns (top-level modules/dirs): K
+
+## Blast-Radius (bounded scopes only — empty for global)
+- Verdict: SAFE / CAUTION / RISKY / DANGEROUS
+- Impacted files (risk >= medium): K
+- Cap reached: yes / no (truncated_at: depth | files | null)
+- Languages skipped: <list, if any>
+- Expansion: <K files added to tier classification, marked `expanded_via: blast_radius`>
+- Full report: `.mz/task/<task_name>/blast_radius.yml`
 
 ## Hotspot Scores
 

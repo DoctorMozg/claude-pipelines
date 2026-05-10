@@ -73,12 +73,12 @@ Set `test_review_iteration = 0`.
 
 ### 4.1 Parallel reviews
 
-Spawn THREE review agents **in parallel** (all model: **sonnet**):
+Spawn TWO review agents **in parallel** (both model: **sonnet**):
 
-**Agent A — Test Coverage Reviewer** (`pipeline-test-coverage-reviewer`):
+**Agent A — Test Reviewer** (`pipeline-test-reviewer` — combined coverage + quality):
 
 ```
-Review test COVERAGE for a TDD-mode implementation.
+Review test COVERAGE and QUALITY for a TDD-mode implementation.
 
 ## Task: <task description>
 
@@ -88,7 +88,7 @@ Then read all test files.
 
 The production code does NOT exist yet. Evaluate coverage against the PLAN, not against any implementation.
 
-Evaluate:
+## Coverage axis (Critical findings here block verdict):
 1. Does every work unit in the plan have at least one test?
 2. Are the test strategy's listed scenarios all covered?
 3. Are edge cases from the plan covered?
@@ -96,23 +96,7 @@ Evaluate:
 5. Is there an integration-level test for every cross-unit interaction the plan calls out?
 6. Are there public behaviors in the plan that no test exercises?
 
-Output:
-- **VERDICT**: PASS or FAIL
-- **Coverage gaps**: specific work units / scenarios that are not tested
-- **Missing scenarios**: behaviors the plan promises but no test covers
-```
-
-**Agent B — Test Quality Reviewer** (`pipeline-test-quality-reviewer`):
-
-```
-Review test QUALITY for a TDD-mode test suite.
-
-## Task: <task description>
-
-Read the test file list at .mz/task/<task_name>/tests.md, then read all test files.
-The production code does not exist yet.
-
-Evaluate:
+## Quality axis (Critical findings here block verdict):
 1. Are tests asserting behavior (not implementation details that don't exist yet)?
 2. Are assertions meaningful and specific (not "assert True", not just "no exception")?
 3. Are test names descriptive of the behavior under test?
@@ -121,13 +105,10 @@ Evaluate:
 6. Would these tests catch real regressions once the implementation exists?
 7. Do any tests embed values that look like reverse-engineered implementation choices rather than required behavior?
 
-Output:
-- **VERDICT**: PASS or FAIL
-- **Quality issues**: specific problems in specific test files/functions
-- **Suggestions**: improvements that aren't blockers
+Output the unified Test Review per the agent's Return Format (Coverage section + Quality section + single VERDICT line).
 ```
 
-**Agent C — Test Code Reviewer** (`pipeline-code-reviewer`):
+**Agent B — Test Code Reviewer** (`pipeline-code-reviewer`):
 
 ```
 Review the TEST CODE itself for craftsmanship.
@@ -150,11 +131,11 @@ Output:
 
 ### 4.2 Consolidate reviews
 
-Save all three reviews to `.mz/task/<task_name>/test_review_<iteration>.md`.
+Save both reviews to `.mz/task/<task_name>/test_review_<iteration>.md`.
 
-**If ALL three PASS**: proceed to Phase 5.
+**If BOTH PASS**: proceed to Phase 5.
 
-**If any FAIL and test_review_iteration < 3**:
+**If either FAILs and test_review_iteration < 3**:
 
 - Increment `test_review_iteration`
 - Consolidate all failure feedback into a single fix list

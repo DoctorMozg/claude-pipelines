@@ -19,7 +19,7 @@ Invoke when the user wants to find prospective companies, build a lead list, or 
 ### When NOT to use
 
 - The user wants to draft outreach copy or messages — this skill researches targets, not content.
-- The user wants competitive analysis of a single named company — use `explain` or `investigate` on public sources instead.
+- The user wants competitive analysis of a single named company — use `explain` or `debug certainty:low` on public sources instead.
 - The user has not defined an outreach goal or target profile — ask before invoking.
 
 ## Input

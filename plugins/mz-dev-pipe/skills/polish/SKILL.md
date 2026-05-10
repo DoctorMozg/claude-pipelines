@@ -74,12 +74,14 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list and save to `.mz/task/<task_name>/scope_files.txt`. Otherwise all project files eligible.
 1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/").
 1. **Task name** — `<YYYY_MM_DD>_polish_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case of criteria (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — create `.mz/task/<task_name>/`, write `state.md` with Status, Phase, Started, Iteration (0), and the criteria checklist.
+1. **Task dir & state** — apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate before proceeding. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`) plus the parsed criteria checklist as a skill-specific key.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
 ### Phase 1.5: User Approval Gate
 
 **This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+
+See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Mandatory pre-read**: Read `.mz/task/<task_name>/assessment.md` with the Read tool. Capture the full file contents (criteria checklist showing which items are failing, proposed quick-fix plan with one line per fix target, estimated file count in scope) into context.
 
@@ -94,7 +96,11 @@ Initial assessment complete. The checklist below shows which criteria are passin
 - **Approve** → proceed to Phase 2 (Quick Fixes)
 - **Reject** → mark task aborted, stop here
 - **Feedback** → incorporate changes, re-run Phase 1, loop back to this gate
+
+Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet+Opus
 ```
+
+Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop budget (`MAX_FIX_ITERATIONS × (1 fix + 1 test + 1 review)`). Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
 
 Invoke AskUserQuestion with this body (where `<verbatim assessment.md contents>` is replaced by the bytes you just read):
 
@@ -111,6 +117,7 @@ Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
 - **"approve"** → update state, proceed to Phase 2.
 - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Feedback** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 2. The pre-gate block (with cost preview) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ## Techniques
 

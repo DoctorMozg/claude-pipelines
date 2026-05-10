@@ -63,7 +63,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
 1. **Task name** — `<YYYY_MM_DD>_verify_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — create `.mz/task/<task_name>/`, write `state.md` with Status, Phase, Started.
+1. **Task dir & state** — apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by `Status`, `Phase`, `Started`.
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 ### Phase 1–6

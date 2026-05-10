@@ -7,6 +7,7 @@ Full detail for the research phases of the audit skill. Covers argument parsing 
 - [Phase 1: Scope & Lens Selection](#phase-1-scope--lens-selection)
   - 1.1 Parse the argument
   - 1.2 Resolve scope filter
+  - 1.2.5 Auto-invoke blast radius (bounded scopes only)
   - 1.3 Select lenses
   - 1.4 Write scope artifact
 - [Phase 2: Multi-Lens Research](#phase-2-multi-lens-research)
@@ -54,6 +55,24 @@ ______________________________________________________________________
 - Exclude files > 5000 LOC — flag them separately; scanning files that large is rarely productive
 
 If the final file list is empty, report to the user and exit.
+
+### 1.2.5 Auto-invoke blast radius (bounded scopes only)
+
+**Skip this step entirely if scope is roam (no `scope:` parameter, or `scope:global`).** A roam audit already covers the whole project, so blast-radius adds no signal.
+
+**Run this step if scope is bounded** — `scope:branch`, `scope:working`, or path-list (one or more path-like tokens). Bounded scopes risk silently missing downstream callers that the scoped change might break; computing blast-radius before lens dispatch lets researchers see the impacted files too.
+
+Execute the algorithm in [`../../shared/blast-radius.md`](../../shared/blast-radius.md) **inline** using the orchestrator's Grep/Read/Bash tools (no agent dispatch — the calls are cheap and stay in the orchestrator window). Pass the resolved file list from §1.2 as `input_files`.
+
+Persist the YAML output to `.mz/task/<task_name>/blast_radius.yml`.
+
+**Expand the scoped file list** with the impacted downstream files for lens research:
+
+- For every entry in `impacted[]` with `risk_level >= medium`, add its `path` to the lens-research file list (as advisory — researchers should still focus on the originally scoped files but may follow the trail when a finding has obvious cross-file impact).
+- Cap the expansion: do not add more than **2× the original scoped file count** of impacted files. If `impacted[]` exceeds that cap, take the highest-risk entries first.
+- Files added via blast-radius expansion are tagged in `scope.md` as `expanded_via: blast_radius` so researchers can distinguish them from the user's stated scope.
+
+Surface `blast_radius.yml`'s `verdict` (SAFE / CAUTION / RISKY / DANGEROUS) and `cap_reached` in the `scope.md` artifact (see §1.4) so the final report header can show it. The verdict does NOT gate audit progression — it is informational; the user's scope intent is honored.
 
 ### 1.3 Select lenses
 
@@ -110,6 +129,14 @@ Write `.mz/task/<task_name>/scope.md`:
 - Excluded (gitignore/vendored/generated/tests/>5000 LOC): M files
 - File list:
   <collapsed by directory if > 30 files>
+
+## Blast-Radius (bounded scopes only — empty for roam)
+- Verdict: SAFE / CAUTION / RISKY / DANGEROUS
+- Impacted files (risk >= medium, advisory): K
+- Cap reached: yes / no (truncated_at: depth | files | null)
+- Languages skipped: <list, if any>
+- Expansion: <K files added to lens-research scope, marked `expanded_via: blast_radius`>
+- Full report: `.mz/task/<task_name>/blast_radius.yml`
 
 ## Lenses selected
 - [x] correctness

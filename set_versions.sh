@@ -16,6 +16,20 @@ fi
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 
+# Precondition — agent contract matrix must pass before any version bump.
+# A drifted terminal-state token in any agent file would silently break an
+# orchestrator branch; we'd rather fail the bump than ship the drift.
+CONTRACT_MATRIX="$REPO_ROOT/plugins/mz-dev-pipe/tests/run_contract_matrix.sh"
+if [ -x "$CONTRACT_MATRIX" ]; then
+  if ! "$CONTRACT_MATRIX" >/tmp/contract_matrix.out 2>&1; then
+    echo "Error: contract matrix failed — version bump blocked." >&2
+    cat /tmp/contract_matrix.out >&2
+    rm -f /tmp/contract_matrix.out
+    exit 1
+  fi
+  rm -f /tmp/contract_matrix.out
+fi
+
 # sed -i is incompatible between GNU and BSD: GNU takes no argument, BSD
 # requires a backup-extension argument (and silently treats the next flag as
 # one if omitted — which is why running with -E creates *.json-E backups on
