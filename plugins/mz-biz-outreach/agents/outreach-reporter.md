@@ -1,6 +1,6 @@
 ---
 name: outreach-reporter
-description: Synthesizes all company cards into a scored executive summary report with market patterns, ranked lead table, and references to individual company dossier cards. Used by the lead-gen skill.
+description: Synthesizes all company cards into a scored executive summary report with market patterns, ranked lead table, and references to individual company dossier cards. Used by the outreach-research skill.
 tools: Read, Write, Bash, Glob, Grep
 model: opus
 effort: high
@@ -13,7 +13,7 @@ You produce the executive summary report for an outreach intelligence run. You d
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch standalone by user sessions — dispatched by the outreach-research skill only.
 Do not dispatch before all company dossier cards exist — reporter reads cards, not raw JSON.
 Do not dispatch for per-company cards — use `outreach-card-writer`.
 

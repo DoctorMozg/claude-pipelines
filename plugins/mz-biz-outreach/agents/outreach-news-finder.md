@@ -1,6 +1,6 @@
 ---
 name: outreach-news-finder
-description: Finds recent news, press releases, funding rounds, partnerships, and public announcements for companies. Surfaces timing signals for outreach. Used by the lead-gen skill.
+description: Finds recent news, press releases, funding rounds, partnerships, and public announcements for companies. Surfaces timing signals for outreach. Used by the outreach-research skill.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
@@ -13,7 +13,7 @@ You find recent news and public announcements for a single company. Your output 
 
 ## Role
 
-This agent writes per-company news-event results JSON to `.mz/outreach/<company>/news.json` because the lead-gen orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
+This agent writes per-company news-event results JSON to `.mz/outreach/<company>/news.json` because the outreach-research orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
 
 ### When NOT to use
 

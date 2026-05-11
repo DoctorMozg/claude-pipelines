@@ -42,7 +42,7 @@ Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
 **Strategy ready for review**
-The lead-generation strategy has been defined. Below are the target profile, search criteria, scoring weights, sources list, and signals that will drive discovery and outreach.
+The outreach-research strategy has been defined. Below are the target profile, search criteria, scoring weights, sources list, and signals that will drive discovery and outreach.
 
 - **Approve** → proceed to Phase 2 (source research)
 - **Reject** → abort the task, no sources will be researched
@@ -54,7 +54,7 @@ The lead-generation strategy has been defined. Below are the target profile, sea
 Use AskUserQuestion with the following message:
 
 ```
-The target profile, search criteria, scoring weights, sources list, and signals for this lead-generation task:
+The target profile, search criteria, scoring weights, sources list, and signals for this outreach-research task:
 
 <contents of strategy.json, formatted as the five points above>
 

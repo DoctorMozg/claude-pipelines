@@ -1,6 +1,6 @@
 {
-  "description": "Business outreach and lead generation intelligence \u2014 multi-agent pipeline for company discovery, reputation scanning, contact enrichment, and outreach strategy",
+  "description": "Business outreach intelligence \u2014 /outreach-research runs the full company-discovery pipeline (sources, scout, reputation, enrichment, scoring, dossiers); /outreach-contacts finds decision-maker contacts for a single named company",
   "license": "MIT",
   "name": "mz-biz-outreach",
-  "version": "0.34.0"
+  "version": "0.38.0"
 }

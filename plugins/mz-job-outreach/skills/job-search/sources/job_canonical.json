@@ -1,0 +1,112 @@
+[
+  {
+    "access_notes": "Public listings. Aggressive bot detection on detail pages \u2014 fall back to summary snippet only.",
+    "language_hint": "en",
+    "name": "LinkedIn Jobs",
+    "relevance_score": 9,
+    "scrape_allowed": true,
+    "scrape_hints": "URL params: keywords, location, f_WT=2 for remote",
+    "tier": "canonical",
+    "type": "global",
+    "url": "https://www.linkedin.com/jobs/search/"
+  },
+  {
+    "access_notes": "Public; localized hosts available (de.indeed.com, fr.indeed.com, etc.) for region-fit boosts.",
+    "language_hint": "en",
+    "name": "Indeed",
+    "relevance_score": 8,
+    "scrape_allowed": true,
+    "scrape_hints": "URL params: q (keywords), l (location), jt (job type), sc (filters)",
+    "tier": "canonical",
+    "type": "global",
+    "url": "https://www.indeed.com/jobs"
+  },
+  {
+    "access_notes": "Public; some apply flows require account. List view is scrapeable.",
+    "language_hint": "en",
+    "name": "Wellfound",
+    "relevance_score": 8,
+    "scrape_allowed": true,
+    "scrape_hints": "Filters: role, location, remote. Startup-heavy listings.",
+    "tier": "canonical",
+    "type": "startup",
+    "url": "https://wellfound.com/jobs"
+  },
+  {
+    "access_notes": "Public, low friction. Good for tag-driven discovery.",
+    "language_hint": "en",
+    "name": "RemoteOK",
+    "relevance_score": 8,
+    "scrape_allowed": true,
+    "scrape_hints": "Simple HTML list; lightweight JSON endpoint at /api. Tag-based filters.",
+    "tier": "canonical",
+    "type": "remote-only",
+    "url": "https://remoteok.com/"
+  },
+  {
+    "access_notes": "Public; lower listing volume than RemoteOK but higher signal.",
+    "language_hint": "en",
+    "name": "WeWorkRemotely",
+    "relevance_score": 7,
+    "scrape_allowed": true,
+    "scrape_hints": "Categories: programming, devops, design, sales, customer-support",
+    "tier": "canonical",
+    "type": "remote-only",
+    "url": "https://weworkremotely.com/"
+  },
+  {
+    "access_notes": "Public; one giant thread per month. Highest-signal for senior IC roles.",
+    "language_hint": "en",
+    "name": "Hacker News Who-Is-Hiring",
+    "relevance_score": 7,
+    "scrape_allowed": true,
+    "scrape_hints": "Current month's thread via Algolia search. Filter for 'REMOTE' tag in comment body.",
+    "tier": "canonical",
+    "type": "aggregator",
+    "url": "https://hn.algolia.com/?q=Ask+HN+Who+is+hiring"
+  },
+  {
+    "access_notes": "Public list view; detail pages may require account.",
+    "language_hint": "en",
+    "name": "Otta",
+    "relevance_score": 7,
+    "scrape_allowed": true,
+    "scrape_hints": "Filters: remote, salary, seniority. Tech-startup focused.",
+    "tier": "canonical",
+    "type": "tech/startup",
+    "url": "https://app.otta.com/jobs/theme/all"
+  },
+  {
+    "access_notes": "Public; bypass Lever's per-company portal limit by searching across all hosted boards.",
+    "language_hint": "en",
+    "name": "Lever ATS (via Google)",
+    "relevance_score": 8,
+    "scrape_allowed": true,
+    "scrape_hints": "Use Google dork: site:jobs.lever.co \"<title>\" remote",
+    "tier": "canonical",
+    "type": "ATS aggregator",
+    "url": "https://www.google.com/search?q=site%3Ajobs.lever.co"
+  },
+  {
+    "access_notes": "Public; covers Greenhouse-hosted careers pages.",
+    "language_hint": "en",
+    "name": "Greenhouse ATS",
+    "relevance_score": 8,
+    "scrape_allowed": true,
+    "scrape_hints": "Use Google dork: site:boards.greenhouse.io \"<title>\" remote",
+    "tier": "canonical",
+    "type": "ATS aggregator",
+    "url": "https://www.google.com/search?q=site%3Aboards.greenhouse.io"
+  },
+  {
+    "access_notes": "Public; younger ATS, fewer companies but high-quality YC/seed roles.",
+    "language_hint": "en",
+    "name": "Ashby ATS",
+    "relevance_score": 7,
+    "scrape_allowed": true,
+    "scrape_hints": "Use Google dork: site:jobs.ashbyhq.com \"<title>\" remote",
+    "tier": "canonical",
+    "type": "ATS aggregator",
+    "url": "https://www.google.com/search?q=site%3Ajobs.ashbyhq.com"
+  }
+]

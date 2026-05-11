@@ -107,16 +107,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A["/lead-gen"]:::outreach --> B["/deep-research"]:::pipe
+    A["/outreach-research"]:::outreach --> B["/deep-research"]:::pipe
     B --> C["/brainstorm"]:::creative
     classDef outreach fill:#fff1e5,stroke:#bc4c00,color:#bc4c00
     classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
     classDef creative fill:#fbefff,stroke:#8250df,color:#8250df
 ```
 
-1. **`/lead-gen`** — strategy → source research → scout → enrich → score → report
+1. **`/outreach-research`** — strategy → source research → scout → enrich → score → report
 1. **`/deep-research`** — domain context to ground outreach in current regulation
-1. **`/brainstorm`** — multi-lens positioning ideas tied back to the lead-gen report
+1. **`/brainstorm`** — multi-lens positioning ideas tied back to the outreach-research report
 
 </details>
 
@@ -199,7 +199,7 @@ After installation, skills are available as slash commands:
 /audit scope:branch security
 /debug "KeyError: 'user_id' in process_payment"
 /review-branch
-/lead-gen find AI startups in Berlin for consulting partnerships
+/outreach-research find AI startups in Berlin for consulting partnerships
 ```
 
 ## Plugins
@@ -265,9 +265,9 @@ ______________________________________________________________________
 
 Autonomous lead generation pipeline that discovers companies, scans reputations, enriches with contacts and intelligence, scores leads, and produces executive reports.
 
-| Skill        | Command            | What it does                                                        |
-| ------------ | ------------------ | ------------------------------------------------------------------- |
-| **lead-gen** | `/lead-gen <goal>` | Strategy → source research → scout → scan → enrich → score → report |
+| Skill                 | Command                     | What it does                                                        |
+| --------------------- | --------------------------- | ------------------------------------------------------------------- |
+| **outreach-research** | `/outreach-research <goal>` | Strategy → source research → scout → scan → enrich → score → report |
 
 11 specialized agents covering strategy, source research, company discovery, reputation scanning, contact finding, news monitoring, growth analysis, tech stack analysis, enrichment orchestration, card writing, and reporting.
 

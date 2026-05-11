@@ -1,6 +1,6 @@
 ---
 name: using-mozg-pipelines
-description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-creative.
+description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-job-outreach, mz-creative.
 argument-hint: '[task description]'
 model: haiku
 allowed-tools: Read, AskUserQuestion
@@ -39,29 +39,32 @@ Invoke when the user:
 
 Routing table. Phrases are indicative, not exact matches.
 
-| Task phrase                                                                                  | Skill                                                     | Plugin           |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------- |
-| "build a feature", "implement X", "add capability"                                           | build                                                     | mz-dev-pipe      |
-| "fix this bug", "debug", "why is this broken"                                                | debug                                                     | mz-dev-pipe      |
-| "security review", "audit for vulns", "threat model"                                         | audit                                                     | mz-dev-pipe      |
-| "verify this works", "prove correctness", "check behavior"                                   | verify                                                    | mz-dev-pipe      |
-| "polish this", "clean up", "finalize"                                                        | polish                                                    | mz-dev-pipe      |
-| "optimize", "make it faster", "profile hotspot"                                              | optimize                                                  | mz-dev-pipe      |
-| "explain this code", "what does this do"                                                     | explain                                                   | mz-research-pipe |
-| "investigate X", "dig into", "find root cause", "is X actually doing Y", "verify hypothesis" | debug certainty:low                                       | mz-dev-pipe      |
-| "blast radius", "what breaks if I change X", "impact analysis"                               | audit depth:deep scope:branch (auto-invokes blast-radius) | mz-dev-pipe      |
-| "deep audit", "pre-PR audit", "ship audit", "before publishing", "before I open a PR"        | audit depth:deep                                          | mz-dev-pipe      |
-| "research topic deeply", "survey the field"                                                  | deep-research                                             | mz-research-pipe |
-| "synthesize past research", "combine findings", "consolidate prior work"                     | combine                                                   | mz-research-pipe |
-| "translate this", "localize", "translate to <lang>"                                          | translate                                                 | mz-research-pipe |
-| "bootstrap rules", "init project rules"                                                      | init-rules                                                | mz-dev-base      |
-| "review my branch", "what changed locally"                                                   | review-branch                                             | mz-dev-git       |
-| "review this PR", "what's wrong with this PR"                                                | github-review-pr                                          | mz-dev-git       |
-| "scan open PRs", "triage PRs"                                                                | github-scan-prs                                           | mz-dev-git       |
-| "help me author a new skill", "write a SKILL.md", "construct a skill"                        | construct-skill                                           | mz-dev-base      |
-| "which skill fits", "route this", "what plugins do I have"                                   | using-mozg-pipelines                                      | mz-dev-base      |
-| "find leads", "customers matching X", "outreach list"                                        | lead-gen                                                  | mz-biz-outreach  |
-| "brainstorm", "generate ideas", "creative options"                                           | brainstorm                                                | mz-creative      |
+| Task phrase                                                                                      | Skill                                                     | Plugin           |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | ---------------- |
+| "build a feature", "implement X", "add capability"                                               | build                                                     | mz-dev-pipe      |
+| "fix this bug", "debug", "why is this broken"                                                    | debug                                                     | mz-dev-pipe      |
+| "security review", "audit for vulns", "threat model"                                             | audit                                                     | mz-dev-pipe      |
+| "verify this works", "prove correctness", "check behavior"                                       | verify                                                    | mz-dev-pipe      |
+| "polish this", "clean up", "finalize"                                                            | polish                                                    | mz-dev-pipe      |
+| "optimize", "make it faster", "profile hotspot"                                                  | optimize                                                  | mz-dev-pipe      |
+| "explain this code", "what does this do"                                                         | explain                                                   | mz-research-pipe |
+| "investigate X", "dig into", "find root cause", "is X actually doing Y", "verify hypothesis"     | debug certainty:low                                       | mz-dev-pipe      |
+| "blast radius", "what breaks if I change X", "impact analysis"                                   | audit depth:deep scope:branch (auto-invokes blast-radius) | mz-dev-pipe      |
+| "deep audit", "pre-PR audit", "ship audit", "before publishing", "before I open a PR"            | audit depth:deep                                          | mz-dev-pipe      |
+| "research topic deeply", "survey the field"                                                      | deep-research                                             | mz-research-pipe |
+| "synthesize past research", "combine findings", "consolidate prior work"                         | combine                                                   | mz-research-pipe |
+| "translate this", "localize", "translate to <lang>"                                              | translate                                                 | mz-research-pipe |
+| "bootstrap rules", "init project rules"                                                          | init-rules                                                | mz-dev-base      |
+| "review my branch", "what changed locally"                                                       | review-branch                                             | mz-dev-git       |
+| "review this PR", "what's wrong with this PR"                                                    | github-review-pr                                          | mz-dev-git       |
+| "scan open PRs", "triage PRs"                                                                    | github-scan-prs                                           | mz-dev-git       |
+| "help me author a new skill", "write a SKILL.md", "construct a skill"                            | construct-skill                                           | mz-dev-base      |
+| "which skill fits", "route this", "what plugins do I have"                                       | using-mozg-pipelines                                      | mz-dev-base      |
+| "find leads", "customers matching X", "outreach list", "research targets"                        | outreach-research                                         | mz-biz-outreach  |
+| "find contacts at <company>", "decision-makers at X", "CEO/CTO email for X", "who do I write to" | outreach-contacts                                         | mz-biz-outreach  |
+| "find a job", "search for vacancies", "job hunt", "match jobs to my CV"                          | job-search                                                | mz-job-outreach  |
+| "find a recruiter", "hiring manager for X", "careers email for X", "who do I apply to"           | job-recruiter-info                                        | mz-job-outreach  |
+| "brainstorm", "generate ideas", "creative options"                                               | brainstorm                                                | mz-creative      |
 
 mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
 

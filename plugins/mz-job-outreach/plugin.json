@@ -1,0 +1,6 @@
+{
+  "description": "Job and freelance hunt intelligence \u2014 /job-search and /freelance-search run full CV-to-listings pipelines for salaried roles and freelance gigs; /job-recruiter-info does one-shot recruiter discovery; /freelance-pitch drafts a grounded proposal for one gig (\u2264350 words, milestones/pricing cited verbatim from the gig)",
+  "license": "MIT",
+  "name": "mz-job-outreach",
+  "version": "0.38.0"
+}

@@ -1,12 +1,12 @@
 ---
-name: lead-gen
-description: ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients".
+name: outreach-research
+description: ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients", "research targets".
 argument-hint: <target description> [sector:filter] [limit:N]
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, WebFetch, WebSearch
 ---
 
-# Lead Generation Pipeline
+# Outreach Research Pipeline
 
 ## Overview
 
@@ -33,7 +33,7 @@ If empty, ask the user what kind of companies they want to find and why.
 
 ## Scope Parameter
 
-Extract scope modifiers from `$ARGUMENTS`, case-insensitive. `lead-gen` is outbound (company discovery), so scope controls **which prospective companies enter the funnel**, not which files to scan. Remaining text controls the outreach goal (orthogonal).
+Extract scope modifiers from `$ARGUMENTS`, case-insensitive. `outreach-research` is outbound (company discovery), so scope controls **which prospective companies enter the funnel**, not which files to scan. Remaining text controls the outreach goal (orthogonal).
 
 - **`sector:<value>`** — restrict discovery to a specific industry/vertical (e.g. `sector:HR-tech`, `sector:fintech`). Default: inferred by `outreach-strategist` from the goal text.
 - **`region:<value>`** — restrict discovery to a geographic market (e.g. `region:DACH`, `region:LATAM`). Default: inferred from the goal text; global if no signal.
@@ -56,7 +56,7 @@ Two separate directories are used:
 - **State** — `.mz/task/<task_name>/state.md`. This is the source of truth across phases; never rely on conversation memory.
 - **Outreach data** — `.mz/outreach/<run_name>/` holds `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `<YYYY_MM_DD>_outreach_<goal_slug>.md`.
 
-`task_name` follows the pattern `<YYYY_MM_DD>_lead_gen_<slug>`; `run_name` is `<YYYY_MM_DD>_lead_gen_<goal_slug>` (same leading-date convention). They are independent: `task_name` identifies the pipeline invocation, `run_name` identifies the outreach output bundle.
+`task_name` follows the pattern `<YYYY_MM_DD>_outreach_research_<slug>`; `run_name` is `<YYYY_MM_DD>_outreach_research_<goal_slug>` (same leading-date convention). They are independent: `task_name` identifies the pipeline invocation, `run_name` identifies the outreach output bundle.
 
 ## Core Process
 
@@ -138,8 +138,8 @@ ______________________________________________________________________
 
 Parse arguments. Derive two names:
 
-- `task_name` (state dir) = `<YYYY_MM_DD>_lead_gen_<slug>` where `<slug>` is a snake_case summary of the goal (max 20 chars) and `<YYYY_MM_DD>` is today's date with underscores.
-- `run_name` (outreach output dir) = `<YYYY_MM_DD>_lead_gen_<goal_slug>`, max 30 chars total (keep `<goal_slug>` short to fit). Example: `"find DevOps clients in DACH"` → `2026_04_06_lead_gen_devops_dach`.
+- `task_name` (state dir) = `<YYYY_MM_DD>_outreach_research_<slug>` where `<slug>` is a snake_case summary of the goal (max 20 chars) and `<YYYY_MM_DD>` is today's date with underscores.
+- `run_name` (outreach output dir) = `<YYYY_MM_DD>_outreach_research_<goal_slug>`, max 40 chars total (keep `<goal_slug>` short to fit). Example: `"find DevOps clients in DACH"` → `2026_05_11_outreach_research_devops_dach`.
 
 ```bash
 mkdir -p .mz/task/<task_name>
@@ -149,7 +149,7 @@ mkdir -p .mz/outreach/<run_name>/companies
 Write `.mz/task/<task_name>/state.md`:
 
 ```markdown
-# Lead Gen State
+# Outreach Research State
 - **Status**: running
 - **Phase**: 0
 - **Started**: <ISO timestamp>

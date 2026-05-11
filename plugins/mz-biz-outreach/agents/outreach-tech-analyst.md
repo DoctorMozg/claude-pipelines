@@ -1,6 +1,6 @@
 ---
 name: outreach-tech-analyst
-description: Analyzes a company's technology stack, engineering maturity, open-source presence, and technical decision-making signals. Used by the lead-gen skill.
+description: Analyzes a company's technology stack, engineering maturity, open-source presence, and technical decision-making signals. Used by the outreach-research skill.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

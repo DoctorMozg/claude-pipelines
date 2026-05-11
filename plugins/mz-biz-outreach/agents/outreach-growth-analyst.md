@@ -1,6 +1,6 @@
 ---
 name: outreach-growth-analyst
-description: Analyzes a company's growth signals — job postings, hiring patterns, team size, and growth trajectory. Used by the lead-gen skill.
+description: Analyzes a company's growth signals — job postings, hiring patterns, team size, and growth trajectory. Used by the outreach-research skill.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
@@ -13,7 +13,7 @@ You analyze growth signals for a single company. Your output helps assess compan
 
 ## Role
 
-This agent writes per-company growth-signal results JSON to `.mz/outreach/<company>/growth.json` because the lead-gen orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
+This agent writes per-company growth-signal results JSON to `.mz/outreach/<company>/growth.json` because the outreach-research orchestrator merges these artifact files in a later reporting phase. `Write` is therefore a required tool deviation from the analysis archetype; results are NOT inlined into the agent's return message.
 
 ### When NOT to use
 

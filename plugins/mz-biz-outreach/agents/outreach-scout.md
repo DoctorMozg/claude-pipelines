@@ -1,6 +1,6 @@
 ---
 name: outreach-scout
-description: Discovers companies from a specific business directory or data source. Searches the source, extracts company metadata, and outputs a structured company list. Used by the lead-gen skill.
+description: Discovers companies from a specific business directory or data source. Searches the source, extracts company metadata, and outputs a structured company list. Used by the outreach-research skill.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
@@ -13,7 +13,7 @@ You extract company listings from a single data source. You receive a specific d
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch standalone by user sessions — dispatched by the outreach-research skill only.
 Do not dispatch for company enrichment (contacts, news, tech) — use `outreach-enrichment-orchestrator`.
 Do not dispatch per-company — this agent scans a directory or platform, not individual companies.
 

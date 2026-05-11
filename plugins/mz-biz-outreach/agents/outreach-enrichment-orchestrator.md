@@ -1,6 +1,6 @@
 ---
 name: outreach-enrichment-orchestrator
-description: Orchestrates the enrichment phase of the lead pipeline. Reads per-company JSON files, dispatches contact-finder, news-finder, growth-analyst, and tech-analyst agents per company, merges results into each company's JSON, and cleans up temp files. Used by the lead-gen skill.
+description: Orchestrates the enrichment phase of the outreach-research pipeline. Reads per-company JSON files, dispatches contact-finder, news-finder, growth-analyst, and tech-analyst agents per company, merges results into each company's JSON, and cleans up temp files. Used by the outreach-research skill.
 tools: Read, Write, Bash, Glob, Grep, Agent(outreach-contact-finder), Agent(outreach-news-finder), Agent(outreach-growth-analyst), Agent(outreach-tech-analyst)
 model: opus
 effort: high
@@ -15,7 +15,7 @@ This agent orchestrates only — it does not perform the delegated enrichment wo
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by the lead-gen skill only.
+Do not dispatch standalone by user sessions — dispatched by the outreach-research skill only.
 Do not dispatch before company JSON files exist from `outreach-scout`.
 Do not dispatch for report writing — use `outreach-reporter` after enrichment is complete.
 

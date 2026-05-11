@@ -1,6 +1,8 @@
 # mz-biz-outreach
 
-Autonomous business lead generation pipeline for Claude Code. Discovers companies, scans reputations, enriches with deep intelligence, scores leads, and produces executive reports with per-company dossier cards.
+Autonomous business-outreach pipelines for Claude Code. Two complementary skills: `/outreach-research` finds **companies to sell to** — discovers, scans, enriches, scores, and reports. `/outreach-contacts` does **one-shot contact discovery** for a single named company — decision-makers, emails, phones, and social presence, without running the full pipeline.
+
+> Looking for job-hunting tools (`/job-search`, `/job-recruiter-info`)? Those moved to a dedicated plugin: **`mz-job-outreach`**.
 
 ## Installation
 
@@ -11,14 +13,14 @@ claude plugin install mz-biz-outreach
 
 ## Skills
 
-### `/lead-gen` — Lead Generation Pipeline
+### `/outreach-research` — Outreach Research Pipeline
 
 Full autonomous outreach intelligence. Takes a target description and runs an 8-phase pipeline: defines strategy, researches sources, discovers companies, scans reputations, enriches with contacts/news/growth/tech data, scores leads, writes per-company dossier cards, and produces an executive summary.
 
 ```
-/lead-gen find potential clients for our DevOps consulting in DACH region
-/lead-gen SaaS companies in Latin America sector:HR-tech limit:30
-/lead-gen find AI startups in Singapore for partnership opportunities
+/outreach-research find potential clients for our DevOps consulting in DACH region
+/outreach-research SaaS companies in Latin America sector:HR-tech limit:30
+/outreach-research find AI startups in Singapore for partnership opportunities
 ```
 
 **Parameters**:
@@ -61,9 +63,41 @@ Each company gets exactly two permanent files — a JSON (for programmatic use) 
 
 The pipeline saves state after each phase. If interrupted, re-running the same command resumes from where it left off.
 
+### `/outreach-contacts` — Single-Company Contact Discovery
+
+One-shot contact lookup for a single named company. Skip the full pipeline when you already know who you want to reach but just need the contacts. Builds a minimal target JSON, dispatches the same `outreach-contact-finder` agent used by `/outreach-research` enrichment, and writes a compact markdown report with named decision-makers, verified emails, phones, and social channels.
+
+```
+/outreach-contacts Acme Corp
+/outreach-contacts acme.com decision_makers:CTO,VP-Engineering
+/outreach-contacts Stripe region:US decision_makers:Head-of-Platform
+```
+
+**Parameters**:
+
+- `decision_makers:<roles>` — comma-separated priority roles (default: inferred from company size)
+- `region:<value>` — disambiguation hint when the company name is ambiguous
+
+**Pipeline**:
+
+```
+Phase 0: Setup       — Parse args, resolve company name ↔ domain
+Phase 1: Contact     — Dispatch outreach-contact-finder against the target
+Phase 2: Report      — Compact markdown with decision-makers, emails, phones, social
+```
+
+**Output**:
+
+```
+.mz/outreach/<YYYY_MM_DD>_outreach_contacts_<slug>/
+├── target.json                          # Parsed target + role priorities
+├── contacts.json                        # Raw agent output
+└── <YYYY_MM_DD>_outreach_contacts_<slug>.md  # Final markdown report
+```
+
 ## Agents
 
-Specialized workers coordinated by the `/lead-gen` skill. You don't invoke these directly.
+Specialized workers coordinated by the skills. You don't invoke these directly.
 
 | Agent                                | Role                                                                                  |
 | ------------------------------------ | ------------------------------------------------------------------------------------- |
@@ -79,7 +113,9 @@ Specialized workers coordinated by the `/lead-gen` skill. You don't invoke these
 | **outreach-card-writer**             | Writes comprehensive markdown dossier card from enriched company JSON                 |
 | **outreach-reporter**                | Synthesizes all intelligence into a scored executive summary                          |
 
-## Scoring
+`outreach-contact-finder` is shared between `/outreach-research` enrichment and the standalone `/outreach-contacts` skill — same contract, two entry points.
+
+## Scoring (outreach-research)
 
 Companies are scored across multiple dimensions with configurable weights (set by the strategist based on your outreach goal):
 
