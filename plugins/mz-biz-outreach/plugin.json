@@ -1,6 +1,6 @@
 {
-  "description": "Business outreach intelligence \u2014 /outreach-research runs the full company-discovery pipeline (sources, scout, reputation, enrichment, scoring, dossiers); /outreach-contacts finds decision-maker contacts for a single named company",
+  "description": "Business outreach intelligence \u2014 /outreach-research runs the full company-discovery pipeline (sources, scout, reputation, enrichment, scoring, dossiers, output in `.mz/outreach/<run>/companies/`); /outreach-contacts drafts naturalized LinkedIn/email outreach letters into the card; /outreach-update-card logs a dated interaction entry. Both writer skills relocate the card to `.mz/outreach/active/<YYYY-MM-DD>_<slug>.md` with the last interaction date as prefix",
   "license": "MIT",
   "name": "mz-biz-outreach",
-  "version": "0.38.0"
+  "version": "0.41.0"
 }
