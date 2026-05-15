@@ -1,7 +1,7 @@
 ---
 name: clean-leftovers
 description: "ALWAYS invoke when the user wants to remove AI-generation leftovers from code. Triggers: 'clean leftovers', 'remove AI markers', 'strip phase comments', 'clean up after the pipeline', 'de-AI the code'. When NOT to use: prose rewriting (use /naturalize), general code quality cleanup (use /optimize)."
-argument-hint: "[scope:branch|global|working] [path or glob]"
+argument-hint: '[scope:branch|global|working] [path or glob]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
@@ -50,25 +50,25 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase Overview
 
-| #   | Phase                 | File                       |
-| --- | --------------------- | -------------------------- |
-| 0   | Setup                 | inline below               |
-| 1   | Research (mandatory)  | `phases/research.md`       |
-| 2   | Detection             | `phases/detection.md`      |
-| 2.5 | Approval gate         | inline below               |
-| 3   | Cleanup execution     | `phases/cleanup.md`        |
-| 4   | Verification + report | `phases/verification.md`   |
+| #   | Phase                 | File                     |
+| --- | --------------------- | ------------------------ |
+| 0   | Setup                 | inline below             |
+| 1   | Research (mandatory)  | `phases/research.md`     |
+| 2   | Detection             | `phases/detection.md`    |
+| 2.5 | Approval gate         | inline below             |
+| 3   | Cleanup execution     | `phases/cleanup.md`      |
+| 4   | Verification + report | `phases/verification.md` |
 
 Read the relevant phase file when you reach that phase. Do not pre-load all of them.
 
 ### Phase 0: Setup
 
 1. **Resume check** — apply [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md). If `state.md` exists with `Status: running | failed`, present the Resume gate.
-2. **Parse arguments** — extract `scope:` (default `working`); the remaining text is an optional path or glob filter.
-3. **Resolve scope** — apply the scope reference above and save the concrete file list to `.mz/task/<task_name>/scope_files.txt`. Skip excluded markdown directories unless explicitly requested.
-4. **Task name** — `<YYYY_MM_DD>_clean_leftovers_<slug>` where `<slug>` is snake_case of scope mode + first 3 words of any path filter (max 20 chars). On same-day collision append `_v2`, `_v3`.
-5. **Create task dir & state** — `.mz/task/<task_name>/`. Write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md): first line `schema_version: 1`, required keys (`Status`, `Phase`, `Started`, `Iteration` 0, `FilesWritten`), plus skill-specific (`scope`, `files_in_scope`, `categories_to_clean`).
-6. **Emit a visible setup block** — task name, scope, file count, exclusions. Read `phases/research.md` and proceed to Phase 1.
+1. **Parse arguments** — extract `scope:` (default `working`); the remaining text is an optional path or glob filter.
+1. **Resolve scope** — apply the scope reference above and save the concrete file list to `.mz/task/<task_name>/scope_files.txt`. Skip excluded markdown directories unless explicitly requested.
+1. **Task name** — `<YYYY_MM_DD>_clean_leftovers_<slug>` where `<slug>` is snake_case of scope mode + first 3 words of any path filter (max 20 chars). On same-day collision append `_v2`, `_v3`.
+1. **Create task dir & state** — `.mz/task/<task_name>/`. Write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md): first line `schema_version: 1`, required keys (`Status`, `Phase`, `Started`, `Iteration` 0, `FilesWritten`), plus skill-specific (`scope`, `files_in_scope`, `categories_to_clean`).
+1. **Emit a visible setup block** — task name, scope, file count, exclusions. Read `phases/research.md` and proceed to Phase 1.
 
 ### Phase 2.5: Approval Gate
 
@@ -118,13 +118,13 @@ Techniques: delegated to phase files — see Phase Overview table above. Referen
 
 ## Common Rationalizations
 
-| Rationalization                              | Rebuttal                                                                          |
-| -------------------------------------------- | --------------------------------------------------------------------------------- |
-| "the AI signatures are harmless"             | "they leak provenance, embarrass on review, and look amateurish in shipped code"  |
-| "WHAT comments are still informative"        | "they desync on every edit; the reader still has to read the code to trust them"  |
-| "the phase markers don't run, so it's fine"  | "they confuse future readers and waste review time"                               |
-| "research is overkill for this"              | "AI tool watermarks shift every few months; the embedded list goes stale"         |
-| "skip the approval gate for speed"           | "WHAT-not-WHY false positives are costly; review preserves real comments"         |
+| Rationalization                             | Rebuttal                                                                         |
+| ------------------------------------------- | -------------------------------------------------------------------------------- |
+| "the AI signatures are harmless"            | "they leak provenance, embarrass on review, and look amateurish in shipped code" |
+| "WHAT comments are still informative"       | "they desync on every edit; the reader still has to read the code to trust them" |
+| "the phase markers don't run, so it's fine" | "they confuse future readers and waste review time"                              |
+| "research is overkill for this"             | "AI tool watermarks shift every few months; the embedded list goes stale"        |
+| "skip the approval gate for speed"          | "WHAT-not-WHY false positives are costly; review preserves real comments"        |
 
 ## Red Flags
 

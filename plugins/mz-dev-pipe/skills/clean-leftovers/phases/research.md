@@ -41,8 +41,8 @@ Wait for completion. The researcher writes `web_research.md` directly.
 If the dispatch returns `BLOCKED` (e.g., no web access in the runtime) or `NEEDS_CONTEXT`:
 
 1. Retry once with the same brief.
-2. If the second attempt fails, write `.mz/task/<task_name>/web_research.md` with the single line `RESEARCH UNAVAILABLE — embedded catalog only.` and continue.
-3. Append a flag to `state.md`: `research_status: unavailable`. The final report (`phases/verification.md`) surfaces this so the user knows detection ran without fresh patterns.
+1. If the second attempt fails, write `.mz/task/<task_name>/web_research.md` with the single line `RESEARCH UNAVAILABLE — embedded catalog only.` and continue.
+1. Append a flag to `state.md`: `research_status: unavailable`. The final report (`phases/verification.md`) surfaces this so the user knows detection ran without fresh patterns.
 
 Do not block the pipeline on research failure. Stale detection is better than no detection.
 

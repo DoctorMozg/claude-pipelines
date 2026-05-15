@@ -5,8 +5,8 @@ The orchestrator dispatches `expert-leftover-cleaner` (opus) in parallel waves t
 ## 3.1 Wave planning
 
 1. **Compute waves** — split the file list from `detection.md` into chunks of MAX_FILES_PER_DISPATCH. Number of cleaner agents per wave = `min(MAX_PARALLEL_AGENTS, chunks_remaining)`.
-2. **Group by category mix** — keep files with WHAT-not-WHY candidates (category D) in their own waves when possible. D requires per-instance judgment, which slows the agent; mixing them with A/B/C work would slow autonomous-deletion work too.
-3. **Write the wave plan** to `.mz/task/<task_name>/cleanup_plan.md` so the verification phase can compare expected vs actual edits.
+1. **Group by category mix** — keep files with WHAT-not-WHY candidates (category D) in their own waves when possible. D requires per-instance judgment, which slows the agent; mixing them with A/B/C work would slow autonomous-deletion work too.
+1. **Write the wave plan** to `.mz/task/<task_name>/cleanup_plan.md` so the verification phase can compare expected vs actual edits.
 
 ## 3.2 Dispatch a wave
 
@@ -50,8 +50,8 @@ Replace `<task_name>`, `<N>` (wave number), `<M>` (agent index in wave) per disp
 After all agents in the wave return:
 
 1. Read each `cleanup_wave_<N>_agent_<M>.md` report.
-2. Aggregate: total files edited, hits removed per category, NEEDS_CONTEXT / BLOCKED reports.
-3. Update `state.md`:
+1. Aggregate: total files edited, hits removed per category, NEEDS_CONTEXT / BLOCKED reports.
+1. Update `state.md`:
    - `Phase: 3` (or `Phase: 3.<wave>` for multi-wave runs).
    - `Iteration` unchanged (iteration counts cleanup→verify cycles, not waves within a single cleanup pass).
    - Append all cleanup-wave report paths to `FilesWritten`.
@@ -73,9 +73,9 @@ Phase 3 may be re-entered from Phase 4 when verification finds residuals. The it
 On re-entry from Phase 4:
 
 1. Read `.mz/task/<task_name>/residuals.md` (written by verification).
-2. Build a NEW wave plan targeting only the residual file:line hits.
-3. Dispatch with an additional instruction: `This is iteration <Iteration> of cleanup. Previous waves missed the listed residuals. Focus exclusively on these hits — do not re-scan other files.`
-4. Cap at MAX_FIX_ITERATIONS total cleanup passes. If residuals remain at the cap, the verification phase escalates instead of looping again.
+1. Build a NEW wave plan targeting only the residual file:line hits.
+1. Dispatch with an additional instruction: `This is iteration <Iteration> of cleanup. Previous waves missed the listed residuals. Focus exclusively on these hits — do not re-scan other files.`
+1. Cap at MAX_FIX_ITERATIONS total cleanup passes. If residuals remain at the cap, the verification phase escalates instead of looping again.
 
 ## 3.6 Safety rails
 
