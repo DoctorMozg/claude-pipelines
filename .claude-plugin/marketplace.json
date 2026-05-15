@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.41.0"
+    "version": "0.42.0"
   },
   "name": "mozg-pipelines",
   "owner": {
@@ -20,7 +20,7 @@
       ],
       "name": "mz-dev-base",
       "source": "./plugins/mz-dev-base",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "development",
@@ -37,7 +37,7 @@
       ],
       "name": "mz-dev-pipe",
       "source": "./plugins/mz-dev-pipe",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "development",
@@ -55,7 +55,7 @@
       ],
       "name": "mz-research-pipe",
       "source": "./plugins/mz-research-pipe",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "development",
@@ -70,11 +70,11 @@
       ],
       "name": "mz-dev-git",
       "source": "./plugins/mz-dev-git",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "business",
-      "description": "Business outreach intelligence \u2014 /outreach-research discovers companies into `.mz/outreach/<run>/companies/`; /outreach-contacts drafts naturalized LinkedIn/email letters into the card; /outreach-update-card logs dated interaction entries. Both writer skills relocate the card to `.mz/outreach/active/<YYYY-MM-DD>_<slug>.md` (last-interaction-date prefix)",
+      "description": "Business outreach intelligence \u2014 /outreach-research discovers companies into `.mz/outreach/<run>/companies/`; /outreach-enrich-company fans out 5 specialist subagents to deepen the card and then drafts naturalized LinkedIn/email letters into it; /outreach-update-card logs dated interaction entries. Both writer skills relocate the card to `.mz/outreach/active/<YYYY-MM-DD>_<slug>.md` (last-interaction-date prefix)",
       "keywords": [
         "outreach",
         "lead-generation",
@@ -90,7 +90,7 @@
       ],
       "name": "mz-biz-outreach",
       "source": "./plugins/mz-biz-outreach",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "business",
@@ -111,7 +111,7 @@
       ],
       "name": "mz-job-outreach",
       "source": "./plugins/mz-job-outreach",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "creativity",
@@ -135,7 +135,7 @@
       ],
       "name": "mz-creative",
       "source": "./plugins/mz-creative",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "creativity",
@@ -150,7 +150,7 @@
       ],
       "name": "mz-funny",
       "source": "./plugins/mz-funny",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "development",
@@ -164,7 +164,7 @@
       ],
       "name": "mz-memory",
       "source": "./plugins/mz-memory",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "design",
@@ -180,7 +180,7 @@
       ],
       "name": "mz-design",
       "source": "./plugins/mz-design",
-      "version": "0.41.0"
+      "version": "0.42.0"
     },
     {
       "category": "development",
@@ -196,7 +196,7 @@
       ],
       "name": "mz-knowledge",
       "source": "./plugins/mz-knowledge",
-      "version": "0.41.0"
+      "version": "0.42.0"
     }
   ]
 }

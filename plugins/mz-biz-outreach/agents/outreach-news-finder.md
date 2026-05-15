@@ -17,7 +17,7 @@ This agent writes per-company news-event results JSON to `.mz/outreach/<company>
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` only.
+Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` (inside `/outreach-research`) or the `/outreach-enrich-company` skill only.
 Do not dispatch for contact discovery — use `outreach-contact-finder`.
 Do not dispatch for growth/hiring signals — use `outreach-growth-analyst`.
 

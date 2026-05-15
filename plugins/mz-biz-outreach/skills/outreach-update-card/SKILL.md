@@ -26,7 +26,7 @@ Invoke when the user has taken an outreach action against a company they hold a 
 ### When NOT to use
 
 - The user wants to *create* a new company card → invoke `outreach-research` for that one company instead.
-- The user wants to *draft* an outreach letter → invoke `outreach-contacts`.
+- The user wants to *draft* an outreach letter → invoke `outreach-enrich-company`.
 - The user wants to remember the action only in conversation context, not in a card → do not invoke this skill.
 - The target file is not a company card (missing `## Overview` and `## Outreach Recommendation` headers) → emit `STATUS: BLOCKED`.
 
@@ -37,7 +37,7 @@ Cards move through two directories:
 - **Research baseline** — `.mz/outreach/<run>/companies/<slug>.md`. Output of `/outreach-research`. Untouched by this skill until first activation.
 - **Active** — `.mz/outreach/active/<YYYY-MM-DD>_<slug>.md`. Where this skill writes. The date prefix is the last interaction date. The slug is the company slug (stripped of any prior date prefix).
 
-A card is "active" the moment any interaction is logged or letters are drafted against it. This skill is one of two entry points that move a card into `active/` (the other is `/outreach-contacts`).
+A card is "active" the moment any interaction is logged or letters are drafted against it. This skill is one of two entry points that move a card into `active/` (the other is `/outreach-enrich-company`).
 
 ## Core Process
 

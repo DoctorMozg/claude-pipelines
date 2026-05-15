@@ -17,7 +17,7 @@ This agent writes per-company review/reputation results back into the company JS
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by the outreach-research skill only.
+Do not dispatch standalone by user sessions — dispatched by the `/outreach-research` skill or the `/outreach-enrich-company` skill only.
 Do not dispatch for contact or tech enrichment — use the enrichment orchestrator agents.
 Do not dispatch for report writing — use `outreach-reporter`.
 

@@ -7,7 +7,7 @@ Autonomous job-hunt and freelance-hunt pipelines for Claude Code. Four skills co
 - `/freelance-search` — **full CV-to-gigs pipeline** for freelance/contract/consulting work (vetted networks, regional boards, niche boards; explicit Upwork/Fiverr exclusion).
 - `/freelance-pitch` — **per-gig grounded proposal** for a selected freelance gig (≤350 words, milestones cited verbatim from gig scope, pricing cited verbatim from gig budget or strategist rate floor).
 
-> Looking for B2B outreach tools (`/outreach-research`, `/outreach-contacts`)? Those live in the sibling plugin: **`mz-biz-outreach`**.
+> Looking for B2B outreach tools (`/outreach-research`, `/outreach-enrich-company`, `/outreach-update-card`)? Those live in the sibling plugin: **`mz-biz-outreach`**.
 
 ## Installation
 

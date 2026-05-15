@@ -17,7 +17,7 @@ This agent writes per-company growth-signal results JSON to `.mz/outreach/<compa
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` only.
+Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` (inside `/outreach-research`) or the `/outreach-enrich-company` skill only.
 Do not dispatch for tech-stack analysis — use `outreach-tech-analyst`.
 Do not dispatch for news or press releases — use `outreach-news-finder`.
 

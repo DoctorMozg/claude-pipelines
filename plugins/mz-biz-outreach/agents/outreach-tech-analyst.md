@@ -13,7 +13,7 @@ You analyze the technical profile of a single company. Your output helps assess 
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` only.
+Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` (inside `/outreach-research`) or the `/outreach-enrich-company` skill only.
 Do not dispatch for growth or hiring signals — use `outreach-growth-analyst`.
 Do not dispatch for contact discovery — use `outreach-contact-finder`.
 

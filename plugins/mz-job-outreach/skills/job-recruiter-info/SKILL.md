@@ -21,7 +21,7 @@ Invoke when the user wants apply-target contacts for one job or one company with
 ### When NOT to use
 
 - The user wants to scan many jobs against a CV — use `/job-search`.
-- The user wants company contacts for B2B outreach (sales, partnerships) — use `/outreach-contacts` in mz-biz-outreach.
+- The user wants company contacts for B2B outreach (sales, partnerships) — use `/outreach-research` (full pipeline) or `/outreach-enrich-company` (deepen an existing card) in mz-biz-outreach.
 - The user wants to draft a cover letter for that role — use the copywrite skill from mz-creative.
 - The user wants to investigate the company itself (reputation, growth, tech) — use `/outreach-research` for a single-company scan.
 

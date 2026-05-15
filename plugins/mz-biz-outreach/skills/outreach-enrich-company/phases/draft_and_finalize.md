@@ -1,16 +1,107 @@
-# Phase 2: Draft Letters — Phase 3: Naturalize — Phase 4: Append to Card
+# Phase 3: Draft Letters — Phase 4: Naturalize — Phase 5: Rewrite Card
 
-Read `SKILL.md` first. This file picks up after Phase 1 (briefs written under `.mz/task/<task_name>/briefs/`) and runs Phases 2 through 4.
+Read `SKILL.md` first. This file picks up after either:
 
-## Phase 2: Draft letters (expert-copywriter)
+- **Phase 2 complete** (`enrichment_complete`) — `enrich_mode` is `both` (run drafting + card rewrite with both sections) or `only` (skip drafting/naturalize, run only Phase 5 with deeper intel).
+- **Phase 1 complete** (`card_parsed`) — `enrich_mode` is `skip` (no Phase 2; run Phase 3 → 4 → 5 with letters only).
 
-### 2.1 Dispatch plan
+## Phase 3: Draft letters (expert-copywriter)
+
+Skipped entirely when `enrich_mode == "only"`.
+
+### 3.0 Build per-contact briefs
+
+Brief-building moved out of Phase 1 (which now only parses the card and writes `card_parsed.json`). Read inputs:
+
+1. `.mz/task/<task_name>/card_parsed.json` — written in Phase 1.
+1. `.mz/task/<task_name>/enrichment/*.json` — written in Phase 2 (skip if `enrich_mode == "skip"`; the directory will be empty).
+1. `.mz/task/<task_name>/deeper_intelligence.md` — written in Phase 2 (skip if `enrich_mode == "skip"`).
+1. The orchestrator's in-memory light-pass results from Phase 1 (per-contact public-activity strings).
+1. Sender voice + outreach angles resolved in Phase 1.
+
+For each of the (up to 5) Key Contacts from `card_parsed.json`, decide the channel:
+
+- If `channels_override == "email"` → channel = `email` (requires the contact's email to be known, else fall back to LinkedIn DM if URL known, else `skip`).
+- If `channels_override == "linkedin"` → channel = `linkedin_dm` (requires LinkedIn URL, else `skip`).
+- If `channels_override == "both"` → emit TWO briefs per contact when both handles exist: one `email`, one `linkedin_dm`. Skip a missing channel cleanly.
+- If no override (default) → prefer `email` when an email is known; else `linkedin_dm` when LinkedIn URL is known; else `skip` and record the reason.
+
+Per-channel handle resolution: the card lists contact emails in the `## Key Contacts` block's `**Emails**:` line — these are company-level (info@, sales@). Person-specific emails appear in the per-contact line only if the card found one. If only generic emails exist, mark the channel as `email_generic` and target the generic address with the contact named in the body.
+
+For each non-skipped (contact, channel) pair, write `.mz/task/<task_name>/briefs/<channel>_<contact_slug>.json`:
+
+```json
+{
+  "company": {
+    "name": "<from card>",
+    "slug": "<company_slug>",
+    "domain": "<from card>",
+    "sector": "<from card>"
+  },
+  "recipient": {
+    "name": "<full name>",
+    "first_name": "<first name only>",
+    "title": "<title from card>",
+    "linkedin_url": "<url or null>",
+    "email": "<email or null>",
+    "relevance": "<relevance line from card>"
+  },
+  "chosen_channel": "email | email_generic | linkedin_dm",
+  "channel_constraints": {
+    "subject_max_chars": 55,
+    "body_word_min": 120,
+    "body_word_max": 180
+  },
+  "chosen_angle": "<one line from outreach_angles, picked to fit this contact>",
+  "value_claim": "<one short sentence — the user-facing benefit, derived from strategy.outreach_angles + card outreach_recommendation>",
+  "company_hook": "<one line from the card's Outreach Recommendation Best angle, paraphrased to fit this contact>",
+  "personalization_hooks": [
+    {
+      "signal": "<verbatim signal>",
+      "source": "card | light_pass | deeper_intel",
+      "source_detail": "<which card section, which URL, or which enrichment file>",
+      "verified": true
+    }
+  ],
+  "card_recent_news": [
+    {
+      "title": "<news title>",
+      "date": "<date>",
+      "outreach_implication": "<implication line from card>"
+    }
+  ],
+  "verified_entities": [
+    "<every proper noun, product name, metric, date, URL the copywriter is allowed to reference — populated from card + light pass + deeper intel>"
+  ],
+  "strategy_source": "strategy.json | default | sender_override",
+  "sender_voice": "<3–5 line voice description>",
+  "channel_format_rules": "<copied verbatim from the channel rules table below so the copywriter sees them inline>"
+}
+```
+
+`channel_constraints` for `linkedin_dm`: `{ "subject_max_chars": 0, "body_word_min": 60, "body_word_max": 100 }`. For `email_generic`: same as `email` plus a `body_must_name_recipient: true` flag so the copywriter addresses the contact in the body even though the To: is generic.
+
+**Deeper-intel integration** (when `enrich_mode in (both, only)` and Phase 2 ran successfully):
+
+For each contact:
+
+- Read `enrichment/news.json`. Add any items with `outreach_implication` set as additional `card_recent_news` entries; promote their proper nouns/metrics/URLs into `verified_entities`. Tag added hooks with `source: "deeper_intel"`, `source_detail: "news.json: <title>"`.
+- Read `enrichment/tech.json`. Add any product/framework/repo names to `verified_entities`. If a recent eng-blog post or GitHub repo lines up with the contact's title (e.g. CTO + a recent infra-migration post), add it as a `personalization_hooks` entry tagged `source: "deeper_intel"`, `source_detail: "tech.json: <ref>"`.
+- Read `enrichment/growth.json`. Add the numeric quote (open role count, headcount range, funding stage) to `verified_entities`. If the contact's title makes growth-signals relevant (e.g. VP Eng + headcount delta), add it as a hook.
+- Read `enrichment/reputation.json`. Add at most ONE per-platform sentiment-themed signal as a hook only if it would be appropriate to cite in cold outreach (e.g. Glassdoor "great engineering culture" theme for a recruiter angle). Skip negative-sentiment items entirely.
+- Read `enrichment/contacts.json`. Look for per-contact public-activity signals (recent post, talk, GitHub contribution, podcast) attached to this contact's name. Add as hooks tagged `source: "deeper_intel"`, `source_detail: "contacts.json: <activity ref>"`. Skip items where `verified: false`.
+
+When `enrich_mode == "skip"`, the deeper-intel integration is a no-op (the directory is empty).
+
+Update `state.md` Phase field to `briefs_complete`, append a `Briefs` list (one path per file).
+
+### 3.1 Dispatch plan
 
 Read every brief file under `.mz/task/<task_name>/briefs/`. For each brief whose `chosen_channel` is not `skip`, dispatch one `expert-copywriter` agent. Dispatch in parallel waves of at most 6 concurrent agents per wave. Wait for each wave to complete before starting the next. Do not background any agent — writer agents must run in the foreground.
 
 Per-brief output path: `.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md` (use `<channel>_<contact_slug>` from the brief filename).
 
-### 2.2 Channel rules table
+### 3.2 Channel rules table
 
 Pass these constraints verbatim inside the dispatch so the agent does not improvise structure:
 
@@ -25,7 +116,7 @@ Pass these constraints verbatim inside the dispatch so the agent does not improv
 | Markdown formatting | Plain prose. No headings, no bullets inside the body.                                                 | Plain prose. No markdown at all.                                                           |
 | Self-promotion      | Not in paragraph 1. Paragraph 1 is about the recipient and the hook.                                  | Same rule.                                                                                 |
 
-### 2.3 Dispatch template (one Agent call per brief)
+### 3.3 Dispatch template (one Agent call per brief)
 
 Use `subagent_type: expert-copywriter`. Dispatch prompt:
 
@@ -40,8 +131,8 @@ Audience: one named recipient (not a segment). Treat as cold — recipient has
 Value claim: <copy from brief.value_claim>
 Sender voice: <copy verbatim from brief.sender_voice>
 Opening hook: pick exactly ONE item from brief.personalization_hooks (use
-  the most specific, verifiable one) and reference it in the first sentence.
-  Do not invent.
+  the most specific, verifiable one — prefer items tagged source: deeper_intel
+  when available) and reference it in the first sentence. Do not invent.
 Outreach angle: <copy from brief.chosen_angle>
 Channel-specific constraints:
 <copy the relevant channel column from the channel rules table verbatim>
@@ -71,7 +162,7 @@ Open questions / gaps: if brief.personalization_hooks contains zero items
 
 The brief file already carries `channel_format_rules` (a verbatim copy of the channel rules row); the dispatch above also embeds the rules to be safe.
 
-### 2.4 Validate each draft
+### 3.4 Validate each draft
 
 After every agent in a wave returns:
 
@@ -82,17 +173,17 @@ After every agent in a wave returns:
 1. Verify body word count is within channel budget:
    - `email` / `email_generic`: 120–180 words (count words in body only, excluding frontmatter, subject, sign-off line).
    - `linkedin_dm`: 60–100 words (count words in body only, excluding frontmatter).
-1. If any check fails for a particular draft, mark it `failed_draft` in `state.md`. Phase 4 will list it as `### Skipped: <Name> — <reason>` instead of including a letter.
+1. If any check fails for a particular draft, mark it `failed_draft` in `state.md`. Phase 5 will list it as `### Skipped: <Name> — <reason>` instead of including a letter.
 
 Update `state.md`: Phase → `drafts_complete`, append a `Drafts` list (path per file, plus pass/fail flag).
 
-## Phase 3: Naturalize pass (expert-naturalizer)
+## Phase 4: Naturalize pass (expert-naturalizer)
 
-Mandatory. Runs automatically. No approval gate.
+Skipped entirely when `enrich_mode == "only"`. Mandatory otherwise. Runs automatically. No approval gate.
 
-### 3.1 Snapshot pre-naturalize state
+### 4.1 Snapshot pre-naturalize state
 
-For every draft that passed Phase 2 validation, copy it aside as a snapshot:
+For every draft that passed Phase 3 validation, copy it aside as a snapshot:
 
 ```bash
 cp .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md \
@@ -101,11 +192,11 @@ cp .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md \
 
 The snapshots are used to revert any draft that the naturalizer damages.
 
-### 3.2 Dispatch plan
+### 4.2 Dispatch plan
 
 Dispatch one `expert-naturalizer` agent per surviving draft, in parallel waves of at most 6 concurrent agents per wave. Foreground only. Use `subagent_type: expert-naturalizer`.
 
-### 3.3 Dispatch template (one Agent call per draft)
+### 4.3 Dispatch template (one Agent call per draft)
 
 ```
 Mode: in-place rewrite
@@ -147,7 +238,7 @@ Medium routing override: "Email between colleagues" for email and
   Plain ASCII punctuation in all channels.
 ```
 
-### 3.4 Post-naturalize validation per draft
+### 4.4 Post-naturalize validation per draft
 
 After each naturalizer returns:
 
@@ -164,11 +255,17 @@ rm .mz/task/<task_name>/drafts/*.pre-naturalize
 
 Update `state.md`: Phase → `naturalize_complete`, append a `NaturalizeResults` list (one row per draft with `pass | reverted:<reason>`).
 
-## Phase 4: Append to card
+## Phase 5: Rewrite card
 
-### 4.1 Strip naturalization report from each draft
+Always runs. Outputs depend on `enrich_mode`:
 
-The naturalizer always appends a footer of the shape:
+- `both` → both `## Deeper Intelligence` and `## Outreach Letters` replaced.
+- `only` → `## Deeper Intelligence` replaced; any prior `## Outreach Letters` preserved verbatim.
+- `skip` → `## Outreach Letters` replaced; any prior `## Deeper Intelligence` preserved verbatim.
+
+### 5.1 Strip naturalization report from each draft
+
+Only runs if Phase 4 ran (i.e., `enrich_mode != "only"`). The naturalizer always appends a footer of the shape:
 
 ```
 ---
@@ -177,16 +274,18 @@ The naturalizer always appends a footer of the shape:
 ...
 ```
 
-For each surviving draft (passed Phase 3 or reverted from snapshot):
+For each surviving draft (passed Phase 4 or reverted from snapshot):
 
 1. Read the draft file.
 1. Find the trailing block matching `\n---\s*\n+## Naturalization report` and everything after it to end-of-file.
 1. Write the file back without that block.
 1. If no such block is found, leave the file untouched and log `naturalization report footer not found` in `state.md` (informational, not an error).
 
-### 4.2 Assemble the `## Outreach Letters` section
+### 5.2 Assemble the `## Outreach Letters` section (NEW_L_BLOCK)
 
-For every contact processed in Phase 1, in the order they appeared in the card's Key Contacts section, emit one block. Three block shapes:
+Skip if `enrich_mode == "only"`.
+
+For every contact processed in Phase 3, in the order they appeared in the card's Key Contacts section, emit one block. Three block shapes:
 
 **Letter block (email / email_generic):**
 
@@ -236,31 +335,53 @@ Open the section with a heading and close it with a generated-line footer:
 
 ...
 
-*Letters generated: <today's date> | naturalized: yes | enrichment queries: <N> | reverted: <R>*
+*Letters generated: <today's date> | naturalized: yes | light queries: <K> | reverted: <R>*
 ```
 
 `<today's date>` uses ISO format (`YYYY-MM-DD`).
 
-### 4.3 Rebuild card content and write to `target_path`
+### 5.3 Assemble the `## Deeper Intelligence` section (NEW_D_BLOCK)
 
-Card append uses Read + Write to write the entire card file to its destination. This is idempotent on re-run — any prior `## Outreach Letters` section is replaced cleanly.
+Skip if `enrich_mode == "skip"`.
+
+Read `.mz/task/<task_name>/deeper_intelligence.md` (produced in Phase 2). Its content already contains the full `## Deeper Intelligence` heading + body + footer line; use it verbatim as `NEW_D_BLOCK`.
+
+If the file is missing (Phase 2 was skipped or all subagents failed before writing it), emit a minimal placeholder so the user sees the failure surface:
+
+```markdown
+## Deeper Intelligence
+
+*All enrichment subagents failed to produce artifacts. See state.md EnrichmentResults for details.*
+
+*Deeper intelligence: <today's date> | subagents: 0 | failed: 5*
+```
+
+### 5.4 Rebuild card content and write to `target_path`
+
+Card rewrite uses Read + Write to write the entire card file to its destination. This is idempotent on re-run — any prior `## Deeper Intelligence` and `## Outreach Letters` sections are replaced cleanly; `## Interaction History` is preserved verbatim.
 
 1. Read the existing card file at `source_path` (set in Phase 0).
-1. Locate the line beginning with `*Generated:` (the canonical card footer written by `outreach-card-writer`). It will be on its own line near the bottom.
-1. Detect the two append-zone landmarks (each may be present or absent):
+1. Locate the line beginning with `*Generated:` (the canonical card footer written by `outreach-card-writer`). It will be on its own line near the bottom of the original card content.
+1. Detect three append-zone landmarks (each may be present or absent):
+   - **D** — the existing `## Deeper Intelligence` heading (from a prior run of this skill).
    - **L** — the existing `## Outreach Letters` heading (from a prior run of this skill).
    - **H** — the existing `## Interaction History` heading (from `/outreach-update-card`).
-1. Compose the rebuilt content. Anchors used: `<HEAD>` = the card content up to and including the `*Generated: ...*` line; `<HIST>` = the `## Interaction History` heading and every line below it (or empty string if **H** is absent). Four cases:
-   - **L absent, H absent** → `<HEAD>` + `\n\n` + `<new section>`
-   - **L absent, H present** → `<HEAD>` + `\n\n` + `<new section>` + `\n\n` + `<HIST>`
-   - **L present, H absent** → `<HEAD>` + `\n\n` + `<new section>` (discard everything between L and end-of-file)
-   - **L present, H present** → `<HEAD>` + `\n\n` + `<new section>` + `\n\n` + `<HIST>` (discard everything between L and H; preserve H and below verbatim)
+1. Compute anchors and slices:
+   - `HEAD` = content from the start through the `*Generated: ...*` line (inclusive). If no `*Generated:` line exists, `HEAD` = content up to the first of `D`, `L`, or `H` (whichever appears first), or the entire content if none are present.
+   - `PRIOR_D_BLOCK` = if `D` found, content from the `## Deeper Intelligence` heading through the line immediately before the next of `L`, `H`, or EOF (whichever comes first). Else `""`.
+   - `PRIOR_L_BLOCK` = if `L` found, content from the `## Outreach Letters` heading through the line immediately before `H` or EOF (whichever comes first). Else `""`.
+   - `HIST` = if `H` found, content from the `## Interaction History` heading through EOF. Else `""`.
+1. Resolve the final blocks per `enrich_mode`:
+   - `enrich_mode == "both"` → `D_BLOCK = NEW_D_BLOCK`; `L_BLOCK = NEW_L_BLOCK`.
+   - `enrich_mode == "only"` → `D_BLOCK = NEW_D_BLOCK`; `L_BLOCK = PRIOR_L_BLOCK` (preserve prior letters if any, else empty).
+   - `enrich_mode == "skip"` → `D_BLOCK = PRIOR_D_BLOCK` (preserve prior deeper intel if any, else empty); `L_BLOCK = NEW_L_BLOCK`.
+1. Compose the rebuilt content. Join non-empty blocks with `\n\n` separators in this order: `HEAD`, `D_BLOCK`, `L_BLOCK`, `HIST`. Drop any block that is the empty string. Ensure the file ends with exactly one trailing newline.
 1. Compute `today = $(date +%Y-%m-%d)` and `target_path = .mz/outreach/active/<today>_<company_slug>.md`.
-1. Write the rebuilt content to `target_path`. The `*Generated: ...*` line stays where it was; the new section (with its own `*Letters generated: ...*` footer) sits below it; `## Interaction History` (if any) is preserved verbatim at the bottom.
+1. Write the rebuilt content to `target_path`.
 
-If the card has no `*Generated:` footer (hand-authored card that does not follow the canonical shape) and the canonical headers were still found in Phase 0, append the new section at the very end of the file as a fallback. Log this in `state.md`.
+If the card has no `*Generated:` footer (hand-authored card that does not follow the canonical shape) and the canonical headers were still found in Phase 0, the `HEAD` falls back to content-up-to-first-section-anchor as defined above. Log this in `state.md`.
 
-### 4.4 Relocate: delete the source file
+### 5.5 Relocate: delete the source file
 
 After `target_path` is written and its contents verified by re-reading:
 
@@ -278,19 +399,20 @@ After `target_path` is written and its contents verified by re-reading:
 
 If the `rm` fails (permission, missing file), do NOT fail the run — log `relocation_cleanup_failed: <reason>` in `state.md` and downgrade the final STATUS to `DONE_WITH_CONCERNS`. The card content at `target_path` is canonical regardless.
 
-Update `state.md`: Phase → `complete`, set `CompletedAt: <ISO timestamp>`, record `LettersWritten: <count>`, `LettersSkipped: <count>`, `NaturalizeReverted: <count>`, `EnrichmentQueries: <count>`, `TargetPath: <target_path>`, `SourceDeleted: <yes | no | failed:<reason>>`.
+Update `state.md`: Phase → `complete`, set `CompletedAt: <ISO timestamp>`, record `LettersWritten: <count>`, `LettersSkipped: <count>`, `NaturalizeReverted: <count>`, `SubagentsDispatched: <count>`, `SubagentsFailed: <count>`, `LightQueries: <count>`, `TargetPath: <target_path>`, `SourceDeleted: <yes | no | failed:<reason>>`.
 
 ## Final output
 
-Emit the verification block defined in `SKILL.md` § Phase 5.
+Emit the verification block defined in `SKILL.md` § Phase 6.
 
 ## Error Handling within these phases
 
-- `expert-copywriter` returns `BLOCKED` for a contact → record the contact as `failed_draft` in `state.md`; continue with other contacts; Phase 4 emits a `### Skipped` block for that contact; final STATUS becomes `DONE_WITH_CONCERNS`. Do not auto-retry.
+- `expert-copywriter` returns `BLOCKED` for a contact → record the contact as `failed_draft` in `state.md`; continue with other contacts; Phase 5 emits a `### Skipped` block for that contact; final STATUS becomes `DONE_WITH_CONCERNS`. Do not auto-retry.
 - `expert-copywriter` returns `NEEDS_CONTEXT` for a contact → treat the same as `BLOCKED` (the missing context is the agent's responsibility to surface in the final report; we will not re-dispatch automatically).
-- `expert-copywriter` invents entities not in `brief.verified_entities` → Phase 2 validation catches it (entity check); mark `failed_draft: invented_entity`; continue.
-- `expert-naturalizer` returns `BLOCKED` for a draft → revert to the pre-naturalize snapshot; mark `naturalize_reverted: agent_blocked`; the pre-naturalize draft proceeds to Phase 4.
+- `expert-copywriter` invents entities not in `brief.verified_entities` → Phase 3 validation catches it (entity check); mark `failed_draft: invented_entity`; continue.
+- `expert-naturalizer` returns `BLOCKED` for a draft → revert to the pre-naturalize snapshot; mark `naturalize_reverted: agent_blocked`; the pre-naturalize draft proceeds to Phase 5.
 - `expert-naturalizer` returns `DONE_WITH_CONCERNS` → run the post-naturalize validation; revert if any check fails; otherwise accept the rewrite and surface the concerns in `state.md`.
 - A draft's subject line drifts after naturalize → always revert (subject lines are the highest-stakes single field).
 - All drafts fail naturalize → continue with the pre-naturalize drafts; the naturalize column in the card footer reports `reverted: <count>`.
-- Card has no `*Generated:` footer → append the new section at end-of-file as a fallback (see Phase 4.3); log the deviation; final STATUS becomes `DONE_WITH_CONCERNS`.
+- Card has no `*Generated:` footer → fall back to first-section-anchor split as defined in Phase 5.4; log the deviation; final STATUS becomes `DONE_WITH_CONCERNS`.
+- `deeper_intelligence.md` missing while `enrich_mode in (both, only)` → emit the failure-surface placeholder section defined in Phase 5.3; downgrade STATUS to `DONE_WITH_CONCERNS`.

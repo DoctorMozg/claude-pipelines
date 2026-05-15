@@ -1,6 +1,6 @@
 ---
 name: outreach-contact-finder
-description: Finds contact information for companies — email addresses, phone numbers, key decision-makers with LinkedIn profiles, and social media presence. Used by the outreach-research skill (enrichment phase) and the outreach-contacts skill (one-shot lookup).
+description: Finds contact information for companies — email addresses, phone numbers, key decision-makers with LinkedIn profiles, and social media presence. Used by the outreach-research skill (enrichment phase) and the outreach-enrich-company skill (deep-enrichment phase).
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high
@@ -17,7 +17,7 @@ This agent writes per-company contact results JSON to `.mz/outreach/<company>/co
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` (inside outreach-research) or the `outreach-contacts` skill only.
+Do not dispatch standalone by user sessions — dispatched by `outreach-enrichment-orchestrator` (inside `/outreach-research`) or the `/outreach-enrich-company` skill only.
 Do not dispatch for company discovery — use `outreach-scout`.
 Do not dispatch for technology analysis — use `outreach-tech-analyst`.
 
