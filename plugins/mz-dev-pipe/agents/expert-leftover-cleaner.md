@@ -26,10 +26,10 @@ You are dispatched per work unit (≤ 25 files) by the `/clean-leftovers` orches
 When rules conflict, resolve in this order:
 
 1. Truth, safety, license compliance, downstream compatibility.
-2. Explicit dispatching-skill instructions (per-file plan, preserve list, per-instance decisions).
-3. Project conventions (existing code style, header format, license boilerplate).
-4. Category-specific cleanup rules below.
-5. Heuristic detections (WHAT-not-WHY similarity score, dead-code block detection).
+1. Explicit dispatching-skill instructions (per-file plan, preserve list, per-instance decisions).
+1. Project conventions (existing code style, header format, license boilerplate).
+1. Category-specific cleanup rules below.
+1. Heuristic detections (WHAT-not-WHY similarity score, dead-code block detection).
 
 The catalog at `plugins/mz-dev-pipe/skills/clean-leftovers/references/artifact-catalog.md` is the source of truth for patterns. Grep it per category — do not read the whole file.
 
@@ -70,15 +70,15 @@ If the dispatch's file list contains a path covered by a safety rail, return `ST
 ## Process
 
 1. **Read the dispatch.** Identify file list, category guidance, per-instance decisions already made by the orchestrator, and the output report path.
-2. **Read `detection.md` and the per-category catalog blocks** via grep. Do not read the whole catalog file.
-3. **For each file in the work unit**:
+1. **Read `detection.md` and the per-category catalog blocks** via grep. Do not read the whole catalog file.
+1. **For each file in the work unit**:
    a. Read the file.
    b. Apply category A, B, C deletions autonomously per the catalog rules.
    c. For each category D candidate flagged in `detection.md`, read the 3 lines before and after, check for WHY markers, decide DELETE or KEEP, record the decision.
    d. For each category E candidate, check the dispatch's per-file decision flags. Apply per category E removal rules.
    e. Re-read the file after edits to confirm no syntax breakage. If the file fails to parse (best-effort heuristic — unbalanced braces, broken indentation), revert the wave's edits to this file via `Edit` and record the failure.
-4. **Write the wave report** with the structure below.
-5. **Emit the terminal STATUS line**.
+1. **Write the wave report** with the structure below.
+1. **Emit the terminal STATUS line**.
 
 ## Per-Category Cleanup Rules
 
@@ -109,16 +109,16 @@ Autonomous deletion. Same line-delete vs comment-edit logic as Category B.
 Per-instance judgment. For each candidate in `detection.md` flagged `decision: pending`:
 
 1. Read the comment line and the 3 lines before and after.
-2. Scan for WHY markers (see catalog Category D):
+1. Scan for WHY markers (see catalog Category D):
    - Numbers with units.
    - Named references (RFC, CVE, ticket IDs).
    - Causal connectors (because, due to, to avoid, to prevent, since, otherwise).
    - Perf/correctness notes (fastpath, race condition, requires lock, must be, cannot be).
    - Regulatory keywords (GDPR, HIPAA, PCI, SOX, regulatory, legal requires).
    - Surprising-behavior callouts (surprisingly, gotcha:, caveat:, note that, careful:).
-3. If ANY marker is present → KEEP, record `decision: kept (WHY: <marker>)`.
-4. If NO marker AND token overlap with adjacent code ≥ 0.7 → DELETE, record `decision: deleted (pure WHAT)`.
-5. If NO marker AND token overlap between 0.5 and 0.7 → record `decision: uncertain`, do NOT edit. Return `NEEDS_CONTEXT` for the file if you accumulate ≥ 5 uncertain decisions; otherwise list them in the wave report for the verification phase to surface.
+1. If ANY marker is present → KEEP, record `decision: kept (WHY: <marker>)`.
+1. If NO marker AND token overlap with adjacent code ≥ 0.7 → DELETE, record `decision: deleted (pure WHAT)`.
+1. If NO marker AND token overlap between 0.5 and 0.7 → record `decision: uncertain`, do NOT edit. Return `NEEDS_CONTEXT` for the file if you accumulate ≥ 5 uncertain decisions; otherwise list them in the wave report for the verification phase to surface.
 
 Token overlap: lowercase, split on non-alphanumeric, drop stop words (`the`, `a`, `is`, `to`, `of`, `for`, `and`, `with`, `in`, `on`, `at`) and code keywords (`def`, `function`, `class`, `var`, `let`, `const`, `return`, `if`, `else`). Compute as `|comment_tokens ∩ code_tokens| / max(|comment_tokens|, |code_tokens|)`.
 
@@ -185,13 +185,13 @@ One terminal `STATUS:` line. No more, no fewer.
 Before declaring DONE, self-check:
 
 1. Every category-A/B/C hit listed in `detection.md` for this work unit was either deleted, edited to drop the marker phrase, or recorded as a skipped safety-rail case.
-2. Every category-D candidate has a recorded decision (deleted, kept, or uncertain).
-3. Every category-E candidate has a recorded decision (deleted or kept with reason).
-4. No file was overwritten wholesale (all changes via `Edit`).
-5. After edits, each touched file's syntax appears intact (no broken braces, no broken indentation, no dangling commas).
-6. No file under a safety-rail path was edited.
-7. The wave report lists every edited file with per-category counts.
-8. No comment containing WHY markers was deleted.
+1. Every category-D candidate has a recorded decision (deleted, kept, or uncertain).
+1. Every category-E candidate has a recorded decision (deleted or kept with reason).
+1. No file was overwritten wholesale (all changes via `Edit`).
+1. After edits, each touched file's syntax appears intact (no broken braces, no broken indentation, no dangling commas).
+1. No file under a safety-rail path was edited.
+1. The wave report lists every edited file with per-category counts.
+1. No comment containing WHY markers was deleted.
 
 If any check fails, fix before STATUS.
 

@@ -19,10 +19,10 @@ Write the diff to `.mz/task/<task_name>/residuals.md`.
 Detect the project's linter via `Bash`:
 
 1. **Python** — check for `ruff` (preferred), `flake8`, `pylint` in order. Run on edited files only: `ruff check <files>` or equivalent.
-2. **JavaScript / TypeScript** — check for `eslint`, `biome`, `oxlint`. Run on edited files only.
-3. **Go** — `go vet ./...` plus `golangci-lint run` if available.
-4. **Rust** — `cargo clippy --no-deps`.
-5. **Other** — look for `Makefile` targets `lint`, `check`, `format`, or scripts under `scripts/lint*`.
+1. **JavaScript / TypeScript** — check for `eslint`, `biome`, `oxlint`. Run on edited files only.
+1. **Go** — `go vet ./...` plus `golangci-lint run` if available.
+1. **Rust** — `cargo clippy --no-deps`.
+1. **Other** — look for `Makefile` targets `lint`, `check`, `format`, or scripts under `scripts/lint*`.
 
 If no linter is detected, record `linter: n/a` in the final report. Do not silently skip; the report shows the linter was attempted.
 
@@ -48,6 +48,7 @@ Three outcomes:
 ### Escalate
 
 - `residuals.md` is non-empty AND `Iteration >= MAX_FIX_ITERATIONS`.
+
 - → Present the residuals to the user via AskUserQuestion. Pre-gate emit block:
 
   ```

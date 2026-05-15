@@ -21,8 +21,8 @@ For each category fetch its block, parse the regex list, and combine with catego
 For every file path in `.mz/task/<task_name>/scope_files.txt`:
 
 1. **Skip binary files** — match by extension (`.png`, `.jpg`, `.pdf`, `.zip`, `.so`, `.dll`, etc.). Detect text-vs-binary via first 8KB if the extension is ambiguous.
-2. **Skip excluded markdown directories** — already filtered in Phase 0, but re-check here: `docs/`, `guidelines/`, repo-root `README.md`, this skill's own `references/`. The user can override via explicit path argument, but the default scan never touches them.
-3. **Run grep per category** — use `Bash` with `grep -nE` (extended regex, line numbers) for each pattern. Collect hits as `(category, pattern_id, file_path, line_number, matched_text)` tuples.
+1. **Skip excluded markdown directories** — already filtered in Phase 0, but re-check here: `docs/`, `guidelines/`, repo-root `README.md`, this skill's own `references/`. The user can override via explicit path argument, but the default scan never touches them.
+1. **Run grep per category** — use `Bash` with `grep -nE` (extended regex, line numbers) for each pattern. Collect hits as `(category, pattern_id, file_path, line_number, matched_text)` tuples.
 
 Use parallel `Bash` calls when scope is large (`files_in_scope > 50`), one grep invocation per category across the whole scope.
 
@@ -48,7 +48,7 @@ Regex anchors (from catalog):
 - Literal `<task_name>` placeholder substring.
 - `.mz/task/`, `.mz/reports/`, `.mz/research/` path tokens in non-pipeline source files (allow inside this skill's own files and inside `plugins/*/skills/*/SKILL.md` / `phases/` files).
 - `STATUS: DONE`, `STATUS: NEEDS_CONTEXT`, `STATUS: BLOCKED` outside agent definition files.
-- "dispatched by", "per pipeline plan", "from planner", "expert-*-agent" (any agent role) in source-code comments.
+- "dispatched by", "per pipeline plan", "from planner", "expert-\*-agent" (any agent role) in source-code comments.
 
 ### C. Planning / generation-process comments
 
@@ -67,8 +67,8 @@ Apply to all comment styles: `//`, `#`, `/* */`, `<!-- -->`, language-appropriat
 This category requires per-instance judgment by the cleaner agent. The orchestrator only flags candidates:
 
 1. **Restated-code candidate** — a single-line comment immediately above a code line where the comment's tokenized content overlaps ≥ `WHAT_WHY_SIMILARITY_THRESHOLD` (0.7) with the identifiers/keywords in the next non-blank line.
-2. **Echo-the-name docstring** — first line of a docstring inside `def`/`function`/`fn` declarations whose tokens overlap ≥ 0.7 with the function name (split on underscores/camelCase).
-3. **Trivial inline label** — a one-or-two-word comment at end of an obvious operation: `// add`, `// subtract`, `// return result`, `// loop`, `// check`.
+1. **Echo-the-name docstring** — first line of a docstring inside `def`/`function`/`fn` declarations whose tokens overlap ≥ 0.7 with the function name (split on underscores/camelCase).
+1. **Trivial inline label** — a one-or-two-word comment at end of an obvious operation: `// add`, `// subtract`, `// return result`, `// loop`, `// check`.
 
 Tokenization: lowercase, split on non-alphanumeric, drop stop words (`the`, `a`, `is`, `to`, `of`, `for`, `and`, `with`).
 
@@ -88,11 +88,11 @@ Regex / structural anchors:
 
 Total category-A + B + C hits drives severity for AI-leftover specifically. D and E feed into a separate count because their handling is conservative.
 
-| Severity        | A+B+C hits | D+E hits | Cleanup intensity                                        |
-| --------------- | ---------- | -------- | -------------------------------------------------------- |
-| **Light**       | 1–10       | 0–10     | Single cleaner wave; auto-delete A/B/C; review D/E.      |
-| **Medium**      | 10–50      | 10–30    | One or two waves; full review of D/E candidates.         |
-| **Heavy**       | > 50       | > 30     | Up to MAX_FIX_ITERATIONS waves; staged file-by-file.     |
+| Severity   | A+B+C hits | D+E hits | Cleanup intensity                                    |
+| ---------- | ---------- | -------- | ---------------------------------------------------- |
+| **Light**  | 1–10       | 0–10     | Single cleaner wave; auto-delete A/B/C; review D/E.  |
+| **Medium** | 10–50      | 10–30    | One or two waves; full review of D/E candidates.     |
+| **Heavy**  | > 50       | > 30     | Up to MAX_FIX_ITERATIONS waves; staged file-by-file. |
 
 When the file count is small (< 5) but hits are high, treat as Medium minimum to avoid one cleaner agent doing all the work in one shot — split for safety.
 

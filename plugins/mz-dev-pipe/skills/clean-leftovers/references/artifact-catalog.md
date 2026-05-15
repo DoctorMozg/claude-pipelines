@@ -4,7 +4,7 @@ Pattern catalog for the five leftover-artifact categories. The detection phase g
 
 Patterns are written as ECMAScript-compatible regex (works with `grep -E`). When a pattern is language-specific, the language is noted; the detection phase applies it only to matching file extensions.
 
----
+______________________________________________________________________
 
 # Category A: AI signatures & watermarks
 
@@ -78,7 +78,7 @@ Exact strings or short regex. Match in any source file (any extension). False-po
 - For commit-message footers (`🤖 Generated with...`, `Co-Authored-By: Claude`): these live in commit messages, not source code, but they sometimes leak into source files via copy-paste. Treat as line-delete.
 - Preserve when the file is a documented example of AI artifacts (markdown under `docs/`, `guidelines/`, `plugins/mz-creative/skills/naturalize/`, this skill's `references/`).
 
----
+______________________________________________________________________
 
 # Category B: Pipeline phase markers
 
@@ -116,7 +116,7 @@ These are load-bearing tokens INSIDE agent definitions (`plugins/*/agents/*.md`)
 - `\bdispatched by\b` (in source-code comments, not in agent definitions or skill files)
 - `\bper pipeline plan\b`
 - `\bfrom planner\b`
-- `expert-[a-z-]+-agent` (any expert-* agent name in source-code comments)
+- `expert-[a-z-]+-agent` (any expert-\* agent name in source-code comments)
 - `pipeline-[a-z-]+-agent`
 - `// orchestrator says`
 - `# agent dispatch:`
@@ -127,7 +127,7 @@ These are load-bearing tokens INSIDE agent definitions (`plugins/*/agents/*.md`)
 - If the match is part of a longer prose comment that has other content, ask the cleaner to rewrite the comment to drop only the marker phrase (e.g., `// Validate input (Phase 2 work)` → `// Validate input`).
 - Never edit inside agent or skill definition files — Phase 3 safety rails enforce this.
 
----
+______________________________________________________________________
 
 # Category C: Planning / generation-process comments
 
@@ -185,7 +185,7 @@ The patterns below are written for `//` style; the detection phase mirrors them 
 - Always delete the matched line if comment-only.
 - If the match is mid-comment alongside genuine WHY content, ask the cleaner to drop only the marker phrase and keep the rest.
 
----
+______________________________________________________________________
 
 # Category D: WHAT-not-WHY candidates (conservative)
 
@@ -198,12 +198,12 @@ Detection here is heuristic; deletion requires per-instance judgment by the clea
    - `// increment counter\n  counter++` → token overlap 1.0 (perfect match)
    - `# loop through users\n  for user in users:` → token overlap 0.8
 
-2. **Echo-the-name docstring** — first line of a docstring inside `def`/`function`/`fn`/`func` declarations whose tokens overlap ≥ 0.7 with the function name (split on `_` and camelCase boundaries).
+1. **Echo-the-name docstring** — first line of a docstring inside `def`/`function`/`fn`/`func` declarations whose tokens overlap ≥ 0.7 with the function name (split on `_` and camelCase boundaries).
 
    - `def greet_user(name): """Greet user."""` → token overlap 1.0
    - `function calculateTotal(items) { /** Calculate total. */ }` → token overlap 1.0
 
-3. **Trivial inline label** — one-or-two-word comment at end of obvious operation: `// add`, `// subtract`, `// return result`, `// loop`, `// check`, `// done`, `// end`, `// init`.
+1. **Trivial inline label** — one-or-two-word comment at end of obvious operation: `// add`, `// subtract`, `// return result`, `// loop`, `// check`, `// done`, `// end`, `// init`.
 
 ## Tokenization (for similarity scoring)
 
@@ -232,7 +232,7 @@ When ANY of the above is present, KEEP — even if the comment otherwise looks l
 - If WHY markers absent AND token overlap ≥ 0.7 → DELETE, record `decision: deleted (pure WHAT)`.
 - If token overlap between 0.5 and 0.7 → mark `decision: uncertain` and return `NEEDS_CONTEXT` for that file; the orchestrator escalates uncertain cases via AskUserQuestion only when ≥ 5 uncertain candidates accumulate (to avoid prompt fatigue).
 
----
+______________________________________________________________________
 
 # Category E: Dead code & half-implementations
 
