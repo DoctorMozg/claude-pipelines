@@ -1,6 +1,6 @@
 # Phases 5-7: Parallel Review, Iteration, and Finalization
 
-Full detail for the review, rejection-handling, and finalization phases of the optimize skill. Covers dispatching mirrored reviewers per chunk, respawning optimizers on rejection, and writing the final summary.
+Full detail for the review, rejection-handling, and finalization phases of the cleanup skill. Covers dispatching mirrored reviewers per chunk, respawning optimizers on rejection, and writing the final summary.
 
 ## Contents
 
@@ -30,7 +30,7 @@ Spawn M = N `pipeline-code-reviewer` agents (model: **opus**) in a **single mess
 Each reviewer's prompt:
 
 ```
-Review the optimization applied to one chunk of a larger optimize pass.
+Review the optimization applied to one chunk of a larger cleanup pass.
 
 ## Chunk: <chunk name>
 
@@ -156,7 +156,7 @@ Run tests and linters one last time to confirm the final state is still green af
 Write `.mz/task/<task_name>/summary.md`:
 
 ```markdown
-# Optimize Summary
+# Cleanup Summary
 
 **Scope**: <original argument>
 **Task directory**: .mz/task/<task_name>/

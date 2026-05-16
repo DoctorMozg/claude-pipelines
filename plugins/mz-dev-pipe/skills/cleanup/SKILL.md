@@ -1,27 +1,27 @@
 ---
-name: optimize
-description: ALWAYS invoke when the user wants to optimize, clean up, or reduce complexity in existing code. Triggers: "optimize X", "clean up", "refactor", "remove dead code". When NOT to use: fixing failing tests (use polish), bug hunt (use debug or audit).
+name: cleanup
+description: ALWAYS invoke when the user wants to clean up, refactor, or reduce complexity in existing code. Triggers: "clean up", "refactor", "remove dead code", "remove unused imports", "reduce complexity". When NOT to use: making code faster / smaller / profiling a hotspot (use optimize), fixing failing tests (use polish), bug or security hunt (use debug or audit).
 argument-hint: [scope:branch|global|working] <scope: glob, directory, git range, or free-text description>
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
 ---
 
-# Autonomous Code Optimization Pipeline
+# Autonomous Code Cleanup Pipeline
 
 ## Overview
 
-Orchestrates a multi-agent optimization pass over existing code. Builds import-graph-based chunking, dispatches parallel `pipeline-optimizer` agents with mirrored `pipeline-code-reviewer` agents per chunk. On rejection, respawn rejected chunks only. Tests and linters run after each batch.
+Orchestrates a multi-agent cleanup pass over existing code. Builds import-graph-based chunking, dispatches parallel `pipeline-optimizer` agents with mirrored `pipeline-code-reviewer` agents per chunk. On rejection, respawn rejected chunks only. Tests and linters run after each batch.
 
 ## When to Use
 
 - User wants to clean up, reduce complexity, or eliminate dead code.
-- Triggers: "optimize X", "clean up", "refactor", "reduce complexity", "remove dead code".
+- Triggers: "clean up", "refactor", "reduce complexity", "remove dead code", "remove unused imports".
 - Scope spans multiple files and benefits from parallel chunked cleanup.
 
 ### When NOT to use
 
 - Failing tests that need fixing — use `polish`.
-- Failing tests with a known root cause — use `debug` first, then `optimize` on the fixed code.
+- Failing tests with a known root cause — use `debug` first, then `cleanup` on the fixed code.
 - Code that passes metrics but has UI/UX or test-quality issues — use `polish`.
 - Known bug investigation — use `debug`.
 - Bug and security hunt across lenses — use `audit`. Use `audit depth:deep` for pre-PR impact analysis on a bounded scope (it auto-invokes `shared/blast-radius.md`).
@@ -36,7 +36,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 - **Default** (no `scope:`): use existing detection (glob / directory / git range / free-text).
 - If `scope:` is given alongside an explicit argument, they **intersect**.
-- Optimize is **always bounded** by definition, so Phase 1 unconditionally invokes [`shared/blast-radius.md`](../shared/blast-radius.md) to identify high-impact targets and gate the user-approval verdict.
+- Cleanup is **always bounded** by definition, so Phase 1 unconditionally invokes [`shared/blast-radius.md`](../shared/blast-radius.md) to identify high-impact targets and gate the user-approval verdict.
 
 ## Core Principles
 
@@ -66,7 +66,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_optimize_<slug>`. Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
+- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_cleanup_<slug>`. Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
 - **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
 - **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 
@@ -83,7 +83,7 @@ See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canon
 Before invoking AskUserQuestion, emit a text block to the user:
 
 ```
-**Approval Gate — Optimization Plan Review**
+**Approval Gate — Cleanup Plan Review**
 Your scope has been scanned, chunked, and baselined. Review the plan below: N chunks, M files affected, baseline test/lint status shown.
 
 - **Approve** → proceed to Phase 3 (parallel optimization)
@@ -98,7 +98,7 @@ Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`.
 Invoke AskUserQuestion with this body (where `<verbatim scan.md contents>` is replaced by the bytes you just read):
 
 ```
-The optimization plan is ready. Please review and approve:
+The cleanup plan is ready. Please review and approve:
 
 <verbatim scan.md contents>
 

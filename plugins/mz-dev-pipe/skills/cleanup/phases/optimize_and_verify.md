@@ -1,6 +1,6 @@
 # Phases 3-4: Parallel Optimization and Verify
 
-Full detail for the optimization and verification phases of the optimize skill. Covers dispatching parallel optimizer agents per chunk and running the inner fix loop that restores green state before review.
+Full detail for the optimization and verification phases of the cleanup skill. Covers dispatching parallel optimizer agents per chunk and running the inner fix loop that restores green state before review.
 
 ## Contents
 
