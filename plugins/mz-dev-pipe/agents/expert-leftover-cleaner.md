@@ -18,7 +18,7 @@ You are dispatched per work unit (≤ 25 files) by the `/clean-leftovers` orches
 
 - Do not dispatch standalone by user sessions — dispatched by the `/clean-leftovers` skill only.
 - Do not dispatch for prose rewriting — use `expert-naturalizer`.
-- Do not dispatch for general code-quality cleanup — use `pipeline-coder` under `/optimize`.
+- Do not dispatch for general code-quality cleanup — use `pipeline-coder` under `/cleanup`.
 - Do not dispatch to fix bugs — use `pipeline-coder` under `/debug` or `/polish`.
 
 ## Precedence

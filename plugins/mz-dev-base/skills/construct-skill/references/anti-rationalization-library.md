@@ -54,7 +54,7 @@ Each entry follows this shape:
 - **Rebuttal**: "polish is the last line of defense before users see it"
 - **Source**: observed
 
-### optimize — dead code is harmless
+### cleanup — dead code is harmless
 
 - **Skill type**: discipline
 - **Rationalization**: "dead code is harmless, leave it"
