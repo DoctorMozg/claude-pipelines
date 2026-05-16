@@ -26,7 +26,7 @@ When a behavioral criterion is not yet covered by any test, polish writes the te
 - A single isolated bug with a reproducer — use `debug`.
 - If the root cause of failures is known (e.g., a specific bug was identified) — use `debug` to fix the root cause first, then return to `polish` for quality criteria.
 - Read-only verification with no fix intent — use `verify`.
-- Map-reduce dead-code cleanup — use `optimize`.
+- Map-reduce dead-code cleanup — use `cleanup`.
 
 ## Input
 

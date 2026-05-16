@@ -28,7 +28,7 @@ No code is modified in either mode. Hand the summary to `build`, `debug`, or `po
 
 - A single known bug — use `debug`.
 - Building new functionality — use `build`.
-- Map-reduce cleanup with no bug hunt — use `optimize`.
+- Map-reduce cleanup with no bug hunt — use `cleanup`.
 - You want the findings fixed automatically — this skill does not edit code; pass the summary to `build`, `debug`, or `polish` afterwards.
 
 ## Input

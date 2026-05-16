@@ -1,6 +1,6 @@
 # Blast Radius — Shared Module
 
-Callable module that computes the downstream impact set of a target file or directory using import-graph walking, git-age overlay, and risk scoring. Auto-invoked by `audit` whenever scope is bounded (`scope:branch`, `scope:working`, or path-list) and by `optimize` on every run. NOT auto-invoked when scope is `global` (everything is in scope already).
+Callable module that computes the downstream impact set of a target file or directory using import-graph walking, git-age overlay, and risk scoring. Auto-invoked by `audit` whenever scope is bounded (`scope:branch`, `scope:working`, or path-list) and by `cleanup` on every run. NOT auto-invoked when scope is `global` (everything is in scope already).
 
 ## Status
 
@@ -186,10 +186,10 @@ Aggregate verdict over the whole graph (assigned to `verdict:` in the YAML):
 
 ## Auto-invocation rules
 
-| Skill      | When                                                   | What the calling skill does with the output                                                                                              |
-| ---------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `audit`    | Phase 1, only if scope is `branch`/`working`/path-list | Add `impacted[].path` files to the lens-research file set so reviewers see downstream risk; surface `verdict` in the final report header |
-| `optimize` | Phase 1, always (optimize is always bounded)           | Use `impacted[]` to identify high-blast-radius targets that need extra-careful review; gate Phase 2.5 user-approval on the verdict       |
+| Skill     | When                                                   | What the calling skill does with the output                                                                                              |
+| --------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `audit`   | Phase 1, only if scope is `branch`/`working`/path-list | Add `impacted[].path` files to the lens-research file set so reviewers see downstream risk; surface `verdict` in the final report header |
+| `cleanup` | Phase 1, always (cleanup is always bounded)            | Use `impacted[]` to identify high-blast-radius targets that need extra-careful review; gate Phase 2.5 user-approval on the verdict       |
 
 `scope:global` skips invocation — by definition everything is already in scope.
 

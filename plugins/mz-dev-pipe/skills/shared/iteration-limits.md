@@ -18,14 +18,14 @@ The resolved value MUST be written to `state.md` once at task start under `## Re
 | --------------------------- | ------------------- | ------- | ----------------------------------------------------------------- |
 | `MAX_RED_ITERATIONS`        | build               | 2       | RED-verify retries when tests unexpectedly pass against zero impl |
 | `MAX_GREEN_ITERATIONS`      | build               | 3       | GREEN coder retries when tests still fail after implementation    |
-| `MAX_REVIEW_ITERATIONS`     | build, optimize     | 3       | Code-review fix-and-rerun cycles                                  |
+| `MAX_REVIEW_ITERATIONS`     | build, cleanup      | 3       | Code-review fix-and-rerun cycles                                  |
 | `DEBUG_MAX_FIX_ITERATIONS`  | debug               | 3       | Debug fix-verify cycles before escalation                         |
 | `POLISH_MAX_FIX_ITERATIONS` | polish              | 5       | Polish fix-test-review cycles before escalation                   |
-| `MAX_FIX_ATTEMPTS`          | optimize            | 3       | Per-chunk fix attempts in the optimize review loop                |
+| `MAX_FIX_ATTEMPTS`          | cleanup             | 3       | Per-chunk fix attempts in the cleanup review loop                 |
 | `MAX_APPROVAL_ITERATIONS`   | translate, build    | 3       | Approval-gate revision rounds before escalation                   |
 | `MAX_PARALLEL_TRANSLATORS`  | translate           | 6       | Cap on concurrent translator agents per wave                      |
-| `MAX_OPTIMIZERS`            | optimize            | 6       | Cap on concurrent optimizer agents per wave                       |
-| `MAX_REVIEWERS`             | optimize            | 6       | Cap on concurrent reviewer agents per wave                        |
+| `MAX_OPTIMIZERS`            | cleanup             | 6       | Cap on concurrent optimizer agents per wave                       |
+| `MAX_REVIEWERS`             | cleanup             | 6       | Cap on concurrent reviewer agents per wave                        |
 | `MAX_VERIFICATION_ATTEMPTS` | translate           | 2       | Tier-1 + Tier-3 verification retries per chunk                    |
 | `MAX_BLAST_DEPTH`           | shared/blast-radius | 3       | Transitive-import depth before truncating blast-radius result     |
 | `MAX_BLAST_FILES`           | shared/blast-radius | 200     | File-count truncation cap for blast-radius result                 |
@@ -49,4 +49,4 @@ This pattern is referenced from `shared/retry-policy.md`. Loops MUST NOT silentl
 
 ## Why a single source of truth
 
-Before this module, `MAX_REVIEW_ITERATIONS=3` appeared in `build/SKILL.md` constants block, `optimize/SKILL.md` constants block, `build/phases/implementation_and_review.md` inline, `optimize/phases/review_and_finalize.md` inline, and `state-schema.md` example. A change to the cap required hunting all sites; misses were silent. Now the cap is set in one place and skills cite by name.
+Before this module, `MAX_REVIEW_ITERATIONS=3` appeared in `build/SKILL.md` constants block, `cleanup/SKILL.md` constants block, `build/phases/implementation_and_review.md` inline, `cleanup/phases/review_and_finalize.md` inline, and `state-schema.md` example. A change to the cap required hunting all sites; misses were silent. Now the cap is set in one place and skills cite by name.

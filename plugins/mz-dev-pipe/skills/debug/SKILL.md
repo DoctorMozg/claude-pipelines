@@ -35,8 +35,8 @@ The two modes share Phase 0 setup, then diverge into separate phase files. The u
 
 - Building a new feature from scratch — use `build`.
 - Polishing already-working code to criteria — use `polish`.
-- General code quality improvement with no specific bug — use `polish` or `optimize`.
-- Map-reduce cleanup across a module — use `optimize`.
+- General code quality improvement with no specific bug — use `polish` or `cleanup`.
+- Map-reduce cleanup across a module — use `cleanup`.
 - Impact analysis before a refactor — use `audit depth:deep scope:branch` (auto-invokes `shared/blast-radius.md`).
 - Pure code explanation with no testable claim — use `explain`.
 
