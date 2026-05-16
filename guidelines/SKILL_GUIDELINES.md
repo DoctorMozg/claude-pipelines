@@ -168,11 +168,11 @@ Every SKILL.md body must contain these 7 sections in order:
 
 Pattern source: addyosmani/superpowers 7-section canonical anatomy.
 
-**Skill types** (referenced by Rules 18, 21): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, outreach-research, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, construct-skill). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
+**Skill types** (referenced by Rules 18, 21): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, cleanup, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, outreach-research, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, construct-skill). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
 
 ## 18. Anti-Rationalization Tables
 
-Mandatory for **discipline-enforcement** skills (build, debug, audit, verify, polish, optimize, blast-radius — any skill that pushes back against user shortcuts). Optional for collaboration and reference skills.
+Mandatory for **discipline-enforcement** skills (build, debug, audit, verify, polish, cleanup, optimize, blast-radius — any skill that pushes back against user shortcuts). Optional for collaboration and reference skills.
 
 Format under `## Common Rationalizations`:
 

@@ -11,7 +11,7 @@ Autonomous multi-agent development pipelines for Claude Code. Each skill orchest
 | Build a new feature end-to-end                | `/build`                                                     |
 | Sweep code before opening a PR                | `/audit` (or `/audit depth:deep` for ship)                   |
 | Iterate fix-test-review until clean           | `/polish`                                                    |
-| Optimize / clean existing code                | `/optimize`                                                  |
+| Clean up / refactor existing code             | `/cleanup`                                                   |
 | Verify the project (tests, lint, types)       | `/verify`                                                    |
 | See what breaks if you change X               | `/audit depth:deep scope:branch` (auto-invokes blast-radius) |
 | Understand existing code                      | `/explain` (now in `mz-research-pipe`)                       |
@@ -118,15 +118,15 @@ Takes existing code and iterates fix-test-review cycles until specific completio
 
 ______________________________________________________________________
 
-### `/optimize` — Code Optimization
+### `/cleanup` — Code Cleanup
 
 Scans a scope, builds an import graph, groups files into parallel-safe chunks, dispatches optimizer agents (up to 6), then runs mirrored code reviewers. Iterates on rejections. Behavior preservation is enforced by tests between every pass.
 
 ```
-/optimize src/auth/
-/optimize scope:branch
-/optimize "src/**/*.py"
-/optimize origin/main..HEAD
+/cleanup src/auth/
+/cleanup scope:branch
+/cleanup "src/**/*.py"
+/cleanup origin/main..HEAD
 ```
 
 **Pipeline**: Scan & Chunk → Baseline Snapshot → User Approval → Parallel Optimization → Verify → Parallel Review → Handle Verdicts → Summary

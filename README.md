@@ -246,7 +246,7 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **investigate**   | `/investigate <hypothesis>` | Code analysis → domain research → exploratory tests → verdict                                                                             |
 | **verify**        | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                                                     |
 | **polish**        | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                                                     |
-| **optimize**      | `/optimize <scope>`         | Import-graph chunking → parallel optimization → mirrored review                                                                           |
+| **cleanup**       | `/cleanup <scope>`          | Import-graph chunking → parallel optimization → mirrored review                                                                           |
 | **blast-radius**  | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                                                         |
 | **explain**       | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                                                         |
 | **combine**       | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report                                  |

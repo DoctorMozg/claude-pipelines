@@ -1,6 +1,6 @@
 ---
 name: clean-leftovers
-description: "ALWAYS invoke when the user wants to remove AI-generation leftovers from code. Triggers: 'clean leftovers', 'remove AI markers', 'strip phase comments', 'clean up after the pipeline', 'de-AI the code'. When NOT to use: prose rewriting (use /naturalize), general code quality cleanup (use /optimize)."
+description: "ALWAYS invoke when the user wants to remove AI-generation leftovers from code. Triggers: 'clean leftovers', 'remove AI markers', 'strip phase comments', 'clean up after the pipeline', 'de-AI the code'. When NOT to use: prose rewriting (use /naturalize), general code quality cleanup (use /cleanup)."
 argument-hint: '[scope:branch|global|working] [path or glob]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
@@ -21,7 +21,7 @@ Removes AI-generation leftover artifacts from code: AI signatures and tool water
 ### When NOT to use
 
 - Prose rewriting (AI-style writing patterns in narrative markdown) — use `/naturalize`.
-- Generic code-quality cleanup with no AI-artifact focus — use `/optimize`.
+- Generic code-quality cleanup with no AI-artifact focus — use `/cleanup`.
 - Fixing failing tests or completing partial features — use `/polish`.
 - Hunting bugs — use `/audit`.
 
