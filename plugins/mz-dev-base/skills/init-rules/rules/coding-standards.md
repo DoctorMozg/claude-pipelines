@@ -6,6 +6,8 @@
 ## Error Handling
 
 - Explicit error handling with try-catch blocks.
+- Catch only errors you can meaningfully handle; let unexpected ones propagate and fail loudly.
+- Never swallow an exception — an empty `except` or catch-then-`return None` turns a clear crash into a silent bug found far later.
 - Write meaningful error messages.
 - Avoid generic errors if possible.
 - Always log errors for debugging.
@@ -33,7 +35,6 @@
 - Follow SOLID principles.
 - Follow DRY — avoid code duplication. Always scan code for reusable parts and extract them before creating new code.
 - Write smaller functions with specialized functionality.
-- Do not over-engineer.
 - Make code structured, separated, isolated, so it is easy to understand.
 - Use interface abstractions at module boundaries for testability and decoupling.
 - Check modified code for smell (too complicated, too many parameters, etc.) — refactor if possible.
