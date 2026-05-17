@@ -18,15 +18,17 @@ mkdir -p <run_dir>/_pitch_temp
 
 Write `.mz/task/<task_name>/state.md`:
 
-```markdown
-# Freelance Pitch State
-- **Status**: running
-- **Phase**: 0
-- **Gig URL**: <gig.url>
-- **Gig title**: <gig.title>
-- **Run dir**: <run_dir>
-- **Off-pipeline**: <true/false>
-- **Strategy file**: <path or null>
+```yaml
+schema_version: 2
+Status: running
+Phase: 0
+phase_complete: false
+what_remains: []
+Gig URL: <gig.url>
+Gig title: <gig.title>
+Run dir: <run_dir>
+Off-pipeline: <true/false>
+Strategy file: <path or null>
 ```
 
 ## Phase 1: Read CV + collect tone preference
@@ -126,13 +128,11 @@ cp "<run_dir>/_pitch_temp/draft_vN.md" "<run_dir>/proposals/${gig_slug}.md"
 rm -rf "<run_dir>/_pitch_temp"
 ```
 
-Update `state.md`:
+Update `state.md` — set `Status` to `complete`, `Phase` to `proposal_written`, `phase_complete` to `true`, `what_remains` to `[]`, and add:
 
-```markdown
-- **Status**: complete
-- **Phase**: proposal_written
-- **Final proposal**: <run_dir>/proposals/<gig_slug>.md
-- **Word count**: <N>
+```yaml
+Final proposal: <run_dir>/proposals/<gig_slug>.md
+Word count: <N>
 ```
 
 Emit verification block per SKILL.md `Verification` section:

@@ -67,7 +67,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 - Derive task name `<YYYY_MM_DD>_translate_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the raw argument (max 20 chars); on same-day collision append `_v2`, `_v3`.
 - Create `TASK_DIR/<task_name>/` on disk.
-- Write initial `state.md` with `Status: running`, `Phase: setup`, `Started: <ISO 8601>`, `approval_iterations: 0`.
+- Write initial `state.md` with, in order: `schema_version: 2` (first line), `Status: running`, `Phase: setup`, `Started: <ISO 8601>`, `phase_complete: false`, `what_remains: []`, `approval_iterations: 0`.
 - TaskCreate a top-level task for the run so progress is visible to the user.
 
 ### Phase 1: Discovery + Planning
@@ -139,3 +139,7 @@ Delegated to phase files (see Phase Overview table). Reference material: grep `r
 ## Verification
 
 On completion, print the summary block from `<task_dir>/summary.md` covering files translated, Tier-1 pass/fail, Tier-2 verdicts and finding counts, Tier-3 lookup counts (`<used> / MAX_*`), glossary seeded/added/conflict counts, Phase 6 re-translation count, and every `DONE_WITH_CONCERNS` chunk surfaced for human review.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

@@ -77,9 +77,17 @@ Output the checklist result as a visible block before concluding — silent chec
 
 After each phase, update `.mz/task/<task_name>/state.md` with:
 
-- `Status:` `running` | `complete` | `aborted_by_user` | `failed`
-- `Phase:` current phase number
-- `SkillType:` classified skill type from Phase 0
-- `DraftPath:` path to the in-progress SKILL.md or phase file
+```yaml
+schema_version: 2
+Status: running   # running | complete | aborted_by_user | failed
+Phase: <current phase number>
+Started: <ISO timestamp>
+phase_complete: false
+what_remains: []
+SkillType: <classified skill type from Phase 0>
+DraftPath: <path to the in-progress SKILL.md or phase file>
+```
 
 Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

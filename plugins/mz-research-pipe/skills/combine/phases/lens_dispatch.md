@@ -23,7 +23,7 @@ ______________________________________________________________________
 1. **Sanity check** the recovered list:
    - Every lens has a non-empty file list. A lens with zero files is a decomposition bug from Phase 1.3 — escalate via AskUserQuestion rather than dispatching an empty agent.
    - Total lens count is between the 3-lens floor (after subtracting any bucket marked `unavailable`) and `MAX_LENSES = 6`. If the count exceeds 6, it is a Phase 1.3 bug — escalate.
-1. **Fan out in a single message**. Issue one `Agent` tool call per lens, all in the same message, as parallel tool calls. The wave size is bounded by `MAX_LENSES = 6`. Each dispatch targets the `pipeline-researcher` agent at **model: sonnet**. Sonnet is the right choice because each lens is a bounded, local-only extraction task over a pre-selected file list — opus would be token-wasteful here, and gap-fill is the opus-tier step.
+1. **Fan out in a single message**. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens with its role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability). Issue one `Agent` tool call per lens, all in the same message, as parallel tool calls. The wave size is bounded by `MAX_LENSES = 6`. Each dispatch targets the `pipeline-researcher` agent at **model: sonnet**. Sonnet is the right choice because each lens is a bounded, local-only extraction task over a pre-selected file list — opus would be token-wasteful here, and gap-fill is the opus-tier step.
 1. **Do not stage the wave.** All lenses launch together; there is no "first lens then the others". Waiting for any single lens to return before dispatching the rest defeats the parallelism.
 1. **Update state.md** with `phase: dispatched`, `lenses_dispatched: <N>`, and the ordered lens name list. Include the timestamp so Phase 2.3 can measure wall-clock.
 
@@ -89,6 +89,8 @@ ______________________________________________________________________
 
 **Goal**: Read each returned extract, enforce the four-status protocol, and advance to synthesis.
 
+When the wave returns, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per lens with its status and a short summary — before processing extracts. A lens with no usable extract shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+
 1. **Read each extract file**. For every lens dispatched in Phase 2.1, open `.mz/task/<task_name>/extract_<lens>.md`. If the file does not exist, see Error Handling below.
 1. **Check the final `STATUS:` line** of each extract. The agent is required to end its output with one of four exact tokens:
    - **`DONE`** — Accept the extract as-is. Log the path and lens name in `state.md`. Proceed.
@@ -117,7 +119,7 @@ ______________________________________________________________________
 
 1. **Gap intake**. Read the residual gap list that `phases/synthesis.md §Phase 3.4` wrote to `.mz/task/<task_name>/synthesis.md`. Only gaps the user explicitly approved in Phase 3.5 are eligible — any that were dropped or merged by user feedback take effect here, not in the synthesis file.
 1. **Cap to MAX_LENSES**. If more than `MAX_LENSES = 6` gaps remain after Phase 3.5, merge the two smallest-scope gaps (shortest gap text, narrowest subject) into one combined gap until the total is ≤6. Record each merge in `state.md` under `gapfill_merges` so the final report can credit the correct source.
-1. **Dispatch in a single message**. One `Agent` call per gap, all parallel in a single message. Each dispatch targets the `pipeline-web-researcher` agent (not `pipeline-researcher`) at **model: opus**. Opus is the right choice because web gap-fill is an unbounded synthesis task: the agent must hunt primary sources, weigh conflicting documentation, and detect vendor-spec drift — all work that rewards the stronger model.
+1. **Dispatch in a single message**. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per gap researcher with its gap — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability). Skip the manifest when only one gap remains. One `Agent` call per gap, all parallel in a single message. Each dispatch targets the `pipeline-web-researcher` agent (not `pipeline-researcher`) at **model: opus**. Opus is the right choice because web gap-fill is an unbounded synthesis task: the agent must hunt primary sources, weigh conflicting documentation, and detect vendor-spec drift — all work that rewards the stronger model.
 
 ### 4.2 Per-gap dispatch prompt template
 
@@ -153,6 +155,8 @@ The `STACK DETECTED` / `CONFLICT DETECTED` / `UNVERIFIED` tokens are contracts d
 `pipeline-web-researcher` is read-only — it has no Write tool. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its `gapfill_<GAP_ID>.md` artifact via the Write tool — one Write call per returned gap, before Phase 4.3 reads the gap-fill files.
 
 ### 4.3 Collect gap-fills
+
+When the wave returns, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per gap researcher with its status and a short summary — before processing gap-fills (skip when only one gap was dispatched). A gap researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
 1. **Read each `gapfill_<GAP_ID>.md`** produced by the wave. Apply the same four-status protocol as Phase 2.3:
    - **`DONE`** / **`DONE_WITH_CONCERNS`** — Accept. The answer (or `UNVERIFIED` marker) is usable.

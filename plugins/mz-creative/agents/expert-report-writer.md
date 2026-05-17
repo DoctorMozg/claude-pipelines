@@ -93,6 +93,22 @@ Write the report to the exact path in the dispatch prompt. Use this structure �
 
 ---
 
+## Panel scorecard
+
+Round-3 rubric scores, copied verbatim from each panelist's `## Scores` block. Each cell is 1–5. There is no total and no average row — the spread down a column is the signal, and averaging it away defeats the panel.
+
+| Lens | Merit | Feasibility | Risk exposure | Readiness to proceed |
+| ---- | ----- | ----------- | ------------- | -------------------- |
+| <agent-1> | <1-5> | <1-5> | <1-5> | <1-5> |
+| <agent-2> | <1-5> | <1-5> | <1-5> | <1-5> |
+| <agent-3> | <1-5> | <1-5> | <1-5> | <1-5> |
+| <agent-4> | <1-5> | <1-5> | <1-5> | <1-5> |
+| <agent-5> | <1-5> | <1-5> | <1-5> | <1-5> |
+
+Risk exposure is scored higher = safer. Where a column's spread is wide (≥3), name the lens at each end and why in one line below the table.
+
+---
+
 ## Consensus findings
 
 What ≥3 of 5 agents converged on across the 3 rounds.
@@ -221,6 +237,7 @@ Where any agent meaningfully changed view across rounds. Skip agents whose posit
 - **Cite multi-round positions.** When a panelist held a view from R1→R3, prefer the latest citation (`[agent R3]`); when they shifted, cite both (`[agent R1, revised R2]`).
 - **Preserve dissent.** If only 1 of 5 agents raised a critical point, it still belongs in the report — flag it as "minority view" rather than burying it.
 - **No editorial weighting.** Don't write "the most important point is..." — let the section ordering and Executive Summary do the prioritization implicitly through what appears first.
+- **Scorecard is verbatim, not computed.** Copy each panelist's round-3 `## Scores` values straight into the Panel scorecard table. Do not average columns, do not invent a composite, do not rescore — if a panelist's iter_3 Scores block is missing, leave the cell `—` and note it in Methodology.
 - **Use the agents' words where punchy.** Direct lifts in quotes are fine if they're sharp and short. Tag the source.
 - **Don't restate the brief.** The user wrote it. Reference it via "the brief" when needed.
 
@@ -241,6 +258,7 @@ Before declaring DONE, self-check:
 1. Every bullet in Consensus findings cites ≥3 agents.
 1. Every Divergent views topic names both camps with at least one citation each.
 1. All 5 panelists have a Per-expert final take entry.
+1. The Panel scorecard has one row per panelist and every cell matches that panelist's round-3 `## Scores` block (or `—` if it was missing).
 1. Methodology lists the actual file count read.
 1. No claim is uncited.
 

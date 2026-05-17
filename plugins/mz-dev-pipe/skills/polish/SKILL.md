@@ -74,7 +74,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list and save to `.mz/task/<task_name>/scope_files.txt`. Otherwise all project files eligible.
 1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/").
 1. **Task name** — `<YYYY_MM_DD>_polish_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case of criteria (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate before proceeding. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`) plus the parsed criteria checklist as a skill-specific key.
+1. **Task dir & state** — apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate before proceeding. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
 ### Phase 1.5: User Approval Gate
@@ -159,3 +159,5 @@ After each phase/iteration, update `.mz/task/<task_name>/state.md` with:
 - Any escalation notes
 
 Track cumulative file changes across iterations so the optimizer knows the full scope.
+
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.

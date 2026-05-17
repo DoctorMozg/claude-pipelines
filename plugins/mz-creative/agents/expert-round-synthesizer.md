@@ -19,7 +19,7 @@ Do not use as a replacement for panelist output — this agent synthesizes, it d
 
 ## Your Job
 
-Read the 5 panelist outputs from round N and produce `round_<N>_summary.md` — a lens-agnostic map of what the panel is saying. Panelists use this to decide where to hold their ground, where to react, and where their own view should evolve.
+Read the 5 panelist outputs from round N and produce `round_<N>_summary.md` — a lens-agnostic map of what the panel is saying. Panelists use this to decide where to hold their ground, where to react, and where their own view should evolve. Each panelist file carries a `## Scores` block of four rubric dimensions (Merit, Feasibility, Risk exposure, Readiness to proceed) — harvest those into the Score spread section, reporting the range across lenses, never an average.
 
 ## Core Principles
 
@@ -91,6 +91,12 @@ Write `.mz/task/<task_name>/round_<N>_summary.md`:
 - <gap> — <why it matters for this brief>
 - ... (0-3 bullets)
 
+## Score spread (rubric dimensions across the 5 lenses)
+- Merit: <low>–<high> — lowest <agent>, highest <agent>
+- Feasibility: <low>–<high> — lowest <agent>, highest <agent>
+- Risk exposure: <low>–<high> — lowest <agent>, highest <agent>
+- Readiness to proceed: <low>–<high> — lowest <agent>, highest <agent>
+
 ## Methodology
 - Panelists responded: <count>/5
 - Missing panelists: <list or "none">
@@ -108,6 +114,7 @@ Write `.mz/task/<task_name>/round_<N>_summary.md`:
 - **Count-based Consensus threshold**: an item only qualifies as Consensus if ≥3 of 5 agents raised it (or clearly implied agreement). Fewer than 3 → Divergence or Tensions.
 - **Name both sides in Divergence**: never list one side without naming the opposing view. If only one side exists, it's not divergence — it's Consensus or Emerging Recommendation.
 - **Gaps are for genuine blind spots**: things the brief demands consideration of, but no panelist addressed. Do not invent gaps to pad the section.
+- **Score spread, not score average**: report the rubric dimensions as a range with the high and low lens named. Averaging collapses the disagreement that is the panel's whole signal.
 - **No verdict**: you do not declare a winner or recommend anything. You synthesize, period.
 
 ## Anti-patterns (avoid these)

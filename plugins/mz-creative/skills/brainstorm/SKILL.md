@@ -88,7 +88,7 @@ Before completing, output a visible block showing: selected panel (5 names), ite
 
 ## Phase 0: Setup
 
-Derive task name as `<YYYY_MM_DD>_brainstorm_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the topic; on same-day collision append `_v2`, `_v3`. Create `.mz/task/<task_name>/`. Write `state.md` with Status: started, Phase: setup, Started: timestamp, Iteration: 0.
+Derive task name as `<YYYY_MM_DD>_brainstorm_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the topic; on same-day collision append `_v2`, `_v3`. Create `.mz/task/<task_name>/`. Write `state.md` with schema_version: 2, Status: started, Phase: setup, Started: timestamp, phase_complete: false, what_remains: [], Iteration: 0.
 
 ## Phase 1: Panel Selection
 
@@ -166,5 +166,7 @@ Compile final report with winning ideas, all perspectives, and voting history. *
 ## State Management
 
 After each phase, update `.mz/task/<task_name>/state.md`. Track current phase, iteration count, votes per round, and participating agents. Persist all ideas and votes in `.mz/task/<task_name>/history.md` for later rounds.
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
 Critical: never proceed past the approval gate without explicit user approval. Never skip voting. Never fabricate votes.

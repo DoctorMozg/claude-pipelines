@@ -44,7 +44,7 @@ If no argument is provided, ask the user for a PR URL.
 1. Normalize the reference to `<owner>_<repo>_<pr_number>` form.
 1. `task_name` = `<YYYY_MM_DD>_github_review_pr_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is `<owner>_<repo>_<pr_number>` truncated to 20 chars, snake_case; on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `PR: <reference>`, `Owner: <owner>`, `Repo: <repo>`, `Number: <pr_number>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `PR: <reference>`, `Owner: <owner>`, `Repo: <repo>`, `Number: <pr_number>`.
 1. Emit a visible setup block: `task_name`, PR reference, report dir (`.mz/reviews/`).
 
 ### 1. Dispatch
@@ -83,3 +83,7 @@ Output the report path (`.mz/reviews/<YYYY_MM_DD>_github_review_pr_<owner>_<repo
 - **Missing tooling** (`git worktree` unavailable, `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
 - **Empty agent result** (report file missing, empty, or no `VERDICT:` line) → retry the dispatch once with the same prompt; if still empty, escalate via AskUserQuestion with the failure mode.
 - Never guess — on any ambiguity (inaccessible PR, 404, merge conflict in worktree, missing base ref) escalate via AskUserQuestion rather than proceed silently.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md` with `schema_version: 2` as its first line. This is a single-dispatch skill (setup → dispatch → report in one turn), so the `phase_complete` / `what_remains` progress-ledger fields are not required. On reading a `schema_version: 1` or unversioned file, add `schema_version: 2` and log the upgrade.

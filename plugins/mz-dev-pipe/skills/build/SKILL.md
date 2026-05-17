@@ -71,7 +71,7 @@ Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's 
 - **Status: complete or aborted_by_user** → auto-suffix `_v2` / `_v3`, log the bump to chat, proceed as fresh task.
 - **Status: running or failed** → present the Resume gate from `shared/resume-protocol.md`. On `Resume`, re-enter at the recorded `Phase` per the phase-idempotency rules. On `Restart`, archive the directory to `<task_name>_archived_<YYYY_MM_DD_HHMMSS>/` and start fresh. On `New`, suffix `_v2` and proceed fresh. Honor `MZ_DEV_PIPE_AUTO_APPROVE=1` per the protocol's auto-decision rules.
 
-**Fresh-task setup**: create `.mz/task/<task_name>/`. Write `state.md` per the v1 schema in [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`. Use TaskCreate for per-phase tracking.
+**Fresh-task setup**: create `.mz/task/<task_name>/`. Write `state.md` per the v2 schema in [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking.
 
 Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Write to `.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
 
@@ -198,3 +198,5 @@ Agent failure → retry once, then escalate. No test framework → ask how to pr
 ## State Management
 
 After each phase, update `state.md` with current phase, iteration counts, files modified, and escalation notes. Allows resumption if interrupted.
+
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a lint/test/review gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.

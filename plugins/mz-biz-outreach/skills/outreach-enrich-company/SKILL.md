@@ -131,18 +131,20 @@ mkdir -p .mz/outreach/active
 
 Write `.mz/task/<task_name>/state.md`:
 
-```markdown
-# Outreach Enrich Company State
-- **Status**: running
-- **Phase**: 0
-- **Started**: <ISO timestamp>
-- **UserPath**: <user-supplied path verbatim>
-- **SourcePath**: <resolved path actually being read>
-- **CompanySlug**: <slug>
-- **RunDir**: <run_dir or "default">
-- **ChannelsOverride**: <value or "auto">
-- **SenderOverride**: <value or "strategy.json|default">
-- **EnrichMode**: <both | only | skip>
+```yaml
+schema_version: 2
+Status: running
+Phase: 0
+Started: <ISO timestamp>
+phase_complete: false
+what_remains: []
+UserPath: <user-supplied path verbatim>
+SourcePath: <resolved path actually being read>
+CompanySlug: <slug>
+RunDir: <run_dir or "default">
+ChannelsOverride: <value or "auto">
+SenderOverride: <value or "strategy.json|default">
+EnrichMode: <both | only | skip>
 ```
 
 ### Phase 1: Parse card + light web enrichment
@@ -220,6 +222,10 @@ STATUS: <DONE | DONE_WITH_CONCERNS>
 ```
 
 `STATUS: DONE_WITH_CONCERNS` whenever any of: `strategy_source == default`, any contact was skipped, any draft was naturalize-reverted, any copywriter dispatch failed, any web call returned an error, any enrichment subagent returned `NEEDS_CONTEXT`/`BLOCKED`, the light-pass cap was hit and contacts had to drop, the relocation failed to delete the source file.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
 ## Techniques
 

@@ -100,8 +100,11 @@ The `source_sha256` field is load-bearing for recoverability — if the user ask
 Update `state.md`:
 
 ```
+schema_version: 2
 Status: complete
 Phase: 2
+phase_complete: true
+what_remains: []
 Completed: <ISO timestamp>
 Promoted: N
 Merged: N

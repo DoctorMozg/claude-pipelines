@@ -189,6 +189,8 @@ ______________________________________________________________________
 
 ### 2.1 Dispatch researchers
 
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens researcher with its role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+
 Spawn N `pipeline-researcher` agents (model: **sonnet**) in a **single message** using parallel tool calls — one per selected lens. Each researcher reads `.mz/task/<task_name>/scope.md` for the file list, severity/confidence scales, and output format.
 
 ### 2.2 Lens-specific prompts
@@ -315,6 +317,8 @@ Return findings as markdown in your response — the orchestrator persists to `.
 ### 2.3 Persist researcher responses
 
 Each dispatched `pipeline-researcher` is read-only and returns its findings in its response text. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to the corresponding `findings_<lens>.md` artifact using the Write tool. One Write call per lens, in a single message if the responses are available simultaneously.
+
+When the wave returns, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before consolidation. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
 Mapping:
 

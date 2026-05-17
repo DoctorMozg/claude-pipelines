@@ -48,7 +48,9 @@ When R1, substitute empty strings for `{prior_summary_block}` and `{prior_iter_b
 
 ## Step 2.2 — Parallel panelist dispatch
 
-Read `.mz/task/<task_name>/panel.md` to get the 5 agent names. Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
+Read `.mz/task/<task_name>/panel.md` to get the 5 agent names. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its lens role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+
+Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
 
 The 5 panelists are opus-class lens agents registered by their `name:` field (e.g., `lens-engineer`, `lens-cto`). Do not repeat agent system-prompt instructions — the critique behavior prompt is self-contained.
 
@@ -65,16 +67,27 @@ test -s .mz/task/<task_name>/iter_<N>_<agent>.md
 And that the file contains the required sections for the round. Quick check:
 
 ```bash
-grep -c '^## Strengths\|^## Weaknesses\|^## Risks\|^## Suggestions\|^## Confidence' \
+grep -c '^## Strengths\|^## Weaknesses\|^## Risks\|^## Suggestions\|^## Scores\|^## Confidence' \
   .mz/task/<task_name>/iter_<N>_<agent>.md
 ```
 
-Should return ≥ 5 for round 1 and ≥ 7 for rounds 2-3 (adds Reactions + Changelog).
+Should return ≥ 6 for round 1 and ≥ 8 for rounds 2-3 (adds Reactions + Changelog).
+
+Confirm the four rubric scores are present and well-formed:
+
+```bash
+grep -cE '^- (Merit|Feasibility|Risk exposure|Readiness to proceed): [1-5]/5' \
+  .mz/task/<task_name>/iter_<N>_<agent>.md
+```
+
+Should return 4. A file that passes the section-count check but returns fewer than 4 here has a malformed Scores block — treat it as malformed and retry per below.
 
 ### If an agent output is missing or malformed
 
 - Retry once with a clarified dispatch that explicitly lists the missing sections.
 - If the retry still fails, log the gap in `state.md` under a `## Gaps` section and continue the round without that agent's output. Never block a round on a single missing agent.
+
+Once collection is settled, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per panelist with its status and a short summary — before dispatching the synthesizer. A panelist with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
 ## Step 2.4 — Dispatch round synthesizer
 
@@ -103,6 +116,7 @@ Write .mz/task/<task_name>/round_<N>_summary.md using the schema from your agent
 3. **Key tensions** — 2-3 unresolved tradeoffs the panel is circling.
 4. **Emerging recommendations** — actions gaining traction across lenses. Tag which agents endorse each.
 5. **Gaps** — important angles no panelist addressed.
+6. **Score spread** — for each of the four rubric dimensions (Merit, Feasibility, Risk exposure, Readiness to proceed), report the range across the 5 lenses and name the high and low lens. Do not average — the spread is the signal.
 
 ## Rules
 - Neutral tone. Do not weight any lens.
@@ -125,9 +139,13 @@ Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKE
 After each round, update `state.md`:
 
 ```
+schema_version: 2
 Status: running
 Phase: 2
 PhaseName: round_<N>_complete
+phase_complete: <true once N == 3, else false>
+what_remains:
+  - ... (rounds after <N> not yet run, then the Phase 3 final report)
 Round: <N>
 FilesWritten:
   - ... (append iter_<N>_<agent>.md × 5 and round_<N>_summary.md)

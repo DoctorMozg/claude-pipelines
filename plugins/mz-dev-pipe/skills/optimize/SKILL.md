@@ -66,7 +66,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_optimize_<slug>`. Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
+- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_optimize_<slug>`. Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
 - **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
 - **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 
@@ -166,3 +166,5 @@ Output the final `summary.md` block: chunks touched, files modified, baseline vs
 ## State Management
 
 After each phase, update `state.md` with current phase, iteration counts, files modified, and escalation notes. Allows resumption if interrupted.
+
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.

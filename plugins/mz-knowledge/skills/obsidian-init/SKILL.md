@@ -41,7 +41,7 @@ Discipline skill that bootstraps a new Obsidian vault (or retrofits an existing 
 1. If the vault path is empty, ask via AskUserQuestion.
 1. Check whether the path exists. If it does, scan for existing `.obsidian/`, `CLAUDE.md`, `.mz/`, and any folder structure. Record findings — the skill must not destroy existing content.
 1. Derive `task_name = <YYYY_MM_DD>_obsidian-init_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the vault directory name (max 20 chars); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started`, `Vault`, `ExistingCLAUDE: true|false`, `ExistingSchema: true|false`, `ExistingFolders: [list]`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started`, `Vault`, `ExistingCLAUDE: true|false`, `ExistingSchema: true|false`, `ExistingFolders: [list]`, `phase_complete: false`, `what_remains: []`.
 
 Unless `--minimal` was passed, ask the user via AskUserQuestion (single question, all items):
 
@@ -160,3 +160,7 @@ obsidian-init verification:
 ```
 
 If any box is unchecked, report the failure explicitly.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

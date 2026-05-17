@@ -47,7 +47,7 @@ Invoke for weekly vault maintenance, before a knowledge review session, or after
 1. If no vault path resolved, escalate via AskUserQuestion — never guess.
 1. `task_name` = `<YYYY_MM_DD>_vault-health_<vault-slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<vault-slug>` is a snake_case summary of the vault directory name (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <resolved path>`.
+1. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <resolved path>`.
 1. Emit a visible setup block showing `task_name`, resolved vault path, and working dir.
 
 ### Phase 1 — Collect
@@ -121,3 +121,7 @@ Confirm `_vault_audit_YYYY-MM-DD.md` was written to the vault root. Print the or
 - **Obsidian CLI unavailable** → fall back to file scanning via Bash/Glob/Grep; record the fallback in `state.md`.
 - **Empty collector result** (agent returns nothing) → retry once with a clarified prompt; if still empty, note the gap in `state.md` and escalate via AskUserQuestion before writing.
 - Never guess — on any ambiguity (ambiguous vault path, missing tooling, conflicting results) escalate via AskUserQuestion rather than fabricate.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

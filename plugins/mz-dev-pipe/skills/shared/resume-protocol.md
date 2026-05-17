@@ -9,7 +9,7 @@ Every mz-dev-pipe skill, in its Phase 0 setup, MUST:
 1. **Compute the candidate task name** from `$ARGUMENTS` per the skill's naming convention (`<YYYY_MM_DD>_<skill>_<slug>`, with `_v2`, `_v3` collision suffixes).
 1. **Check for an existing state file** at `.mz/task/<candidate_task_name>/state.md`.
 1. **Branch on what is found**:
-   - **No file** → fresh task. Proceed with normal Phase 0 setup (create directory, write new state file with `schema_version: 1`).
+   - **No file** → fresh task. Proceed with normal Phase 0 setup (create directory, write new state file with `schema_version: 2`, `phase_complete: false`, `what_remains: []`).
    - **File exists with `Status: complete` or `Status: aborted_by_user`** → finished task. Auto-suffix `_v2` / `_v3` and proceed as fresh task. Log the suffix bump to chat.
    - **File exists with `Status: running` or `Status: failed`** → in-progress or interrupted task. Present the **Resume gate** below.
 
@@ -22,8 +22,9 @@ Then emit the pre-gate text block:
 ```
 **Existing task found**
 Task `<task_name>` is at Phase <N> (<PhaseName>) with Status: <status>. Last update: <Started or last-modified>.
+The recorded phase is <complete|incomplete> (`phase_complete: <bool>`); outstanding work: <`what_remains` items, or "none">.
 
-- **Resume** → re-enter at Phase <N> using the existing artifacts
+- **Resume** → re-enter using the existing artifacts — advance past Phase <N> if `phase_complete` is true, else re-run Phase <N> from its idempotent entry point
 - **Restart** → archive the old task (rename to `<task_name>_archived_<timestamp>`) and start fresh
 - **New task** → leave the old task untouched and create `<task_name>_v2`
 ```
@@ -40,7 +41,7 @@ Type **Resume** to continue, **Restart** to archive and start fresh, or **New** 
 
 ## Response handling
 
-- **`resume`** → load the recorded `Phase`, `Iteration`, `FilesWritten`, and any skill-specific keys. Jump to the recorded phase's entry point. The skill's phase files MUST document their own re-entry rule (see "Phase idempotency" below).
+- **`resume`** → load the recorded `Phase`, `phase_complete`, `what_remains`, `Iteration`, `FilesWritten`, and any skill-specific keys. If `phase_complete` is true, jump to the next phase's entry point; if false, re-enter the recorded phase. The skill's phase files MUST document their own re-entry rule (see "Phase idempotency" below).
 - **`restart`** → rename the existing `.mz/task/<task_name>/` directory to `.mz/task/<task_name>_archived_<YYYY_MM_DD_HHMMSS>/`, create a fresh `.mz/task/<task_name>/`, and proceed as a fresh task. Log the archive path to chat.
 - **`new`** → leave the existing directory untouched, suffix `_v2` (or `_v3`, etc.) on the candidate name, create the suffixed directory, proceed as fresh.
 - **`MZ_DEV_PIPE_AUTO_APPROVE=1`** in unattended mode → default to `resume` if the file is `running`, default to `restart` if `failed`. Log the auto-decision to `state.md` under `## Auto-decisions`. Never auto-overwrite a `complete` or `aborted_by_user` file — those always force a fresh `_vN` suffix.

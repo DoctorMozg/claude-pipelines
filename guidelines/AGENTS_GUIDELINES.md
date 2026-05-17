@@ -195,6 +195,14 @@ Agents whose output is consumed by an orchestrator, or that write artifacts for 
 
 Orchestrators consuming STATUS lines must handle all four — missing handlers lead to silent infinite retries or to `DONE_WITH_CONCERNS` being treated as `DONE`.
 
+**Canonical return-contract ordering.** An agent's return-contract tokens are defined across three rules: `STATUS:` (this rule), `VERDICT:` plus severity labels (Severity-Labeled Review Output), and the disclosure tokens `STACK DETECTED:` / `CONFLICT DETECTED:` / `UNVERIFIED:` (Source-Hierarchy Discipline). An agent emits only the tokens its archetype defines — a worker emits `STATUS:` alone, a reviewer adds `VERDICT:`, a web-researcher adds disclosure tokens. When more than one is present they follow one fixed relative order, so an orchestrator parses the result deterministically:
+
+1. **Disclosure tokens** — emitted where they arise (`STACK DETECTED:` before the first research query; `CONFLICT DETECTED:` and `UNVERIFIED:` inline at the claim). They always precede the verdict and status lines.
+1. **`VERDICT:`** — the binary `PASS`/`FAIL` line; immediately precedes `STATUS:` when both are present.
+1. **`STATUS:`** — unconditionally the final line of the output. Nothing follows it: no prose, no sign-off, no trailing section. An orchestrator must be able to recover it with a tail read.
+
+The token is `STACK DETECTED:` — **a space, never an underscore**. `STACK_DETECTED` is not a recognized token.
+
 ## 14. Severity-Labeled Review Output
 
 Review, audit, and validator agents prefix every finding with a severity label and end with a binary `VERDICT:` line.
@@ -412,6 +420,7 @@ Before merging any new or modified agent:
 - [ ] Orchestrator-consumed worker/coder/researcher agents emit terminal `STATUS:` with one of four values (Rule 13).
 - [ ] Reviewer/validator agents use severity labels + binary `VERDICT:` (Rule 14).
 - [ ] Agents using `WebSearch` or `WebFetch` declare source hierarchy + disclosure tokens (Rule 15).
+- [ ] Agent emitting multiple contract tokens orders them canonically — disclosure tokens, then `VERDICT:`, then `STATUS:` as the final line (Rule 13).
 - [ ] Discipline agents include an anti-rationalization table with ≥3 empirically grounded rows (Rule 16).
 - [ ] Critical rules anchored at top AND bottom of system prompt (Rule 17, primacy-recency).
 - [ ] Positive framing preferred throughout (Rule 17).

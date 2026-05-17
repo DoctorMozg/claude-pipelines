@@ -180,8 +180,13 @@ Record `MemoryAction: written|skipped_existing`.
 Update `state.md`:
 
 ```yaml
+schema_version: 2
 Phase: 1
 Status: scaffold_complete
+phase_complete: true
+what_remains:
+  - Verify all scaffolding files exist (Phase 2)
+  - Confirm no existing files were overwritten
 FoldersCreated: [list]
 PermanentSubfolders: [list]
 CLAUDEAction: written|skipped_existing|appended_missing_sections

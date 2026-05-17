@@ -93,7 +93,7 @@ Output a visible block showing: task name, resolved target, persona chosen, find
 
 ## Phase 0: Setup
 
-Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case). Derive task name: `<YYYY_MM_DD>_do_roast_<slug>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder, and `<YYYY_MM_DD>` is today's date with underscores. Create `TASK_DIR<task_name>/`. Write `state.md` with `Status: started`, `Phase: setup`, `Started: <ISO8601>`, `Persona: <chosen>`, `Target_raw: <remainder>`.
+Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case). Derive task name: `<YYYY_MM_DD>_do_roast_<slug>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder, and `<YYYY_MM_DD>` is today's date with underscores. Create `TASK_DIR<task_name>/`. Write `state.md` with `schema_version: 2` as the first line, then `Status: started`, `Phase: setup`, `Started: <ISO8601>`, `Persona: <chosen>`, `Target_raw: <remainder>`.
 
 ## Phase 0.5: Target Resolution Gate
 
@@ -130,5 +130,7 @@ Use AskUserQuestion: `I resolved "<target_raw>" to: <list>. Roast these as <pers
 ## State Management
 
 Update `TASK_DIR<task_name>/state.md` after every phase transition. Track: current phase, persona, resolved target list, finding counts by `DOSSIER_SEVERITY_LABELS`, report path.
+
+State persists to `.mz/task/<task_name>/state.md` with `schema_version: 2` as its first line. This is a single-dispatch skill (setup → dispatch → report in one turn), so the `phase_complete` / `what_remains` progress-ledger fields are not required. On reading a `schema_version: 1` or unversioned file, add `schema_version: 2` and log the upgrade.
 
 Critical: every line of the rendered roast must trace to a numbered Finding in the dossier. No invention. No real-person attacks. No git blame. If the persona cannot find something to roast within the evidence, it says so — it does not fabricate.

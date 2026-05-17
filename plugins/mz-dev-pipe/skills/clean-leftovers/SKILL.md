@@ -67,7 +67,7 @@ Read the relevant phase file when you reach that phase. Do not pre-load all of t
 1. **Parse arguments** — extract `scope:` (default `working`); the remaining text is an optional path or glob filter.
 1. **Resolve scope** — apply the scope reference above and save the concrete file list to `.mz/task/<task_name>/scope_files.txt`. Skip excluded markdown directories unless explicitly requested.
 1. **Task name** — `<YYYY_MM_DD>_clean_leftovers_<slug>` where `<slug>` is snake_case of scope mode + first 3 words of any path filter (max 20 chars). On same-day collision append `_v2`, `_v3`.
-1. **Create task dir & state** — `.mz/task/<task_name>/`. Write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md): first line `schema_version: 1`, required keys (`Status`, `Phase`, `Started`, `Iteration` 0, `FilesWritten`), plus skill-specific (`scope`, `files_in_scope`, `categories_to_clean`).
+1. **Create task dir & state** — `.mz/task/<task_name>/`. Write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md): first line `schema_version: 2`, required keys (`Status`, `Phase`, `Started`, `Iteration` 0, `FilesWritten`, `phase_complete: false`, `what_remains: []`), plus skill-specific (`scope`, `files_in_scope`, `categories_to_clean`).
 1. **Emit a visible setup block** — task name, scope, file count, exclusions. Read `phases/research.md` and proceed to Phase 1.
 
 ### Phase 2.5: Approval Gate
@@ -148,3 +148,5 @@ Output the verification block defined in `phases/verification.md`: task dir, rep
 ## State Management
 
 After each phase update `state.md`: `Status`, `Phase`, `Iteration` (cleanup loop), `FilesWritten` (cumulative), `categories_remaining` (categories with residuals after latest verification scan). Never rely on conversation memory for cross-phase state.
+
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.

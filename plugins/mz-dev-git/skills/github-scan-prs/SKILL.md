@@ -39,7 +39,7 @@ If no argument is provided, detect the current repository from `gh repo view --j
 1. Parse `$ARGUMENTS` — list of GitHub repositories. If empty, resolve current repo via `gh repo view --json nameWithOwner -q .nameWithOwner`; if that fails, escalate via AskUserQuestion. Never guess.
 1. `task_name` = `<YYYY_MM_DD>_github_scan_prs_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the repo list (max 20 chars, e.g. `owner_repo` or `multi_repo`); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Repos: [<list>]`, `ScannedPRs: 0`, `ScoredPRs: 0`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Repos: [<list>]`, `ScannedPRs: 0`, `ScoredPRs: 0`.
 1. Emit a visible setup block: `task_name`, repo list, report dir (`.mz/reviews/`).
 
 ### 1. Dispatch
@@ -79,6 +79,8 @@ Output the triage report path (`.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_n
 - Never guess — on any ambiguity (unresolvable repo, invalid URL, missing auth) escalate via AskUserQuestion rather than proceed silently.
 
 ## State Management
+
+State persists to `.mz/task/<task_name>/state.md` with `schema_version: 2` as its first line. This is a single-dispatch skill (setup → dispatch → report in one turn), so the `phase_complete` / `what_remains` progress-ledger fields are not required. On reading a `schema_version: 1` or unversioned file, add `schema_version: 2` and log the upgrade.
 
 After Phase 1 completes, update `.mz/task/<task_name>/state.md` with:
 

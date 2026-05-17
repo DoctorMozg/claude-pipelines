@@ -48,7 +48,7 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 1. **Resolve the batch.** Glob `<vault>/<INBOX_FOLDER>/*.md` sorted by mtime ascending; take the first `BATCH_SIZE` notes. If zero notes are found, update `state.md` to `Status: empty_inbox` and tell the user the inbox is empty, then stop.
 
-1. **Create the task directory.** Derive `task_name = <YYYY_MM_DD>_vault-triage_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a short mode tag (e.g., `weekly`); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <absolute path>`, `PERMANENT_FOLDER: <resolved path>`, `BatchPaths: <list of absolute paths>`.
+1. **Create the task directory.** Derive `task_name = <YYYY_MM_DD>_vault-triage_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a short mode tag (e.g., `weekly`); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <absolute path>`, `PERMANENT_FOLDER: <resolved path>`, `BatchPaths: <list of absolute paths>`.
 
 ### Phase 1.5: User approval — Triage Decisions
 
@@ -115,3 +115,7 @@ Techniques: delegated to phase files — see Phase Overview table above.
 ## Verification
 
 Verification: delegated to phase files — see Phase Overview table above.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

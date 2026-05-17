@@ -41,7 +41,7 @@ Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is 
 1. Parse `$ARGUMENTS`. If the research topic is empty, escalate via AskUserQuestion — never guess.
 1. `task_name` = `<YYYY_MM_DD>_deep_research_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the topic (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Topic: <original argument>`, `Subtopics: []`.
+1. Write `state.md` with, in order: `schema_version: 2` (first line), `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `phase_complete: false`, `what_remains: []`, `Topic: <original argument>`, `Subtopics: []`.
 1. Emit a visible setup block: `task_name`, topic, working dir, report dir (`.mz/research/`).
 
 ### 1. Analyze and decompose the topic
@@ -136,3 +136,7 @@ Output the final report path (`.mz/research/<YYYY_MM_DD>_research_<slug>.md`), c
 - **Missing tooling** (`WebSearch`/`WebFetch` unavailable, `Agent` tool absent) → escalate via AskUserQuestion rather than degrade silently.
 - **Empty researcher result** (agent returns nothing or malformed output) → retry that subtopic once with a clarified prompt; if still empty, note the gap in `state.md` and escalate via AskUserQuestion before writing the final report.
 - Never guess — on any ambiguity (unclear scope, conflicting subtopics, source availability) escalate via AskUserQuestion rather than fabricate.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

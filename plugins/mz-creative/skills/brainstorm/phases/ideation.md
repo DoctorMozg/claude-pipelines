@@ -25,6 +25,8 @@ When `{previous_rounds_block}` is empty, collapse the surrounding blank line so 
 
 ## 2.3 Dispatch agents in parallel
 
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens agent with its role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+
 Dispatch all **PANEL_SIZE** (5) selected lens agents in a **single message** as parallel Agent tool calls. Each agent receives its own substituted dispatch prompt as the user message. Use each agent's registered name (`lens-engineer`, `lens-artist`, `lens-philosopher`, `lens-mathematician`, `lens-scientist`, `lens-economist`, `lens-storyteller`, `lens-futurist`, `lens-psychologist`, `lens-historian`, `lens-cto`, `lens-data`, `lens-devops`, `lens-product`, `lens-security`, `lens-seo`) as the `subagent_type`.
 
 Do not repeat the agent's system prompt instructions — the behavior prompt is self-contained.
@@ -36,6 +38,8 @@ Each agent writes its artifact to `{output_path}`. After dispatch, for each agen
 1. Verify the file exists and is non-empty.
 1. Validate structure: at least one `## Idea` block with a title, concept, lens rationale, and feasibility signal.
 1. If the file is missing, empty, or off-topic: retry once with a clarified prompt per the behavior post-dispatch checklist. If still bad, exclude the agent from this iteration and note the gap in `state.md`.
+
+Then emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per agent with its status and a short summary — before merging. An agent with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
 Merge all agent outputs into `.mz/task/<task_name>/ideas_round_<N>.md`:
 

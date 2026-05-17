@@ -60,7 +60,7 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 1. If brief is empty → `AskUserQuestion` asking for the brief. Do not guess.
 1. Derive task name as `<YYYY_MM_DD>_design_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the brief (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/design/<task_name>/`.
-1. Write `state.md` with `Status`, `Phase`, `Started`, `Iteration: 0`, `FilesWritten: []`.
+1. Write `state.md` with `schema_version: 2` as the first line, then `Status`, `Phase`, `Started`, `phase_complete: false`, `what_remains: []`, `Iteration: 0`, `FilesWritten: []`.
 1. Output a visible setup block showing: `task_name`, `DESIGN_DIR` path, detected modifiers.
 
 ### Phase 4: User Approval Gate
@@ -168,3 +168,5 @@ After each phase, update `.mz/design/<task_name>/state.md` with:
 - `FilesWritten:` cumulative list of paths
 
 Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions. The state file is the source of truth.
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

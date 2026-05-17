@@ -78,8 +78,13 @@ If the second dispatch also fails validation, emit `STATUS: BLOCKED` with the va
 Update `state.md`:
 
 ```
+schema_version: 2
 Phase: 1
 Status: batch_scored
+phase_complete: true
+what_remains:
+  - User approval of the triage batch at Phase 1.5
+  - Execute approved decisions in Phase 2
 BatchArtifact: .mz/task/<task_name>/triage_batch.md
 BatchSize: <actual entry count from decisions list>
 ProposedCounts: promote=<N>, merge=<N>, discard=<N>, defer=<N>

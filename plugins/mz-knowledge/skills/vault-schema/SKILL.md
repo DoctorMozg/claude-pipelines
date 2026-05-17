@@ -56,7 +56,7 @@ Phases 2, 2.5, and 3 run only when `<mode>` is `migrate`. In `validate` mode the
 1. Compute `SCHEMA_PATH` as `<vault>/.mz/vault-schema.yml`.
 1. If `SCHEMA_PATH` does not exist, present the bootstrap template from `references/schema-dsl-syntax.md` via AskUserQuestion: "No schema found at `<path>`. A v1 template is below — reply `accept` to write it to `SCHEMA_PATH` and continue, `edit` to provide your own schema text, or `abort` to stop." On `accept`, write the template. On `edit`, accept the user's pasted YAML. On `abort`, halt cleanly. Never fabricate a schema.
 1. Derive `task_name = <YYYY_MM_DD>_vault-schema_<mode>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Mode: <validate|migrate>`, `Vault: <path>`, `SchemaPath: <path>`.
+1. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Mode: <validate|migrate>`, `Vault: <path>`, `SchemaPath: <path>`.
 1. Print a visible setup block showing `task_name`, resolved vault path, mode, and schema path.
 
 ### Phase 1 — Validate
@@ -145,6 +145,10 @@ Red Flags: delegated to phase files — see Phase Overview table above.
 ## Verification
 
 Verification: delegated to phase files — see Phase Overview table above.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
 ## References
 

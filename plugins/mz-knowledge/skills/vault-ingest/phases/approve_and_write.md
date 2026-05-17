@@ -120,6 +120,7 @@ Response handling:
 Update `state.md` to terminal:
 
 ```yaml
+schema_version: 2
 Status: complete
 Phase: 2
 Completed: <ISO timestamp>
@@ -128,6 +129,8 @@ Modality: <voice|image|pdf|youtube|screenshot>
 ToolUsed: <tool name from transcript.md frontmatter>
 SourceType: <source_type written to the note>
 FollowUp: <run-process-notes|none|defer-to-triage>
+phase_complete: true
+what_remains: []
 ```
 
 Print the final orchestrator block (this block is the Verification output for the skill):

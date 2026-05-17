@@ -48,7 +48,7 @@ Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; neve
 1. Parse `$ARGUMENTS`: scope (`project`/`global`), target (`rules`/`claudemd`), `--force`, `--uninstall`. Unknown token → AskUserQuestion.
 1. `task_name` = `<YYYY_MM_DD>_init_rules_<scope>_<target>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO>`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `Installed: []`, `Replaced: []`, `Skipped: []`, `Removed: []`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO>`, `phase_complete: false`, `what_remains: []`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `Installed: []`, `Replaced: []`, `Skipped: []`, `Removed: []`. `schema_version: 2` is the first line of the file.
 1. Emit setup block: task_name, resolved target path, mode flags.
 
 For `--target=claudemd` installs, the approval gate in Phase 1 Step 4b must run before any write. A single run-level confirmation covers all subsequent writes in the run.
@@ -91,3 +91,5 @@ After each phase, update `.mz/task/<task_name>/state.md` with:
 - `Installed:` / `Replaced:` / `Skipped:` / `Removed:` filenames or rule ids touched in this run
 
 Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

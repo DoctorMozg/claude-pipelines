@@ -38,12 +38,15 @@ If multiple inbound proposals target the same source note (rare with `MAX_INBOUN
 Update `state.md`:
 
 ```
+schema_version: 2
 Status: completed
 Phase: 2
 Completed: <ISO timestamp>
 OutboundWritten: <N>
 InboundWritten: <N>
 Skipped: <N>   # proposals the user skipped via letter list
+phase_complete: true
+what_remains: []
 ```
 
 Write `.mz/task/<task_name>/session_summary.md` with the final list of writes:

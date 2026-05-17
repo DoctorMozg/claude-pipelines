@@ -50,7 +50,7 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 1. Resolve input: if the argument is a note name, Read the note. If it matches `YYYY-MM-DD`, try `<vault>/daily/YYYY-MM-DD.md`. If it is raw text, use directly.
 1. If the resolved input is empty, ask the user what to process via AskUserQuestion — never guess.
 1. Derive `task_name = <YYYY_MM_DD>_process-notes_<slug>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `VaultClaude: <path or none>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `VaultClaude: <path or none>`, `phase_complete: false`, `what_remains: []`.
 
 ### Phase 1.5: User Approval — Proposed Atomic Notes
 
@@ -155,3 +155,7 @@ process-notes verification:
 ```
 
 If any box is unchecked, the skill did not run correctly — report the failure explicitly rather than claiming success.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

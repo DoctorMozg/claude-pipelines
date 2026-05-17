@@ -98,7 +98,7 @@ Task name format: `<YYYY_MM_DD>_explain_<slug>` where `<YYYY_MM_DD>` is today's 
 
 ### 0.3 Create task directory and state
 
-Create `.mz/task/<task_name>/` directory. Write `state.md` with Status, Phase, Started, Researchers dispatched, and Output path fields.
+Create `.mz/task/<task_name>/` directory. Write `state.md` with fields, in order: `schema_version: 2` (first line), Status, Phase, Started, `phase_complete: false`, `what_remains: []`, Researchers dispatched, and Output path.
 
 ### 0.4 Create task tracking
 
@@ -137,3 +137,5 @@ Compile all researcher outputs into a single report with mandatory mermaid diagr
 ## State Management
 
 After each phase, update `.mz/task/<task_name>/state.md` with current phase, researchers dispatched/completed, output path, and any issues encountered.
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

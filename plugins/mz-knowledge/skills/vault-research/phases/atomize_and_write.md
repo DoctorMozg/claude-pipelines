@@ -207,6 +207,9 @@ After Phase 3.5 returns `approve` (with optional per-link skips), apply approved
 After the last link write, update `state.md` to terminal:
 
 ```yaml
+schema_version: 2
+phase_complete: true
+what_remains: []
 Status: complete
 Phase: 3_complete
 Completed: <ISO timestamp>

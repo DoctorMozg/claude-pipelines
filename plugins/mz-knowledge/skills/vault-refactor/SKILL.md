@@ -49,7 +49,7 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 1. Collision check: confirm no existing file already matches `new` (same basename in the target folder). If `new` contains a path component, verify the target folder exists or can be created.
 1. `task_name = <YYYY_MM_DD>_vault-refactor_<old-slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<old-slug>` is a snake_case summary of the old basename (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `OldPath: <path>`, `NewNameOrPath: <value>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `OldPath: <path>`, `NewNameOrPath: <value>`, `phase_complete: false`, `what_remains: []`.
 
 ### Phase 1.5: User approval — Affected Files
 
@@ -124,6 +124,10 @@ vault-refactor verification:
 ```
 
 If any box is unchecked, the skill did not run correctly — report the failure explicitly rather than claiming success.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
 ## Error Handling
 

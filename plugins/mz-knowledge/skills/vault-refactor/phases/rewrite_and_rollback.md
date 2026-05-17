@@ -102,6 +102,7 @@ Return to SKILL Phase 2.5 (inline post-write Grep verification). Do NOT declare 
 After Phase 2.5 returns with zero residual occurrences:
 
 ```
+schema_version: 2
 Status: complete
 Phase: 2.5
 Completed: <ISO timestamp>
@@ -110,6 +111,8 @@ ReferencesUpdated: <total_applied from writer_result.md>
 RollbackPath: .mz/task/<task_name>/rollback.md
 OldPath: <original absolute path>
 NewPath: <new absolute path>
+phase_complete: true
+what_remains: []
 ```
 
 Write `.mz/task/<task_name>/session_summary.md` with the final manifest:

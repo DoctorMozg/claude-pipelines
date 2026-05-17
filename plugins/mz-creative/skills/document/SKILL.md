@@ -66,7 +66,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 1. If brief is empty → `AskUserQuestion` for the topic. Never guess.
 1. `task_name` = `<YYYY_MM_DD>_document_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars). On same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md`: Status, Phase, Started, FilesWritten.
+1. Write `state.md`: schema_version: 2, Status, Phase, Started, phase_complete: false, what_remains: [], FilesWritten.
 1. Emit a visible setup block: `task_name`, working dir, report path, detected modifiers.
 
 ### Phase 1.5: Research Approval Gate
@@ -157,5 +157,7 @@ Update `.mz/task/<task_name>/state.md` after each phase:
 - `Status:` `pending` | `running` | `complete` | `aborted_by_user` | `failed`
 - `Phase:` `0` | `1` | `1.5` | `2` | `3`
 - `FilesWritten:` cumulative list
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
 Never rely on conversation memory for cross-phase state.

@@ -28,11 +28,15 @@ Output format:
 - End with "Gaps" — what you could NOT find or verify.
 ```
 
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its subtopic — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+
 IMPORTANT: Launch ALL pipeline-web-researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
 
 ## Step 3: Collect and synthesize
 
 After all agents complete:
+
+Emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before synthesizing. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
 1. **Read all agent outputs** carefully.
 1. **Cross-reference between subtopics** — identify findings that appear in multiple agents' results (higher confidence) and contradictions between them.

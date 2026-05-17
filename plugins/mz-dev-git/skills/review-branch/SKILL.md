@@ -34,7 +34,7 @@ Triggers: "review branch", "review my changes", "check my branch", "what did I c
 
 1. `task_name` = `<YYYY_MM_DD>_review_branch_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is the current branch name (snake_case, max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `BaseBranch: <base>`, `Branch: <current>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `BaseBranch: <base>`, `Branch: <current>`.
 1. Emit a visible setup block: `task_name`, base branch, current branch, report dir.
 
 ### 1. Validate branch state
@@ -93,3 +93,7 @@ Output the report path (`.mz/reviews/<YYYY_MM_DD>_review_branch_<branch><_vN>.md
 - **Missing tooling** (`git`, `gh`) → detect before dispatch; if absent, escalate via AskUserQuestion with the exact missing command.
 - **Empty agent result** (report file missing or empty) → retry the dispatch once with the same prompt; if it fails again, escalate via AskUserQuestion with the failure mode.
 - Never guess — on any ambiguity (unknown base branch, detached HEAD, no diff) escalate via AskUserQuestion rather than proceed silently.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md` with `schema_version: 2` as its first line. This is a single-dispatch skill (setup → dispatch → report in one turn), so the `phase_complete` / `what_remains` progress-ledger fields are not required. On reading a `schema_version: 1` or unversioned file, add `schema_version: 2` and log the upgrade.

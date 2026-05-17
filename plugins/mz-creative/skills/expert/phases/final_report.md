@@ -103,9 +103,12 @@ Should be ≥ 8 (Executive Summary, Consensus Findings, Divergent Views, Strengt
 ## Step 3.6 — Update state to complete
 
 ```
+schema_version: 2
 Status: complete
 Phase: 3
 PhaseName: report_written
+phase_complete: true
+what_remains: []
 Round: 3
 Completed: <timestamp>
 ReportPath: <report_path>

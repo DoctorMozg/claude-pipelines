@@ -83,7 +83,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0: Setup
 
-Derive `<YYYY_MM_DD>_audit_<slug>` (or `<YYYY_MM_DD>_deep_audit_<slug>` when `depth:deep`). Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 1`, followed by `Status`, `Phase`, `Started`, `Iteration` (review iterations), `FilesWritten`, plus skill-specific keys (`depth: standard|deep`). TaskCreate per phase.
+Derive `<YYYY_MM_DD>_audit_<slug>` (or `<YYYY_MM_DD>_deep_audit_<slug>` when `depth:deep`). Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `Iteration` (review iterations), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys (`depth: standard|deep`). TaskCreate per phase.
 
 When `depth:deep`: additionally dispatch `pipeline-tooling-detector` to detect test/lint commands for informational purposes (no tests are run); write to `.mz/task/<task_name>/tooling.md`. Phase 1 also computes git hotspot scores (commit counts over the last `HOTSPOT_LOOKBACK_DAYS` days, bot commits filtered) and records them in `scope.md`.
 
@@ -122,3 +122,5 @@ Output the final `summary.md` block: finding counts by severity, files touched (
 ## State Management
 
 Update `state.md` after each phase with current phase, files scanned, escalation notes. Allows resumption if interrupted.
+
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.

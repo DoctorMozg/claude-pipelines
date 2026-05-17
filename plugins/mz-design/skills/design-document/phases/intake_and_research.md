@@ -84,9 +84,13 @@ If either file is missing or empty, retry the researcher once with the explicit 
 Update `.mz/design/<task_name>/state.md`:
 
 ```
+schema_version: 2
 Status: running
 Phase: 1
 PhaseName: intake_and_research_complete
+phase_complete: true
+what_remains:
+  - run the initial draft phase
 Iteration: 0
 FilesWritten:
   - .mz/design/<task_name>/intake.md

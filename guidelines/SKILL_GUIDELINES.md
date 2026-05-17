@@ -53,14 +53,14 @@ Description is the single most important field — Claude uses pure LLM reasonin
 - Use directive phrasing: "ALWAYS invoke when the user asks about [topic]"
 - Front-load the key use case within 250 characters (truncated in listings)
 - Include 2-3 example trigger phrases for activation reliability
-- See Rule 18 (CSO) for the complete description format spec.
+- See Rule 19 (CSO) for the complete description format spec.
 
 ## 4. Instruction Framing
 
 - Prefer positive framing: "Use X exclusively" over "Do NOT use Y" — reduces violations by ~50%.
 - Anchor critical rules at the top AND bottom of SKILL.md (primacy-recency bias).
 - Every verification step must produce visible output. "Check X" → "Output a block showing X, then proceed." Silent checks get skipped.
-- See Rule 20 for skill-type-specific language recipes.
+- See Rule 21 for skill-type-specific language recipes.
 
 ## 5. Phase Overview Table
 
@@ -84,7 +84,7 @@ Define all bounds and paths as named constants in SKILL.md. Every loop must refe
 
 ## 8. State Management
 
-Multi-phase skills persist state to `.mz/task/<task_name>/state.md`. Required fields: Status, Phase, Started. Update after every phase transition. Critical: never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
+Multi-phase skills persist state to `.mz/task/<task_name>/state.md`. Its required keys, `schema_version`, the progress-ledger fields (`phase_complete`, `what_remains`), the minimal example, and the migration discipline are defined canonically in `guidelines/STATE_SCHEMA.md` — treat that file as the single source of truth. Skills mirror its compact contract; they do not invent their own key set. Update the state file after every phase transition. Critical: never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
 
 **Task naming convention**: `<YYYY_MM_DD>_<skill>_<slug>` where `<YYYY_MM_DD>` is the current date (underscores, not dashes), `<skill>` is the skill name, and `<slug>` is a snake_case summary of the argument (max 20 chars). On same-day collision append `_v2`, `_v3`. Example: `2026_04_20_build_oauth_flow`, `2026_04_20_debug_payment_err`.
 
@@ -118,15 +118,41 @@ Detect → escalate via AskUserQuestion → never guess. Handle: empty args, mis
 
 Independent agents go in a **single message** as parallel tool calls. Wave size bounded by a constant (max 6). Sequential waves for overflow.
 
-## 14. Tooling Detection
+## 14. Fan-Out Wave Observability
+
+When a skill dispatches a wave of parallel agents, the orchestrator must make the wave visible: a manifest before launching it, a rollup after it returns. A silent fan-out leaves the user unable to tell what was dispatched, what came back, or what failed.
+
+**Pre-dispatch manifest** — emitted by the orchestrator immediately before launching the wave:
+
+```
+Dispatching <wave label> — <N> agents in parallel
+Purpose: <one line>
+- <agent> — <role, ≤6 words>
+- <agent> — <role, ≤6 words>
+```
+
+**Post-wave rollup** — emitted once every agent in the wave has returned, before synthesis begins:
+
+```
+Wave complete — <returned>/<dispatched> agents returned
+- <agent>: <STATUS or VERDICT> — <summary, ≤8 words>
+```
+
+**When to emit**: both blocks for every wave of 2 or more parallel agents. Skip for a single-agent dispatch — there is no wave to summarize. A skill that runs sequential waves emits a fresh manifest and rollup per wave, each labeled so the user can tell them apart.
+
+**Validating returned blocks**: the rollup is the wave's validation surface. An agent that returns no `STATUS:`/`VERDICT:` line, or a malformed one, is listed as `<agent>: NO RETURN BLOCK` — never silently dropped from the count. The `<returned>/<dispatched>` ratio must be exact: if 5 agents were dispatched and 1 came back empty, the rollup reads `4/5` and names the missing agent.
+
+**Privacy**: the manifest and rollup carry agent names, short role labels, and status only. They must not print secrets, tokens, absolute filesystem paths, or raw user data — a role label reads `security scan of auth module`, not the module's contents.
+
+## 15. Tooling Detection
 
 Detect test/lint/type-check tooling before first use. Save to `.mz/task/<task_name>/tooling.md`. Missing test framework → ask user, never skip silently.
 
-## 15. Input Parsing
+## 16. Input Parsing
 
 Document accepted input formats in SKILL.md. Empty or ambiguous args → ask, never guess.
 
-## 16. Canonical Skill Anatomy
+## 17. Canonical Skill Anatomy
 
 Every SKILL.md body must contain these 7 sections in order:
 
@@ -134,7 +160,7 @@ Every SKILL.md body must contain these 7 sections in order:
 1. `## When to Use` — triggers plus `### When NOT to use` counter-triggers.
 1. `## Core Process` — the non-negotiable steps or phase table.
 1. `## Techniques` — concrete patterns and tools the skill applies.
-1. `## Common Rationalizations` — anti-rationalization table (see Rule 17).
+1. `## Common Rationalizations` — anti-rationalization table (see Rule 18).
 1. `## Red Flags` — signs the skill is being skipped or misapplied.
 1. `## Verification` — how to confirm the skill actually ran.
 
@@ -142,9 +168,9 @@ Every SKILL.md body must contain these 7 sections in order:
 
 Pattern source: addyosmani/superpowers 7-section canonical anatomy.
 
-**Skill types** (referenced by Rules 17, 20): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, outreach-research, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, construct-skill). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
+**Skill types** (referenced by Rules 18, 21): *Discipline* skills enforce process and push back against shortcuts (build, debug, audit, verify, polish, optimize, blast-radius). *Collaboration* skills work with the user on shared output (deep-research, outreach-research, brainstorm, expert, design-document, combine). *Reference* skills provide neutral knowledge (using-mozg-pipelines, construct-skill). These types are orthogonal to the model-tier archetypes in Rule 12 — a discipline skill may use any tier depending on its task.
 
-## 17. Anti-Rationalization Tables
+## 18. Anti-Rationalization Tables
 
 Mandatory for **discipline-enforcement** skills (build, debug, audit, verify, polish, optimize, blast-radius — any skill that pushes back against user shortcuts). Optional for collaboration and reference skills.
 
@@ -162,7 +188,7 @@ Format under `## Common Rationalizations`:
 
 Canonical seed: `plugins/mz-dev-base/skills/construct-skill/references/anti-rationalization-library.md`.
 
-## 18. CSO (Critical Skill Orientation)
+## 19. CSO (Critical Skill Orientation)
 
 Descriptions describe **trigger conditions only**, never workflow summaries. The description is the skill's auction bid for invocation — every character that isn't a trigger is waste.
 
@@ -174,7 +200,7 @@ Descriptions describe **trigger conditions only**, never workflow summaries. The
 
 Grounding: published LLM persuasion-compliance studies consistently show directive, authority-coded framing lifts compliance substantially over neutral phrasing.
 
-## 19. References Directory
+## 20. References Directory
 
 Skills may include an optional `references/` directory containing lazy-loaded knowledge.
 
@@ -184,7 +210,7 @@ Skills may include an optional `references/` directory containing lazy-loaded kn
 
 Purpose: keeps SKILL.md slim while making deep knowledge available on demand. Examples: `explain/references/mermaid-syntax-by-type.md`, `audit/references/owasp-top-10-checklist.md`.
 
-## 20. Persuasion-Informed Language
+## 21. Persuasion-Informed Language
 
 Skill type determines the persuasion register (Cialdini principles applied to LLM compliance):
 
@@ -198,7 +224,7 @@ Skill type determines the persuasion register (Cialdini principles applied to LL
 
 Grounding: published persuasion-compliance studies consistently show directive, authority-coded framing lifts LLM compliance over neutral phrasing.
 
-## 21. No Rule-Number Citations in Plugin Files
+## 22. No Rule-Number Citations in Plugin Files
 
 Skill and agent files under `plugins/` must not cite specific rule numbers from `SKILL_GUIDELINES.md` or `AGENTS_GUIDELINES.md`. Rule numbers are unstable — a renumbering during guideline edits cascades through every citation site and silently drifts.
 
@@ -223,7 +249,7 @@ Skill and agent files under `plugins/` must not cite specific rule numbers from 
 
 Rationale: rule numbers are shared identifiers between the guidelines and the bodies that cite them. Every citation is a load-bearing pointer that breaks when a rule is added or removed. Substance-first prose ages gracefully; citation prose does not.
 
-## 22. Pre-Publish Checklist
+## 23. Pre-Publish Checklist
 
 Before merging any new or modified skill:
 
@@ -237,16 +263,16 @@ Before merging any new or modified skill:
 - [ ] Dispatch prompts carry only task-specific context, no agent-instruction repetition (Rule 9)
 - [ ] Error paths escalate via AskUserQuestion, never silently guess (Rule 10)
 - [ ] Model tier (opus/sonnet/haiku) chosen per Rule 12 for each agent dispatch
-- [ ] Tooling (test/lint/type) detected on first use and recorded to `tooling.md` (Rule 14)
-- [ ] Input formats documented in SKILL.md; empty or ambiguous args ask, never guess (Rule 15)
+- [ ] Tooling (test/lint/type) detected on first use and recorded to `tooling.md` (Rule 15)
+- [ ] Input formats documented in SKILL.md; empty or ambiguous args ask, never guess (Rule 16)
 - [ ] All phase file references in SKILL.md resolve to existing files
 - [ ] Agent names in dispatch prompts match actual agent definitions
 - [ ] No nested file references (one level deep from SKILL.md)
 - [ ] Consistent terminology across all files in the skill
 - [ ] Tested with direct invocation (`/skill-name`) and natural language trigger
-- [ ] Canonical 7-section anatomy present (Rule 16)
-- [ ] Anti-rationalization table present if discipline skill (Rule 17)
-- [ ] Description is CSO-compliant, no workflow summary (Rule 18)
-- [ ] references/ directory uses grep-first pattern if present (Rule 19)
-- [ ] Language matches skill type per Rule 20
-- [ ] No guideline rule numbers cited in SKILL.md, phase files, or references (Rule 21)
+- [ ] Canonical 7-section anatomy present (Rule 17)
+- [ ] Anti-rationalization table present if discipline skill (Rule 18)
+- [ ] Description is CSO-compliant, no workflow summary (Rule 19)
+- [ ] references/ directory uses grep-first pattern if present (Rule 20)
+- [ ] Language matches skill type per Rule 21
+- [ ] No guideline rule numbers cited in SKILL.md, phase files, or references (Rule 22)

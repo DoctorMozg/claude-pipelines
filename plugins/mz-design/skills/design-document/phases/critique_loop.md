@@ -271,9 +271,14 @@ Critics emit `VERDICT: PASS|FAIL` (and `WCAG_GATE:` for accessibility-specialist
 After each loop step, update `state.md`:
 
 ```
+schema_version: 2
 Status: running
 Phase: 3
 PhaseName: critique_loop
+phase_complete: false
+what_remains:
+  - converge the critique loop to AGGREGATE PASS
+  - run the finalization user approval gate
 Iteration: <N>
 LastVerdict: |
   ui-designer:              <status>

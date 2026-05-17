@@ -148,20 +148,26 @@ mkdir -p .mz/outreach/<run_name>/companies
 
 Write `.mz/task/<task_name>/state.md`:
 
-```markdown
-# Outreach Research State
-- **Status**: running
-- **Phase**: 0
-- **Started**: <ISO timestamp>
-- **Goal**: <goal>
-- **Sector**: <parsed or null>
-- **Limit**: 20
-- **RunName**: <run_name> (outreach output dir)
+```yaml
+schema_version: 2
+Status: running
+Phase: 0
+Started: <ISO timestamp>
+phase_complete: false
+what_remains: []
+Goal: <goal>
+Sector: <parsed or null>
+Limit: 20
+RunName: <run_name> (outreach output dir)
 ```
 
 After setup completes, read `phases/discovery.md` and proceed to Phase 1.
 
 ______________________________________________________________________
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
 ## Resume Support
 

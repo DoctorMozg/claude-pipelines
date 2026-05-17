@@ -4,6 +4,8 @@
 
 ## Wave A — Context-Aware Lenses
 
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its lens role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+
 Dispatch 6 `pipeline-researcher` agents in a **single message** using parallel tool calls. Model tiers are split by lens: security and STRIDE-delta use **opus** (attacker-path traced evidence, highest accuracy stakes); correctness, performance, maintainability, and reliability use **sonnet** (research archetype default per `AGENTS_GUIDELINES.md`).
 
 All Wave A researchers receive the full context: they should read `.mz/task/<task_name>/scope.md` for the file list, tier, trust boundary delta, output format, and severity/confidence scales.
@@ -184,9 +186,11 @@ After the Wave A parallel dispatch returns, the orchestrator writes each researc
 | reliability     | `.mz/task/<task_name>/findings_reliability.md`     |
 | stride_delta    | `.mz/task/<task_name>/findings_stride_delta.md`    |
 
+Once Wave A responses are persisted, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before dispatching Wave B. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+
 ## Wave B — Blinded Adversarial Lenses
 
-Dispatch 3 `pipeline-researcher` agents (model: **opus**) in a **single message**, AFTER Wave A completes.
+Dispatch 3 `pipeline-researcher` agents (model: **opus**) in a **single message**, AFTER Wave A completes. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its blinded lens role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
 
 **Critical**: Wave B researchers receive ONLY the raw git diff output. They must NOT receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
 
@@ -216,5 +220,7 @@ After Wave B returns, the orchestrator writes each response:
 | blinded_production | `.mz/task/<task_name>/findings_blinded_production.md` |
 | blinded_security   | `.mz/task/<task_name>/findings_blinded_security.md`   |
 | blinded_ops        | `.mz/task/<task_name>/findings_blinded_ops.md`        |
+
+When Wave B responses are persisted, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before consolidation. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
 Update state file phase to `researched`. Record finding counts per lens in state.md.

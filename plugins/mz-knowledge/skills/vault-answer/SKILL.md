@@ -49,7 +49,7 @@ No approval gate — read-only skill, no vault writes.
 1. Resolve vault path from `OBSIDIAN_VAULT_PATH` env, then `MZ_VAULT_PATH` env, then walk up from the working directory until a `.obsidian/` folder is found. If nothing resolves, escalate via AskUserQuestion.
 1. Derive `task_name = <YYYY_MM_DD>_vault-answer_<question-slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<question-slug>` is a snake_case summary of the question (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/` on disk.
-1. Write `state.md` with `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `Question: <verbatim>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `Question: <verbatim>`, `phase_complete: false`, `what_remains: []`.
 
 ## Common Rationalizations
 
@@ -70,3 +70,7 @@ Red Flags: delegated to phase files — see Phase Overview table above.
 ## Verification
 
 Verification: delegated to phase files — see Phase Overview table above.
+
+## State Management
+
+State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

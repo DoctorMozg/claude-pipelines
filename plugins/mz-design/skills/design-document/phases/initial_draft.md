@@ -107,9 +107,13 @@ If any text pair is already failing AA-normal from the initial draft, note it ex
 ## Step 2.5 — Update state
 
 ```
+schema_version: 2
 Status: running
 Phase: 2
 PhaseName: initial_draft_complete
+phase_complete: true
+what_remains:
+  - run the critique loop until AGGREGATE PASS
 Iteration: 0
 FilesWritten:
   - .mz/design/<task_name>/intake.md

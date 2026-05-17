@@ -112,9 +112,12 @@ AGGREGATE:                <status>
 ## Step 4.4 — Update state to complete
 
 ```
+schema_version: 2
 Status: complete
 Phase: 4
 PhaseName: finalized
+phase_complete: true
+what_remains: []
 Iteration: <N>
 Completed: <timestamp>
 FilesWritten:
