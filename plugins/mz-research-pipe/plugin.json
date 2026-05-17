@@ -2,5 +2,5 @@
   "description": "Research and content pipelines \u2014 multi-source web research, file translation with structural fidelity, prior-output synthesis, and codebase explanation with diagrams",
   "license": "MIT",
   "name": "mz-research-pipe",
-  "version": "0.43.0"
+  "version": "0.44.0"
 }
