@@ -132,7 +132,7 @@ flowchart LR
 ```
 
 1. **`/audit`** — ranked performance hotspots with evidence and suspected causes
-1. **`/optimize`** — import-graph chunking → parallel optimization → mirrored review
+1. **`/optimize`** — measure a baseline, profile the bottleneck, benchmark candidate speedups, bank verified wins
 1. **`/verify`** — prove the optimizations didn't regress behavior or types
 1. **`/polish`** — iterative loop until the SLO actually holds
 
@@ -247,6 +247,7 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **verify**        | `/verify [scope]`           | Tests + linters + type checks + coverage analysis + failure diagnosis                                                                     |
 | **polish**        | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met                                                                                     |
 | **cleanup**       | `/cleanup <scope>`          | Import-graph chunking → parallel optimization → mirrored review                                                                           |
+| **optimize**      | `/optimize <target + goal>` | Measure-first loop: baseline → profile → hypothesize → benchmark candidates → bank verified speedups                                      |
 | **blast-radius**  | `/blast-radius <target>`    | Maps the change graph: what breaks if you touch X                                                                                         |
 | **explain**       | `/explain <scope>`          | Multi-angle research → comprehensive report with Mermaid diagrams                                                                         |
 | **combine**       | `/combine <task>`           | Local-first synthesis: harvests `.mz/research/`, `.mz/task/`, `.mz/reports/`, git → task-adaptive report                                  |

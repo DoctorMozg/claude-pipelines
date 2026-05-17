@@ -12,6 +12,7 @@ Autonomous multi-agent development pipelines for Claude Code. Each skill orchest
 | Sweep code before opening a PR                | `/audit` (or `/audit depth:deep` for ship)                   |
 | Iterate fix-test-review until clean           | `/polish`                                                    |
 | Clean up / refactor existing code             | `/cleanup`                                                   |
+| Make something measurably faster or smaller   | `/optimize`                                                  |
 | Verify the project (tests, lint, types)       | `/verify`                                                    |
 | See what breaks if you change X               | `/audit depth:deep scope:branch` (auto-invokes blast-radius) |
 | Understand existing code                      | `/explain` (now in `mz-research-pipe`)                       |
@@ -133,6 +134,22 @@ Scans a scope, builds an import graph, groups files into parallel-safe chunks, d
 
 ______________________________________________________________________
 
+### `/optimize` — Measure-First Performance Optimization
+
+Iteratively and safely makes a target faster, smaller, or cheaper against a measurable goal. Establishes a trusted baseline, profiles the dominant bottleneck, forms falsifiable speedup hypotheses, generates candidate changes in isolated worktrees, and verifies each one by benchmark — banking only a change that measurement proves faster and a correctness check proves safe. Domain-generic: the same loop optimizes source code, container images, LLM hyperparameters, build pipelines, or a composite system, driven by a per-run Optimization Contract. Every speedup number comes from the measurement harness, never from model narration.
+
+```
+/optimize make src/parser/tokenizer.py 2x faster, p95 under 120ms
+/optimize type:container reduce the api image below 200MB
+/optimize type:system scope:branch cut orchestrator end-to-end latency below 400ms
+```
+
+**Pipeline**: Goal Declaration → Contract Approval → Baseline → Profile & Classify → Hypothesize → Strategy Approval → Candidate Generation & Verification → Validation → Terminate (re-profile loop or stop)
+
+**Not for** removing dead code or reducing complexity — that is `/cleanup`.
+
+______________________________________________________________________
+
 ### `/combine`, `/deep-research`, `/explain`, `/translate` — moved to `mz-research-pipe`
 
 These research and content skills now live in the [`mz-research-pipe`](../mz-research-pipe/README.md) plugin. Install both plugins together for full functionality — `/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` agents from `mz-dev-pipe`.
@@ -153,18 +170,20 @@ Scope restricts edits, not investigation — researchers and tests always read t
 
 Specialized worker agents used by the pipeline skills. You don't invoke these directly — the skills orchestrate them.
 
-| Agent                             | Role                                                                                     |
-| --------------------------------- | ---------------------------------------------------------------------------------------- |
-| **pipeline-researcher**           | Codebase exploration + domain research via web search                                    |
-| **pipeline-web-researcher**       | Web-first research with primary-source verification                                      |
-| **pipeline-planner**              | Creates parallelizable implementation plans                                              |
-| **pipeline-plan-reviewer**        | Validates plans for completeness and correctness                                         |
-| **pipeline-coder**                | Implements specific work units from an approved plan                                     |
-| **pipeline-code-reviewer**        | Reviews code for bugs, security, conventions                                             |
-| **pipeline-test-writer**          | Writes unit, edge case, and integration tests                                            |
-| **pipeline-test-reviewer**        | Unified test review — coverage gaps + test quality (assertions, independence, fragility) |
-| **pipeline-optimizer**            | Removes dead code, simplifies logic, cleans artifacts                                    |
-| **pipeline-completeness-checker** | Final quality gate — verifies 100% task completion                                       |
+| Agent                             | Role                                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **pipeline-researcher**           | Codebase exploration + domain research via web search                                                     |
+| **pipeline-web-researcher**       | Web-first research with primary-source verification                                                       |
+| **pipeline-planner**              | Creates parallelizable implementation plans                                                               |
+| **pipeline-plan-reviewer**        | Validates plans for completeness and correctness                                                          |
+| **pipeline-coder**                | Implements specific work units from an approved plan                                                      |
+| **pipeline-code-reviewer**        | Reviews code for bugs, security, conventions                                                              |
+| **pipeline-test-writer**          | Writes unit, edge case, and integration tests                                                             |
+| **pipeline-test-reviewer**        | Unified test review — coverage gaps + test quality (assertions, independence, fragility)                  |
+| **pipeline-optimizer**            | Removes dead code, simplifies logic, cleans artifacts                                                     |
+| **pipeline-completeness-checker** | Final quality gate — verifies 100% task completion                                                        |
+| **pipeline-measure-runner**       | Runs a benchmark with warmup and N reps, computes mean/median/CV — the only source of measurement numbers |
+| **pipeline-perf-candidate**       | Implements one optimization hypothesis as a diversified candidate change in an isolated worktree          |
 
 ## Architecture
 
