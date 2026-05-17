@@ -254,7 +254,7 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **deep-research** | `/deep-research <topic>`    | Multi-agent web research with parallel domain experts (decomposition gate → fan-out → synthesis report)                                   |
 | **translate**     | `/translate <request>`      | NL request → discovery → glossary seed → plan → parallel translation → tiered verification (structural + judge + uncertainty-driven deep) |
 
-15 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-runner, test-coverage-reviewer, test-quality-reviewer, lint-runner, optimizer, completeness-checker, tooling-detector, translator).
+17 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-reviewer, test-runner, lint-runner, tooling-detector, optimizer, completeness-checker, decomment-proposer, leftover-cleaner, measure-runner, perf-candidate).
 
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 

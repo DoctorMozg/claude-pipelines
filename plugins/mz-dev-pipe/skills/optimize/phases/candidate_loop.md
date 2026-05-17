@@ -44,20 +44,25 @@ transformation class, and which mechanism from the hypothesis you targeted.
 
 If your candidate would require a change OUTSIDE the allowed scope — a cross-module
 or architectural change, a file outside the scope paths, or a transformation class
-not in change_space — do NOT apply it. Stop and report that the candidate needs
-boundary approval, with the specifics: what it touches, which boundary it crosses,
-and why the candidate needs it.
+not in change_space — do NOT apply it. Stop, return STATUS: NEEDS_CONTEXT, and put
+the specifics under a "Boundary approval needed" section: what it touches, which
+boundary it crosses, and why the candidate needs it.
 ```
 
 **Stack-booting correctness — `target_type: system`.** When `correctness_command` boots a multi-service stack, parallel Stage-A correctness runs collide on host ports and shared resources. The candidate dispatch must then instruct each agent to namespace its stack instance with a per-candidate identifier and bind services to dynamically-allocated host ports. If the stack cannot be namespaced, candidates still implement in parallel but the orchestrator runs the stack-booting correctness step serially, one worktree at a time. Pure file-edit and unit-test correctness always runs in parallel inside the agent.
 
-## 4.3 Stage A gate — correctness
+## 4.3 Stage A gate — candidate returns
 
-A candidate whose `correctness_command` failed is discarded immediately — a faster wrong answer is not a candidate. Record it in the history buffer as a correctness failure. Only correctness-green worktrees advance to Stage B.
+Each `pipeline-perf-candidate` agent returns one terminal `STATUS`. Route on it:
 
-A candidate that reported it needs boundary approval does not advance yet — it parks the Phase 4.5 boundary pause (§4.6).
+- `STATUS: DONE` — the candidate is implemented and `correctness_command` ran green (or, for a `manual` contract, correctness is deferred to the Phase 4.7 checkpoint). The worktree advances to Stage B.
+- `STATUS: DONE_WITH_CONCERNS` — the candidate is implemented but `correctness_command` failed. Discard it immediately — a faster wrong answer is not a candidate — and record the correctness failure in the history buffer.
+- `STATUS: NEEDS_CONTEXT` with a `## Boundary approval needed` section — the candidate needs a change outside the allowed scope. It does not advance yet; it parks the Phase 4.5 boundary pause (§4.6).
+- `STATUS: NEEDS_CONTEXT` for a missing dispatch field — re-dispatch the agent with the field supplied, up to `MAX_CANDIDATE_REVIEW_RETRIES` times, then drop the candidate.
+- `STATUS: BLOCKED` — a fundamental obstacle the agent cannot get past. Drop the candidate and record it in the history buffer; do not re-dispatch.
+- Malformed output (no parseable terminal `STATUS`) — re-dispatch up to `MAX_CANDIDATE_REVIEW_RETRIES` times, then drop.
 
-A candidate agent that returned malformed output is re-dispatched up to `MAX_CANDIDATE_REVIEW_RETRIES` times, then dropped.
+Only worktrees that returned `STATUS: DONE` advance to Stage B.
 
 ## 4.4 Stage B — serial measurement
 
@@ -94,7 +99,7 @@ Append **every** candidate — survivor and discard alike — to the `## History
 
 ## 4.6 Boundary pause — when a candidate needs it
 
-If any candidate reported it needs boundary approval, run the **Phase 4.5 Mid-loop Boundary Pause** in `SKILL.md` for that change. On approval, re-dispatch that candidate agent with the boundary change authorized, then measure it (§4.4) and gate it (§4.5). On rejection, the candidate is discarded as a `DEAD END` and the round continues with the rest.
+If any candidate returned `STATUS: NEEDS_CONTEXT` with a `## Boundary approval needed` section, run the **Phase 4.5 Mid-loop Boundary Pause** in `SKILL.md` for that change. On approval, re-dispatch that candidate agent with the boundary change authorized, then measure it (§4.4) and gate it (§4.5). On rejection, the candidate is discarded as a `DEAD END` and the round continues with the rest.
 
 ## 4.7 HYPOTHESIS UNVERIFIED check
 
