@@ -180,6 +180,16 @@ Detect test/lint/type-check tooling before first use. Save to `.mz/task/<task_na
 
 Document accepted input formats in SKILL.md. Empty or ambiguous args → ask, never guess.
 
+When a skill must collect missing input from the user, it uses an **input collector**, not an approval gate. The two are different transactions and must not be conflated: an approval gate (Rule 1) presents a pipeline-produced artifact for Approve/Reject; an input collector gathers a value the pipeline needs before it can run. A collector therefore has **no artifact to render, no plan message, no Approve/Reject, and no "pre-gate block"** — that vocabulary belongs to gates only. A collector is single-surface: state the context and the question in one place and read the answer. Never emit a separate fenced block before the question.
+
+Three collector shapes:
+
+- **Closed choice** — one pick from a fixed set (output format, tone, scope mode, capture modality). When the set has 2–4 values, use one `AskUserQuestion` call with each value a named `option` (`**<Name>** — <one-line meaning>`). When the set is larger than AskUserQuestion's 4-option cap, name the most common values as `options` and enumerate the remainder in the question text for a free-text answer.
+- **Confirm-or-customize** — accept defaults or supply detail (a bootstrap interview). One `AskUserQuestion` call with named `options` such as `Defaults` / `Minimal`; custom answers ride the free-text reply.
+- **Open value** — a path, topic, or other free-text answer with no menu. Ask a direct prose question stating what is needed and why, then read the user's reply. `AskUserQuestion` is built for menus and is a poor fit here — do not force it.
+
+Across all three: state the context with the question (never in a preceding block), never guess a value, and re-ask once on an invalid answer before failing per Rule 10. Call these "input collectors" or "intake questions" — never "pre-gate block".
+
 ## 17. Canonical Skill Anatomy
 
 Every SKILL.md body must contain these 7 sections in order:

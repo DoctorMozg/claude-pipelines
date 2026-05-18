@@ -168,22 +168,9 @@ mkdir -p .mz/outreach/_history
 
 ### CV collection
 
-Invoke `AskUserQuestion` to collect the CV path. Acceptable: `.md`, `.txt`.
+Collect the CV path as an open-value input collector — ask a direct prose question, then read the reply. Acceptable formats: `.md`, `.txt`.
 
-Pre-gate block:
-
-```
-**CV path needed**
-The skill needs a path to your CV in markdown or plain text. PDF and DOCX are not supported — convert first if needed.
-
-- Provide an absolute or relative path to your `.md` or `.txt` CV
-```
-
-AskUserQuestion body:
-
-```
-What is the path to your CV file? Provide an absolute or relative path to a `.md` or `.txt` file. Type your answer or **Cancel** to abort.
-```
+Ask: `What is the path to your CV file? Provide an absolute or relative path to a .md or .txt file — the skill needs your CV in markdown or plain text. PDF and DOCX are not supported; convert first. Reply with the path, or "Cancel" to abort.`
 
 Validation:
 
@@ -193,22 +180,14 @@ Validation:
 
 ### Region scope pick
 
-Invoke `AskUserQuestion` to collect the region scope. Pre-gate block:
+Collect the region scope — a closed-choice input collector. The valid set has seven values, more than AskUserQuestion's option cap, so name the four most common as `options` and enumerate the rest in the question. Call `AskUserQuestion` once:
 
-```
-**Region scope needed**
-Which region should we scope the freelance search to? Affects which boards we prioritize (Malt for EU, YunoJuno for UK, freelance.de for DACH, etc.) and which gigs we keep after the location-eligibility filter.
-
-- **Global** — any region; widest net
-- **EU** — EU-wide remote and on-site
-- **US** — US-wide remote and on-site
-- **DACH** — Germany, Austria, Switzerland
-- **UK** — United Kingdom
-- **France** — France-specific (Malt-heavy)
-- **CV-driven** — derive from CV's current_location
-```
-
-AskUserQuestion options (single-select): `Global`, `EU`, `US`, `DACH`, `UK`, `France`, `CV-driven`.
+- question: `Which region should we scope the freelance search to? This affects which boards we prioritize (Malt for EU, YunoJuno for UK, freelance.de for DACH, etc.) and which gigs survive the location-eligibility filter. Pick an option below, or reply with one of: DACH (Germany/Austria/Switzerland), UK, or France (Malt-heavy).`
+- options:
+  - **Global** — any region, widest net
+  - **EU** — EU-wide remote and on-site
+  - **US** — US-wide remote and on-site
+  - **CV-driven** — derive from the CV's current_location
 
 Capture the selection as `region_scope`.
 

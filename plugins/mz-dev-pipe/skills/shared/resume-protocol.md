@@ -15,36 +15,39 @@ Every mz-dev-pipe skill, in its Phase 0 setup, MUST:
 
 ## Resume gate
 
-Read the existing `state.md` in full. Validate `schema_version` per `shared/state-schema.md` mismatch policy first — if the schema is unrecognized, that error path takes precedence.
+This gate is a variant approval gate — it presents the existing task state and offers three named actions. It follows the two-surface plan pattern in `shared/approval-gate.md`.
 
-Then emit the pre-gate text block:
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-```
-**Existing task found**
-Task `<task_name>` is at Phase <N> (<PhaseName>) with Status: <status>. Last update: <Started or last-modified>.
-The recorded phase is <complete|incomplete> (`phase_complete: <bool>`); outstanding work: <`what_remains` items, or "none">.
+**Pre-read**: Read the existing `.mz/task/<task_name>/state.md` in full and capture its contents into context. Validate `schema_version` per `shared/state-schema.md` mismatch policy first — if the schema is unrecognized, that error path takes precedence.
 
-- **Resume** → re-enter using the existing artifacts — advance past Phase <N> if `phase_complete` is true, else re-run Phase <N> from its idempotent entry point
-- **Restart** → archive the old task (rename to `<task_name>_archived_<timestamp>`) and start fresh
-- **New task** → leave the old task untouched and create `<task_name>_v2`
-```
-
-Then invoke AskUserQuestion with the verbatim contents of the existing `state.md`:
+**Surface 1 — emit the plan message.** Output the existing state verbatim as a normal markdown chat message. Emit the full verbatim contents of `state.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-A previous task with this name exists. Review the state and choose how to proceed:
+## Existing task found — <skill>
+
+Task `<task_name>` is at Phase <N> (<PhaseName>) with Status: <status>. Last update: <Started or last-modified>. The recorded phase is <complete|incomplete> (`phase_complete: <bool>`); outstanding work: <`what_remains` items, or "none">.
 
 <verbatim state.md contents>
 
-Type **Resume** to continue, **Restart** to archive and start fresh, or **New** to keep both.
+---
+**Resume** → re-enter using the existing artifacts (advance past Phase <N> if `phase_complete` is true, else re-run Phase <N> from its idempotent entry point)  ·  **Restart** → archive the old task and start fresh  ·  **New** → leave the old task untouched and create `<task_name>_v2`
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the state in the question body, it lives in the plan message above:
+
+- question: `A previous task with this name exists. Choose how to proceed.`
+- options:
+  - **Resume** — continue from the recorded phase using the existing artifacts
+  - **Restart** — archive the old task and start fresh
+  - **New** — keep the old task untouched, create a `_v2`
 
 ## Response handling
 
-- **`resume`** → load the recorded `Phase`, `phase_complete`, `what_remains`, `Iteration`, `FilesWritten`, and any skill-specific keys. If `phase_complete` is true, jump to the next phase's entry point; if false, re-enter the recorded phase. The skill's phase files MUST document their own re-entry rule (see "Phase idempotency" below).
-- **`restart`** → rename the existing `.mz/task/<task_name>/` directory to `.mz/task/<task_name>_archived_<YYYY_MM_DD_HHMMSS>/`, create a fresh `.mz/task/<task_name>/`, and proceed as a fresh task. Log the archive path to chat.
-- **`new`** → leave the existing directory untouched, suffix `_v2` (or `_v3`, etc.) on the candidate name, create the suffixed directory, proceed as fresh.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** in unattended mode → default to `resume` if the file is `running`, default to `restart` if `failed`. Log the auto-decision to `state.md` under `## Auto-decisions`. Never auto-overwrite a `complete` or `aborted_by_user` file — those always force a fresh `_vN` suffix.
+- **Resume** → load the recorded `Phase`, `phase_complete`, `what_remains`, `Iteration`, `FilesWritten`, and any skill-specific keys. If `phase_complete` is true, jump to the next phase's entry point; if false, re-enter the recorded phase. The skill's phase files MUST document their own re-entry rule (see "Phase idempotency" below).
+- **Restart** → rename the existing `.mz/task/<task_name>/` directory to `.mz/task/<task_name>_archived_<YYYY_MM_DD_HHMMSS>/`, create a fresh `.mz/task/<task_name>/`, and proceed as a fresh task. Log the archive path to chat.
+- **New** → leave the existing directory untouched, suffix `_v2` (or `_v3`, etc.) on the candidate name, create the suffixed directory, proceed as fresh.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** in unattended mode → default to **Resume** if the file is `running`, default to **Restart** if `failed`. Log the auto-decision to `state.md` under `## Auto-decisions`. Never auto-overwrite a `complete` or `aborted_by_user` file — those always force a fresh `_vN` suffix.
 
 ## Phase idempotency
 
@@ -55,7 +58,7 @@ A skill is resumable only if every phase's writes are re-runnable without corrup
 1. **No external side effects mid-phase**. Phases that send network requests, post comments to GitHub, or otherwise affect external state MUST checkpoint to `state.md` BEFORE the side effect. On re-entry, skip side effects already recorded.
 1. **Counter restoration**. Phases with iteration counters (`MAX_FIX_ITERATIONS`, `MAX_REVIEW_ITERATIONS`) MUST read the counter from `state.md` on re-entry. Do not reset to zero.
 
-If a phase cannot meet these rules, the skill MUST mark it non-resumable in its phase file and the resume gate MUST refuse to re-enter at that phase — instead offering only `restart` and `new`.
+If a phase cannot meet these rules, the skill MUST mark it non-resumable in its phase file and the resume gate MUST refuse to re-enter at that phase — instead offering only **Restart** and **New**.
 
 ## What lives where
 

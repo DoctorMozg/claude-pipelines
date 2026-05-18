@@ -165,22 +165,9 @@ mkdir -p .mz/outreach/<run_name>/letters
 
 ### CV collection
 
-Invoke `AskUserQuestion` to collect the CV path. Acceptable formats: `.md`, `.txt`.
+Collect the CV path as an open-value input collector — ask a direct prose question, then read the reply. Acceptable formats: `.md`, `.txt`.
 
-Pre-gate block emitted to chat:
-
-```
-**CV path needed**
-The skill needs a path to your CV in markdown or plain text. PDF and DOCX are not supported in this version — convert first if needed.
-
-- Provide an absolute or relative path to your `.md` or `.txt` CV
-```
-
-AskUserQuestion body:
-
-```
-What is the path to your CV file? Provide an absolute or relative path to a `.md` or `.txt` file. Type your answer or **Cancel** to abort.
-```
+Ask: `What is the path to your CV file? Provide an absolute or relative path to a .md or .txt file — the skill needs your CV in markdown or plain text. PDF and DOCX are not supported; convert first. Reply with the path, or "Cancel" to abort.`
 
 Validation:
 
