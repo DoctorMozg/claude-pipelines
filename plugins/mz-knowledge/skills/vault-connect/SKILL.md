@@ -54,45 +54,36 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 
 ### Phase 1.5: User approval — Proposed Links
 
-**This orchestrator** (not a subagent) must present link proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Read `.mz/task/<task_name>/link_proposals.md` in full. Present the full verbatim contents of `link_proposals.md` — proposals grouped by direction, each labelled with a letter for skip-list responses. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+**Pre-read**: Read `.mz/task/<task_name>/link_proposals.md` and capture the full contents into context. The proposals are grouped by direction (outbound / inbound), each labelled with a letter for skip-list responses.
 
-Before invoking AskUserQuestion, emit a text block to the user:
-
-```
-**Review proposed links**
-Suggested N wikilinks categorized as outbound (to add to this note) and inbound (notes that should link back).
-
-- **Approve** → proceed to Phase 2, write all approved links
-- **Reject** → abort task, no links written
-- **Feedback** → pass to link-suggester, re-run Phase 1, loop back here
-```
-
-Format:
+**Surface 1 — emit the plan message.** Output the link proposals verbatim as a normal markdown chat message:
 
 ```
-Proposed links for [[<target title>]]:
+## Link proposals ready for review — vault-connect
 
-Links to add to this note (outbound):
-  a. → [[Existing Note A]] — extends
-     Why: <one sentence>
-  b. → [[Existing Note B]] — prerequisite-for
-     Why: <one sentence>
+<verbatim contents of .mz/task/<task_name>/link_proposals.md>
 
-Notes that should link back (inbound):
-  c. → [[Existing Note C]] — example-of
-     Why: <one sentence>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2, write all approved links  ·  **Reject** → abort task, no links written  ·  reply with feedback to revise (or a letter list like `a,c` to skip specific proposals)
 ```
+
+Emit the full verbatim contents of `.mz/task/<task_name>/link_proposals.md` — do not substitute a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the proposals in the question body, they live in the plan message above:
+
+- question: `The proposed links above are ready for review.`
+- options:
+  - **Approve** — proceed to Phase 2, write all approved links
+  - **Reject** — abort task, no links written
 
 Response handling:
 
-- **"approve"** → update state to `links_approved`, proceed to Phase 2 with all proposals.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Approve** → update state to `links_approved`, proceed to Phase 2 with all proposals.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Letter list** (e.g. `a,c`) → mark those proposals as skipped, proceed to Phase 2 with the remaining set.
-- **Feedback** → pass feedback to `link-suggester`, re-run Phase 1, return to this gate, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
+- **Any other reply (feedback)** → pass feedback to `link-suggester`, re-run Phase 1, return to this gate, re-read `.mz/task/<task_name>/link_proposals.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
 
 ## Techniques
 

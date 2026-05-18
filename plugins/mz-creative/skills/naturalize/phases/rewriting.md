@@ -61,48 +61,49 @@ If `state.md` shows `InputSource: inline`, skip this phase entirely.
 
 If `state.md` shows `InputSource: file:<path>`, proceed to the gate.
 
-### 2.5.2 Pre-gate emit block
+### 2.5.2 Variant gate — file update offer
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read both the original file (the one referenced by `@file:`) and the rewritten output. Capture both word counts, the naturalization report, and a short diff summary (sample of changes).
+**Pre-read**: Read both the original file (the one referenced by `@file:`) and the rewritten output at `<output_path>`. Capture both word counts, the naturalization report, and a sample of changes (first 3 differing snippets) into context.
 
-Before invoking AskUserQuestion, emit a text block:
-
-```
-**File update offer**
-Rewriting complete. The original file is unchanged on disk; the rewritten text is at .mz/reports/<...>. Optionally apply the rewrite to the original file in place.
-
-- **Apply** → overwrite the original file with the rewritten text
-- **Skip** → leave the original file unchanged; the report stays at .mz/reports/
-- **Diff** → show a diff summary first, then ask again
-```
-
-### 2.5.3 Invoke AskUserQuestion
+**Surface 1 — emit the plan message.** Output the rewrite summary as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-Apply the rewrite to the original file <path>?
+## File update ready for review — naturalize
+
+Rewriting complete. The original file is unchanged on disk; the rewritten text is at <output_path>.
 
 Original word count: <N>
 Rewritten word count: <N> (delta: <±N>%)
 Patterns broken: <count>
 Burstiness: <before> → <after>
 
-The original file is at: <path>
-The rewrite is at: <output_path>
+Original file: <path>
+Rewrite: <output_path>
 
 Sample of changes (first 3):
 - "<original snippet>" → "<rewritten snippet>"
 - ...
 
-Type **Apply** to overwrite the original, **Skip** to keep both files, or **Diff** to see a fuller diff first.
+---
+**Apply** → overwrite the original file  ·  **Skip** → leave both files unchanged  ·  **Diff** → show fuller diff, then choose  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the summary — it lives in the plan message above.
+
+- question: `The rewrite above is ready. Choose an action.`
+- options:
+  - **Apply** — overwrite the original file with the rewritten text
+  - **Skip** — leave the original file unchanged; the report stays at .mz/reports/
+  - **Diff** — show a fuller diff first, then choose Apply or Skip
 
 ### 2.5.4 Response handling
 
-- **"apply"** → write the rewritten content to the original file path. Update `state.md`: `FileUpdateApplied: yes`. Confirm with a one-line message: `Original file updated: <path>`.
-- **"skip"** → leave the original file untouched. Update `state.md`: `FileUpdateApplied: no`. Confirm: `Original file unchanged. Rewrite available at <output_path>`.
-- **"diff"** → show a fuller diff (use `diff -u <original> <output>` if available, else fall back to a simple side-by-side preview of differing paragraphs), then re-invoke AskUserQuestion with only Apply / Skip options.
+- **Apply** → write the rewritten content to the original file path. Update `state.md`: `FileUpdateApplied: yes`. Confirm with a one-line message: `Original file updated: <path>`.
+- **Skip** → leave the original file untouched. Update `state.md`: `FileUpdateApplied: no`. Confirm: `Original file unchanged. Rewrite available at <output_path>`.
+- **Diff** → show a fuller diff (use `diff -u <original> <output>` if available, else fall back to a simple side-by-side preview of differing paragraphs), then re-present Surface 2 with only **Apply** and **Skip** options.
+- **Any other reply (feedback)** → apply the feedback, return to Surface 1, re-read and re-emit the updated plan message from scratch, re-present the selector.
 
 This gate has no Reject — the rewrite already exists; the question is only whether to apply it in place.
 

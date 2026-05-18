@@ -17,48 +17,45 @@ From Phase 3:
 
 ## Step 4.1 — User approval gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+This gate uses the two-surface plan pattern: the finalized design is emitted as a normal markdown chat message (the way a plan appears in plan mode), then a short AskUserQuestion selector.
 
-**Mandatory pre-read**: Read `.mz/design/<task_name>/design.md`, `.mz/design/<task_name>/wireframes.md`, and `.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `design.md`, `wireframes.md`, and `wcag-report.md` under labeled sections. Never substitute a path, line count, iteration summary, or `<verdict>` placeholder — the user must review the actual finalized design (including the contrast pairs) in the question itself, not have to open files separately.
+**Pre-read**: Read `.mz/design/<task_name>/design.md`, `.mz/design/<task_name>/wireframes.md`, and `.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires.
 
-Before invoking AskUserQuestion, emit a text block to the user:
-
-```
-**Design ready for approval**
-All four specialist critics have approved the design, and the WCAG contrast report shows zero violations. Please review the finalized design document, wireframes, and WCAG report below.
-
-- **Approve** → write `final-summary.md` and mark task complete
-- **Reject** → mark task aborted and stop
-- **Feedback** → dispatch design-revision-writer to apply changes, loop back to this gate
-```
-
-Invoke AskUserQuestion with this body (where each `<verbatim ...>` marker is replaced by the bytes you just read):
+**Surface 1 — emit the plan message.** Output the three artifacts verbatim as a normal markdown chat message. Emit the full verbatim contents — never substitute a path, line count, iteration summary, or `<verdict>` placeholder; the user reviews the actual finalized design (including the contrast pairs) in the message itself. Structure:
 
 ```
-Design document ready (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS). Please review the finalized design:
+## Design ready for review — design-document
 
-## Design Document (design.md)
+Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: PASS). All four specialist critics approved the design and the WCAG contrast report shows zero violations.
+
+### Design Document (design.md)
 
 <verbatim design.md contents>
 
-## Wireframes (wireframes.md)
+### Wireframes (wireframes.md)
 
 <verbatim wireframes.md contents>
 
-## WCAG Contrast Report (wcag-report.md)
+### WCAG Contrast Report (wcag-report.md)
 
 <verbatim wcag-report.md contents>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → write `final-summary.md` and mark the task complete  ·  **Reject** → mark the task aborted, nothing more written  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the design artifacts in the question body, they live in the plan message above:
+
+- question: `The finalized design above is ready for review.`
+- options: **Approve** — write `final-summary.md` and complete the task · **Reject** — abort the task, write nothing further
 
 ## Step 4.2 — Response handling
 
-- **"approve"** → update state to `complete`, proceed to Step 4.3.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not write `final-summary.md`.
-- **Feedback** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to Step 4.1, re-read the updated artifact(s), and re-present **via AskUserQuestion** with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Step 4.3 without explicit approval.
+- **Approve** → update state to `complete`, proceed to Step 4.3.
+- **Reject** → update state to `aborted_by_user` and stop. Do not write `final-summary.md`.
+- **Any other reply (feedback)** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to Step 4.1, re-read the updated artifact(s), and re-emit the entire plan message from scratch with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Step 4.3 without explicit approval.
 
 ## Step 4.3 — Write `final-summary.md`
 

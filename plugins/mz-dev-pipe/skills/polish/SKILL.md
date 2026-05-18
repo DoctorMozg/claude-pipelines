@@ -79,45 +79,38 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 ### Phase 1.5: User Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/assessment.md` with the Read tool. Capture the full file contents (criteria checklist showing which items are failing, proposed quick-fix plan with one line per fix target, estimated file count in scope) into context.
+**Pre-read**: Read `.mz/task/<task_name>/assessment.md` with the Read tool and capture its full contents into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `assessment.md`. Never substitute a path, status summary, line count, or `<failing criteria list>` / `<proposed quick-fix plan>` / `<estimated file count>` placeholders — the user must review the actual assessment in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the assessment verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/assessment.md` — do not substitute a path, status summary, line count, or `<failing criteria list>` / `<proposed quick-fix plan>` / `<estimated file count>` placeholders. Structure:
 
 ```
-**Assessment Ready for Review**
-Initial assessment complete. The checklist below shows which criteria are passing and which are failing, along with the proposed quick-fix strategy.
+## Assessment ready for review — polish
 
-- **Approve** → proceed to Phase 2 (Quick Fixes)
-- **Reject** → mark task aborted, stop here
-- **Feedback** → incorporate changes, re-run Phase 1, loop back to this gate
+<verbatim contents of assessment.md>
+
+---
+**Approve** → proceed to Phase 2 (Quick Fixes)  ·  **Reject** → mark task aborted, stop here  ·  reply with feedback to revise
 
 Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet+Opus
 ```
 
 Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop budget (`MAX_FIX_ITERATIONS × (1 fix + 1 test + 1 review)`). Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
 
-Invoke AskUserQuestion with this body (where `<verbatim assessment.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the assessment in the question body, it lives in the plan message above:
 
-```
-Phase 1 assessment complete. Please review:
-
-<verbatim assessment.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The assessment above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (Quick Fixes) · **Reject** — mark task aborted, stop here
 
 **Response handling**:
 
-- **"approve"** → update state, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 2. The pre-gate block (with cost preview) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
+- **Approve** → update state, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 2. The plan message (Surface 1) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ## Techniques
 

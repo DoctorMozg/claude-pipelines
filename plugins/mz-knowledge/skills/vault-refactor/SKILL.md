@@ -53,34 +53,33 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 
 ### Phase 1.5: User approval — Affected Files
 
-**This orchestrator** (not a subagent) must present affected files to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, Read `.mz/task/<task_name>/references_report.md` and capture the full contents.
+**Pre-read**: Read `.mz/task/<task_name>/references_report.md` and capture its full contents into context.
 
-Before invoking AskUserQuestion, emit a text block to the user:
-
-```
-**References ready for review**
-N file(s) affected with M total reference(s) to rewrite. Review the full proposal below.
-
-- **Approve** → proceed to Phase 2 (rewrite + rollback)
-- **Reject** → abort; state marked aborted_by_user, no vault files modified
-- **Feedback** → incorporate changes, re-run Phase 1, return to this gate with regenerated proposal
-```
-
-The question body must contain the verbatim contents of `references_report.md` — every affected file path, the reference count per file (up to `MAX_REFERENCES_PREVIEW`), and the exact before/after text of every proposed replacement. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. A silent diff is indistinguishable from a broken rename.
-
-The AskUserQuestion prompt ends literally with:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message — every affected file path, the reference count per file (up to `MAX_REFERENCES_PREVIEW`), and the exact before/after text of every proposed replacement. A silent diff is indistinguishable from a broken rename:
 
 ```
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+## References ready for review — vault-refactor
+
+<verbatim contents of .mz/task/<task_name>/references_report.md>
+
+---
+**Approve** → proceed to Phase 2 (rewrite + rollback)  ·  **Reject** → abort, state marked aborted_by_user, no vault files modified  ·  reply with feedback to revise
 ```
 
-Response handling:
+Emit the full verbatim contents of `.mz/task/<task_name>/references_report.md` — do not substitute a path, summary, or placeholder.
 
-- **"approve"** → update state to `references_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed. Do not write the rollback manifest, do not touch vault files.
-- **Feedback** → incorporate (e.g., user excludes specific paths, corrects the new name, requests a narrower scope), re-run Phase 1, return to this gate, re-present **via AskUserQuestion** with the regenerated verbatim contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
+
+- question: `The references report above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (rewrite + rollback) · **Reject** — abort, no vault files modified
+
+**Response handling**:
+
+- **Approve** → update state to `references_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not write the rollback manifest, do not touch vault files.
+- **Any other reply (feedback)** → incorporate (e.g., user excludes specific paths, corrects the new name, requests a narrower scope), re-run Phase 1, overwrite `references_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2.5: Post-write verification
 
@@ -115,7 +114,7 @@ Print this block before concluding — silent checks get skipped:
 
 ```
 vault-refactor verification:
-  [ ] references_report.md presented verbatim via AskUserQuestion before any write
+  [ ] references_report.md emitted verbatim as a chat message (Surface 1) and AskUserQuestion selector presented before any write
   [ ] rollback.md written BEFORE first vault edit
   [ ] Every per-reference replacement applied via `Edit` (not `Write`)
   [ ] Original file renamed/moved only after all referrer rewrites succeeded

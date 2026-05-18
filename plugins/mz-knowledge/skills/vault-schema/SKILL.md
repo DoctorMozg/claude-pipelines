@@ -65,30 +65,33 @@ See `phases/validate.md`.
 
 ### Phase 1.5: User approval — findings
 
-**This orchestrator** (not a subagent) must present findings to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, Read `.mz/task/<task_name>/validation_report.md` and capture its full contents.
+**Pre-read**: Read `.mz/task/<task_name>/validation_report.md` and capture its full contents into context.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Validation findings ready for review**
-Schema validation complete. Review the findings below and decide whether to proceed with migration or abort.
+## Validation findings ready for review — vault-schema
 
-- **Approve** → findings approved, proceed to Phase 2 (migration planning) if mode is migrate, otherwise mark complete
-- **Reject** → abort, no further action
-- **Feedback** → incorporate changes, re-run validation, loop back here
+<verbatim contents of .mz/task/<task_name>/validation_report.md>
+
+---
+**Approve** → findings approved; proceed to Phase 2 (migration planning) if mode is migrate, otherwise mark complete  ·  **Reject** → abort, no further action  ·  reply with feedback to revise
 ```
 
-The question body must contain the verbatim contents of `.mz/task/<task_name>/validation_report.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+Emit the full verbatim contents of `.mz/task/<task_name>/validation_report.md` — do not substitute a path, summary, or placeholder.
 
-Invoke AskUserQuestion with the verbatim report body followed by a prompt ending literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
+
+- question: `The validation findings above are ready for review.`
+- options: **Approve** — proceed to Phase 2 (migration planning) or complete if mode is validate · **Reject** — abort, no further action
 
 **Response handling**:
 
-- **"approve"** → update state to `findings_approved`. If `Mode: validate`, mark `Status: complete` and stop — nothing is written to the vault in validate mode. If `Mode: migrate`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate (e.g., "re-scan with a corrected schema", "treat note_type X as pass-through"), re-run Phase 1 if needed, return to this gate and re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only, never summary-only). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state to `findings_approved`. If `Mode: validate`, mark `Status: complete` and stop — nothing is written to the vault in validate mode. If `Mode: migrate`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → incorporate (e.g., "re-scan with a corrected schema", "treat note_type X as pass-through"), re-run Phase 1 if needed, overwrite `validation_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2 — Plan migration + rollback
 
@@ -96,30 +99,33 @@ See `phases/migrate.md` (Step 1 + Step 2).
 
 ### Phase 2.5: User approval — migration plan
 
-**This orchestrator** (not a subagent) must present the migration plan to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, Read `.mz/task/<task_name>/migration_plan.md` and capture its full contents.
+**Pre-read**: Read `.mz/task/<task_name>/migration_plan.md` and capture its full contents into context.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Migration plan ready for review**
-The schema migration plan has been generated. Review the proposed changes and confirm all required placeholders are filled before proceeding.
+## Migration plan ready for review — vault-schema
 
-- **Approve** → plan approved, proceed to Phase 3 (apply patches)
-- **Reject** → abort, no vault writes occurred, rollback manifest preserved for reference
-- **Feedback** → revise plan and re-present here
+<verbatim contents of .mz/task/<task_name>/migration_plan.md>
+
+---
+**Approve** → proceed to Phase 3 (apply patches)  ·  **Reject** → abort, no vault writes occurred, rollback manifest preserved  ·  reply with feedback to revise
 ```
 
-The question body must contain the verbatim contents of `.mz/task/<task_name>/migration_plan.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+Emit the full verbatim contents of `.mz/task/<task_name>/migration_plan.md` — do not substitute a path, summary, or placeholder.
 
-Invoke AskUserQuestion with the verbatim plan body followed by a prompt ending literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
+
+- question: `The migration plan above is ready for review.`
+- options: **Approve** — proceed to Phase 3 (apply patches) · **Reject** — abort, no vault writes occurred, rollback manifest preserved
 
 **Response handling**:
 
-- **"approve"** → update state to `plan_approved`, proceed to Phase 3. The user must have filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder — Phase 3 re-checks this and loops back here if any remain.
-- **"reject"** → update state to `aborted_by_user` and stop. The rollback manifest stays on disk for reference; no vault writes occurred.
-- **Feedback** → incorporate edits to the plan (value picks, skip specific notes, adjust proposed frontmatter), re-run Phase 2 to refresh both `migration_plan.md` and `rollback.md`, return to this gate and re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only, never summary-only). This is a loop — repeat until the user explicitly approves. Never apply frontmatter patches without explicit approval.
+- **Approve** → update state to `plan_approved`, proceed to Phase 3. The user must have filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder — Phase 3 re-checks this and loops back here if any remain.
+- **Reject** → update state to `aborted_by_user` and stop. The rollback manifest stays on disk for reference; no vault writes occurred.
+- **Any other reply (feedback)** → incorporate edits to the plan (value picks, skip specific notes, adjust proposed frontmatter), re-run Phase 2 to refresh both `migration_plan.md` and `rollback.md`, overwrite the artifact, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never apply frontmatter patches without explicit approval.
 
 ### Phase 3 — Apply frontmatter patches
 

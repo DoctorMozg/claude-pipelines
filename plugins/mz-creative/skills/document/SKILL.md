@@ -71,38 +71,31 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 1.5: Research Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/research.md` with the Read tool. Capture the full file contents (stack detection, public APIs, conventions, prior art, constraints, proposed doc structure) into context.
+**Pre-read**: Read `.mz/task/<task_name>/research.md` with the Read tool. Capture the full file contents (stack detection, public APIs, conventions, prior art, constraints, proposed doc structure) into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `research.md`. Never substitute a path, status summary, or `<contents of research.md>` placeholder — the user must review the actual research artifact in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the research verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/research.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Research ready for review**
-Codebase research complete. Includes detected stack, public APIs, conventions, prior doc art, and the proposed Diátaxis structure for the new document.
-
-- **Approve** → proceed to Phase 2 (writing)
-- **Reject** → task marked aborted, no docs written
-- **Feedback** → re-run research with your input, loop back here
-```
-
-Invoke AskUserQuestion with this body (where `<verbatim research.md contents>` is replaced by the bytes you just read):
-
-```
-Research complete. Please review and approve before writing begins:
+## Research ready for review — document
 
 <verbatim research.md contents>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2 (writing)  ·  **Reject** → task marked aborted, no docs written  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the research contents in the question body, they live in the plan message above:
+
+- question: `The research above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (writing) · **Reject** — abort the task, no docs written
 
 **Response handling**:
 
-- **"approve"** → update state to `research_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-run Phase 1 with feedback, overwrite `research.md`, return to this gate, re-read `research.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state to `research_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → re-run Phase 1 with feedback, overwrite `research.md`, return to Surface 1, re-read `research.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

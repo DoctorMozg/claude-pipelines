@@ -61,38 +61,41 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 
 ### Phase 3.5 — Approval gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, Read `.mz/task/<task_name>/diff.md` and capture the full contents.
+See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-Before invoking AskUserQuestion, emit a text block to the user (chat-visible, outside the AskUserQuestion body):
+**Pre-read**: Read `.mz/task/<task_name>/diff.md` with the Read tool and capture its full contents into context.
 
-```text
-**Decomment — proposed edits ready for review**
+**Surface 1 — emit the plan message.** Output the diff verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/diff.md` — do not substitute a path, summary, or placeholder. Structure:
+
+```
+## Cleanup plan ready for review — decomment
+
 Scanned <N> code files in scope; the proposers emitted <M> edits across <K> files. The diff below shows every old/new pair the orchestrator will apply.
 
-- **Approve** → apply every edit in edits.json (Phase 4)
-- **Reject** → mark task aborted; no file is touched
-- **Feedback** → re-generate diff.md with skipped edits/files, return to this gate
+<verbatim contents of diff.md>
+
+---
+**Approve** → apply every edit in edits.json (Phase 4)  ·  **Reject** → mark task aborted, no file is touched  ·  reply with feedback to revise
 
 Approve cost (estimated): <M> Edit calls × ~0 agents ≈ ~$0.00 (apply phase runs no LLMs)
 ```
 
-The AskUserQuestion question body must contain the verbatim contents of `.mz/task/<task_name>/diff.md`. Do not substitute a path, summary, or placeholder.
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the diff in the question body, it lives in the plan message above:
 
-The AskUserQuestion question body must end with the literal string: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+- question: `The proposed edits above are ready for review.`
+- options: **Approve** — apply every edit in edits.json (Phase 4) · **Reject** — mark task aborted, no file is touched
 
 Response handling:
 
-- **"approve"** → update `state.md` to `diff_approved`, proceed to Phase 4.
-- **"reject"** → update `state.md` to `aborted_by_user` and stop. No file is touched.
-- **Feedback** → parse skip directives into an exclusion list (edit ids and/or file paths), regenerate `diff.md` and `edits.json` without the excluded edits or files, and if the feedback narrows the file set re-run Phase 1. Then re-present this gate via AskUserQuestion with the full new contents.
+- **Approve** → update `state.md` to `diff_approved`, proceed to Phase 4.
+- **Reject** → update `state.md` to `aborted_by_user` and stop. No file is touched.
+- **Any other reply (feedback)** → parse skip directives into an exclusion list (edit ids and/or file paths), regenerate `diff.md` and `edits.json` without the excluded edits or files, and if the feedback narrows the file set re-run Phase 1. Then return to this gate, re-read `diff.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
 
-This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
+Unattended-mode bypass: when env `MZ_DEV_PIPE_AUTO_APPROVE=1`, skip AskUserQuestion, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, then proceed to Phase 4. The plan message (Surface 1) is still emitted to chat.
 
-Unattended-mode bypass: when env `MZ_DEV_PIPE_AUTO_APPROVE=1`, skip AskUserQuestion, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, then proceed to Phase 4. The pre-gate block is still emitted to chat.
-
-Single gate, three paths only — no Apply/Skip/Diff submenu inside the AskUserQuestion call.
+Single gate, two paths only — no Apply/Skip/Diff submenu inside the AskUserQuestion call.
 
 ## Techniques
 

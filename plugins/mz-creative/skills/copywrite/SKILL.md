@@ -73,38 +73,31 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 1.5: Brief Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/brief.md` with the Read tool. Capture the full file contents (positioning, audience, value claim, named customers/numbers, tone decisions, format-specific constraints) into context.
+**Pre-read**: Read `.mz/task/<task_name>/brief.md` with the Read tool. Capture the full file contents (positioning, audience, value claim, named customers/numbers, tone decisions, format-specific constraints) into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `brief.md`. Never substitute a path, status summary, or `<contents of brief.md>` placeholder — the user must review the actual brief in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the brief verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/brief.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Brief ready for review**
-Positioning research complete. Includes audience, value claim, evidence/named users, format constraints, and tone decisions.
-
-- **Approve** → proceed to Phase 2 (writing)
-- **Reject** → task marked aborted, no copy written
-- **Feedback** → re-run research with your input, loop back here
-```
-
-Invoke AskUserQuestion with this body (where `<verbatim brief.md contents>` is replaced by the bytes you just read):
-
-```
-Brief ready. Please review and approve before writing begins:
+## Brief ready for review — copywrite
 
 <verbatim brief.md contents>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2 (writing)  ·  **Reject** → task marked aborted, no copy written  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the brief contents in the question body, they live in the plan message above:
+
+- question: `The brief above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (writing) · **Reject** — abort the task, no copy written
 
 **Response handling**:
 
-- **"approve"** → update state to `brief_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-run Phase 1 with feedback, overwrite `brief.md`, return to this gate, re-read `brief.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state to `brief_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → re-run Phase 1 with feedback, overwrite `brief.md`, return to Surface 1, re-read `brief.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

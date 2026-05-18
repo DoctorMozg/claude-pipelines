@@ -181,62 +181,37 @@ ______________________________________________________________________
 
 ## Phase 1.5 Gate
 
-**This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent.** The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 1.5. Delegating the read would defeat the approval-gate guarantee — an agent holding the gate body could make the approval decision on the user's behalf, which is exactly what the approval gate exists to prevent.
+**This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent.** The orchestrator reads this section, then presents the gate itself from SKILL.md §Phase 1.5. Delegating the read would defeat the approval-gate guarantee — an agent holding the gate body could make the approval decision on the user's behalf, which is exactly what the approval gate exists to prevent.
 
-### Presentation content
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before issuing `AskUserQuestion`, the orchestrator assembles an inventory summary block from the `inventory.md` artifact produced in §1.4:
+**Pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context.
 
-- **Total local sources discovered** — one count per bucket: `research: N`, `tasks: N`, `reports_reviews: N`, `codebase: N`, `git_history: N` (or `unavailable`).
-- **Excluded sources** — each excluded path with its one-line reason (stale / no slug-match / empty bucket).
-- **Proposed lenses** — numbered list. Each entry: lens name, one-line purpose, file count. Example: `1. research — consolidate prior deep-research findings on auth (4 files)`.
-- **Dropped default lenses** — any of the five structural defaults that were dropped because their bucket was empty, and why.
-- **Unavailable buckets** — any bucket marked unavailable in §1.1 (typically `git_history` on non-git directories), with reason.
-
-The presentation is **summary only** — do not dump the full file lists into the AskUserQuestion message. The user reviews lens names and counts; if they want detail, they will ask in feedback and the orchestrator will re-present with the expanded lens.
-
-### Verbatim AskUserQuestion prompt body template
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/inventory.md` — do not substitute a path, summary, or placeholder:
 
 ```
-**Inventory and decomposition ready for review**
-Source buckets: research, tasks, reports/reviews, codebase, git history (if available). Proposed lenses identify 3–6 focused research topics with explicit file lists.
+## Inventory ready for review — combine
 
-- **Approve** → proceed to Phase 2 (parallel lens dispatch)
-- **Reject** → task marked aborted, no further phases run
-- **Feedback** → incorporate your changes, re-run lens derivation, loop back for re-approval
+<verbatim contents of .mz/task/<task_name>/inventory.md>
+
+---
+**Approve** → proceed to Phase 2 (parallel lens dispatch)  ·  **Reject** → task marked aborted, no further phases run  ·  reply with feedback to revise
 ```
 
-The orchestrator then issues `AskUserQuestion` with this message body, filling the `<placeholders>` from the presentation content above:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the inventory in the question body:
 
-```
-Inventory and lens decomposition ready. Please review:
-
-Sources: <breakdown by bucket with counts>
-Proposed lenses:
-<numbered list — each line: "N. <name> — <purpose> (<file_count> files)">
-Excluded: <list with reasons, or "none">
-Unavailable buckets: <list with reasons, e.g., "git_history (no git repository)", or "none">
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
-
-The trailing line **must appear verbatim** — it is the canonical approval-gate reply instruction and is checked by structural tests.
+- question: `The inventory and decomposition above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (parallel lens dispatch) · **Reject** — task marked aborted, no further phases run
 
 ### Response handling
 
-- **"approve"** → update `state.md` phase to `decomposition_approved`, then proceed to Phase 2 by reading `phases/lens_dispatch.md`. Do not proceed to Phase 2 on any response other than an explicit `approve`.
-- **"reject"** → update `state.md` status to `aborted_by_user`, write a one-line reason (`user rejected decomposition at Phase 1.5`) to state, and stop. Do not proceed to any later phase. Do not silently restart.
-- **Feedback** → incorporate the user's feedback (add/remove/rename lenses, adjust file lists, re-classify sources, add or drop buckets), re-run §Phase 1.2 and §Phase 1.3 as needed, overwrite `inventory.md` with the revised decomposition, and return to this gate — re-present **via AskUserQuestion** using the same format above. Never skip the re-presentation step; the user must see and approve the revised decomposition.
-
-### Loop language
-
-**This is a loop — repeat until the user explicitly approves. Never dispatch lens agents without explicit approval.** The orchestrator must not short-circuit the loop on its own judgment (e.g., "the user's feedback was minor, I'll just proceed"). Every iteration ends with a fresh `AskUserQuestion` call; every `approve` requires an explicit user response; every `reject` stops the pipeline.
+- **Approve** → update `state.md` phase to `decomposition_approved`, then proceed to Phase 2 by reading `phases/lens_dispatch.md`. Do not proceed to Phase 2 on any response other than an explicit Approve.
+- **Reject** → update `state.md` status to `aborted_by_user`, write a one-line reason (`user rejected decomposition at Phase 1.5`) to state, and stop. Do not proceed to any later phase. Do not silently restart.
+- **Any other reply (feedback)** → incorporate the user's feedback (add/remove/rename lenses, adjust file lists, re-classify sources, add or drop buckets), re-run §Phase 1.2 and §Phase 1.3 as needed, overwrite `inventory.md` with the revised decomposition, return to this gate, re-read `inventory.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ### Orchestrator-only notice
 
-This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 1.5. If a subagent is ever observed reading this file, it is an approval-gate violation and the pipeline must abort.
+This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the gate itself from SKILL.md §Phase 1.5. If a subagent is ever observed reading this file, it is an approval-gate violation and the pipeline must abort.
 
 ______________________________________________________________________
 

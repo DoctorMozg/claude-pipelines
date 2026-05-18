@@ -72,45 +72,38 @@ Read the relevant phase file when you reach that phase. Do not pre-load all of t
 
 ### Phase 2.5: Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/detection.md` with the Read tool. Capture the full file contents (per-category hit lists with file:line citations, severity classification, and the proposed cleanup plan) into context.
+**Pre-read**: Read `.mz/task/<task_name>/detection.md` with the Read tool. Capture the full file contents (per-category hit lists with file:line citations, severity classification, and the proposed cleanup plan) into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `detection.md`. Do not substitute a path, summary, or `<placeholder>` token.
+Compute `<N>` as `ceil(<files_in_scope> / MAX_FILES_PER_DISPATCH)` plus the verification re-scan, capped at `MAX_PARALLEL_AGENTS × MAX_FIX_ITERATIONS`. Use `shared/approval-gate.md` to convert to a dollar estimate.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the detection report verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/detection.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Detection ready for review**
-Found <N> artifact hits across <M> files in <K> categories. The cleanup plan auto-deletes AI signatures, phase markers, and planning comments; WHAT-not-WHY comments and dead-code blocks are reviewed per-instance.
+## Detection ready for review — clean-leftovers
 
-- **Approve** → proceed to Phase 3 (cleanup) using the proposed plan
-- **Reject** → mark task aborted, no files edited
-- **Feedback** → adjust the plan per your input, re-run detection if needed, loop back here
+<verbatim contents of detection.md>
+
+---
+**Approve** → proceed to Phase 3 (cleanup) using the proposed plan  ·  **Reject** → mark task aborted, no files edited  ·  reply with feedback to revise
 
 Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on Opus
 ```
 
-Compute `<N>` as `ceil(<files_in_scope> / MAX_FILES_PER_DISPATCH)` plus the verification re-scan, capped at `MAX_PARALLEL_AGENTS × MAX_FIX_ITERATIONS`. Use `shared/approval-gate.md` to convert to a dollar estimate.
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the detection report in the question body:
 
-Invoke AskUserQuestion with this body (where `<verbatim detection.md contents>` is replaced by the bytes just read):
-
-```
-Detection complete. Please review and approve the cleanup plan:
-
-<verbatim detection.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The detection report above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise.`
+- options: **Approve** — proceed to Phase 3 (cleanup) · **Reject** — abort, no files edited
 
 **Response handling**:
 
-- **"approve"** → update state to `detection_approved`, proceed to Phase 3.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust the plan, overwrite `detection.md`, return to this gate, re-read it, re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call, log `auto-approved (unattended mode)`, and proceed. The pre-gate block is still emitted.
+- **Approve** → update state to `detection_approved`, proceed to Phase 3.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust the plan, overwrite `detection.md`. Return to Surface 1, re-read `.mz/task/<task_name>/detection.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed. Surface 1 is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ## Techniques
 

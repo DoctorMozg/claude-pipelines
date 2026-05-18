@@ -58,30 +58,33 @@ See `phases/scan_claims.md`.
 
 ### Phase 1.5: User approval — classifications
 
-**This orchestrator** (not a subagent) must present findings to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, Read `.mz/task/<task_name>/claims_analysis.md` in full and capture its entire contents.
+**Pre-read**: Read `.mz/task/<task_name>/claims_analysis.md` and capture its full contents into context.
 
-Present the full verbatim contents of `claims_analysis.md` — each claim with its proposed classification, confidence hint, and suggested sources. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Claims analysis ready for review**
-[N] claims classified with epistemic status and source suggestions. Review the analysis below.
+## Claims analysis ready for review — vault-provenance
 
-- **Approve** → proceed to Phase 2 to back-fill frontmatter
-- **Reject** → abort task, no frontmatter written
-- **Feedback** → incorporate changes, re-run scan if needed, return to this gate
+<verbatim contents of .mz/task/<task_name>/claims_analysis.md>
+
+---
+**Approve** → proceed to Phase 2 to back-fill frontmatter  ·  **Reject** → abort task, no frontmatter written  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with the verbatim artifact body followed by a prompt ending literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+Emit the full verbatim contents of `.mz/task/<task_name>/claims_analysis.md` — do not substitute a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
+
+- question: `The claims analysis above is ready for review.`
+- options: **Approve** — proceed to Phase 2 to back-fill frontmatter · **Reject** — abort task, no frontmatter written
 
 **Response handling**:
 
-- **"approve"** → update state to `classifications_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. No frontmatter write occurs.
-- **Feedback** → incorporate edits (e.g., "reclassify claim 3 as received", "swap proposed source on claim 7", "enable annotation mode"), re-dispatch `provenance-tracer` if a full re-scan is needed or edit the artifact in place for targeted changes, return to this gate and re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only, never summary-only). This is a loop — repeat until the user explicitly approves.
+- **Approve** → update state to `classifications_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. No frontmatter write occurs.
+- **Any other reply (feedback)** → incorporate edits (e.g., "reclassify claim 3 as received", "swap proposed source on claim 7", "enable annotation mode"), re-dispatch `provenance-tracer` if a full re-scan is needed or edit the artifact in place for targeted changes, overwrite `.mz/task/<task_name>/claims_analysis.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2 — Back-fill sources
 

@@ -72,46 +72,38 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 2.5: User Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
+**Pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `scan.md`. Never substitute a path, status summary, line count, or `<plan contents>` placeholder — the user must review the actual plan in the question itself, not have to open the file separately.
+Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the scan report verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/scan.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Approval Gate — Cleanup Plan Review**
-Your scope has been scanned, chunked, and baselined. Review the plan below: N chunks, M files affected, baseline test/lint status shown.
+## Cleanup plan ready for review — cleanup
 
-- **Approve** → proceed to Phase 3 (parallel optimization)
-- **Reject** → mark task aborted, no files written
-- **Feedback** → apply changes to scan.md, re-present via AskUserQuestion
+<verbatim contents of scan.md>
+
+---
+**Approve** → proceed to Phase 3 (parallel optimization)  ·  **Reject** → mark task aborted, no files written  ·  reply with feedback to revise
 
 Approve cost (estimated): <N> agents × ~24k tokens ≈ ~$<Y.YY> on Sonnet
 ```
 
-Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the scan plan in the question body:
 
-Invoke AskUserQuestion with this body (where `<verbatim scan.md contents>` is replaced by the bytes you just read):
-
-```
-The cleanup plan is ready. Please review and approve:
-
-<verbatim scan.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-(e.g. exclude a file, adjust chunking, change chunk count).
-```
+- question: `The cleanup plan above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise.`
+- options: **Approve** — proceed to Phase 3 (parallel optimization) · **Reject** — abort, no files written
 
 **Response handling**:
 
-- **"approve"** → proceed to Phase 3.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → apply changes, overwrite `scan.md`, return to this gate, re-read `scan.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. The pre-gate block (with cost preview) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
+- **Approve** → proceed to Phase 3.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → apply changes, overwrite `scan.md`, return to Surface 1, re-read `.mz/task/<task_name>/scan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. Surface 1 is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ### Phase 3: Parallel Optimization
 

@@ -49,18 +49,30 @@ Three outcomes:
 
 - `residuals.md` is non-empty AND `Iteration >= MAX_FIX_ITERATIONS`.
 
-- → Present the residuals to the user via AskUserQuestion. Pre-gate emit block:
+- → This is a variant gate. **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+
+  **Pre-read**: Read `.mz/task/<task_name>/residuals.md` with the Read tool. Capture the full contents into context.
+
+  **Surface 1 — emit the plan message.** Output the residuals verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/residuals.md` — do not substitute a path, summary, or placeholder. Structure:
 
   ```
-  **Cleanup hit iteration cap**
+  ## Cleanup hit iteration cap — clean-leftovers
+
   Reached MAX_FIX_ITERATIONS (3) with residuals remaining. The listed hits resisted automatic cleanup — they may need manual review.
 
-  - **Accept** → mark task complete with documented residuals in the report
-  - **Force one more pass** → bypass the cap once and run one more cleanup wave
-  - **Abort** → mark task failed; report records the residuals as outstanding
+  <verbatim contents of residuals.md>
+
+  ---
+  **Accept** → mark task complete with documented residuals  ·  **Force** → bypass the cap, run one more cleanup wave  ·  **Abort** → mark task failed, residuals recorded as outstanding
   ```
 
-  AskUserQuestion body contains the verbatim `residuals.md` contents and closes with `Type **Accept** to accept residuals, **Force** to run one more pass, **Abort** to stop, or type your feedback.`. This is a variant gate; the bypass options `Force` and `Abort` are mutually exclusive with `Accept`.
+  **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the residuals in the question body:
+
+  - question: `The residuals above resisted automatic cleanup. Choose how to proceed.`
+  - options:
+    - **Accept** — mark task complete with documented residuals in the report
+    - **Force** — bypass the cap once and run one more cleanup wave
+    - **Abort** — mark task failed; report records the residuals as outstanding
 
 ## 4.4 Write the final report
 

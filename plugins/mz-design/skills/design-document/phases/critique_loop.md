@@ -228,9 +228,15 @@ Apply every action item in critique_<N>.md. Touch only the flagged sections. Pre
 
 If `iteration == MAX_DESIGN_ITERATIONS` and AGGREGATE is still FAIL:
 
-Present to the user via `AskUserQuestion`:
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+
+**Pre-read**: Read `.mz/design/<task_name>/critique_5.md` and capture the full contents into context.
+
+**Surface 1 — emit the plan message.** Output the verdict and unresolved findings verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/design/<task_name>/critique_5.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
+## Design critique cap reached — design-document
+
 The design has hit the 5-iteration critique cap and still has unresolved findings.
 
 Final verdict:
@@ -240,18 +246,26 @@ Final verdict:
   accessibility-specialist: <status>
   WCAG_GATE:                <status>
 
-Unresolved findings are in .mz/design/<task_name>/critique_5.md.
+Unresolved findings (critique_5.md):
 
-How should we proceed?
+<verbatim critique_5.md contents>
 
-Reply 'accept' to finalize the current state, 'guidance' to provide specific direction for one more round, or 'abort' to stop.
+---
+**Accept** → finalize with unresolved findings noted  ·  **Abort** → stop  ·  reply with guidance to direct one more round
 ```
 
-Options:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the critique in the question body:
 
-- **accept** → log unresolved findings into `final-summary.md`, mark state `complete_with_unresolved`, proceed to Phase 4 with the caveat noted.
-- **guidance** → accept user feedback as the action list, dispatch the revision writer with the user's text, then go to Phase 4 directly (no further critique round — the user's word is final).
-- **abort** → mark state `aborted_by_user`, stop.
+- question: `The design has hit the iteration cap with unresolved findings. Choose how to proceed.`
+- options:
+  - **Accept** — finalize the current state; log unresolved findings into `final-summary.md`, mark state `complete_with_unresolved`, proceed to Phase 4 with the caveat noted.
+  - **Abort** — mark state `aborted_by_user`, stop.
+
+**Response handling**:
+
+- **Accept** → log unresolved findings into `final-summary.md`, mark state `complete_with_unresolved`, proceed to Phase 4 with the caveat noted.
+- **Abort** → mark state `aborted_by_user`, stop.
+- **Any other reply (guidance)** → treat the reply as the action list, dispatch the revision writer with the user's text, then go to Phase 4 directly (no further critique round — the user's word is final).
 
 Never silently loop past iteration 5.
 

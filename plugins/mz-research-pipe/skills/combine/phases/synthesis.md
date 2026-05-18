@@ -81,44 +81,35 @@ ______________________________________________________________________
 
 **Skip-if-empty reminder**: If the residual gap list produced by Phase 3 is empty, skip this gate entirely and proceed directly to Phase 5. (The SKILL.md stub already short-circuits this case, but repeat here in case this file is opened directly.)
 
-### Presentation content
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, emit a text block to the user with:
+**Pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. Capture the full contents (deduplicated residual gap list with GAP_IDs, descriptions, contributing lenses, and proposed web queries) into context.
 
-1. **Total residual gap count** — integer from the deduplicated list in Phase 3.4.
-1. **Per-gap lines** — one line per gap with three fields:
-   - The gap text (exactly as normalized in 3.4).
-   - The contributing lens(es) that surfaced it (e.g., `surfaced by: research, codebase`).
-   - A short reason the local sources could not resolve it (e.g., `local sources predate the refactor`, `no vendor documentation on disk`, `only covered at a high level, no version-specific detail`). If no reason is derivable, use `local sources did not cover this topic`.
-1. **Cost estimate** — the number of web `pipeline-web-researcher` (opus) agents that would be dispatched if approved. Cap the count at `MAX_LENSES` (6 by §7 constants) in a single wave; if the gap list exceeds 6, state that the smallest-scope gaps will be merged until the wave fits under the cap, and reference `phases/lens_dispatch.md §Phase 4` for the exact merge rules.
-
-### Verbatim AskUserQuestion prompt body template
-
-The orchestrator issues an `AskUserQuestion` call from `SKILL.md §Phase 3.5` using this exact message body (fill the `<…>` placeholders with the content from the presentation block above):
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
 
 ```
-Residual gaps after local synthesis:
+## Residual gaps ready for review — combine
 
-<numbered gap list with source lens and reason>
+<verbatim contents of .mz/task/<task_name>/gaps.md>
 
-Dispatch web gap-fill? (up to MAX_LENSES pipeline-web-researcher agents, single wave)
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 4 (web gap-fill dispatch, up to MAX_LENSES pipeline-web-researcher agents)  ·  **Reject** → skip web research, proceed to Phase 5 with gaps unresolved  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the gaps in the question body:
+
+- question: `The residual gaps above are ready for review.`
+- options: **Approve** — proceed to Phase 4 (web gap-fill dispatch) · **Reject** — skip web research, proceed to Phase 5 with gaps unresolved
 
 ### Response handling
 
-- **"approve"** → update `state.md` phase to `gapfill_approved`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. Record the approved gap list in `state.md` verbatim so Phase 4 can dispatch against it.
-- **"reject"** → update `state.md` phase to `gapfill_declined`, skip Phase 4 entirely, and proceed directly to Phase 5 with the residual gaps marked unresolved in the final report's `## Gaps ### Unresolved` section.
-- **Feedback** → incorporate the feedback without re-running Phases 1–3. Feedback may: drop gaps from the list, merge two gaps into one (update the normalized text), rewrite a gap's text for clarity, or add a reason the user knows but the synthesis missed. Re-present the revised list **via AskUserQuestion** using the same message body template above.
-
-### Loop language
-
-This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
+- **Approve** → update `state.md` phase to `gapfill_approved`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. Record the approved gap list in `state.md` verbatim so Phase 4 can dispatch against it.
+- **Reject** → update `state.md` phase to `gapfill_declined`, skip Phase 4 entirely, and proceed directly to Phase 5 with the residual gaps marked unresolved in the final report's `## Gaps ### Unresolved` section.
+- **Any other reply (feedback)** → incorporate the feedback without re-running Phases 1–3. Feedback may: drop gaps from the list, merge two gaps into one (update the normalized text), rewrite a gap's text for clarity, or add a reason the user knows but the synthesis missed. Overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
 
 ### Orchestrator-only notice
 
-This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the `AskUserQuestion` call itself from SKILL.md §Phase 3.5.
+This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the gate itself from SKILL.md §Phase 3.5.
 
 ______________________________________________________________________
 

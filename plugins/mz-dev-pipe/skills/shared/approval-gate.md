@@ -1,32 +1,36 @@
 # Approval Gate — Shared Conventions
 
-Canonical pattern for every user approval gate across mz-dev-pipe skills. Gates are the most expensive UX surface in the pipeline — they cost user attention. This file defines the two-surface format, the cost-preview line, and the unattended-mode bypass so every gate looks the same and behaves predictably.
+Canonical pattern for every user approval gate across mz-dev-pipe skills. Gates are the most expensive UX surface in the pipeline — they cost user attention. This file defines the two-surface plan pattern, the cost-preview line, and the unattended-mode bypass so every gate looks the same and behaves predictably.
 
-## Two-surface pattern
+## Two-surface plan pattern
 
-Every gate has TWO chat-visible surfaces:
+Gates are modeled on Claude Code's plan mode: the artifact is rendered as an ordinary markdown chat message — the way a plan appears in plan mode — and `AskUserQuestion` is only the short selector beneath it.
 
-1. **Pre-gate text block** — a chat-visible bullet block emitted by the orchestrator BEFORE the AskUserQuestion call. Contains: bold title, 1-2 sentence summary, **Approve** / **Reject** / **Feedback** option list, and the cost-preview line.
-1. **AskUserQuestion body** — carries the verbatim artifact (plan.md, panel.md, findings.md, …) and closes with the literal sentence: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+1. **Surface 1 — the plan message**: a normal markdown chat message, emitted by the orchestrator BEFORE the `AskUserQuestion` call, carrying the **full verbatim artifact** (plan.md, panel.md, findings.md, …). It opens with a `## Plan for review — <skill>` heading, contains the verbatim artifact, and closes with a `---` rule and a one-line footer.
+1. **Surface 2 — the AskUserQuestion selector**: a short call. `question` is one orientation line pointing at the plan message above; `options` are exactly **Approve** and **Reject**. No verbatim artifact in the question body — it lives in Surface 1. No "Feedback" option — `AskUserQuestion`'s always-present free-text reply field carries feedback.
 
-Never collapse the two surfaces into one. The pre-gate block is for orientation; the AskUserQuestion body is for the artifact bytes the user must read.
+Never collapse the two surfaces. Surface 1 is the artifact the user reads; Surface 2 is the decision. The artifact is never buried inside the `AskUserQuestion` body — that body truncates in chat history and renders cramped.
 
-## Pre-gate block template
+## Plan message template
 
 ```text
-**<Gate title>**
-<1-2 sentence summary of what is being approved and what happens next>
+## Plan for review — <skill>
 
-- **Approve** → <next-phase outcome>
-- **Reject** → <abort outcome>
-- **Feedback** → <feedback-loop outcome>
+<verbatim artifact contents>
+
+---
+**Approve** → <next-phase outcome>  ·  **Reject** → <abort outcome>  ·  reply with feedback to revise
 
 Approve cost (estimated): <N> agents × ~<X>k tokens ≈ ~$<Y.YY> on <model tier>
 ```
 
+Emit the full verbatim artifact — never a path, a summary, or a `<contents of artifact>` placeholder. The user must read the actual bytes in the message; if context compaction destroys their memory of an earlier iteration, this message is the only place they re-orient.
+
 ## Cost-preview line
 
 Format: `Approve cost (estimated): <N> agents × ~<X>k tokens ≈ ~$<Y.YY> on <model tier>`
+
+The cost-preview line sits in the footer of the plan message (Surface 1).
 
 How to compute the estimate at the gate site:
 
@@ -37,30 +41,29 @@ How to compute the estimate at the gate site:
 
 The estimate is order-of-magnitude — never claim it is precise. The point is to make a 30-coder fan-out feel different from a 3-coder fan-out at the moment of approval. Off-by-2× is fine; off-by-10× is the bug this preview prevents.
 
-## AskUserQuestion body convention
+## AskUserQuestion selector convention
 
 ```text
-<one-line orientation sentence — what the artifact is and why approval is needed>
-
-<verbatim artifact contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+question: "The plan above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise."
+options:
+  - Approve — proceed to <next phase>
+  - Reject  — abort, nothing written
 ```
 
-Never substitute a path, summary, or `<contents of artifact>` placeholder. The user must read the actual bytes in the question itself — if context compaction destroys their memory of an earlier iteration, the gate is the only place they re-orient.
+Never embed the verbatim artifact in the question body — Surface 1 already carries it. Never add a third "Feedback" option: a reply that is neither Approve nor Reject is feedback.
 
 ## Response handling
 
-- **`approve`** (case-insensitive) → update state to the next-phase token, proceed.
-- **`reject`** (case-insensitive) → update state to `aborted_by_user`, stop. Do not re-dispatch any agent.
-- **Anything else** → treat as feedback. Apply the requested changes, overwrite the artifact, return to the gate, re-read the artifact, re-present via AskUserQuestion with the full new contents. **Loop until explicit Approve.** Never proceed without explicit approval.
+- **Approve** → update state to the next-phase token, proceed.
+- **Reject** → update state to `aborted_by_user`, stop. Do not re-dispatch any agent.
+- **Any other reply** → treat as feedback. Apply the requested changes, overwrite the artifact, return to Surface 1, re-emit the full updated plan message from scratch (full verbatim — never a diff, never a summary), re-present the selector. **Loop until explicit Approve.** Never proceed without explicit approval.
 
 ## Unattended mode (`MZ_DEV_PIPE_AUTO_APPROVE`)
 
-When the environment variable `MZ_DEV_PIPE_AUTO_APPROVE=1` is set, the orchestrator skips the AskUserQuestion call and logs `auto-approved (unattended mode)` to chat and to `.mz/task/<task_name>/state.md` under `## Auto-approvals`. The pre-gate block is still emitted so the chat transcript shows what would have been approved.
+When the environment variable `MZ_DEV_PIPE_AUTO_APPROVE=1` is set, the orchestrator skips the `AskUserQuestion` call and logs `auto-approved (unattended mode)` to chat and to `.mz/task/<task_name>/state.md` under `## Auto-approvals`. The plan message (Surface 1) is still emitted so the chat transcript shows what would have been approved.
 
-This bypass exists for CI and scheduled runs. It is opt-in only — never default-on. Variant gates with menu options (more than `Approve / Reject / Feedback`) MUST NOT auto-approve; they require an explicit value choice.
+This bypass exists for CI and scheduled runs. It is opt-in only — never default-on. Variant gates with menu actions (more than `Approve / Reject`) MUST NOT auto-approve; they require an explicit value choice.
 
 ## Variant: menu gates
 
-Some gates present more than three options (panel-composition gates with optional swaps, scope-selection gates with branch/global/working modes). For these, format each option as `**<Name>** — <one-sentence summary>` in the pre-gate block, then list the same options in the AskUserQuestion options array. The cost-preview line still applies and should be computed for the most-likely chosen option, with a note: `Cost varies by selection — estimate shown for <default option>`.
+Some gates present extra named actions beyond Approve/Reject (panel-composition gates with optional swaps, scope-selection gates with branch/global/working modes). For these, each named action becomes an `AskUserQuestion` `options` entry formatted as `**<Name>** — <one-sentence summary>`, and the plan message footer lists the same actions. Feedback still rides the free-text reply field — never add a "Feedback" option. The cost-preview line still applies and should be computed for the most-likely chosen option, with a note: `Cost varies by selection — estimate shown for <default option>`.

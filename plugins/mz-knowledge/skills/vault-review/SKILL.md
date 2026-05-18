@@ -54,41 +54,35 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 ### Phase 1.5: User approval — Review Queue
 
-**This orchestrator** (not a subagent) must present the review queue to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/review_queue.md` in full.
+**Pre-read**: Read `.mz/task/<task_name>/review_queue.md` in full and capture its contents into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `review_queue.md`. Never substitute a template, placeholder list, or status summary — the user must review the actual ranked queue (note titles, scores, maturity, outlinks) in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Review Queue Ready**
-Your queue of notes ranked by review due date, orphan status, and maturity. Review the queue below and approve to start the session.
+## Review queue ready for review — vault-review
 
-- **Approve** → proceed to Phase 2 (review session)
-- **Reject** → mark task as aborted, no notes updated
-- **Feedback** → adjust queue size or parameters, regenerate and re-present
-```
-
-Then invoke AskUserQuestion with this body (where `<verbatim review_queue.md contents>` is replaced by the bytes you just read):
-
-```
-Review queue for today:
-
-<verbatim review_queue.md contents>
+<verbatim contents of .mz/task/<task_name>/review_queue.md>
 
 MOC gaps detected: <N gaps from moc-gap-detector> — details in .mz/task/<task_name>/moc_gaps.md
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2 (review session)  ·  **Reject** → mark task aborted, no notes updated  ·  reply with feedback to revise
 ```
 
-Response handling:
+Emit the full verbatim contents of `.mz/task/<task_name>/review_queue.md` — do not substitute a path, summary, or placeholder.
 
-- **"approve"** → update state to `queue_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Number** (e.g. `5`) → regenerate the queue with that size, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves.
-- **Feedback** → adjust queue parameters (exclude a folder, change weights, filter by maturity), re-run Phase 1 if needed, return to this gate, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
+
+- question: `The review queue above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (review session) · **Reject** — mark task aborted, no notes updated
+
+**Response handling**:
+
+- **Approve** → update state to `queue_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust queue parameters (exclude a folder, change weights, filter by maturity, resize), re-run Phase 1 if needed, overwrite `review_queue.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 
@@ -115,7 +109,7 @@ Print this block before concluding — silent checks get skipped:
 
 ```
 vault-review verification:
-  [ ] Ranked queue presented via AskUserQuestion before session started
+  [ ] Ranked queue emitted verbatim as a chat message (Surface 1) and AskUserQuestion selector presented before session started
   [ ] `last_reviewed` updated only for notes the user confirmed reviewing
   [ ] MOC gaps surfaced alongside the queue (from moc-gap-detector)
   [ ] state.md Status is `completed` with Completed timestamp

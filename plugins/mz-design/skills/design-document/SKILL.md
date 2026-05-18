@@ -65,45 +65,43 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 ### Phase 4: User Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/design/<task_name>/design.md` with the Read tool, then read `wireframes.md` and `wcag-report.md` from the same directory. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires. See `phases/finalization.md` Step 4.1 for extended presentation rules and the revision-writer sub-loop.
+**Pre-read**: Read `.mz/design/<task_name>/design.md`, `.mz/design/<task_name>/wireframes.md`, and `.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires. See `phases/finalization.md` Step 4.1 for extended presentation rules and the revision-writer sub-loop.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `design.md`, `wireframes.md`, and `wcag-report.md` under labeled sections. Never substitute a path, line count, iteration summary, or `<verdict>` placeholder — the user must review the actual finalized design (including the contrast pairs) in the question itself, not have to open files separately. If any artifact is very long and would exceed AskUserQuestion's practical body size, surface that risk to the user via AskUserQuestion before truncating; never silently summarize.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the three artifacts verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/design/<task_name>/design.md`, `wireframes.md`, and `wcag-report.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Design ready for approval**
-All four specialist critics have approved the design, and the WCAG contrast report shows zero violations. Please review the finalized design document, wireframes, and WCAG report below.
+## Design ready for review — design-document
 
-- **Approve** → write `final-summary.md` and mark task complete
-- **Reject** → mark task aborted and stop
-- **Feedback** → dispatch design-revision-writer to apply changes, loop back to this gate
-```
+Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: PASS). All four specialist critics approved the design and the WCAG contrast report shows zero violations.
 
-Invoke AskUserQuestion with this body (where each `<verbatim ...>` marker is replaced by the bytes you just read):
+### Design Document (design.md)
 
-```
-Design document ready (<N>/5 iterations, Aggregate: <verdict>, WCAG: PASS). Please review the finalized design:
-
-## Design Document (design.md)
 <verbatim design.md contents>
 
-## Wireframes (wireframes.md)
+### Wireframes (wireframes.md)
+
 <verbatim wireframes.md contents>
 
-## WCAG Contrast Report (wcag-report.md)
+### WCAG Contrast Report (wcag-report.md)
+
 <verbatim wcag-report.md contents>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → write `final-summary.md` and mark the task complete  ·  **Reject** → mark the task aborted, nothing more written  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the design artifacts in the question body, they live in the plan message above:
+
+- question: `The finalized design above is ready for review.`
+- options: **Approve** — write `final-summary.md` and complete the task · **Reject** — abort the task, write nothing further
 
 **Response handling**:
 
-- **"approve"** → update `state.md` to `complete`, proceed to write `final-summary.md`.
-- **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not write `final-summary.md`.
-- **Feedback** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to this gate, re-read the updated artifact(s), and re-present **via AskUserQuestion** with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
+- **Approve** → update `state.md` to `complete`, proceed to write `final-summary.md`.
+- **Reject** → update `state.md` to `aborted_by_user` and stop. Do not write `final-summary.md`.
+- **Any other reply (feedback)** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to this gate, re-read the updated artifact(s), and re-emit the entire plan message from scratch with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
 
 ## Techniques
 

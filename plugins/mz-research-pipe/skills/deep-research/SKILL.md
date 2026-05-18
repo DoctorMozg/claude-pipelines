@@ -61,40 +61,31 @@ Example for "State of WebAssembly in 2026":
 - **Ecosystem** — package managers, frameworks, developer tools
 - **Production usage** — companies using WASM in production, case studies
 
-**This orchestrator** (not a subagent) must present the decomposition to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-write + capture**: Write the decomposition to `.mz/task/<task_name>/decomposition.md` as a numbered list of 3-7 subtopics, each with a 1-3 sentence description and rationale. Then Read that file with the Read tool to capture its full contents into context for the gate.
+**Pre-write + capture**: Write the decomposition to `.mz/task/<task_name>/decomposition.md` as a numbered list of 3-7 subtopics, each with a 1-3 sentence description and rationale. Then Read that file with the Read tool to capture its full contents into context for the gate.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `decomposition.md`. Never substitute a path, status summary, count, or `<numbered list of subtopics with descriptions>` placeholder — the user must review the actual decomposition in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/decomposition.md` — do not substitute a path, summary, or placeholder:
 
 ```
-**Decomposition ready for review**
-The research topic has been broken into 3–7 independent subtopics, each researchable independently and broad enough to warrant substantial research.
+## Research decomposition ready for review — deep-research
 
-- **Approve** → proceed to parallel dispatch of pipeline-web-researcher agents across all subtopics
-- **Reject** → abort the task and mark state as aborted_by_user
-- **Feedback** → adjust the decomposition and re-present the updated list for further review
+<verbatim contents of .mz/task/<task_name>/decomposition.md>
+
+---
+**Approve** → proceed to parallel dispatch of pipeline-web-researcher agents across all subtopics  ·  **Reject** → abort the task, mark state aborted_by_user  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with this body (where `<verbatim decomposition.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the decomposition in the question body:
 
-```
-Research decomposition ready. Please review:
-
-<verbatim decomposition.md contents>
-
-Feedback examples: add a subtopic, merge two topics, or drop one.
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The research decomposition above is ready for review.`
+- options: **Approve** — proceed to parallel dispatch of pipeline-web-researcher agents · **Reject** — abort the task, mark state aborted_by_user
 
 **Response handling**:
 
-- **"approve"** → proceed to Step 2 (dispatch researchers).
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust the decomposition accordingly, overwrite `decomposition.md`, return to this gate, re-read `decomposition.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
+- **Approve** → proceed to Step 2 (dispatch researchers).
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust the decomposition accordingly, overwrite `decomposition.md`, return to this gate, re-read `decomposition.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
 
 ### 2. Dispatch parallel pipeline-web-researcher agents
 

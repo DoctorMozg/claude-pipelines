@@ -54,72 +54,69 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 
 ### Phase 1.5: User Approval — Proposed Atomic Notes
 
-**This orchestrator** (not a subagent) must present proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/proposals.md` in full. Before invoking AskUserQuestion, emit a text block to the user:
+**Pre-read**: Read `.mz/task/<task_name>/proposals.md` and capture the full contents into context.
 
-```
-**Proposed atomic notes ready for approval**
-Splitting your input into N atomic notes. Each note will carry claim-style title and status: draft frontmatter before writing to vault.
-
-- **Approve** → proceed to Phase 2, write all approved notes with links
-- **Reject** → abort, discard proposals, do not write
-- **Feedback** → describe changes, loop back to Phase 1 for re-atomization
-```
-
-Then invoke AskUserQuestion with the full verbatim contents of `proposals.md` — a numbered list of proposed notes, each with its claim-style title and core idea. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+**Surface 1 — emit the plan message.** Output the proposals verbatim as a normal markdown chat message:
 
 ```
-Proposed atomic notes (N from your input):
+## Proposals ready for review — process-notes
 
-1. "<Claim-style title here>"
-   Core: One-sentence summary of the single idea...
+<verbatim contents of .mz/task/<task_name>/proposals.md>
 
-2. "<Second title>"
-   Core: ...
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2, write all approved notes with links  ·  **Reject** → abort, discard proposals, do not write  ·  reply with feedback to revise (or a number list like `1,3` to skip specific notes)
 ```
+
+Emit the full verbatim contents of `.mz/task/<task_name>/proposals.md` — do not substitute a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the proposals in the question body, they live in the plan message above:
+
+- question: `The proposed atomic notes above are ready for review.`
+- options:
+  - **Approve** — proceed to Phase 2, write all notes with links
+  - **Reject** — abort, discard proposals, do not write
 
 Response handling:
 
-- **"approve"** → update state to `drafts_approved`, proceed to Phase 2 with all notes.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Approve** → update state to `drafts_approved`, proceed to Phase 2 with all notes.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Number list** (e.g. `1,3`) → mark those note numbers as skipped, proceed to Phase 2 with the remaining set.
-- **Feedback** → pass feedback to the atomization-proposer, re-run Phase 1, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Any other reply (feedback)** → pass feedback to the atomization-proposer, re-run Phase 1, overwrite `.mz/task/<task_name>/proposals.md`, return to this gate, re-read the updated proposals, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2.5: User Approval — Proposed Links
 
-**This orchestrator** (not a subagent) must present link proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/link_proposals.md` in full. Before invoking AskUserQuestion, emit a text block to the user:
+**Pre-read**: Read `.mz/task/<task_name>/link_proposals.md` and capture the full contents into context.
 
-```
-**Proposed links ready for approval**
-N new notes ready to be linked to existing vault notes. Review relationship types and reasons before approving.
-
-- **Approve** → write all proposed links, complete the task
-- **Reject** → abort link writing, notes remain unlinked
-- **Feedback** → specify links to skip, re-present approved set
-```
-
-Then invoke AskUserQuestion with the full verbatim contents of `link_proposals.md` — proposed links grouped per new note with the relationship type and reason. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+**Surface 1 — emit the plan message.** Output the link proposals verbatim as a normal markdown chat message:
 
 ```
-Proposed links for <N> new notes:
+## Link proposals ready for review — process-notes
 
-"<Note Title>" should link to:
-  → [[Existing Note]] — <relationship: extends|supports|contradicts|example-of|prerequisite-for|see-also>
-    Reason: one sentence...
+<verbatim contents of .mz/task/<task_name>/link_proposals.md>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → write all proposed links and complete the task  ·  **Reject** → abort link writing, notes remain unlinked  ·  reply with feedback to revise (or a number list like `1,3` to skip specific links)
 ```
+
+Emit the full verbatim contents of `.mz/task/<task_name>/link_proposals.md` — do not substitute a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the link proposals in the question body, they live in the plan message above:
+
+- question: `The proposed links above are ready for review.`
+- options:
+  - **Approve** — write all proposed links and complete the task
+  - **Reject** — abort link writing, notes remain unlinked
 
 Response handling:
 
-- **"approve"** → update state to `links_approved`, write all links, proceed to completion.
-- **"reject"** → update state to `aborted_by_user` for links (notes already written in Phase 2 remain on disk without links).
-- **Feedback** → skip specified links, accept the rest, re-present **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
+- **Approve** → update state to `links_approved`, write all links, proceed to completion.
+- **Reject** → update state to `aborted_by_user` for links (notes already written in Phase 2 remain on disk without links).
+- **Number list** (e.g. `1,3`) → mark those link numbers as skipped, proceed with the remaining set.
+- **Any other reply (feedback)** → skip specified links or apply feedback, re-present the updated set. Return to Surface 1, re-read `.mz/task/<task_name>/link_proposals.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
 
 ## Techniques
 

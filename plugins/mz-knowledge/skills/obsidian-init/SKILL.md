@@ -45,47 +45,37 @@ Discipline skill that bootstraps a new Obsidian vault (or retrofits an existing 
 
 Unless `--minimal` was passed, ask the user via AskUserQuestion (single question, all items):
 
-```
-Vault bootstrap interview for <vault path>.
+- question:
+  ```
+  Vault bootstrap interview for <vault path>.
 
-1. Vault purpose — what kind of knowledge? (e.g., "personal second brain", "team engineering wiki", "research notes")
-2. Primary topics — 3-5 top-level categories for permanent notes (e.g., AI, Engineering, Business)
-3. Note types — which do you use? (permanent, fleeting, daily, moc, resource, project — all enabled by default)
-4. Frontmatter style — minimal (created, type, tags) or extended (+ updated, status, source, epistemic_status)?
-5. Tag taxonomy — flat (#ai, #engineering) or hierarchical (#ai/llm/claude, #status/draft)?
+  1. Vault purpose — what kind of knowledge? (e.g., "personal second brain", "team engineering wiki", "research notes")
+  2. Primary topics — 3-5 top-level categories for permanent notes (e.g., AI, Engineering, Business)
+  3. Note types — which do you use? (permanent, fleeting, daily, moc, resource, project — all enabled by default)
+  4. Frontmatter style — minimal (created, type, tags) or extended (+ updated, status, source, epistemic_status)?
+  5. Tag taxonomy — flat (#ai, #engineering) or hierarchical (#ai/llm/claude, #status/draft)?
 
-Defaults (reply 'defaults' to accept all):
-  Purpose: personal second brain
-  Topics: AI, Engineering, Business, Career
-  Note types: all six
-  Frontmatter: extended
-  Tags: hierarchical
+  Or choose one of the quick options below.
+  ```
+- options:
+  - **Defaults** — accept all defaults (personal second brain, AI/Engineering/Business/Career topics, all six note types, extended frontmatter, hierarchical tags)
+  - **Minimal** — bare structure only, no interview answers applied
 
-Reply with answers, 'defaults', or 'minimal' for bare structure only.
-```
-
-Record answers in `state.md` under `VaultPurpose`, `PrimaryTopics`, `NoteTypes`, `FrontmatterStyle`, `TagStyle`.
+Record answers (or the chosen option) in `state.md` under `VaultPurpose`, `PrimaryTopics`, `NoteTypes`, `FrontmatterStyle`, `TagStyle`.
 
 ### Phase 0.5: User Approval — Scaffold Plan
 
-**This orchestrator** (not a subagent) must present the scaffold plan to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Build the plan from interview answers (or defaults). Present the full plan content in the question body. Do not reference an external file or provide a summary — present the complete plan text directly.
+Build the plan from interview answers (or defaults). Write the scaffold plan to `.mz/task/<task_name>/scaffold_plan.md` so it can be read and re-emitted on each loop iteration.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Pre-read**: Read `.mz/task/<task_name>/scaffold_plan.md` and capture the full contents into context.
 
-```
-**Vault scaffold plan ready for review**
-Folder structure, CLAUDE.md, and schema templates generated from your interview answers. Existing content will be preserved.
-
-- **Approve** → proceed to Phase 1 and write all scaffolding files
-- **Reject** → abort the task and stop; no files will be created
-- **Feedback** → provide specific changes to the plan; we'll adjust and re-present for approval
-```
-
-Present:
+**Surface 1 — emit the plan message.** Output the scaffold plan verbatim as a normal markdown chat message:
 
 ```
+## Scaffold plan ready for review — obsidian-init
+
 Scaffold plan for <vault path>:
 
 Folders to create:
@@ -103,14 +93,24 @@ Existing content preserved:
 - <list of files/folders that will NOT be overwritten>
 </if>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 1, write all scaffolding files  ·  **Reject** → abort the task, no files created  ·  reply with feedback to revise
 ```
+
+Emit the full verbatim contents of `.mz/task/<task_name>/scaffold_plan.md` — do not substitute a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body, it lives in the plan message above:
+
+- question: `The scaffold plan above is ready for review.`
+- options:
+  - **Approve** — proceed to Phase 1 and write all scaffolding files
+  - **Reject** — abort the task, no files will be created
 
 Response handling:
 
-- **"approve"** → update state to `plan_approved`, proceed to Phase 1.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust the plan, re-present via AskUserQuestion. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
+- **Approve** → update state to `plan_approved`, proceed to Phase 1.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust the plan, overwrite `.mz/task/<task_name>/scaffold_plan.md`, return to this gate, re-read the updated plan, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
 
 ### Phase 1: Scaffold Vault
 

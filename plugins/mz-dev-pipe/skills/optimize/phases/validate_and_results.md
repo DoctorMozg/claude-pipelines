@@ -60,29 +60,41 @@ Rate confidence in the banked change from **measured signals only** — never fr
 
 **Approval gate.** Present the iteration's result for sign-off. See [`../../shared/approval-gate.md`](../../shared/approval-gate.md) for the two-surface pattern and the `MZ_DEV_PIPE_AUTO_APPROVE` bypass.
 
-Emit the chat-visible pre-gate block:
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+
+**Pre-read**: Read `.mz/task/<task_name>/measurements/iter<N>_validated.md` with the Read tool and capture its full contents into context. Also capture the promoted diff, correctness result, review findings, and confidence rating.
+
+**Surface 1 — emit the plan message.** Output the iteration result verbatim as a normal markdown chat message. Emit the full verbatim contents of the validation measurement artifact and supporting results — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Iteration <N> Result — Sign-off**
+## Iteration <N> result ready for review — optimize
+
 <H# title> was applied and measured. <metric>: <baseline> → <validated> <unit>
 (<measured>% <faster|smaller|cheaper>, harness-sourced, CV <cv>).
 Correctness: <status>. Review: <clean | N findings>. Confidence: <high|medium|low>.
 
-- **Approve** → bank this change; the loop re-profiles (Phase 6)
-- **Reject** → revert this change; record it and re-enter Phase 4 for the next hypothesis
-- **Feedback** → adjust before banking (e.g. address a review finding), then re-validate
+<verbatim contents of iter<N>_validated.md>
 
-Every number above traces to a measurement artifact under
-.mz/task/<task_name>/measurements/.
+<verbatim diff of the promoted change>
+
+<verbatim correctness result and review findings>
+
+---
+**Approve** → bank this change; the loop re-profiles (Phase 6)  ·  **Reject** → revert this change; record it and re-enter Phase 4 for the next hypothesis  ·  reply with feedback to revise
+
+Every number above traces to a measurement artifact under .mz/task/<task_name>/measurements/.
 ```
 
-Then invoke AskUserQuestion with the iteration result in the body — the **measured** before / after (each tagged harness-sourced, with its measurement-artifact path), the diff, the correctness result, the review findings, and the confidence rating — closing with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the iteration result in the question body, it lives in the plan message above:
+
+- question: `The iteration result above is ready for sign-off.`
+- options: **Approve** — bank this change, the loop re-profiles (Phase 6) · **Reject** — revert this change, record it and re-enter Phase 4 for the next hypothesis
 
 **Response handling:**
 
 - **Approve** → the change is banked. Record the new running-best value and proceed to Phase 6.
 - **Reject** → revert the promoted change, record it in the history buffer, and re-enter Phase 4 for the next backlog hypothesis (or Phase 6 if the backlog is exhausted).
-- **Feedback** → apply the requested adjustment, re-validate from §5.1, and re-present the gate with the full new result.
+- **Any other reply (feedback)** → apply the requested adjustment, re-validate from §5.1, return to this gate, re-read the updated artifacts, and re-emit the entire plan message from scratch with the full new result. This is a loop — repeat until the user explicitly approves. Never bank the change without explicit approval.
 - **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → bypass per `../../shared/approval-gate.md`; log `auto-approved (unattended mode)`. The Phase 4.7 manual checkpoint is **not** covered by this bypass — if the contract is `manual`, that checkpoint already ran in Phase 4 with a real human.
 
 ## 5.5 Record and proceed

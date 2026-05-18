@@ -83,40 +83,39 @@ Update `state.md` `Phase` to `draft_v1_written`.
 
 ## Phase 3: Proposal review + edit loop
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. Interactive — must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Pre-gate block:
+**Pre-read**: Read `<run_dir>/_pitch_temp/draft_v1.md` (or the current `draft_vN.md`) with the Read tool. Capture its full contents into context, along with the word count, tone, engagement type assumed, and any `MILESTONE_UNGROUNDED:` warnings surfaced by the writer.
+
+**Surface 1 — emit the plan message.** Output the proposal draft verbatim as a normal markdown chat message. Emit the full verbatim contents of `<run_dir>/_pitch_temp/draft_vN.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Proposal draft ready for review**
-A freelance proposal has been drafted for <gig.title>. Word count: <N>. Tone: <tone>. Engagement type assumed: <engagement_type>.
+## Proposal ready for review — freelance-pitch
 
-<list any MILESTONE_UNGROUNDED warnings here, one per line>
+Drafted for <gig.title>. Word count: <N>. Tone: <tone>. Engagement type assumed: <engagement_type>.
 
-- **Approve** → write to <run_dir>/proposals/<gig_slug>.md and finish
-- **Regenerate** → re-run the proposal-writer with the same inputs (up to 2 total regenerates)
-- **Feedback** → re-run the proposal-writer with your feedback appended to the dispatch prompt
-- **Cancel** → drop the draft, no proposal saved
+<list any MILESTONE_UNGROUNDED warnings here, one per line, if present>
+
+<verbatim contents of draft_vN.md>
+
+---
+**Approve** → write to <run_dir>/proposals/<gig_slug>.md and finish  ·  **Regenerate** → re-run the proposal-writer with the same inputs  ·  **Cancel** → drop the draft, nothing saved  ·  reply with feedback to revise
 ```
 
-AskUserQuestion body (verbatim draft inline):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the proposal draft in the question body, it lives in the plan message above:
 
-````
-Proposal draft for <gig.title>. Please review:
+- question: `The proposal draft above is ready for review.`
+- options:
+  - **Approve** — write the proposal to `<run_dir>/proposals/<gig_slug>.md` and finish
+  - **Regenerate** — re-run the proposal-writer with the same inputs (up to 2 total regenerates)
+  - **Cancel** — drop the draft, no proposal saved
 
-```markdown
-<verbatim contents of draft_v1.md>
-```
+**Response handling**:
 
-Type **Approve** to save, **Regenerate** to retry with the same prompt, type your feedback to retry with your changes, or **Cancel** to drop the draft.
-````
-
-Response handling:
-
-- **"approve"** → proceed to Phase 4.
-- **"regenerate"** → if regenerate count < 2, re-dispatch proposal-writer with the same inputs, overwrite `draft_vN.md`, loop back. If count == 2, AskUserQuestion: "Two regenerates exhausted. Approve current draft, provide feedback, or Cancel?"
-- **Feedback (free text)** → re-dispatch proposal-writer with `Additional feedback: <text>` appended to the dispatch prompt. Loop back.
-- **"cancel"** → update `state.md` `Status` to `aborted_by_user`, drop `_pitch_temp`, stop.
+- **Approve** → proceed to Phase 4.
+- **Regenerate** → if regenerate count < 2, re-dispatch proposal-writer with the same inputs, overwrite `draft_vN.md`, return to Surface 1, re-read and re-emit the full updated plan message, re-present the selector. If count == 2, call AskUserQuestion: "Two regenerates exhausted. Approve current draft, provide feedback, or Cancel?"
+- **Cancel** → update `state.md` `Status` to `aborted_by_user`, drop `_pitch_temp`, stop.
+- **Any other reply (feedback)** → re-dispatch proposal-writer with `Additional feedback: <text>` appended to the dispatch prompt, overwrite `draft_vN.md`, return to Surface 1, re-read and re-emit the full updated plan message, re-present the selector. This is a loop — repeat until the user explicitly approves or cancels.
 
 ## Phase 4: Write final proposal file
 
