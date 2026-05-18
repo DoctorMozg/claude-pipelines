@@ -9,7 +9,9 @@ Every approval gate uses the **two-surface plan pattern**, modeled on Claude Cod
 Every gate must contain these elements, in order:
 
 1. **Delegation guard**: `**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.`
+
 1. **Mandatory pre-read**: Before emitting the gate, the gate text must instruct the orchestrator to Read the artifact and capture its full contents into context (e.g., `Read .mz/task/<task_name>/plan.md and capture the full contents`). Name the exact artifact path (`plan.md`, `strategy.json`, `findings.md`, etc.) — do not say "the artifact" generically.
+
 1. **Surface 1 — the plan message** (a normal markdown chat message, not a tool call): After the pre-read, the orchestrator emits the artifact's **full verbatim contents** as an ordinary chat message so its markdown renders fully and survives in scrollback. The gate text must spell out the structure with a fenced template:
 
    ```
@@ -22,9 +24,13 @@ Every gate must contain these elements, in order:
    ```
 
    The verbatim requirement is absolute: never substitute a path, line count, status summary, or `<placeholder>` token for the artifact body. State it explicitly in the gate: `Emit the full verbatim contents of <artifact_path> as a chat message — do not substitute a path, summary, or placeholder.`
+
 1. **Surface 2 — the AskUserQuestion selector**: Immediately after the plan message, the orchestrator calls AskUserQuestion. The selector is short: `question` is a single orientation line pointing at the plan message above (e.g., `The plan above is ready for review.`). The `question` must NOT re-embed the verbatim artifact — that lives in Surface 1. Named `options` are exactly two: **Approve** and **Reject**. Do not add a third "Feedback" option — AskUserQuestion always exposes a free-text reply field, and feedback rides that field.
+
 1. **Variant gates** (conditional): if the gate offers selectable named actions beyond Approve/Reject — for example a per-note review menu (`Done | Skip | Edit | Promote | Archive | Abort`) or a strategy picker — each named action becomes an `options` entry presented as `**<Name>** — <one-sentence summary of what choosing it means>`. Feedback still rides the free-text reply field; never add an explicit "Feedback" option. The canonical variant gate lives in `plugins/mz-knowledge/skills/vault-review/phases/review_session.md` (per-note review action gate).
+
 1. **Response handling** as a labeled section:
+
    - **Approve** → update state, proceed to the next phase.
    - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
    - **Any other reply (feedback)** → incorporate it, re-run the upstream phase if needed, overwrite the artifact, then return to this gate: re-read the updated artifact and **re-emit the entire plan message from scratch** (full verbatim — never a diff, never a summary, since context compaction may have destroyed the user's memory of earlier iterations), then re-present the selector. Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
