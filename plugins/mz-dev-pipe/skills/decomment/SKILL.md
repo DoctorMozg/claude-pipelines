@@ -34,7 +34,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 | 1   | Scan          | `phases/scan.md`        | Enumerate target files via scope, filter to code extensions, skip codegen            | `scope_files.txt`, `candidates.md`                         |
 | 2   | Propose       | `phases/dispatch.md`    | Dispatch `pipeline-decomment-proposer` in waves of `MAX_PARALLEL`, collect proposals | `dispatch_plan.md`, `proposals/<slug>.md`                  |
 | 3   | Consolidate   | `phases/consolidate.md` | Merge proposals, validate non-overlap, build diff for review                         | `diff.md`, `edits.json`, `skipped.md`, `apply_warnings.md` |
-| 3.5 | Gate (single) | inline SKILL.md         | Two-surface gate: pre-gate block + AskUserQuestion with verbatim diff                | `state.md` → `diff_approved` or `aborted_by_user`          |
+| 3.5 | Gate (single) | inline SKILL.md         | Two-surface plan gate: verbatim diff as a plan message + AskUserQuestion selector    | `state.md` → `diff_approved` or `aborted_by_user`          |
 | 4   | Apply         | `phases/apply.md`       | Apply approved edits via Edit tool, record success/failure                           | `apply_log.md`, `apply_failures.md`, `summary.md`          |
 
 ### Constants

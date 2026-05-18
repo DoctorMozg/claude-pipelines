@@ -104,7 +104,7 @@ Legacy fields shared with job-search (`search_queries`, `title_aliases`, `biling
 
 **Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
-```
+````
 ## Strategy ready for review — freelance-search
 
 Built from your CV plus preferences and selected region. Derived discipline, engagement types, rate floor (in all three formats), region eligibility, and scoring weights are below.
@@ -115,7 +115,7 @@ Built from your CV plus preferences and selected region. Derived discipline, eng
 
 ---
 **Approve** → proceed to Phase 2 (source assembly + scout)  ·  **Reject** → task marked aborted, no scouting runs  ·  reply with feedback to revise
-```
+````
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy JSON in the question body, it lives in the plan message above:
 
