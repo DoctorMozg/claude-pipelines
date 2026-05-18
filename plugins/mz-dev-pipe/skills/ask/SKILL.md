@@ -44,12 +44,12 @@ If empty or ambiguous, ask the user to state the question via AskUserQuestion. N
 
 ### Phase Overview
 
-| #   | Phase                       | Reference            | Loop? |
-| --- | --------------------------- | -------------------- | ----- |
-| 0   | Setup & Classification      | inline below         | —     |
-| 1   | Codebase Research           | `phases/research.md` | —     |
-| 2   | Web Research (conditional)  | `phases/research.md` | —     |
-| 3   | Synthesis & Answer          | `phases/answer.md`   | —     |
+| #   | Phase                      | Reference            | Loop? |
+| --- | -------------------------- | -------------------- | ----- |
+| 0   | Setup & Classification     | inline below         | —     |
+| 1   | Codebase Research          | `phases/research.md` | —     |
+| 2   | Web Research (conditional) | `phases/research.md` | —     |
+| 3   | Synthesis & Answer         | `phases/answer.md`   | —     |
 
 Read the relevant phase file when you reach that phase. Do not read all phase files upfront.
 
