@@ -92,6 +92,7 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
   ```
 
 - **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
+
   - question: `The translation plan above is ready for review.`
   - options: **Approve** — proceed to Phase 2 (parallel translation and Tier-1 verification) · **Reject** — task marked aborted, no files written
 
