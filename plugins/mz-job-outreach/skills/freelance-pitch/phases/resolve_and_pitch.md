@@ -35,18 +35,13 @@ Strategy file: <path or null>
 
 Read the CV. If `latest_run/state.md` exists, look up the CV path from there. Otherwise AskUserQuestion to collect a fresh CV path (same validation as `/freelance-search` Phase 0).
 
-Collect tone preference. Pre-gate block:
+Collect tone preference — a closed-choice input collector. Call `AskUserQuestion` once:
 
-```
-**Tone preference for this proposal**
-Choose how the proposal should read. The proposal-writer enforces a 350-word cap and grounding rules regardless; this only shifts voice.
-
-- **Concise** — 200–280 words, terse sentences, no warm-up. Recommended for vetted-network gigs where reviewers skim.
-- **Conversational** — 280–340 words, warmer tone, allows contractions and one rhetorical line.
-- **Formal** — 280–340 words, no contractions, full company names, signed off with full name.
-```
-
-AskUserQuestion options (single-select): `Concise`, `Conversational`, `Formal`.
+- question: `Choose how the proposal should read. The proposal-writer enforces a 350-word cap and grounding rules regardless; this only shifts voice.`
+- options:
+  - **Concise** — 200–280 words, terse sentences, no warm-up; best for vetted-network gigs where reviewers skim
+  - **Conversational** — 280–340 words, warmer tone, allows contractions and one rhetorical line
+  - **Formal** — 280–340 words, no contractions, full company names, signed off with full name
 
 ## Phase 1.5: Tone preference approval
 
