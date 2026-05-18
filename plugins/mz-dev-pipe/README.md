@@ -14,6 +14,7 @@ Autonomous multi-agent development pipelines for Claude Code. Each skill orchest
 | Clean up / refactor existing code             | `/cleanup`                                                   |
 | Make something measurably faster or smaller   | `/optimize`                                                  |
 | Verify the project (tests, lint, types)       | `/verify`                                                    |
+| Get a researched answer to a question         | `/ask`                                                       |
 | See what breaks if you change X               | `/audit depth:deep scope:branch` (auto-invokes blast-radius) |
 | Understand existing code                      | `/explain` (now in `mz-research-pipe`)                       |
 | Research a topic across the web               | `/deep-research` (now in `mz-research-pipe`)                 |
@@ -102,6 +103,22 @@ Runs the full test suite, linters, formatters, type checkers, analyzes test cove
 ```
 
 **Pipeline**: Tooling Detection → Tests → Lint → Type Check → Coverage Review → Quality Review → Failure Diagnosis → Report
+
+______________________________________________________________________
+
+### `/ask` — Researched Question Answering
+
+Answers a question by researching the codebase and, when the question involves an external library, API, or concept, the web. Classifies the question, dispatches researcher agents in parallel, and synthesizes a direct, sourced answer. Read-only — never modifies code.
+
+```
+/ask how does the auth middleware refresh tokens
+/ask why does the build use esbuild instead of webpack
+/ask does this repo support multi-tenant auth
+```
+
+**Pipeline**: Setup & Classification → Codebase Research → Web Research (conditional) → Synthesis & Answer
+
+**Not for** diagram-rich code walkthroughs (use `/explain`) or testable hypotheses (use `/debug certainty:low`).
 
 ______________________________________________________________________
 
