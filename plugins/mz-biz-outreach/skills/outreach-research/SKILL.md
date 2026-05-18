@@ -85,7 +85,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
-```
+````
 ## Strategy ready for review — outreach-research
 
 ```json
@@ -94,7 +94,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 ---
 **Approve** → proceed to Phase 2 (source research and company discovery)  ·  **Reject** → mark task aborted, no outreach data generated  ·  reply with feedback to revise
-```
+````
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy in the question body, it lives in the plan message above:
 

@@ -103,7 +103,7 @@ The legacy fields (`derived_from_cv`, `preferences`, `search_queries`, `location
 
 **Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
-```
+````
 ## Strategy ready for review — job-search
 
 Built from your CV plus preferences. Derived titles, skills, region, location-eligibility rule, and source plan are below.
@@ -114,7 +114,7 @@ Built from your CV plus preferences. Derived titles, skills, region, location-el
 
 ---
 **Approve** → proceed to Phase 2 (source assembly + scout)  ·  **Reject** → task marked aborted, no scraping runs  ·  reply with feedback to revise
-```
+````
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy JSON in the question body, it lives in the plan message above:
 

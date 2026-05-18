@@ -34,7 +34,7 @@ Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the ful
 
 Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
-```
+````
 ## Strategy ready for review — outreach-research
 
 ```json
@@ -43,7 +43,7 @@ Output the strategy verbatim as a normal markdown chat message. Emit the full ve
 
 ---
 **Approve** → proceed to Phase 2 (source research)  ·  **Reject** → abort the task, no sources will be researched  ·  reply with feedback to revise
-```
+````
 
 ### Surface 2 — call AskUserQuestion
 
