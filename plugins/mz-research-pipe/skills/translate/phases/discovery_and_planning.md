@@ -278,49 +278,35 @@ ______________________________________________________________________
 
 ## Phase 1.5: User Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Goal**: explicit user approval for the plan and its fixed verification cost before any translator dispatches run. No chunk enters Phase 2 without an `approve` reply in this loop.
+**Goal**: explicit user approval for the plan and its fixed verification cost before any translator dispatches run. No chunk enters Phase 2 without explicit approval in this loop.
 
-**Presentation**. Show the full contents of `<task_dir>/translation_plan.md` followed by the verification cost block (written inline in 1.8). Each bullet is one line, values plugged in from discovery:
+**Pre-read**: Read `<task_dir>/translation_plan.md` with the Read tool. Capture the full contents (files, languages, output mode, seeded glossary summary, verification cost block including `total_chunks` from `state.md`, wave plan, and any `INPLACE_DESTRUCTIVE` flags) into context.
 
-- `Total translator chunks: <N>` — taken from `state.md` field `total_chunks`.
-- `Tier-2 judge dispatches: ceil(N / MAX_JUDGE_BATCH) parallel calls` — one parallel judge wave per batch.
-- `Expected Tier-3 lookups assuming ~20% of chunks flagged uncertain: up to MAX_WIKTIONARY_LOOKUPS Wiktionary calls and up to MAX_MYMEMORY_QUERIES MyMemory queries across the whole run`.
-- `Back-translation dispatched only on chunks with a Tier-2 Critical: finding` — so the back-translation cost is bounded by Tier-2 severity, not by chunk count.
-- `Estimated wall-clock range (wave count × ~30s + judge batches × ~20s + Tier-3 overhead)` — render as a range, not a point estimate.
-- `Output paths and mode (with INPLACE_DESTRUCTIVE highlighted if applicable)` — echo the plan's file list flag column so the user sees destructive writes up front.
-- `verification is always on; no opt-in flag`.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<task_dir>/translation_plan.md` — do not substitute a path, summary, or placeholder:
 
 ```
-**Translation Plan Ready for Review**
+## Translation plan ready for review — translate
 
-You are about to approve (or request changes to) the complete translation plan. The plan specifies which files will be translated, the target language, output mode, seeded glossary, and the full cost of verification (Tier-1 structural, Tier-2 judge, Tier-3 uncertainty-driven).
+<verbatim contents of <task_dir>/translation_plan.md>
 
-- **Approve** → proceed to Phase 2 (translator wave dispatch)
-- **Reject** → task marked aborted, no files written
-- **Feedback** → re-run discovery and planning steps incorporating your input, loop back here
+---
+**Approve** → proceed to Phase 2 (parallel translation and Tier-1 verification)  ·  **Reject** → task marked aborted, no files written  ·  reply with feedback to revise
 ```
 
-**AskUserQuestion prompt**. Present the plan and cost block in the question body. The prompt ends literally with:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
 
-```
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The translation plan above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (parallel translation and Tier-1 verification) · **Reject** — task marked aborted, no files written
 
-Do not shorten, rephrase, or add trailing text — the literal string is what the response-handling bullets match against.
+**Response handling**:
 
-**Response handling**. Parse the reply into exactly one branch:
+- **Approve** → state `plan_approved`, record `approved_at` timestamp, proceed to Phase 2.
+- **Reject** → state `aborted_by_user`, write a one-line termination note to `state.md`, return control to the user. Do not dispatch anything.
+- **Any other reply (feedback)** → incorporate (drop/add files, change mode, edit glossary, rename paths, change chunking), re-run affected sub-steps (typically 1.2, 1.5, 1.6, 1.7, 1.8 — 1.1 and 1.4 only re-run if the user changes the language or argument shape), overwrite the plan, return to this gate, re-read `<task_dir>/translation_plan.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. Increment `approval_iterations` on every re-present. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-- **"approve"** → state `plan_approved`, record `approved_at` timestamp, proceed to Phase 2.
-- **"reject"** → state `aborted_by_user`, write a one-line termination note to `state.md`, return control to the user. Do not dispatch anything.
-- **Feedback** → incorporate (drop/add files, change mode, edit glossary, rename paths, change chunking), re-run affected sub-steps (typically 1.2, 1.5, 1.6, 1.7, 1.8 — 1.1 and 1.4 only re-run if the user changes the language or argument shape), overwrite the plan, return to this gate and re-present **via AskUserQuestion**. **This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.** Increment `approval_iterations` on every re-present. Bounded by `MAX_APPROVAL_ITERATIONS`; past that bound, escalate via `AskUserQuestion` with the last three feedback messages so the user can abort or give targeted guidance.
-
-Each iteration re-presents the full plan and cost block — never diff-only, never summary-only. Context compaction may have destroyed the user's memory of earlier iterations.
-
-**Feedback parsing**. Parse literal `approve` (case-insensitive, trimmed) as approval. Parse literal `reject` / `abort` / `cancel` / `stop` (case-insensitive, trimmed) as rejection. Everything else is feedback. A conditional approval ("I approve if you drop the README") is feedback with conditions — do NOT auto-advance; re-present after applying them.
+**Feedback parsing**. Any reply that is not an explicit Approve or Reject is feedback. A conditional approval ("I approve if you drop the README") is feedback with conditions — do NOT auto-advance; re-present after applying them.
 
 **Feedback examples and the expected orchestrator action**:
 

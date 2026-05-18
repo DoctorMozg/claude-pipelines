@@ -104,26 +104,15 @@ Update state phase to `panel_selected`.
 
 ## Phase 1.5: User Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/panel.md` with the Read tool. Capture the full file contents (5 selected panelist agents with one-sentence justifications) into context. Also list the 5 not-selected lenses inline (derive from the 16-lens table minus the 5 in `panel.md`).
+**Pre-read**: Read `.mz/task/<task_name>/panel.md` with the Read tool. Capture the full file contents (5 selected panelist agents with one-sentence justifications) into context. Also derive the 11 not-selected lenses from the 16-lens table minus the 5 in `panel.md`.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `panel.md` plus the inline list of not-selected lenses. Never substitute a path, status summary, or `<list with justifications>` placeholder — the user must review the actual panel composition in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the panel verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/panel.md` plus the inline list of not-selected lenses — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Panel Review**
-5-person panel selected for brainstorming "<topic>". Shows selected lenses with justifications and the 11 not-selected alternatives.
+## Panel ready for review — brainstorm
 
-- **Approve** → proceed to Phase 2 (Ideation), dispatch panel in parallel
-- **Reject** → mark task aborted, stop processing
-- **Feedback** → adjust panel selection per input, re-present for approval
-```
-
-Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
-
-```
 Panel assembled for "<topic>".
 
 Selected (with justifications):
@@ -131,14 +120,20 @@ Selected (with justifications):
 
 Not selected: <comma-separated list of 11 remaining lens names>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2 (Ideation), dispatch panel in parallel  ·  **Reject** → mark task aborted, stop processing  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the panel contents in the question body, they live in the plan message above:
+
+- question: `The panel above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (Ideation) · **Reject** — abort the task, nothing dispatched
 
 **Response handling**:
 
-- **"approve"** → update state, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust panel per feedback, overwrite `panel.md`, return to this gate, re-read `panel.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust panel per feedback, overwrite `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Phase 2: Ideation
 

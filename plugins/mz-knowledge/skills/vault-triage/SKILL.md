@@ -52,38 +52,35 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 ### Phase 1.5: User approval — Triage Decisions
 
-**This orchestrator** (not a subagent) must present the triage proposals to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/triage_batch.md` in full and capture its contents into the orchestrator's context. Present the full verbatim contents of `triage_batch.md` — each note's title, preview, proposed decision, and rationale. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+**Pre-read**: Read `.mz/task/<task_name>/triage_batch.md` in full and capture its contents into context.
 
-Before invoking AskUserQuestion, emit a text block to the user:
-
-```
-**Triage batch ready for review**
-Inbox batch of N notes scored and proposed for triage decisions (promote/merge/discard/defer).
-
-- **Approve** → proceed to Phase 2 and execute all proposed decisions
-- **Reject** → abort the triage session, no vault changes
-- **Feedback** → override individual decisions and re-present for approval
-```
-
-Format the question body as:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message — each note's title, preview, proposed decision, and rationale:
 
 ```
-Triage batch ready for review (N notes).
+## Triage batch ready for review — vault-triage
 
-<verbatim contents of triage_batch.md>
+<verbatim contents of .mz/task/<task_name>/triage_batch.md>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → proceed to Phase 2 and execute all proposed decisions  ·  **Reject** → abort the triage session, no vault changes  ·  reply with an override list (e.g. 1=discard, 3=merge::Target Note Name) to revise
 ```
+
+Emit the full verbatim contents of `.mz/task/<task_name>/triage_batch.md` — do not substitute a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
+
+- question: `The triage batch above is ready for review.`
+- options: **Approve** — proceed to Phase 2 and execute all proposed decisions · **Reject** — abort the triage session, no vault changes
 
 The user may also reply with an override list such as `1=discard, 3=merge::Target Note Name`. Each override binds to the note's index in the batch.
 
-Response handling:
+**Response handling**:
 
-- **"approve"** → update state to `decisions_approved`, proceed to Phase 2 with the default decision map from `triage_batch.md`.
-- **"reject"** → update state to `aborted_by_user` and stop.
-- **Feedback or override list** → apply overrides to the decision map and re-present via AskUserQuestion, OR proceed with the user-supplied override map if the user's reply is an explicit override list. For any `merge` decision in the override list, require `merge::<target note name>` syntax; if the user writes just `merge` without a target, re-ask for the missing target via AskUserQuestion. This is a loop — repeat until explicit approval. Never proceed to Phase 2 without the user's explicit approval or an unambiguous override map.
+- **Approve** → update state to `decisions_approved`, proceed to Phase 2 with the default decision map from `triage_batch.md`.
+- **Reject** → update state to `aborted_by_user` and stop.
+- **Any other reply (feedback or override list)** → apply overrides to the decision map and return to Surface 1, re-read `triage_batch.md`, and re-emit the entire plan message from scratch; OR proceed with the user-supplied override map if the user's reply is an explicit and unambiguous override list. For any `merge` decision in the override list, require `merge::<target note name>` syntax; if the user writes just `merge` without a target, re-ask for the missing target via AskUserQuestion. This is a loop — repeat until explicit approval. Never proceed to Phase 2 without the user's explicit approval or an unambiguous override map.
 
 ## Decision Vocabulary
 

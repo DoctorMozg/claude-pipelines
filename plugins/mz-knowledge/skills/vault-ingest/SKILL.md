@@ -60,36 +60,37 @@ Discipline skill for multimodal capture into the vault as fleeting notes. Detect
 
 ### Phase 1.5: User Approval — Transcript
 
-**This orchestrator** (not a subagent) must present the transcript to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/transcript.md` and capture the full contents into the orchestrator's context. The question body must contain the verbatim transcript text (truncated at `MAX_TRANSCRIPT_PREVIEW` words with a trailing `...` when longer). Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+**Pre-read**: Read `.mz/task/<task_name>/transcript.md` and capture the full contents into context. Note the modality, tool, and duration/pages from the frontmatter.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the transcript verbatim as a normal markdown chat message (truncated at `MAX_TRANSCRIPT_PREVIEW` words with a trailing `...` when longer):
 
 ```
-**Transcript Ready for Review**
+## Transcript ready for review — vault-ingest
+
 Transcript produced from <input>. Modality: <modality>, transcription tool: <tool>, duration/pages: <detail>.
 
-- **Approve** → proceed to Phase 2 to write the fleeting note to the vault
-- **Reject** → task marked aborted, no fleeting note written
-- **Feedback** → re-run Phase 1 with adjusted tool choice, loop back here for re-review
+<verbatim transcript body, truncated at MAX_TRANSCRIPT_PREVIEW words with "..." when longer>
+
+---
+**Approve** → proceed to Phase 2, write the fleeting note to the vault  ·  **Reject** → task marked aborted, no fleeting note written  ·  reply with feedback to revise
 ```
 
-Format the question body as:
+Emit the full verbatim contents of `.mz/task/<task_name>/transcript.md` (transcript body, up to `MAX_TRANSCRIPT_PREVIEW` words) — do not substitute a path, summary, or placeholder.
 
-```
-Transcript ready for review (modality: <modality>, tool: <tool>, <duration or pages>).
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the transcript in the question body, it lives in the plan message above:
 
-<verbatim transcript, truncated at MAX_TRANSCRIPT_PREVIEW words with "..." when longer>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The transcript above is ready for review.`
+- options:
+  - **Approve** — proceed to Phase 2, write the fleeting note to the vault
+  - **Reject** — abort, no fleeting note written
 
 Response handling:
 
-- **"approve"** → update state to `transcript_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → common feedback is "try a different tool" (switch `whisper-cpp` → `whisper`, `ocrit` → `tesseract`) or "the transcript is truncated, rerun". Incorporate the feedback, re-run Phase 1 with the adjusted tool choice, return to this gate, re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state to `transcript_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → common feedback is "try a different tool" (switch `whisper-cpp` → `whisper`, `ocrit` → `tesseract`) or "the transcript is truncated, rerun". Incorporate the feedback, re-run Phase 1 with the adjusted tool choice, return to this gate, re-read `.mz/task/<task_name>/transcript.md`, and re-emit the entire plan message from scratch (never diff-only). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

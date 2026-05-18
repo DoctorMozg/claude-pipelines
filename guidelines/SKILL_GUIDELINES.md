@@ -4,37 +4,65 @@ Rules for writing skills in this repository. All skills must comply.
 
 ## 1. Approval Gates Must Loop
 
-Every approval gate must follow this exact structure:
+Every approval gate uses the **two-surface plan pattern**, modeled on Claude Code's plan mode (`ExitPlanMode`): the artifact is rendered as an ordinary markdown chat message — exactly the way a plan appears in plan mode — and `AskUserQuestion` is only the short Approve/Reject selector beneath it. `ExitPlanMode` itself carries no plan content; the plan is a normal message the user reads inline. Gates mirror that split.
 
-1. **Delegation guard**: `**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.`
-1. **Mandatory pre-read**: Before invoking AskUserQuestion, the gate text must instruct the orchestrator to Read the artifact (e.g., `Read .mz/task/<task_name>/plan.md and capture the full contents`). Name the exact artifact path (`plan.md`, `strategy.json`, `findings.md`, etc.) — do not say "the artifact" generically.
-1. **Pre-gate emit block** (separate, chat-visible): Before invoking AskUserQuestion, the gate text must instruct the orchestrator to emit a standalone text block to the chat (outside the AskUserQuestion body) that summarizes what is being approved and what each response means. The block must contain: a bold title line; a 1–2 sentence summary of what's presented; and a bullet list with **Approve**, **Reject**, and **Feedback** outcomes. Keep the emit block under 8 lines — it is context, not a replay of the artifact. State the instruction explicitly using language like: `Before invoking AskUserQuestion, emit a text block to the user:` followed by a fenced template. The block is mandatory because AskUserQuestion bodies truncate in chat history and tend to disappear after context compaction; the pre-gate emit keeps the "why this matters" visible in chat even when the gate body is later compressed.
-1. **Inline-verbatim presentation**: The AskUserQuestion question body must contain the **verbatim file contents** (or the verbatim list/decomposition that was generated in the orchestrator's own context). Never substitute a path, status summary, line count, or `<placeholder>` token. The user reviews what they see in the question; they must not need to open any file. State this requirement explicitly in the gate using language like: `The question body must contain the verbatim contents of <artifact_path>. Do not substitute a path, summary, or placeholder.` See the `translate` skill (`phases/discovery_and_planning.md` Phase 1.5) for the canonical wording.
-1. **AskUserQuestion prompt closing**: the question body ends literally with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.` Do not shorten, rephrase, or revert to the old lowercase `'approve'` / `'reject'` form — the literal string is what the response-handling bullets and compliance checks match against.
-1. **Variant gates** (conditional): if the gate presents multiple selectable named options beyond the standard three paths — for example, a per-note review action menu (`Done | Skip | Edit | Promote | Archive | Abort`) or a strategy picker — each option must be presented as `**<Name>** — <one-sentence summary of what choosing this means>`. Do not use bare lettered or numbered lists without names and summaries. The canonical pattern lives in `plugins/mz-knowledge/skills/vault-review/phases/review_session.md` (per-note review action gate).
-1. **Response handling** as a labeled section with three bullets (or more, for variant gates):
-   - **"approve"** → update state, proceed to next phase.
-   - **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-   - **Feedback** → incorporate, re-run upstream phase if needed, return to this gate, re-present **via AskUserQuestion** (same format, full re-presentation — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations). Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
+Every gate must contain these elements, in order:
 
-All seven elements are required (element 6 only when variants are present). Do not omit the delegation guard, the pre-read step, the pre-gate emit block, the inline-verbatim requirement, the bold-`**Approve**`/`**Reject**` closing, the reject option, or the loop language.
+1. **Delegation guard**: `**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.`
+1. **Mandatory pre-read**: Before emitting the gate, the gate text must instruct the orchestrator to Read the artifact and capture its full contents into context (e.g., `Read .mz/task/<task_name>/plan.md and capture the full contents`). Name the exact artifact path (`plan.md`, `strategy.json`, `findings.md`, etc.) — do not say "the artifact" generically.
+1. **Surface 1 — the plan message** (a normal markdown chat message, not a tool call): After the pre-read, the orchestrator emits the artifact's **full verbatim contents** as an ordinary chat message so its markdown renders fully and survives in scrollback. The gate text must spell out the structure with a fenced template:
 
-**Why the pre-read and inline-verbatim steps are mandatory**: An author writing `<contents of plan.md>` inside the AskUserQuestion text intends it as an instruction to the runtime orchestrator. In practice the orchestrator often passes that placeholder through literally, or substitutes a path / one-line status, leaving the user to open the file separately. That defeats the entire purpose of the gate. The fix is two-part: an explicit Read step that loads the bytes into context, and an explicit "verbatim, no summary, no path" instruction that forbids the orchestrator from shortcutting.
+   ```
+   ## Plan for review — <skill name>
 
-**Why the pre-gate emit block is separate from AskUserQuestion**: The AskUserQuestion body is long (often thousands of chars of verbatim artifact content) and the "what am I approving, and what happens if I say no?" framing is buried inside it. A separate pre-gate emit keeps that framing short, chat-visible, and survivable across context compaction. Gate bodies are optimized for the user's review of the artifact; pre-gate emits are optimized for the user's orientation at the decision moment.
+   <verbatim artifact contents>
 
-**Canonical template** for the pre-gate emit block:
+   ---
+   **Approve** → <what happens next>  ·  **Reject** → <abort outcome>  ·  reply with feedback to revise
+   ```
+
+   The verbatim requirement is absolute: never substitute a path, line count, status summary, or `<placeholder>` token for the artifact body. State it explicitly in the gate: `Emit the full verbatim contents of <artifact_path> as a chat message — do not substitute a path, summary, or placeholder.`
+1. **Surface 2 — the AskUserQuestion selector**: Immediately after the plan message, the orchestrator calls AskUserQuestion. The selector is short: `question` is a single orientation line pointing at the plan message above (e.g., `The plan above is ready for review.`). The `question` must NOT re-embed the verbatim artifact — that lives in Surface 1. Named `options` are exactly two: **Approve** and **Reject**. Do not add a third "Feedback" option — AskUserQuestion always exposes a free-text reply field, and feedback rides that field.
+1. **Variant gates** (conditional): if the gate offers selectable named actions beyond Approve/Reject — for example a per-note review menu (`Done | Skip | Edit | Promote | Archive | Abort`) or a strategy picker — each named action becomes an `options` entry presented as `**<Name>** — <one-sentence summary of what choosing it means>`. Feedback still rides the free-text reply field; never add an explicit "Feedback" option. The canonical variant gate lives in `plugins/mz-knowledge/skills/vault-review/phases/review_session.md` (per-note review action gate).
+1. **Response handling** as a labeled section:
+   - **Approve** → update state, proceed to the next phase.
+   - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+   - **Any other reply (feedback)** → incorporate it, re-run the upstream phase if needed, overwrite the artifact, then return to this gate: re-read the updated artifact and **re-emit the entire plan message from scratch** (full verbatim — never a diff, never a summary, since context compaction may have destroyed the user's memory of earlier iterations), then re-present the selector. Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
+
+All elements are required (element 5 only when variant actions exist). Do not omit the delegation guard, the pre-read, the verbatim plan message, the two-option selector, the reject path, or the loop language.
+
+**Why the plan message is a chat message, not the AskUserQuestion body**: The AskUserQuestion body truncates in chat history and is optimized for a short question. Burying a multi-thousand-character artifact inside it renders cramped and, in practice, gets silently replaced by a bare path or one-line status — defeating the gate. A normal chat message renders markdown fully, mirrors how plan mode surfaces a plan, and survives in scrollback. Keeping the artifact in Surface 1 and the selector short in Surface 2 fixes both problems at once.
+
+**Why feedback has no named option**: AskUserQuestion always exposes a free-text reply field. An explicit "Feedback" option duplicates it. Two named options (Approve, Reject) plus the always-present free-text field cover every path — any reply that is not Approve or Reject is feedback.
+
+**Canonical gate skeleton**:
 
 ```
-**[Gate title — e.g. "Plan ready for review"]**
-[1–2 sentence summary: what's presented, key metrics/counts]
+**This orchestrator** (not a subagent) presents this gate. Interactive — do not delegate.
 
-- **Approve** → [what happens next, e.g. "proceed to Phase 2 implementation"]
-- **Reject** → [what happens on abort, e.g. "task marked aborted, no files written"]
-- **Feedback** → [what happens, e.g. "re-run diagnosis with your input, loop back here"]
+**Pre-read**: Read `<artifact_path>` and capture its full contents into context.
+
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a chat message:
+
+    ## Plan for review — <skill name>
+
+    <verbatim contents of <artifact_path>>
+
+    ---
+    **Approve** → <next phase>  ·  **Reject** → <abort outcome>  ·  reply with feedback to revise
+
+Emit the full verbatim contents — never a path, summary, or placeholder.
+
+**Surface 2 — call AskUserQuestion.** question: "The plan above is ready for review."
+options: **Approve** — <next phase> · **Reject** — <abort outcome>.
+
+**Response handling**:
+- **Approve** → <state update>, proceed to <next phase>.
+- **Reject** → set state `aborted_by_user`, stop.
+- **Any other reply** → apply the feedback, overwrite `<artifact_path>`, return to Surface 1, re-emit the full updated plan message, re-present. Loop until explicit Approve.
 ```
 
-Reference implementations: `plugins/mz-design/skills/design-document/phases/finalization.md` (Step 4.1) and any SKILL.md under `plugins/mz-knowledge/skills/` (every approval gate).
+Reference implementation: `plugins/mz-design/skills/design-document/phases/finalization.md` (Step 4.1).
 
 Add gates before: code changes, expensive agent dispatches, web research. Read-only skills (like `explain`) don't need gates.
 
@@ -254,8 +282,8 @@ Rationale: rule numbers are shared identifiers between the guidelines and the bo
 Before merging any new or modified skill:
 
 - [ ] Description follows Rule 3 (third person, directive, front-loaded, trigger phrases)
-- [ ] Every approval gate includes a pre-gate emit block + bold `**Approve**`/`**Reject**` closing (Rule 1)
-- [ ] Variant gates (multi-option menus) present each option as `**<Name>** — <summary>` (Rule 1)
+- [ ] Every approval gate uses the two-surface plan pattern: full verbatim artifact as a chat message, then a short AskUserQuestion selector with exactly **Approve**/**Reject** options (Rule 1)
+- [ ] Variant gates (multi-option menus) present each named action as `**<Name>** — <summary>`; feedback rides the free-text field, no separate Feedback option (Rule 1)
 - [ ] SKILL.md under 150 lines, phase files under 400 lines
 - [ ] Scope parameter accepted with documented default if code-editing skill (Rule 6)
 - [ ] All bounds and paths declared as named constants, no inline hardcoded limits (Rule 7)

@@ -79,40 +79,33 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 ### Phase 1.5: User Approval of Strategy
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents (target profile, sector/geo scope, candidate-source plan, estimated fan-out cost) into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block so structure is preserved. See `phases/discovery.md` §Phase 1.5 for the strategy.json schema.
+**Pre-read**: Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents (target profile, sector/geo scope, candidate-source plan, estimated fan-out cost) into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `strategy.json` inside a fenced \`\`\`json block. Never substitute a path, target-profile summary, or one-line description — the user must review the actual strategy fields in the question itself, not have to open the file separately. The user confirms scope before any expensive research runs.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Strategy ready for review**
-Target profile, sector, region, and discovery plan drafted. Please review for feasibility before expensive research dispatch.
-
-- **Approve** → proceed to Phase 2 (source research and company discovery)
-- **Reject** → task marked aborted, no outreach data generated
-- **Feedback** → re-run strategy with your input, loop back here for re-review
-```
-
-Invoke AskUserQuestion with this body (where `<verbatim strategy.json contents>` is replaced by the bytes you just read):
-
-````
-Strategy drafted for "<goal>". Please review before discovery dispatch:
+## Strategy ready for review — outreach-research
 
 ```json
-<verbatim strategy.json contents>
+<verbatim contents of .mz/outreach/<run_name>/strategy.json>
 ```
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-````
+---
+**Approve** → proceed to Phase 2 (source research and company discovery)  ·  **Reject** → mark task aborted, no outreach data generated  ·  reply with feedback to revise
+```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy in the question body, it lives in the plan message above:
+
+- question: `The strategy above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (source research and company discovery) · **Reject** — abort the task, no outreach data generated
 
 **Response handling**:
 
-- **"approve"** → update `.mz/task/<task_name>/state.md` phase to `strategy_approved`, proceed to Phase 2.
-- **"reject"** → update `.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to this gate, re-read `strategy.json`, and re-present **via AskUserQuestion** with the full new contents inside the fenced json block — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **Approve** → update `.mz/task/<task_name>/state.md` phase to `strategy_approved`, proceed to Phase 2.
+- **Reject** → update `.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to Surface 1, re-read `strategy.json`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

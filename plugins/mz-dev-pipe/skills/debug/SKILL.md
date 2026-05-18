@@ -115,58 +115,38 @@ After setup, read the first phase file matching the certainty:
 
 **Skip this gate entirely when `certainty:low`** — low mode produces a read-only verdict report and never modifies code, so the diagnosis-approval interlock is unnecessary. In low mode, after Phase 2 (Domain Research), proceed directly to Phase 3 (Exploratory Tests).
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/diagnosis.md` with the Read tool. Capture the full file contents (Bug, Reproduction, Root Cause with file:line references, Proposed Fix, External Context from any domain research) into context. If Phase 2 wrote intermediate files (e.g., `reproduction.md`, `domain_findings.md`) the orchestrator must read those too and incorporate the verbatim content under the matching section headers below.
+**Pre-read**: Read `.mz/task/<task_name>/diagnosis.md` with the Read tool and capture its full contents into context. If Phase 2 wrote intermediate files (e.g., `reproduction.md`, `domain_findings.md`), read those too and incorporate the verbatim content under the matching section headers in the plan message.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim diagnosis content under each section header. Never substitute a path, status summary, line count, or `<placeholder>` token — the user must review the actual diagnosis in the question itself, not have to open the file separately. Omit the External Context section only if no domain research was performed.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the diagnosis verbatim as a normal markdown chat message. Emit the full verbatim contents of `diagnosis.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Bug diagnosis ready for review**
-The investigation is complete with root cause identified. Review the diagnosis below before proceeding to the fix phase.
+## Diagnosis ready for review — debug
 
-- **Approve** → proceed to Phase 3 (write regression test)
-- **Reject** → abort the task, no files written
-- **Feedback** → re-run diagnosis with your input and loop back here
+<verbatim contents of diagnosis.md — Bug, Reproduction, Root Cause with file:line, Proposed Fix, External Context (omit if no domain research)>
+
+---
+**Approve** → proceed to Phase 3 (write regression test)  ·  **Reject** → abort the task, no files written  ·  reply with feedback to revise
 
 Approve cost (estimated): ~4 agents × ~16k tokens ≈ ~$<Y.YY> on Sonnet
 ```
 
 Phase 3+ runs `pipeline-test-writer + pipeline-coder + pipeline-code-reviewer + pipeline-test-reviewer` (4 agents). Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
 
-Invoke AskUserQuestion with this body (where each `<verbatim ... content>` marker is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the diagnosis in the question body, it lives in the plan message above:
 
-```
-Bug investigation complete. Review the diagnosis before I proceed:
-
-## Bug
-<verbatim original bug description>
-
-## Reproduction
-<verbatim reproduction steps from diagnosis.md, or "static confirmation only">
-
-## Root Cause
-<verbatim root cause section with file:line references>
-
-## Proposed Fix
-<verbatim minimal fix description>
-
-## External Context
-<verbatim domain research findings — omit this entire section if no domain research>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The diagnosis above is ready for review.`
+- options: **Approve** — proceed to Phase 3 (write regression test) · **Reject** — abort the task, no files written
 
 **Response handling**:
 
-- **"approve"** → read `phases/fix_and_verify.md`, proceed to Phase 3.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-run diagnosis (Phase 2) incorporating the user's input, overwrite `diagnosis.md`, return to this gate, re-read `diagnosis.md`, and re-present **via AskUserQuestion** with the full new contents under each section header — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. The pre-gate block (with cost preview) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
+- **Approve** → read `phases/fix_and_verify.md`, proceed to Phase 3.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → re-run diagnosis (Phase 2) incorporating the user's input, overwrite `diagnosis.md`, return to this gate, re-read `diagnosis.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. The plan message (Surface 1) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
 ## Techniques
 

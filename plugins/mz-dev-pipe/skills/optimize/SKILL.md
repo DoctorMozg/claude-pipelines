@@ -146,49 +146,69 @@ scope:               working     # working | branch | global
 iteration_cap:       6
 ```
 
-**Present the gate.** Emit the chat-visible pre-gate block:
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+
+**Pre-read**: Read `.mz/task/<task_name>/contract.md` with the Read tool and capture its full contents into context.
+
+**Surface 1 — emit the plan message.** Output the contract verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/contract.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Optimization Contract — Review**
+## Contract ready for review — optimize
+
 The contract below fully specifies this run: target, metric, the measurement and correctness commands, the allowed change space, and the iteration cap. Every later phase reads it; no measurement runs until you approve it.
 
-- **Approve** → proceed to Phase 1 (Baseline)
-- **Reject** → mark task aborted, no measurement runs
-- **Feedback** → supply any `<NEEDS USER INPUT>` field or change any value; the contract is re-drafted and re-presented
+<verbatim contents of contract.md>
+
+---
+**Approve** → proceed to Phase 1 (Baseline)  ·  **Reject** → mark task aborted, no measurement runs  ·  reply with feedback to revise
 
 Reminder: quiesce the measurement host before approving — background load inflates measurement noise and can hard-block the baseline.
 Approve cost (estimated): baseline + profile ≈ 3 agents (test-runner, measure-runner, researcher) × ~18k tokens ≈ ~$<Y.YY> on mixed Sonnet + Haiku
 ```
 
-Use the `shared/approval-gate.md` formula for the dollar estimate. Then invoke AskUserQuestion with the **verbatim** `contract.md` contents in the body, closing with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+Use the `shared/approval-gate.md` formula for the dollar estimate.
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the contract in the question body, it lives in the plan message above:
+
+- question: `The contract above is ready for review.`
+- options: **Approve** — proceed to Phase 1 (Baseline) · **Reject** — mark task aborted, no measurement runs
 
 **Response handling:**
 
 - **Approve** → permitted only if every field is concrete (no `<NEEDS USER INPUT>` remains). Update state, read `phases/baseline.md`, proceed to Phase 1.
 - **Reject** → set `Status: aborted_by_user` and stop.
-- **Feedback** → apply the changes / supplied values, overwrite `contract.md`, re-read it, and re-present this gate via AskUserQuestion with the full new contents — never diff-only, since context compaction may have destroyed the user's memory of earlier iterations. Loop until approved.
+- **Any other reply (feedback)** → apply the changes / supplied values, overwrite `contract.md`, return to this gate, re-read `contract.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
 - **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → per `shared/approval-gate.md`: skip the AskUserQuestion call, log `auto-approved (unattended mode)`, and proceed — but only if no `<NEEDS USER INPUT>` field remains; an incomplete contract can never be auto-approved.
 
 ### Phase 3.5: Backlog / Strategy Approval
 
 **Approval gate**, once per loop iteration. The user approves the *strategy* — which hypotheses to pursue and in what order — before any candidate code is written. This is where a cross-module or architectural strategy gets explicit sign-off.
 
-Pre-read `.mz/task/<task_name>/backlog.md` (the ranked hypothesis backlog from Phase 3). Emit the pre-gate block:
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+
+**Pre-read**: Read `.mz/task/<task_name>/backlog.md` with the Read tool and capture its full contents into context.
+
+**Surface 1 — emit the plan message.** Output the backlog verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/backlog.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Hypothesis Backlog — Strategy Review**
+## Hypothesis backlog ready for review — optimize
+
 Profiling found the dominant bottleneck. The backlog below ranks the falsifiable speedup hypotheses by impact × confidence ÷ effort; approving authorizes the candidate loop to pursue them top-down.
 
-- **Approve** → proceed to Phase 4 (candidate generation & verification)
-- **Reject** → mark task aborted
-- **Feedback** → re-rank, drop, or add hypotheses; the backlog is re-presented
+<verbatim contents of backlog.md>
+
+---
+**Approve** → proceed to Phase 4 (candidate generation & verification)  ·  **Reject** → mark task aborted  ·  reply with feedback to revise
 
 Approve cost (estimated): per hypothesis ≈ 4 candidate agents (Opus) + 4 serial measurements (Haiku) + 1 promotion (Sonnet) × ~22k tokens ≈ ~$<Y.YY>
 ```
 
-Invoke AskUserQuestion with the **verbatim** `backlog.md` contents, closing with `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the backlog in the question body, it lives in the plan message above:
 
-**Response handling:** Approve → read `phases/candidate_loop.md`, proceed to Phase 4. Reject → `Status: aborted_by_user`, stop. Feedback → re-rank in Phase 3, overwrite `backlog.md`, re-present with the full new contents. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `shared/approval-gate.md`.
+- question: `The hypothesis backlog above is ready for review.`
+- options: **Approve** — proceed to Phase 4 (candidate generation & verification) · **Reject** — mark task aborted
+
+**Response handling:** **Approve** → read `phases/candidate_loop.md`, proceed to Phase 4. **Reject** → `Status: aborted_by_user`, stop. **Any other reply (feedback)** → re-rank in Phase 3, overwrite `backlog.md`, return to this gate, re-read `backlog.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `shared/approval-gate.md`.
 
 ### Phase 4.5: Mid-loop Boundary Pause
 

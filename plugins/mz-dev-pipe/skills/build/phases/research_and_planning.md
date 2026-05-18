@@ -220,39 +220,30 @@ Save review to `.mz/task/<task_name>/plan_review_<iteration>.md`.
 
 ### 2.3 User approval
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full file contents into context.
+**Pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full file contents into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `plan.md`. Never substitute a path, status summary, line count, or `<contents of plan.md>` placeholder — the user must review the actual plan in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the plan verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/plan.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Implementation plan ready for approval**
-The plan has been generated and passed automated review. Please review the full plan below.
+## Plan ready for review — build
 
-- **Approve** → proceed to implementation phase
-- **Reject** → mark task aborted, no changes applied
-- **Feedback** → incorporate your input and loop back for re-review
+<verbatim contents of plan.md>
+
+---
+**Approve** → proceed to implementation phase  ·  **Reject** → mark task aborted, no changes applied  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with this body (where `<verbatim plan.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
 
-```
-The implementation plan is ready and passed review. Please review and approve:
-
-<verbatim plan.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The plan above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise.`
+- options: **Approve** — proceed to implementation phase · **Reject** — abort, no changes applied
 
 Response handling:
 
-- **"approve"** → update state, proceed to next phase.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate, re-run upstream phase (spawn pipeline-planner with feedback), overwrite `plan.md`, return to this gate, re-read `plan.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
-
-Do NOT re-run the review loop on feedback — the user's word is final.
+- **Approve** → update state, proceed to next phase.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → incorporate, re-run upstream phase (spawn pipeline-planner with feedback), overwrite `plan.md`. Do NOT re-run the review loop on feedback — the user's word is final. Return to Surface 1, re-read `.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 Update state file phase to `plan_approved`.

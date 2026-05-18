@@ -97,28 +97,35 @@ Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA
 
 ## Phase 0.5: Target Resolution Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Present: the resolved target candidates produced by the target resolution ladder in `phases/analyze.md` — file list, directory list, branch diff command, or raw-text blob (truncated to 1000 chars).
+**Pre-read**: Capture the resolved target candidates produced by the target resolution ladder in `phases/analyze.md` — file list, directory list, branch diff command, or raw-text blob (truncated to 1000 chars) — into context.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the resolved target as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Target Resolution Gate**
-Ready to roast the resolved target as <persona>. Confirm the file/directory list, or provide feedback to adjust the scope.
+## Target resolution ready for review — do-roast
 
-- **Approve** → proceed to Phase 1 (structural/smell analysis)
-- **Reject** → abort the roast, no analysis performed
-- **Feedback** → adjust the target scope and re-present the gate
+Resolved "<target_raw>" to the following target as <persona>:
+
+<verbatim resolved target list or blob (truncated to 1000 chars if raw text)>
+
+---
+**Approve** → proceed to Phase 1 (structural/smell analysis)  ·  **Reject** → abort the roast, no analysis performed  ·  reply with feedback to adjust the target scope
 ```
 
-Use AskUserQuestion: `I resolved "<target_raw>" to: <list>. Roast these as <persona>? Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the resolved target — it lives in the plan message above.
+
+- question: `The resolved target above is ready for review.`
+- options:
+  - **Approve** — proceed to Phase 1 (structural/smell analysis)
+  - **Reject** — abort the roast, no analysis performed
 
 **Response handling**:
 
-- **"approve"** → update state `Phase: target_approved`, proceed to Phase 1.
-- **"reject"** → update state `Status: aborted_by_user` and stop. Do not proceed.
-- **Feedback** → re-resolve per feedback, update state, return to this gate, re-present **via AskUserQuestion** (same format). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
+- **Approve** → update state `Phase: target_approved`, proceed to Phase 1.
+- **Reject** → update state `Status: aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → re-resolve per feedback, update state, return to Surface 1, re-read and re-emit the full updated plan message from scratch, re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
 
 ## Error Handling
 

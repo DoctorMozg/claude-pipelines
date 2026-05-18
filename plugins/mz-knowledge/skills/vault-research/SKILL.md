@@ -54,72 +54,93 @@ Discipline skill that atomizes a long research report into permanent notes, pre-
 
 ### Phase 1.5: User Approval — Noise Exclusion
 
-**This orchestrator** (not a subagent) must present the noise filter results via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/parsed_report.md` in full.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Pre-read**: Read `.mz/task/<task_name>/parsed_report.md` in full and capture its contents into context.
+
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Noise filter results ready for review**
-Excluded sections: [list from parsed_report.md]. Retained sections: [list from parsed_report.md].
+## Noise filter results ready for review — vault-research
 
-- **Approve** → proceed to Phase 2 atomization
-- **Reject** → abort the task
-- **Feedback** → re-run with adjusted exclusions and loop back here
+<verbatim contents of .mz/task/<task_name>/parsed_report.md>
+
+---
+**Approve** → proceed to Phase 2 atomization  ·  **Reject** → abort the task  ·  reply with feedback to revise
 ```
 
-Then invoke AskUserQuestion with the full verbatim contents of `parsed_report.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+Emit the full verbatim contents of `.mz/task/<task_name>/parsed_report.md` — do not substitute a path, summary, or placeholder.
 
-Response handling:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
-- **"approve"** → update `state.md` Status to `noise_filter_approved`, proceed to Phase 2.
-- **"reject"** → update `state.md` Status to `aborted_by_user` and stop.
-- **Feedback** → typical feedback adds or removes sections from the noise list. Apply the edits to the effective noise list, re-run Phase 1 (`phases/parse_report.md`), and re-present the refreshed `parsed_report.md` **via AskUserQuestion**. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- question: `The noise filter results above are ready for review.`
+- options: **Approve** — proceed to Phase 2 atomization · **Reject** — abort the task
+
+**Response handling**:
+
+- **Approve** → update `state.md` Status to `noise_filter_approved`, proceed to Phase 2.
+- **Reject** → update `state.md` Status to `aborted_by_user` and stop.
+- **Any other reply (feedback)** → typical feedback adds or removes sections from the noise list. Apply the edits to the effective noise list, re-run Phase 1 (`phases/parse_report.md`), overwrite `parsed_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2.5: User Approval — Atomization Proposals
 
-**This orchestrator** (not a subagent) must present the atomization proposals via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/proposals.md` in full.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Pre-read**: Read `.mz/task/<task_name>/proposals.md` in full and capture its contents into context.
+
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Atomization proposals ready for review**
-Generated N atomic notes from the report. Review the proposed titles, content, and metadata.
+## Atomization proposals ready for review — vault-research
 
-- **Approve** → write notes to vault and proceed to Phase 3 link suggestions
-- **Reject** → abort the task, no vault writes have occurred
-- **Feedback** → adjust proposals (skip, merge, split, retitle) and loop back here
+<verbatim contents of .mz/task/<task_name>/proposals.md>
+
+---
+**Approve** → write notes to vault and proceed to Phase 3 link suggestions  ·  **Reject** → abort the task, no vault writes have occurred  ·  reply with feedback to revise
 ```
 
-Then invoke AskUserQuestion with the full verbatim contents of `proposals.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+Emit the full verbatim contents of `.mz/task/<task_name>/proposals.md` — do not substitute a path, summary, or placeholder.
 
-Response handling:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
-- **"approve"** → update `state.md` Status to `proposals_approved`, continue Phase 2 (post-approval write).
-- **"reject"** → update `state.md` Status to `aborted_by_user` and stop. No vault writes have occurred yet.
-- **Feedback** → apply feedback (skip numbered proposals, merge, split, retitle), re-run the affected window(s), regenerate `proposals.md`, and re-present **via AskUserQuestion**. Repeat until explicit approval.
+- question: `The atomization proposals above are ready for review.`
+- options: **Approve** — write notes to vault and proceed to Phase 3 link suggestions · **Reject** — abort the task, no vault writes have occurred
+
+**Response handling**:
+
+- **Approve** → update `state.md` Status to `proposals_approved`, continue Phase 2 (post-approval write).
+- **Reject** → update `state.md` Status to `aborted_by_user` and stop. No vault writes have occurred yet.
+- **Any other reply (feedback)** → apply feedback (skip numbered proposals, merge, split, retitle), re-run the affected window(s), regenerate `proposals.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until explicit approval.
 
 ### Phase 3.5: User Approval — Link Suggestions
 
-**This orchestrator** (not a subagent) must present the link suggestions via AskUserQuestion. This step is interactive and must not be delegated. Before presenting, Read `.mz/task/<task_name>/link_suggestions.md` in full.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before invoking AskUserQuestion, emit a text block to the user:
+**Pre-read**: Read `.mz/task/<task_name>/link_suggestions.md` in full and capture its contents into context.
+
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
-**Link suggestions ready for review**
-Generated N proposed `[[wikilink]]` insertions connecting notes to existing vault items. Review targets, relationships, and reasons.
+## Link suggestions ready for review — vault-research
 
-- **Approve** → apply all links and complete the task
-- **Reject** → skip all links, mark task complete with no Related sections added
-- **Feedback** → skip specified links, accept the rest, and loop back here
+<verbatim contents of .mz/task/<task_name>/link_suggestions.md>
+
+---
+**Approve** → apply all links and complete the task  ·  **Reject** → skip all links, mark task complete with no Related sections added  ·  reply with feedback to revise
 ```
 
-Then invoke AskUserQuestion with the full verbatim contents of `link_suggestions.md` in the question body. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text. End the question with exactly: `Type **Approve** to proceed, **Reject** to cancel, or type your feedback.`
+Emit the full verbatim contents of `.mz/task/<task_name>/link_suggestions.md` — do not substitute a path, summary, or placeholder.
 
-Response handling:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
-- **"approve"** → update `state.md` Status to `links_approved`, apply all links, proceed to completion.
-- **"reject"** → update `state.md` Status to `complete` with `LinksAdded: 0`, `LinksSkipped: true`. Written notes stay on disk without a Related section.
-- **Feedback** → skip specified links, accept the rest, re-present **via AskUserQuestion**. Repeat until explicit approval.
+- question: `The link suggestions above are ready for review.`
+- options: **Approve** — apply all links and complete the task · **Reject** — skip all links, mark task complete with no Related sections added
+
+**Response handling**:
+
+- **Approve** → update `state.md` Status to `links_approved`, apply all links, proceed to completion.
+- **Reject** → update `state.md` Status to `complete` with `LinksAdded: 0`, `LinksSkipped: true`. Written notes stay on disk without a Related section.
+- **Any other reply (feedback)** → skip specified links, accept the rest, overwrite `link_suggestions.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Techniques
 
@@ -148,9 +169,9 @@ Print this block before concluding — silent checks get skipped:
 
 ```
 vault-research verification:
-  [ ] parsed_report.md shown verbatim via AskUserQuestion before any atomization
-  [ ] proposals.md shown verbatim via AskUserQuestion before any vault write
-  [ ] link_suggestions.md shown verbatim via AskUserQuestion before any link was written
+  [ ] parsed_report.md emitted verbatim as a chat message (Surface 1) and AskUserQuestion selector presented before any atomization
+  [ ] proposals.md emitted verbatim as a chat message (Surface 1) and AskUserQuestion selector presented before any vault write
+  [ ] link_suggestions.md emitted verbatim as a chat message (Surface 1) and AskUserQuestion selector presented before any link was written
   [ ] All written notes carry type: research, source_type: research-report, report_path, status: draft
   [ ] state.md Status is `complete` with Completed timestamp
 ```

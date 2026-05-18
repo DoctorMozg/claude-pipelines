@@ -49,38 +49,36 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion`. Never guess.
 
 ### Phase 1: Confirmation Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Compute the exact entry that will be written (`- [YYYY-MM-DD] <body>`) and capture it into context.
+**Pre-read**: Compute the exact entry that will be written (`- [YYYY-MM-DD] <body>`) and capture it into context.
 
-Before invoking AskUserQuestion, emit a text block to the user:
-
-```
-**Memory note ready to write**
-About to add a single dated entry to the <target> section of .mz/memory/MEMORY.md.
-
-- **Approve** → write the entry, surface the resulting line
-- **Reject** → discard, no file changes
-- **Feedback** → revise the body, re-present this gate
-```
-
-Invoke AskUserQuestion with this body:
+**Surface 1 — emit the plan message.** Output the entry verbatim as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-Memory note preview:
+## Memory note ready for review — memory-note
 
-  <verbatim entry line>
+- [YYYY-MM-DD] <body>
 
 Target section: <pinned|log>
+File: .mz/memory/MEMORY.md
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → write the entry to MEMORY.md  ·  **Reject** → discard, no file changes  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the entry — it lives in the plan message above.
+
+- question: `The memory note above is ready for review.`
+- options:
+  - **Approve** — write the entry to MEMORY.md
+  - **Reject** — discard, no file changes
 
 **Response handling**:
 
-- **"approve"** → run `Bash NOTE_SCRIPT [--log] "<body>"`, then proceed to verification.
-- **"reject"** → stop. Do not write. Surface "Note discarded."
-- **Feedback** → revise the body using the user's input, return to this gate, re-present **via AskUserQuestion** with the new entry. This is a loop — repeat until the user explicitly approves.
+- **Approve** → run `Bash NOTE_SCRIPT [--log] "<body>"`, then proceed to verification.
+- **Reject** → stop. Do not write. Surface "Note discarded."
+- **Any other reply (feedback)** → revise the body using the user's input, return to Surface 1, re-emit the full updated plan message from scratch with the new entry, re-present the selector. This is a loop — repeat until the user explicitly approves.
 
 ### Phase 2: Verification
 

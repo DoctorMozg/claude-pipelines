@@ -151,31 +151,18 @@ Expected bullets (all 20):
 
 ## Step 4: Final approval gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 ### 4.1 Pre-read the draft
 
-Read the draft at `plugins/<plugin>/skills/<name>/SKILL.md` and capture the full contents into context. The contents will be pasted verbatim into the AskUserQuestion body in Step 4.3 — do not skip this read, do not summarize, do not paraphrase.
+Read `plugins/<plugin>/skills/<name>/SKILL.md` and capture the full contents into context.
 
-### 4.2 Emit the pre-gate framing block
+### 4.2 Surface 1 — emit the plan message
 
-Before invoking AskUserQuestion, emit this standalone text block to the chat (outside the AskUserQuestion body):
-
-```
-**Skill draft ready for approval**
-The new skill passed the pre-publish checklist and is ready to save. Target: plugins/<plugin>/skills/<name>/SKILL.md
-
-- **Approve** → save the file to its final location, update state, report completion
-- **Reject** → delete the draft, update state to `aborted_by_user`, stop
-- **Feedback** → incorporate changes, re-run affected steps, re-present via AskUserQuestion
-```
-
-### 4.3 Invoke AskUserQuestion
-
-The question body must contain the verbatim contents of the draft SKILL.md captured in Step 4.1. Do not substitute a path, summary, line count, or `<placeholder>` token — the user reviews what they see in the question body and must not need to open any file. Paste the verbatim contents in place of the marked region:
+Emit the full verbatim contents of `plugins/<plugin>/skills/<name>/SKILL.md` as a normal markdown chat message — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-The new skill draft is ready and passed the pre-publish checklist.
+## Skill draft ready for review — construct-skill
 
 Target: plugins/<plugin>/skills/<name>/SKILL.md
 Classification: <discipline | collaboration | reference>
@@ -183,18 +170,24 @@ Anatomy sections: all 7 present
 Rationalization rows: <N>
 Pre-publish checklist: all PASS
 
---- BEGIN SKILL.md (verbatim) ---
-<paste the verbatim contents captured in Step 4.1 here>
---- END SKILL.md ---
+<verbatim contents of plugins/<plugin>/skills/<name>/SKILL.md>
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
+---
+**Approve** → save the file to its final location, update state, report completion  ·  **Reject** → delete the draft, update state to `aborted_by_user`, stop  ·  reply with feedback to revise
 ```
+
+### 4.3 Surface 2 — call AskUserQuestion
+
+A short selector — do not re-embed the SKILL.md contents in the question body, they live in the plan message above:
+
+- question: `The skill draft above is ready for review.`
+- options: **Approve** — save the file to its final location, update state, report completion · **Reject** — delete the draft, update state to `aborted_by_user`, stop
 
 ### 4.4 Response handling
 
-- **"approve"** → save the file to its final location, update state, report completion to the user.
-- **"reject"** → delete the draft, update state to `aborted_by_user`, and stop. Do not proceed.
-- **Feedback** → incorporate the feedback, re-run the affected RED/GREEN/REFACTOR step, return to this gate, and re-present **via AskUserQuestion** using the same format with the freshly re-read verbatim contents. This is a loop — repeat until the user explicitly approves. Never publish the skill without explicit approval.
+- **Approve** → save the file to its final location, update state, report completion to the user.
+- **Reject** → delete the draft, update state to `aborted_by_user`, and stop. Do not proceed.
+- **Any other reply (feedback)** → incorporate the feedback, re-run the affected RED/GREEN/REFACTOR step, return to this gate, re-read the updated draft, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never publish the skill without explicit approval.
 
 ## Error Handling
 

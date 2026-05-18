@@ -68,38 +68,31 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 
 ### Phase 1.5: Panel Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/panel.md` with the Read tool. Capture the full file contents (5 selected panelist lenses with one-line rationale per pick — primary, adjacent, productive-tension picks all justified) into context. See `phases/intake_and_panel.md` Step 1.4 for the panel.md content schema.
+**Pre-read**: Read `.mz/task/<task_name>/panel.md` and capture the full contents (5 selected panelist lenses with one-line rationale per pick — primary, adjacent, productive-tension picks all justified) into context. See `phases/intake_and_panel.md` Step 1.4 for the panel.md content schema.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `panel.md`. Never substitute a path, status summary, or `<5 lens names>` placeholder — the user must review the actual panel composition and rationale in the question itself, not have to open the file separately. The user confirms the panel composition before any of the 3 rounds dispatch.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/panel.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Panel ready for approval**
-5 expert lenses selected to critique your idea over 3 rounds. Review the composition below and confirm you want to proceed.
+## Panel ready for review — expert
 
-- **Approve** → begin 3 rounds of expert critique
-- **Reject** → cancel task, no rounds will run
-- **Feedback** → request changes to panel composition, iterate until approved
+<verbatim contents of .mz/task/<task_name>/panel.md>
+
+---
+**Approve** → begin 3 rounds of expert critique  ·  **Reject** → cancel task, no rounds will run  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with this body (where `<verbatim panel.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the panel — it lives in the plan message above.
 
-```
-Panel assembled. Please review the composition before the 3 rounds begin:
-
-<verbatim panel.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The panel above is ready for review.`
+- options: **Approve** — begin 3 rounds of expert critique · **Reject** — cancel task, no rounds will run
 
 **Response handling**:
 
-- **"approve"** → update `state.md` to `panel_approved`, proceed to Phase 2 (Round Loop).
-- **"reject"** → update `state.md` to `aborted_by_user` and stop. Do not run rounds.
-- **Feedback** → apply swaps/changes, overwrite `panel.md`, return to this gate, re-read `panel.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update `state.md` to `panel_approved`, proceed to Phase 2 (Round Loop).
+- **Reject** → update `state.md` to `aborted_by_user` and stop. Do not run rounds.
+- **Any other reply (feedback)** → apply swaps/changes, overwrite `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

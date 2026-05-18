@@ -98,40 +98,37 @@ Legacy fields shared with job-search (`search_queries`, `title_aliases`, `biling
 
 ### Phase 1.5: User Approval of Strategy
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. Interactive — must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block.
+**Pre-read**: Read `.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `search_strategy.json` inside a fenced \`\`\`json block. Never substitute a path, summary, or one-line description.
-
-Before invoking AskUserQuestion, emit a text block:
+**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Freelance-search strategy ready for review**
-Built from your CV plus preferences and selected region. Derived discipline, engagement types, rate floor (in all three formats), region eligibility, and scoring weights are below. Approve to start scouting.
+## Strategy ready for review — freelance-search
 
-- **Approve** → proceed to Phase 2 (source assembly + scout)
-- **Reject** → task marked aborted, no scouting runs
-- **Feedback** → re-run strategy with your input, loop back here for re-review
-```
-
-Invoke AskUserQuestion with this body (where `<verbatim search_strategy.json contents>` is replaced by the bytes you just read):
-
-````
-Freelance-search strategy drafted from CV + preferences. Please review before scout dispatch:
+Built from your CV plus preferences and selected region. Derived discipline, engagement types, rate floor (in all three formats), region eligibility, and scoring weights are below.
 
 ```json
-<verbatim search_strategy.json contents>
+<verbatim contents of search_strategy.json>
 ```
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-````
+---
+**Approve** → proceed to Phase 2 (source assembly + scout)  ·  **Reject** → task marked aborted, no scouting runs  ·  reply with feedback to revise
+```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy JSON in the question body, it lives in the plan message above:
+
+- question: `The freelance-search strategy above is ready for review.`
+- options:
+  - **Approve** — proceed to Phase 2 (source assembly + scout)
+  - **Reject** — mark the task aborted, no scouting runs
 
 **Response handling**:
 
-- **"approve"** → update `state.md` `Phase` to `strategy_approved`, proceed to Phase 2.
-- **"reject"** → update `state.md` `Status` to `aborted_by_user` and stop.
-- **Feedback** → re-dispatch `freelance-strategist` with feedback appended, overwrite `search_strategy.json`, return to this gate, re-read, and re-present via AskUserQuestion with full new contents inside the fenced json block. Loop until explicit approval.
+- **Approve** → update `state.md` `Phase` to `strategy_approved`, proceed to Phase 2.
+- **Reject** → update `state.md` `Status` to `aborted_by_user` and stop.
+- **Any other reply (feedback)** → re-dispatch `freelance-strategist` with the feedback appended, overwrite `search_strategy.json`, return to Surface 1, re-read the updated strategy, and re-emit the full plan message from scratch with the new JSON contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

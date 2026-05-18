@@ -96,75 +96,61 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 ## Phase 1.5: Decomposition Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full file contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context. See `phases/inventory.md §Phase 1.5 Gate` for the inventory.md content schema.
+**Pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full file contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context. See `phases/inventory.md §Phase 1.5 Gate` for the inventory.md content schema.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `inventory.md`. Never substitute a path, status summary, lens-name list, or `<lens names>` placeholder — the user must review the actual inventory and decomposition in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/inventory.md` — do not substitute a path, summary, or placeholder:
 
 ```
-**Source inventory ready for review**
-Review the proposed lens decomposition. Proceed to parallel lens dispatch or request changes.
+## Inventory ready for review — combine
 
-- **Approve** → proceed to Phase 2 (parallel lens dispatch)
-- **Reject** → abort synthesis, task marked aborted
-- **Feedback** → re-run Phase 1.2/1.3 with your input and re-present
+<verbatim contents of .mz/task/<task_name>/inventory.md>
+
+---
+**Approve** → proceed to Phase 2 (parallel lens dispatch)  ·  **Reject** → abort synthesis, task marked aborted  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with this body (where `<verbatim inventory.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the inventory in the question body:
 
-```
-Source inventory complete for "<task slug>". Please review the proposed decomposition:
-
-<verbatim inventory.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The inventory and decomposition above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (parallel lens dispatch) · **Reject** — abort synthesis, task marked aborted
 
 **Response handling**:
 
 - **Approve** → update `state.md` phase to `decomposition_approved`, proceed to Phase 2 (`phases/lens_dispatch.md`).
 - **Reject** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-read `inventory.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **Any other reply (feedback)** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-read `inventory.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
 ## Phase 3.5: Gap-Fill Approval Gate (conditional)
 
 If `state.md` contains `gap_fill: skipped_empty` (written by synthesis.md Phase 3.4 when no residual gaps were found), skip this gate and proceed to Phase 5.
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. This file was written by `phases/synthesis.md §Phase 3.4`. Capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
+**Pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. This file was written by `phases/synthesis.md §Phase 3.4`. Capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `gaps.md`. Never substitute a path, count, `<short list>` placeholder, or one-line summary — the user must review the actual gaps and per-gap context in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
 
 ```
-**Residual gaps identified**
-Synthesis found gaps not covered by local sources. Review gap details and estimated web research cost below.
+## Residual gaps ready for review — combine
 
-- **Approve** → proceed to Phase 4 (web gap-fill dispatch)
-- **Reject** → skip web research, proceed to Phase 5 with gaps unresolved
-- **Feedback** → edit gaps list and re-present for approval
+<verbatim contents of .mz/task/<task_name>/gaps.md>
+
+---
+**Approve** → proceed to Phase 4 (web gap-fill dispatch)  ·  **Reject** → skip web research, proceed to Phase 5 with gaps unresolved  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with this body (where `<verbatim gaps.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the gaps in the question body:
 
-```
-Synthesis left residual gaps. Please review before web gap-fill dispatches:
-
-<verbatim gaps.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The residual gaps above are ready for review.`
+- options: **Approve** — proceed to Phase 4 (web gap-fill dispatch) · **Reject** — skip web research, proceed to Phase 5 with gaps unresolved
 
 **Response handling**:
 
 - **Approve** → update `state.md` phase to `gapfill_approved`, proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
 - **Reject** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
-- **Feedback** → incorporate (drop/merge/rewrite gaps), overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
+- **Any other reply (feedback)** → incorporate (drop/merge/rewrite gaps), overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
 
 ## Error Handling
 

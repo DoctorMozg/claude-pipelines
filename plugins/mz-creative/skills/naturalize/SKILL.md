@@ -67,38 +67,31 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 
 ### Phase 1.5: Analysis Approval Gate
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/task/<task_name>/analysis.md` with the Read tool. Capture the full file contents (detected patterns, severity, sentence-rhythm metrics, proposed rewriting strategy) into context.
+**Pre-read**: Read `.mz/task/<task_name>/analysis.md` and capture the full contents (detected patterns, severity, sentence-rhythm metrics, proposed rewriting strategy) into context.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `analysis.md`. Never substitute a path, status summary, or `<contents>` placeholder — the user must review the actual analysis in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/analysis.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Analysis ready for review**
-AI pattern detection complete. Includes detected vocabulary spikes, structural patterns, sentence-rhythm metrics, and the proposed rewriting strategy.
+## Analysis ready for review — naturalize
 
-- **Approve** → proceed to Phase 2 (rewriting)
-- **Reject** → task marked aborted, no rewrite performed
-- **Feedback** → adjust the rewriting strategy per your input, loop back here
+<verbatim contents of .mz/task/<task_name>/analysis.md>
+
+---
+**Approve** → proceed to Phase 2 (rewriting)  ·  **Reject** → task marked aborted, no rewrite performed  ·  reply with feedback to revise
 ```
 
-Invoke AskUserQuestion with this body (where `<verbatim analysis.md contents>` is replaced by the bytes you just read):
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the analysis — it lives in the plan message above.
 
-```
-Pattern analysis complete. Please review and approve the rewriting strategy:
-
-<verbatim analysis.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The analysis above is ready for review.`
+- options: **Approve** — proceed to Phase 2 (rewriting) · **Reject** — abort task, no rewrite performed
 
 **Response handling**:
 
-- **"approve"** → update state to `analysis_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust the rewriting strategy per feedback, overwrite `analysis.md`, return to this gate, re-read `analysis.md`, and re-present **via AskUserQuestion** with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state to `analysis_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust the rewriting strategy per feedback, overwrite `analysis.md`, return to Surface 1, re-read `analysis.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

@@ -132,45 +132,31 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 
 ## Step 1.4 — User approval gate (Phase 1.5)
 
-**This orchestrator** (not a subagent) must present to the user via `AskUserQuestion`. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before the question, emit a visible presentation block:
+**Pre-read**: Read `.mz/task/<task_name>/panel.md` and capture the full contents into context.
 
-```
-Expert panel assembled for "<topic>".
-
-SELECTED:
-  1. <agent 1> — <lens>
-     Why: <justification>
-  2. <agent 2> — <lens>
-     Why: <justification>
-  ... (5 total)
-
-NOT SELECTED (11):
-  <comma-separated list>
-
-Rationale: <2-3 sentences>
-```
-
-Then ask via `AskUserQuestion`:
+**Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/panel.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-question: "Panel assembled. Approve to start 3-round consultation, reject to abort, or swap members?"
-header: "Approve panel"
-options:
-  1. Approve — start rounds
-     "Proceed to Phase 2. The panel is locked for the 3-round consultation."
-  2. Reject — abort
-     "Mark state aborted_by_user and stop. No rounds run, no report written."
-  3. Swap members (Other)
-     "Type the swap: e.g., 'replace lens-seo with lens-artist'. I'll update panel.md and re-present."
+## Panel ready for review — expert
+
+<verbatim contents of .mz/task/<task_name>/panel.md>
+
+---
+**Approve** → begin 3 rounds of expert critique  ·  **Reject** → cancel task, no rounds will run  ·  reply with feedback to revise
 ```
+
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the panel — it lives in the plan message above.
+
+- question: `The panel above is ready for review.`
+- options: **Approve** — begin 3 rounds of expert critique · **Reject** — cancel task, no rounds will run
 
 ### Response handling
 
-- **"approve"** → update state to `panel_approved`, proceed to Phase 2.
-- **"reject"** → update state to `aborted_by_user`. Stop. Do not run rounds.
-- **Swap feedback** → apply the swap to `panel.md`, re-present via `AskUserQuestion`. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state to `panel_approved`, proceed to Phase 2.
+- **Reject** → update state to `aborted_by_user`. Stop. Do not run rounds.
+- **Any other reply (feedback)** → apply the swap to `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Swap rules
 

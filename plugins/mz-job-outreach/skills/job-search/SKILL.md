@@ -97,40 +97,37 @@ The legacy fields (`derived_from_cv`, `preferences`, `search_queries`, `location
 
 ### Phase 1.5: User Approval of Strategy
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Mandatory pre-read**: Read `.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents (derived job titles, must-have/nice-to-have skills, synonym clusters, title aliases, bilingual variants if present, region, employment-type filter, location-eligibility rule, scoring weights echo) into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block so structure is preserved.
+**Pre-read**: Read `.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents (derived job titles, must-have/nice-to-have skills, synonym clusters, title aliases, bilingual variants if present, region, employment-type filter, location-eligibility rule, scoring weights echo) into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block so structure is preserved.
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `search_strategy.json` inside a fenced \`\`\`json block. Never substitute a path, a summary, or a one-line description — the user must review the actual strategy fields in the question itself.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
-**Job-search strategy ready for review**
-Built from your CV plus preferences. Derived titles, skills, region, location-eligibility rule, and source plan are below. Approve to start scraping.
+## Strategy ready for review — job-search
 
-- **Approve** → proceed to Phase 2 (source assembly + scout)
-- **Reject** → task marked aborted, no scraping runs
-- **Feedback** → re-run strategy with your input, loop back here for re-review
-```
-
-Invoke AskUserQuestion with this body (where `<verbatim search_strategy.json contents>` is replaced by the bytes you just read):
-
-````
-Job-search strategy drafted from CV + preferences. Please review before scout dispatch:
+Built from your CV plus preferences. Derived titles, skills, region, location-eligibility rule, and source plan are below.
 
 ```json
-<verbatim search_strategy.json contents>
+<verbatim contents of search_strategy.json>
 ```
 
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-````
+---
+**Approve** → proceed to Phase 2 (source assembly + scout)  ·  **Reject** → task marked aborted, no scraping runs  ·  reply with feedback to revise
+```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy JSON in the question body, it lives in the plan message above:
+
+- question: `The job-search strategy above is ready for review.`
+- options:
+  - **Approve** — proceed to Phase 2 (source assembly + scout)
+  - **Reject** — mark the task aborted, no scraping runs
 
 **Response handling**:
 
-- **"approve"** → update `.mz/task/<task_name>/state.md` `Phase` to `strategy_approved`, proceed to Phase 2.
-- **"reject"** → update `.mz/task/<task_name>/state.md` `Status` to `aborted_by_user` and stop.
-- **Feedback** → re-dispatch `job-strategist` with the feedback appended, overwrite `search_strategy.json`, return to this gate, re-read `search_strategy.json`, and re-present **via AskUserQuestion** with the full new contents inside the fenced json block — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **Approve** → update `.mz/task/<task_name>/state.md` `Phase` to `strategy_approved`, proceed to Phase 2.
+- **Reject** → update `.mz/task/<task_name>/state.md` `Status` to `aborted_by_user` and stop.
+- **Any other reply (feedback)** → re-dispatch `job-strategist` with the feedback appended, overwrite `search_strategy.json`, return to Surface 1, re-read `search_strategy.json`, and re-emit the full plan message from scratch with the new JSON contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ## Techniques
 

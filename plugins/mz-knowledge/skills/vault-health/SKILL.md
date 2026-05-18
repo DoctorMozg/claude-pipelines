@@ -56,38 +56,35 @@ See `phases/collect.md`.
 
 ### Phase 1.5: User approval gate
 
-**This orchestrator** (not a subagent) must present findings to the user via AskUserQuestion. This step is interactive and must not be delegated.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Before presenting, Read `.mz/task/<task_name>/audit_data.md` in full. Present the full verbatim summary from `audit_data.md`. Do not substitute a path, summary, or placeholder for the artifact content — present the full verbatim text.
+**Pre-read**: Read `.mz/task/<task_name>/audit_data.md` and capture the full contents into context. The file contains the verbatim audit findings (orphans, broken wikilinks, stubs, stale notes, tag statistics with note names).
 
-**Mandatory inline-verbatim presentation**: The AskUserQuestion question body must contain the verbatim contents of `audit_data.md`. Never substitute `N` counts, a status summary, or a path — the user must review the actual audit data (orphans, broken wikilinks, stubs, stale notes, tag inconsistencies with note names) in the question itself, not have to open the file separately.
-
-Before invoking AskUserQuestion, emit a text block to the user:
+**Surface 1 — emit the plan message.** Output the audit findings verbatim as a normal markdown chat message:
 
 ```
-**Vault Health Findings Ready**
-Your vault has been scanned for orphans, broken links, stubs, stale notes, and tag inconsistencies.
+## Vault health findings ready for review — vault-health
 
-- **Approve** → proceed to Phase 2 (write audit report to vault)
-- **Reject** → abort without writing, task marked cancelled
-- **Feedback** → describe changes you want; Phase 1 re-runs with your input, then return here
+<verbatim contents of .mz/task/<task_name>/audit_data.md>
+
+---
+**Approve** → proceed to Phase 2, write the audit report to the vault  ·  **Reject** → abort without writing, task marked cancelled  ·  reply with feedback to revise
 ```
 
-Use AskUserQuestion with this body (where `<verbatim audit_data.md contents>` is replaced by the bytes you just read):
+Emit the full verbatim contents of `.mz/task/<task_name>/audit_data.md` — do not substitute a path, summary, or placeholder.
 
-```
-Vault health findings ready. Please review:
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the audit data in the question body, it lives in the plan message above:
 
-<verbatim audit_data.md contents>
-
-Type **Approve** to proceed, **Reject** to cancel, or type your feedback.
-```
+- question: `The vault health findings above are ready for review.`
+- options:
+  - **Approve** — proceed to Phase 2, write the audit report to the vault
+  - **Reject** — abort without writing, task marked cancelled
 
 **Response handling**:
 
-- **"approve"** → update state, proceed to Phase 2 (write report).
-- **"reject"** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Feedback** → adjust what to include (narrow a check, drop a category, re-run a collector), re-run Phase 1 if needed, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Approve** → update state, proceed to Phase 2 (write report).
+- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Any other reply (feedback)** → adjust what to include (narrow a check, drop a category, re-run a collector), re-run Phase 1 if needed, then return to this gate, re-read `.mz/task/<task_name>/audit_data.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
 ### Phase 2 — Write audit
 

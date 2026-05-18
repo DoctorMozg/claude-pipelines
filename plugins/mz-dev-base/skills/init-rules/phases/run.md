@@ -71,13 +71,35 @@ For each selected rule:
 
 ### 4b. Inject into CLAUDE.md — `--target=claudemd`, no `--uninstall`
 
-**Approval gate.** Before any write, call AskUserQuestion with:
+**Approval gate.** Before any write, present the installation plan to the user for approval.
 
-- Resolved target path
-- File state (`create-new` / `modify-existing`)
-- Per-rule action preview: `append` | `replace` (only under `--force`) | `skip` (block exists, no `--force`)
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-Proceed only on explicit approval. A single run-level confirmation covers all subsequent writes in the run.
+**Surface 1 — emit the plan message.** Output the install plan as a normal markdown chat message:
+
+```
+## Install plan ready for review — init-rules
+
+Target: <resolved CLAUDE.md path>
+File state: <create-new | modify-existing>
+
+Per-rule actions:
+<for each selected rule: rule-id — append | replace (--force) | skip (block exists, no --force)>
+
+---
+**Approve** → apply all writes above  ·  **Reject** → abort, nothing written  ·  reply with feedback to revise
+```
+
+**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
+
+- question: `The install plan above is ready for review.`
+- options: **Approve** — apply all writes · **Reject** — abort, nothing written
+
+**Response handling**:
+
+- **Approve** → proceed with all writes. A single run-level confirmation covers all subsequent writes in the run.
+- **Reject** → update state to `aborted_by_user`, stop. Do not write anything.
+- **Any other reply (feedback)** → incorporate the feedback (e.g. remove a rule, change scope), rebuild the plan, re-emit the full updated plan message from scratch, re-present the selector. This is a loop — repeat until the user explicitly approves.
 
 **Sentinel format.** Each rule is wrapped:
 
