@@ -293,14 +293,41 @@ Skill and agent files under `plugins/` must not cite specific rule numbers from 
 
 Rationale: rule numbers are shared identifiers between the guidelines and the bodies that cite them. Every citation is a load-bearing pointer that breaks when a rule is added or removed. Substance-first prose ages gracefully; citation prose does not.
 
-## 23. Pre-Publish Checklist
+## 23. Skill Naming and Directory Layout
+
+- **`name`** (and the skill directory name) must be lowercase letters, numbers, and hyphens only — no underscores, spaces, or special characters. Must start AND end with an alphanumeric character. Maximum 64 characters.
+- **Reserved words banned**: a skill name must not contain `anthropic` or `claude`.
+- **Form**: use gerund form (`processing-pdfs`, `analyzing-spreadsheets`) or a noun phrase (`pdf-processing`, `spreadsheet-analysis`). Avoid vague names — `helper`, `utils`, `tools`, `data` fail to signal purpose.
+- **Directory layout**: skills live under `plugins/<plugin>/skills/<skill_name>/SKILL.md`. The directory name matches the `name` field.
+- **Uniqueness**: skill names must be unique within a plugin.
+
+## 24. Long-File Navigation
+
+Claude previews long files with partial reads (`head -100`) rather than loading them whole, and silently misses everything past the preview window. Two rules keep long files navigable.
+
+- **Table of contents**: any phase file or `references/` file over 100 lines must open with a `## Contents` section listing its `##`/`###` headers. This keeps the full scope of the file visible even when Claude only previews it.
+- **One level deep**: reference and phase files must be reachable one hop from SKILL.md — no `SKILL.md → a.md → b.md` chains. Claude only partially reads files reached through a nested reference, so deeply linked content arrives incomplete. If file A needs file B, link B directly from SKILL.md.
+
+## 25. Information Density
+
+The context window is shared. Every line in SKILL.md, phase files, and reference files competes with conversation history and other skills once loaded — so every line must earn its token cost.
+
+- **Assume the model is already capable.** Do not explain general concepts it already knows (what a PDF is, how git works, what a REST API is). Include only repo-specific and task-specific context.
+- **Useful-to-total ratio governs, not raw length.** A dense 380-line phase file beats a padded 200-line one. Challenge each paragraph: does it tell the agent something it could not infer?
+- **Offer a default, not a menu.** Prefer one recommended approach with an escape hatch over enumerating every option — `Use X; for the rare Y case, use Z` beats `you could use X, or W, or V`.
+
+This is the same discipline as the SKILL.md line budget (Rule 2) and dispatch-prompt compression (Rule 9), applied to body prose — state the substance, do not restate those rules here.
+
+## 26. Pre-Publish Checklist
 
 Before merging any new or modified skill:
 
+- [ ] Skill name and directory are lowercase-hyphen, ≤64 chars, no reserved words, not vague (Rule 23)
 - [ ] Description follows Rule 3 (third person, directive, front-loaded, trigger phrases)
 - [ ] Every approval gate uses the two-surface plan pattern: full verbatim artifact as a chat message, then a short AskUserQuestion selector with exactly **Approve**/**Reject** options (Rule 1)
 - [ ] Variant gates (multi-option menus) present each named action as `**<Name>** — <summary>`; feedback rides the free-text field, no separate Feedback option (Rule 1)
 - [ ] SKILL.md under 150 lines, phase files under 400 lines
+- [ ] Body carries no general-knowledge padding — repo/task-specific content only (Rule 25)
 - [ ] Scope parameter accepted with documented default if code-editing skill (Rule 6)
 - [ ] All bounds and paths declared as named constants, no inline hardcoded limits (Rule 7)
 - [ ] State persisted to `.mz/task/<task_name>/state.md` with task-naming convention (Rule 8)
@@ -311,7 +338,7 @@ Before merging any new or modified skill:
 - [ ] Input formats documented in SKILL.md; empty or ambiguous args ask, never guess (Rule 16)
 - [ ] All phase file references in SKILL.md resolve to existing files
 - [ ] Agent names in dispatch prompts match actual agent definitions
-- [ ] No nested file references (one level deep from SKILL.md)
+- [ ] No nested file references (one level deep from SKILL.md); phase/reference files over 100 lines open with a Contents section (Rule 24)
 - [ ] Consistent terminology across all files in the skill
 - [ ] Tested with direct invocation (`/skill-name`) and natural language trigger
 - [ ] Canonical 7-section anatomy present (Rule 17)

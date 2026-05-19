@@ -30,7 +30,7 @@ Agents loaded from a plugin directory silently ignore three frontmatter fields: 
 - Never declare `hooks:`, `mcpServers:`, or `permissionMode:` in an agent inside `plugins/<name>/agents/`.
 - If you need hook-enforced safety, wire hooks into the plugin's top-level hook config, not into the agent file.
 - Cowork mode (`--setting-sources user`) silently drops plugin hooks entirely. Agents running in that mode must implement their own safety checks rather than relying on hook guarantees. See Rule 21.
-- Review checklist must flag any plugin agent declaring these fields. See Rule 26.
+- Review checklist must flag any plugin agent declaring these fields. See Rule 27.
 
 ## 3. Description Trigger-Condition Phrasing
 
@@ -167,7 +167,7 @@ Length targets:
 | Comprehensive  | 1,500–3,000  | Multi-archetype agents (orchestrators, reviewers) |
 | Hard cap       | 10,000 chars | Frontmatter constraint (not word count)           |
 
-"Under 300 lines" is practical community wisdom, not a documented limit. Anthropic examples run 20–40 lines; production agents run 80–300; extremely detailed agents run 400–600.
+Word ranges above are primary. As a rough line-count cross-check: ~400–600 words ≈ 60–110 lines, and the Standard tier lands around 120–230 lines. "Under 300 lines" is practical community wisdom, not a documented limit — Anthropic examples run 20–40 lines; production agents run 80–300; extremely detailed agents run 400–600. Treat 300 lines as a soft review trigger: re-read a longer file for density (Rule 26) rather than auto-splitting it.
 
 ## 12. Archetype Templates
 
@@ -276,7 +276,7 @@ Prompt rules are not hooks — agents must never duplicate hook-enforced safety 
 
 ## 18. Agent Anti-Pattern Catalog
 
-The review checklist (Rule 26) must flag any of these patterns explicitly. Each has a documented failure mode.
+The review checklist (Rule 27) must flag any of these patterns explicitly. Each has a documented failure mode.
 
 | Anti-pattern                  | Failure mode                                                                                                                                                                 |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -349,6 +349,7 @@ Examples of in-voice register by type:
 ## 23. Naming and Organization
 
 - **`name`** must be kebab-case, 3–50 characters, 2–4 hyphen-joined words. Must start AND end with alphanumeric. No underscores, spaces, or special chars.
+- **Reserved words banned**: an agent name must not contain `anthropic` or `claude`.
 - **Avoid generic names** — `helper`, `assistant`, `worker`, `agent` fail to signal purpose. Name the agent by its single primary function: `pipeline-researcher`, `design-critique-synthesizer`, `roast-dwarf`.
 - **Uniqueness**: agent names must be unique within a plugin. Cross-plugin collisions are resolved by the `plugin:subdir:agent-name` namespace.
 - **Directory layout**: agents live under `plugins/<plugin>/agents/`. One agent per file, filename matches the `name` field with `.md` extension.
@@ -400,11 +401,21 @@ Agent and skill files under `plugins/` must not cite specific rule numbers from 
 
 Rationale: rule numbers are shared identifiers between the guidelines and the bodies that cite them. Every citation is a load-bearing pointer that breaks when a rule is added or removed. Substance-first prose ages gracefully; citation prose does not.
 
-## 26. Pre-Publish Checklist
+## 26. Information Density
+
+An agent's system-prompt body is loaded whole on every dispatch — every line competes with the dispatch prompt and the agent's working context. Every line must earn its token cost.
+
+- **Assume the model is already capable.** Do not explain general concepts it already knows. Include only what is specific to this agent's role, this repo, and this archetype.
+- **Useful-to-total ratio governs, not raw length.** A 2,000-word agent of essential, role-specific instruction beats a 1,200-word agent padded with generic advice. Density, not brevity, is the target — the length tiers in Rule 11 assume every word is load-bearing.
+- **Offer a default, not a menu.** Give one recommended approach with an escape hatch rather than enumerating every option.
+
+This mirrors the dispatch-prompt compression discipline (Rule 7), applied to the agent body itself.
+
+## 27. Pre-Publish Checklist
 
 Before merging any new or modified agent:
 
-- [ ] `name` is kebab-case, 3–50 chars, 2–4 words, globally unique in this plugin (Rule 23).
+- [ ] `name` is kebab-case, 3–50 chars, 2–4 words, no reserved words (anthropic/claude), globally unique in this plugin (Rule 23).
 - [ ] Standalone agent `description` opens with `Use this agent when…` and includes 2–4 `<example>` blocks (6 is the hard upper limit) each with Context/user/assistant/commentary; pipeline-only agent description clearly states purpose and trigger conditions (Rules 3–4).
 - [ ] `description` front-loads key trigger within first 250 characters (Rule 3).
 - [ ] `tools:` is explicitly set — no omission (Rule 5).
@@ -424,6 +435,7 @@ Before merging any new or modified agent:
 - [ ] Discipline agents include an anti-rationalization table with ≥3 empirically grounded rows (Rule 16).
 - [ ] Critical rules anchored at top AND bottom of system prompt (Rule 17, primacy-recency).
 - [ ] Positive framing preferred throughout (Rule 17).
+- [ ] Agent body is dense — no general-knowledge padding, every line role-specific (Rule 26).
 - [ ] Orchestrator-consumed output is written to files with a short pointer return rather than returned inline (Rules 8, 10).
 - [ ] No `Agent` in tools for non-orchestrator archetypes; orchestrators use explicit `Agent(<allowed-subagent>)` allowlists (Rule 9).
 - [ ] No `run_in_background: true` dispatch pattern for writer agents (Rule 9).
