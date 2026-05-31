@@ -1,6 +1,6 @@
 ---
 name: using-mozg-pipelines
-description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-job-outreach, mz-creative.
+description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-job-outreach, mz-creative, mz-gov.
 argument-hint: '[task description]'
 model: haiku
 allowed-tools: Read, AskUserQuestion
@@ -68,6 +68,9 @@ Routing table. Phrases are indicative, not exact matches.
 | "find a job", "search for vacancies", "job hunt", "match jobs to my CV"                                                                              | job-search                                                | mz-job-outreach  |
 | "find a recruiter", "hiring manager for X", "careers email for X", "who do I apply to"                                                               | job-recruiter-info                                        | mz-job-outreach  |
 | "brainstorm", "generate ideas", "creative options"                                                                                                   | brainstorm                                                | mz-creative      |
+| "should I do X or Y", "record this decision", "write an ADR", "RFD for X", "is this decision sound"                                                  | govern                                                    | mz-gov           |
+| "install governance policy", "init governance", "set up decision records"                                                                            | gov-init                                                  | mz-gov           |
+| "review our ADRs", "audit decision records", "are our design docs sound"                                                                             | gov-review                                                | mz-gov           |
 
 mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
 

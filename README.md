@@ -28,6 +28,25 @@ flowchart LR
 </details>
 
 <details>
+<summary><b>Govern a decision, then build it</b> &nbsp;·&nbsp; <code>mz-gov</code> + <code>mz-dev-pipe</code></summary>
+
+```mermaid
+flowchart LR
+    A["/govern"]:::gov --> B["/build"]:::pipe
+    B --> C["/verify"]:::pipe
+    C --> D["/gov-review"]:::gov
+    classDef gov fill:#f0eaff,stroke:#6639ba,color:#6639ba
+    classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
+```
+
+1. **`/govern`** — route the decision to an ADR/RFD/design doc, run the critic panel, record it behind a human sign-off
+1. **`/build`** — implement the approved decision: plan → code → review → test
+1. **`/verify`** — prove the implementation matches the recorded decision
+1. **`/gov-review`** — audit the decision record for completeness before it ages
+
+</details>
+
+<details>
 <summary><b>Hunt a production bug</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code></summary>
 
 ```mermaid
@@ -197,6 +216,7 @@ claude plugin install mz-funny          # Character-voice code roasting
 claude plugin install mz-design         # UI/UX design documents
 claude plugin install mz-memory         # Cross-session project memory
 claude plugin install mz-knowledge      # Obsidian knowledge base
+claude plugin install mz-gov            # Development governance
 ```
 
 After installation, skills are available as slash commands:
@@ -263,6 +283,22 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 
 **[Full documentation →](plugins/mz-dev-pipe/)**
+
+______________________________________________________________________
+
+### [`mz-gov`](plugins/mz-gov/) — Development Governance
+
+Lightweight governance for AI-assisted development: turn a substantial design decision into a durable, reviewed artifact (ADR, RFC/RFD, or design doc) carrying an AI-provenance block and an explicit human sign-off. An agent proposes the decision, a critic panel pressure-tests it, and a human approves it before anything lands in `docs/`.
+
+| Skill          | Command                       | What it does                                                                     |
+| -------------- | ----------------------------- | -------------------------------------------------------------------------------- |
+| **govern**     | `/govern <decision>`          | Route artifact → critic panel → human sign-off gate → numbered record in `docs/` |
+| **gov-init**   | `/gov-init [project\|global]` | Installs a concise governance policy block into `CLAUDE.md` (sentinel-wrapped)   |
+| **gov-review** | `/gov-review [path]`          | Audits existing ADRs/RFDs/design docs against a synthesized 6-axis rubric        |
+
+10 agents: gov-router (artifact selection via a substantial-vs-ambiguous gate), gov-provenance-recorder, a 4-lens critic panel (alternatives, reversibility, blast-radius, assumptions) scaled by decision weight, gov-critic-quick for the light path, gov-discussion-synthesizer, gov-artifact-writer, and gov-audit-reviewer. Durable artifacts are committed to `docs/`; transient state stays in `.mz/task/`.
+
+**[Full documentation →](plugins/mz-gov/)**
 
 ______________________________________________________________________
 
