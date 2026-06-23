@@ -35,7 +35,9 @@ Every gate must contain these elements, in order:
    - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
    - **Any other reply (feedback)** → incorporate it, re-run the upstream phase if needed, overwrite the artifact, then return to this gate: re-read the updated artifact and **re-emit the entire plan message from scratch** (full verbatim — never a diff, never a summary, since context compaction may have destroyed the user's memory of earlier iterations), then re-present the selector. Explicitly state: "This is a loop — repeat until the user explicitly approves. Never proceed to Phase N without explicit approval."
 
-All elements are required (element 5 only when variant actions exist). Do not omit the delegation guard, the pre-read, the verbatim plan message, the two-option selector, the reject path, or the loop language.
+1. **Journal the outcome** (recommended): after the gate resolves, append an enrichment entry to the global interaction journal `.mz/journal.md` — skill, task, phase, gate label, the resolved outcome (Approve/Reject/feedback), and the verbatim artifact under review (with `<private>` spans redacted). The `mz-memory` capture hook already records the raw `AskUserQuestion` question and answer for every gate automatically, so this enrichment is recommended, not required, and must never block or delay the gate. For a gate that records a substantial decision, also write it to a `## Decisions` section in `state.md` so it is promoted into recall memory at SessionEnd. See `guidelines/JOURNAL_GUIDELINES.md`.
+
+All elements are required except the variant gate (element 5, only when variant actions exist) and the journal step (element 7, recommended). Do not omit the delegation guard, the pre-read, the verbatim plan message, the two-option selector, the reject path, or the loop language.
 
 **Why the plan message is a chat message, not the AskUserQuestion body**: The AskUserQuestion body truncates in chat history and is optimized for a short question. Burying a multi-thousand-character artifact inside it renders cramped and, in practice, gets silently replaced by a bare path or one-line status — defeating the gate. A normal chat message renders markdown fully, mirrors how plan mode surfaces a plan, and survives in scrollback. Keeping the artifact in Surface 1 and the selector short in Surface 2 fixes both problems at once.
 
@@ -195,6 +197,8 @@ Three collector shapes:
 - **Open value** — a path, topic, or other free-text answer with no menu. Ask a direct prose question stating what is needed and why, then read the user's reply. `AskUserQuestion` is built for menus and is a poor fit here — do not force it.
 
 Across all three: state the context with the question (never in a preceding block), never guess a value, and re-ask once on an invalid answer before failing per Rule 10. Call these "input collectors" or "intake questions" — never "pre-gate block".
+
+Input collectors run through `AskUserQuestion`, so the `mz-memory` capture hook records each one in the interaction journal (`.mz/journal.md`) automatically — a collector need not log anything itself. See `guidelines/JOURNAL_GUIDELINES.md`.
 
 ## 17. Canonical Skill Anatomy
 

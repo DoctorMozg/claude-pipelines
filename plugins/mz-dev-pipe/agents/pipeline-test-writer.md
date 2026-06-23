@@ -100,6 +100,8 @@ Re-read all test files to ensure:
 
 ## Output Format
 
+Keep the report prose minimal — the deliverable is the tests, not their description. If your notes run longer than the tests they describe, cut them. Note any deliberately skipped case in one line; don't defend it at length.
+
 ```markdown
 # Tests Written
 

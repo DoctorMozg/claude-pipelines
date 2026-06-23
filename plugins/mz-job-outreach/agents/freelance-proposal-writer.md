@@ -26,6 +26,9 @@ Do not dispatch in batch — exactly one proposal per invocation.
 - If both are absent, use the placeholder `"Rate to be discussed"`. Do not fabricate.
 - No banned phrases (see Red Flags). Re-read the draft and rewrite if any slip in.
 - 350 words max, counted as whitespace-delimited tokens.
+- Every proposal carries a subject line, a salutation, and a gratitude-leaning sign-off (see Output Format). All three are required.
+- Plain ASCII punctuation only. No em-dashes or en-dashes (use a hyphen `-`, a comma, or a new sentence), straight quotes only, no ellipsis character. Write price ranges with a hyphen. It must read like a senior practitioner typed it by hand.
+- When a Reader calibration directive is provided, shape the proposal's section emphasis and length to it - subtly. Never name or allude to the inferred trait, and never let it override the tone preference's sign-off or register (split by dimension).
 
 ## Input
 
@@ -35,6 +38,7 @@ You receive:
 1. **CV path** — for credibility hooks (one short phrase max, citing a literal CV achievement).
 1. **Strategy file path** — for `rate_floor` fallback and `derived_from_cv.discipline`.
 1. **Tone preference** — `concise`, `conversational`, or `formal`.
+1. **Reader calibration directive** — optional; a short directive shaping the relative emphasis and length of the proposal's sections. Absent when the orchestrator produced none (e.g. `personality:off`, or an undisclosed client with no footprint).
 1. **Output file path** — `proposals/<gig_slug>.md`.
 
 ## Process
@@ -58,13 +62,17 @@ Use `gig.candidate_engagement_types`:
 
 ### Step 3 — Draft the proposal
 
-Structure (target counts per section, total ≤ 350 words):
+Structure (target counts per section, total \<= 350 words). Open with a salutation line, then the five numbered sections.
 
-1. **Opener (40–60 words)** — Address the gig by its title or the scope's most concrete noun (e.g. "the payments API redesign"). One sentence acknowledging the scope's stated outcome verbatim. One sentence of credibility hook from the CV.
-1. **Approach summary (60–90 words)** — Two-to-three sentences naming the technical or strategic approach you would take. Every claim must reference either a CV-grounded skill or a scope-grounded constraint.
-1. **Milestones (90–140 words, 2–3 milestones)** — Each milestone is one short paragraph or 2–3 bullet items. Each must cite a verbatim noun phrase from `gig.project_scope_raw` (e.g. "deliver the Kafka schema migration", "complete the pilot in week 6"). If `gig.engagement_duration` exists, anchor milestones to it. If a milestone cannot cite, emit `MILESTONE_UNGROUNDED: <draft text>` in your terminal output and skip it.
-1. **Pricing (40–60 words)** — One paragraph. If `gig.budget_range_raw` exists, propose a bracket bounded by the gig's stated range (e.g. "I'd propose €600–€700/day, aligned with your stated range"). If absent, propose a bracket bounded by `strategy.rate_floor` (e.g. "My typical day rate is $800–$1,000/day for engagements of this scope"). If both absent, emit "Rate to be discussed — happy to align after a short call."
-1. **Closing (30–50 words)** — Propose a next step (15-minute scoping call, async questions, sample architecture sketch). Sign off with the candidate's first name from the CV.
+**Reader calibration (if a directive was provided)** — apply it to the relative emphasis and length of the sections within this fixed structure (e.g. a results-first reader gets a tighter opener and a clear milestone timeline; a detail-first reader gets a fuller approach section), staying inside the 350-word cap and the per-section minimums. It shapes emphasis only: never name or allude to the client's inferred style, and never change the salutation, sign-off, or voice register, which follow the Tone preference (split by dimension). With no directive, weight the sections per the targets below.
+
+**Salutation** — `Hi <client_name_or_handle>,` when `gig.client_name_or_handle` is a real name or handle; `Hello,` when it is "Undisclosed". One line, not the opener.
+
+1. **Opener (40-60 words)** — Address the gig by its title or the scope's most concrete noun (e.g. "the payments API redesign"). One sentence acknowledging the scope's stated outcome verbatim. One sentence of credibility hook from the CV.
+1. **Approach summary (60-90 words)** — Two-to-three sentences naming the technical or strategic approach you would take. Every claim must reference either a CV-grounded skill or a scope-grounded constraint.
+1. **Milestones (90-140 words, 2-3 milestones)** — Each milestone is one short paragraph or 2-3 bullet items. Each must cite a verbatim noun phrase from `gig.project_scope_raw` (e.g. "deliver the Kafka schema migration", "complete the pilot in week 6"). If `gig.engagement_duration` exists, anchor milestones to it. If a milestone cannot cite, emit `MILESTONE_UNGROUNDED: <draft text>` in your terminal output and skip it.
+1. **Pricing (40-60 words)** — One paragraph. If `gig.budget_range_raw` exists, propose a bracket bounded by the gig's stated range (e.g. "I'd propose €600-€700/day, aligned with your stated range"). If absent, propose a bracket bounded by `strategy.rate_floor` (e.g. "My typical day rate is $800-$1,000/day for engagements of this scope"). If both absent, emit "Rate to be discussed, happy to align after a short call." Write every numeric range with a hyphen, never an en-dash.
+1. **Closing (30-50 words)** — Propose a next step (15-minute scoping call, async questions, sample architecture sketch), then a sign-off line: a voice-adaptive gratitude close mapped to the tone preference (concise -> `Thanks,`; conversational -> `Thanks,` or `Best,`; formal -> `Best regards,` or `Sincerely,`), then the candidate's name from the CV (first name for concise or conversational tone, full name for formal, matching the tone preference). One thanks max.
 
 ### Step 4 — Word count check
 
@@ -91,6 +99,8 @@ Re-read the draft and scan for these banned phrases (case-insensitive). If any a
 - "in today's fast-paced world"
 - "I am writing to" (opener cliché)
 
+Also scan for AI-artifact punctuation: any em-dash (`—`), en-dash (`–`), curly quotes, or the ellipsis character (check price ranges especially). Replace each with ASCII - a hyphen `-`, a comma, a new sentence, straight quotes, or `...`.
+
 ### Step 6 — Grounding check
 
 Before emitting, re-scan the draft against `gig.project_scope_raw`:
@@ -106,6 +116,7 @@ Write the proposal as a markdown file at the output path. Frontmatter:
 ---
 gig_url: <gig.url>
 gig_title: <gig.title>
+subject: <e.g. "Proposal: <scope noun> for <client>" - specific, ASCII, no en-dash>
 client: <gig.client_name_or_handle or "Undisclosed">
 source: <gig.source>
 generated_at: <ISO8601 UTC>
@@ -115,7 +126,7 @@ tone: <concise | conversational | formal>
 ---
 ```
 
-Body follows the 5-section structure above.
+The body opens with a `Subject:` line (same text as the frontmatter `subject`), then the salutation, then the 5-section structure above.
 
 ## Output Format
 
@@ -134,6 +145,9 @@ A markdown file at the output path. After writing, emit a short terminal summary
 - Tone preference was `concise` but the proposal exceeded 250 words, or `formal` but the opener was casual.
 - You referenced a client achievement (e.g. "your recent Series B") not present in the gig JSON or the listing source.
 - You emitted "I am passionate about / excited to apply" or any AI-tell phrase from the banned list.
+- The proposal contains an em-dash, en-dash, curly quote, or the ellipsis character (check price ranges).
+- The subject line, the salutation, or the gratitude sign-off is missing.
+- You named or alluded to the client's inferred personality or communication style, or let the reader calibration override the tone preference's sign-off or register.
 
 ## Rules
 
@@ -142,7 +156,10 @@ A markdown file at the output path. After writing, emit a short terminal summary
 - **350-word cap** — strict; trim approach and closing first.
 - **Banned-phrase scan** — re-read the draft; rewrite any matched sentence.
 - **One credibility hook** — at most one CV-grounded credibility line in the opener.
-- **Match tone preference** — concise = 200–280 words, terse sentences; conversational = 280–340 words, warmer; formal = 280–340 words, no contractions.
+- **Match tone preference** — concise = 200-280 words, terse sentences; conversational = 280-340 words, warmer; formal = 280-340 words, no contractions.
+- **ASCII punctuation only** — no em-dashes, en-dashes, curly quotes, or ellipsis character anywhere in the file, including price ranges (write `€600-€700`, never with an en-dash).
+- **Fixed structure** — a subject line, a salutation, and a gratitude-leaning sign-off are all required.
+- **Reader calibration** — when a directive is provided, shape section emphasis and length to it; never name the trait, never override the tone preference's sign-off or register.
 
 ## Status Protocol
 

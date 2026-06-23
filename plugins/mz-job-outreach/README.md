@@ -7,6 +7,8 @@ Autonomous job-hunt and freelance-hunt pipelines for Claude Code. Four skills co
 - `/freelance-search` — **full CV-to-gigs pipeline** for freelance/contract/consulting work (vetted networks, regional boards, niche boards; explicit Upwork/Fiverr exclusion).
 - `/freelance-pitch` — **per-gig grounded proposal** for a selected freelance gig (≤350 words, milestones cited verbatim from gig scope, pricing cited verbatim from gig budget or strategist rate floor).
 
+Every generated cover letter and proposal opens with a subject line and a salutation and closes with a voice-adaptive gratitude sign-off, written in plain ASCII with no em-dashes or other AI-artifact punctuation. Freelance proposals are additionally calibrated, when the client is identifiable, to the client's inferred communication style (Social Styles, grounded only in public professional signal; it falls back to role-based priorities and never names the trait). Disable with `personality:off`.
+
 > Looking for B2B outreach tools (`/outreach-research`, `/outreach-enrich-company`, `/outreach-update-card`)? Those live in the sibling plugin: **`mz-biz-outreach`**.
 
 ## Installation
@@ -233,6 +235,7 @@ Generates one freelance proposal (≤350 words, hard cap) for a selected gig —
 ```
 Phase 0:    Resolve gig             — Parse rank/URL/empty, look up in latest run or WebFetch off-pipeline
 Phase 1:    Tone pick               — AskUserQuestion: Concise / Conversational / Formal
+Phase 1.6:  Reader-style read       — Inline Social-Styles read of the client when named; shapes section emphasis only
 Phase 2:    Generate                — freelance-proposal-writer drafts with hard grounding rules
 Phase 3:    Review + edit loop      — User approves, regenerates (up to 2), gives feedback, or cancels
 Phase 4:    Write                   — Save to <run_dir>/proposals/<gig_slug>.md

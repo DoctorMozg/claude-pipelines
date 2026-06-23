@@ -38,6 +38,7 @@ Extract scope modifiers from `$ARGUMENTS`, case-insensitive. `outreach-research`
 - **`sector:<value>`** — restrict discovery to a specific industry/vertical (e.g. `sector:HR-tech`, `sector:fintech`). Default: inferred by `outreach-strategist` from the goal text.
 - **`region:<value>`** — restrict discovery to a geographic market (e.g. `region:DACH`, `region:LATAM`). Default: inferred from the goal text; global if no signal.
 - **`limit:<N>`** — maximum companies to carry through the pipeline. Default: 20.
+- **`brief:<run_name>`** — seed discovery from an `outreach-brief` run. The strategist is given that run's `brief.json` and `climate.json`, so the target profile, outreach angles, and scoring weights reflect the captured brief and the local business climate. Default: none (goal text only).
 - **Default** — full-scope strategist-driven discovery using only the goal text when no modifiers are present.
 
 ## Argument Parsing
@@ -48,6 +49,7 @@ Extract from `$ARGUMENTS`:
 - **sector** — optional, from `sector:<value>` (default: inferred by strategist)
 - **region** — optional, from `region:<value>` (default: inferred from goal text)
 - **limit** — optional, from `limit:<N>` (default: 20)
+- **brief** — optional, from `brief:<run_name>`; resolves to `.mz/outreach/<brief_run>/brief.json` + `climate.json` (default: none)
 
 ## Directory Structure
 
@@ -152,7 +154,10 @@ Goal: <goal>
 Sector: <parsed or null>
 Limit: 20
 RunName: <run_name> (outreach output dir)
+BriefRun: <brief_run or null>
 ```
+
+If `brief:<run_name>` was supplied, read `.mz/outreach/<brief_run>/brief.json` and `.mz/outreach/<brief_run>/climate.json` and carry their contents into Phase 1. If either file is missing, warn and continue without it — the brief is an enhancement, never a hard dependency. When the goal text is empty but a brief is present, derive the goal from the brief's `offering` and `goal_channels_voice.goal`.
 
 After setup completes, read `phases/discovery.md` and proceed to Phase 1.
 

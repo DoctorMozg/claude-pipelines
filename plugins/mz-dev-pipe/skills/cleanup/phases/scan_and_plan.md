@@ -21,6 +21,8 @@ ______________________________________________________________________
 
 **Goal**: Turn the user's scope argument into an ordered list of parallel-safe chunks ready for optimization.
 
+> **Simplification standard.** What cleanup treats as "too much code" is the shared minimalism ladder — see [`skills/shared/minimalism.md`](../../shared/minimalism.md). The Phase 4 over-engineering lens validates against the same definition, so what cleanup removes here and what the lens flags later stay aligned. Cleanup writes no new code, so the ladder's web-research step does not apply; the exemptions — validation, error handling, security, tests — still do. Never strip code health.
+
 ### 1.1 Resolve scope
 
 **If a `scope:` parameter was extracted by the SKILL.md orchestrator** (branch / global / working), its git commands have already produced a concrete file list. Use that list directly, applying standard exclusions (vendored, generated, lock files, >5000 LOC). If an explicit scope argument was also given (e.g., `scope:branch "src/auth/"`), intersect the two — keep only files that appear in both the scope-parameter list and the explicit scope expansion.

@@ -70,6 +70,19 @@ For each non-skipped (contact, channel) pair, write `.mz/task/<task_name>/briefs
       "outreach_implication": "<implication line from card>"
     }
   ],
+  "climate_context": {
+    "industry": "<matched combo industry or null>",
+    "region": "<matched combo region or null>",
+    "angles": ["<top_outreach_angles from the matched climate combo, if brief_run supplied>"],
+    "signals": ["<dated climate signal + its outreach_implication, if any>"]
+  },
+  "reader_style": {
+    "social_style": "<Driver | Analytical | Amiable | Expressive | null - populated in 3.0a by the profiler wave; null when personality_mode is off or no footprint cue exists>",
+    "role_priorities": ["<what the recipient's role tends to prioritize, e.g. cost/ROI, technical fit, reach>"],
+    "confidence": "<high | med | low | none>",
+    "calibration_directive": "<2-4 imperative lines: structure, length-bias, pacing, which angle leads first - never names the trait>",
+    "evidence": [{ "cue": "<observable footprint cue>", "source_url": "<url>" }]
+  },
   "verified_entities": [
     "<every proper noun, product name, metric, date, URL the copywriter is allowed to reference — populated from card + light pass + deeper intel>"
   ],
@@ -93,7 +106,47 @@ For each contact:
 
 When `enrich_mode == "skip"`, the deeper-intel integration is a no-op (the directory is empty).
 
+**Local-climate integration** (when `brief_run` was supplied and Phase 1 set `climate_context`): add `climate_context.angles` as candidate values for each contact's `chosen_angle`, and promote any dated fact inside `climate_context.signals` into `verified_entities`. Tag a climate-derived opening hook `source: "climate"`, `source_detail: "climate.json: <industry> × <region>"`. This lets a letter lead with local-market context while staying inside the verified-entities rule. Independent of `enrich_mode` — climate comes from the brief run, not Phase 2.
+
+Write each brief with `reader_style` as a null placeholder (`social_style: null`, `confidence: "none"`, empty `evidence`, empty `calibration_directive`); step 3.0a fills it in.
+
 Update `state.md` Phase field to `briefs_complete`, append a `Briefs` list (one path per file).
+
+### 3.0a Reader-style profiling wave (outreach-personality-profiler)
+
+Skipped entirely when `personality_mode == "off"` (the brief's `reader_style` stays the null placeholder and letters read exactly as they did before this step existed). Otherwise runs automatically — no approval gate.
+
+This wave calibrates each letter to how the recipient prefers to be addressed, using the Social Styles model (Driver / Analytical / Amiable / Expressive). It is grounded-only: a style is asserted solely when a citable public-footprint cue supports it; otherwise the read falls back to role-based priorities and never guesses a personality from a title.
+
+For each brief whose `chosen_channel` is not `skip` (dedupe by contact — one profile per person even when both an email and a DM brief exist), dispatch one `outreach-personality-profiler`. Dispatch in parallel waves of at most 6 concurrent agents per wave; up to 5 contacts fit in one wave. Foreground only — do not background the profiler.
+
+Output path per contact: `.mz/task/<task_name>/profiles/<contact_slug>.json`.
+
+Dispatch prompt (`subagent_type: outreach-personality-profiler`):
+
+```
+Profile the communication style of this single contact for letter calibration.
+
+Contact:
+  - Name: <recipient.name>
+  - Title: <recipient.title>
+  - Company: <company.name>
+  - LinkedIn: <recipient.linkedin_url or "unknown">
+Seed signal (already gathered, may be empty): <the Phase 1 light-pass public-activity
+  string for this contact, plus any contacts.json activity reference tagged to this name>
+Recency window: 12 months.
+Output file: .mz/task/<task_name>/profiles/<contact_slug>.json
+
+Assert a Social Style ONLY with at least one citable public-footprint cue. With no
+citable cue, leave social_style null and populate role_priorities from the title.
+Emit a calibration_directive that shapes structure, length-bias, pacing, and which
+angle leads - never naming or alluding to the trait, never touching the salutation,
+sign-off, or voice register. At most 3 web calls. Professional signal only.
+```
+
+After each profiler returns: read its `profiles/<contact_slug>.json` and merge `social_style`, `role_priorities`, `confidence`, `calibration_directive`, and `evidence` into the `reader_style` block of every brief for that contact (both channels if two exist). On `BLOCKED` / `NEEDS_CONTEXT`, leave that contact's `reader_style` as the null placeholder (the letter falls back to neutral structure) and record `profile_failed: <contact_slug>` in `state.md` — do not auto-retry, do not block the run.
+
+Update `state.md`: append a `Profiles` list (one path per profiled contact with its `social_style`/`confidence` or `fallback:role_priorities`), and record `ProfilesFootprint` (count with a citable style) and `ProfilesRolePriority` (count that fell back).
 
 ### 3.1 Dispatch plan
 
@@ -105,16 +158,19 @@ Per-brief output path: `.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md`
 
 Pass these constraints verbatim inside the dispatch so the agent does not improvise structure:
 
-| Field               | `email` / `email_generic`                                                                             | `linkedin_dm`                                                                              |
-| ------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Frontmatter         | YAML block at top with `subject`, `channel: email` (or `email_generic`), `recipient: <full name>`     | YAML block at top with `channel: linkedin_dm`, `recipient: <full name>` — no `subject` key |
-| Body length         | 120–180 words                                                                                         | 60–100 words                                                                               |
-| Subject line        | First field in the frontmatter. ≤55 chars. Specific verb + named outcome. No clickbait, no emoji.     | None (LinkedIn DMs have no subject field)                                                  |
-| Opening sentence    | References exactly ONE personalization hook from `brief.personalization_hooks[*]`, verbatim or near.  | Same rule.                                                                                 |
-| CTA                 | One imperative sentence near the end. One ask, low friction (15-min call, reply Y/N, share thoughts). | Same rule.                                                                                 |
-| Sign-off            | One short line, sender's first name only. No company, no title, no signature block.                   | None.                                                                                      |
-| Markdown formatting | Plain prose. No headings, no bullets inside the body.                                                 | Plain prose. No markdown at all.                                                           |
-| Self-promotion      | Not in paragraph 1. Paragraph 1 is about the recipient and the hook.                                  | Same rule.                                                                                 |
+| Field               | `email` / `email_generic`                                                                                                                                                                                                                                                                                                                                                            | `linkedin_dm`                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Frontmatter         | YAML block at top with `subject`, `channel: email` (or `email_generic`), `recipient: <full name>`                                                                                                                                                                                                                                                                                    | YAML block at top with `channel: linkedin_dm`, `recipient: <full name>`, no `subject` key |
+| Body length         | 120-180 words (excludes the salutation and sign-off lines)                                                                                                                                                                                                                                                                                                                           | 60-100 words (excludes the salutation and sign-off lines)                                 |
+| Subject line        | First field in the frontmatter. \<=55 chars, about 6-7 words. Specific verb + named outcome. No clickbait, no emoji.                                                                                                                                                                                                                                                                 | None (LinkedIn DMs have no subject field)                                                 |
+| Salutation          | One greeting line, voice-adaptive: `Hi <first>,` (warm) / `Hello <first>,` (neutral) / `Dear <title last>,` (formal). For `email_generic` keep `Hi <first>,` when the name is known, else `Hello,`. Does not count as the opening sentence.                                                                                                                                          | Casual only: `Hi <first>,`. Never a formal `Dear ...` on a DM.                            |
+| Opening sentence    | The line after the salutation. References exactly ONE personalization hook from `brief.personalization_hooks[*]`, verbatim or near. The salutation does not satisfy this.                                                                                                                                                                                                            | Same rule.                                                                                |
+| CTA                 | One imperative sentence near the end. One ask, low friction (15-min call, reply Y/N, share thoughts).                                                                                                                                                                                                                                                                                | Same rule.                                                                                |
+| Sign-off            | Two lines: a voice-adaptive gratitude close, then the sender's first name. Map by voice: warm -> `Thanks,`; neutral -> `Best regards,`; formal -> `Sincerely,`. One thanks max. No company, title, or signature block.                                                                                                                                                               | One short casual line: `Thanks,` then the sender's first name. No formal close.           |
+| Punctuation         | Plain ASCII only: no em-dashes or en-dashes (use a hyphen `-`, a comma, or a new sentence), straight quotes only, no ellipsis character.                                                                                                                                                                                                                                             | Same rule.                                                                                |
+| Reader calibration  | Apply `brief.reader_style.calibration_directive` to structure, length-bias, pacing, and which angle leads first (stay inside the word budget). When `reader_style.social_style` is null, lead with the angle fitting `role_priorities` and keep a neutral structure. Never name or allude to the inferred trait; the sender voice still owns the salutation, sign-off, and register. | Same rule.                                                                                |
+| Markdown formatting | Plain prose. No headings, no bullets inside the body.                                                                                                                                                                                                                                                                                                                                | Plain prose. No markdown at all.                                                          |
+| Self-promotion      | Not in paragraph 1. Paragraph 1 is about the recipient and the hook.                                                                                                                                                                                                                                                                                                                 | Same rule.                                                                                |
 
 ### 3.3 Dispatch template (one Agent call per brief)
 
@@ -126,38 +182,68 @@ Format: <channel>            # email | email_generic | linkedin_dm
 Output path: .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md
 Source artifacts:
   - .mz/task/<task_name>/briefs/<channel>_<contact_slug>.json
-Audience: one named recipient (not a segment). Treat as cold — recipient has
+Audience: one named recipient (not a segment). Treat as cold - recipient has
   not heard from sender. Personalization is real and verifiable.
 Value claim: <copy from brief.value_claim>
 Sender voice: <copy verbatim from brief.sender_voice>
+Greeting: open with ONE salutation line, then the hook on the next line.
+  Voice-adaptive: "Hi <first_name>," (warm) / "Hello <first_name>," (neutral)
+  / "Dear <title last_name>," (formal). For email_generic keep "Hi <first_name>,"
+  when the recipient name is known, else "Hello,". For linkedin_dm always the
+  casual "Hi <first_name>,". The salutation is NOT the opening hook - the first
+  sentence after it must still carry the personalization hook.
 Opening hook: pick exactly ONE item from brief.personalization_hooks (use
-  the most specific, verifiable one — prefer items tagged source: deeper_intel
-  when available) and reference it in the first sentence. Do not invent.
+  the most specific, verifiable one - prefer items tagged source: deeper_intel
+  when available) and reference it in the first sentence after the salutation.
+  Do not invent.
 Outreach angle: <copy from brief.chosen_angle>
+Reader calibration: apply brief.reader_style.calibration_directive to the
+  letter's structure, length-bias, pacing, and which angle leads first - stay
+  inside the channel word budget. If brief.reader_style.social_style is null,
+  lead with the angle that fits brief.reader_style.role_priorities and keep a
+  neutral structure. This shapes HOW the letter reads only: never name, hint
+  at, or flatter the inferred trait, and never change the salutation, sign-off,
+  or voice register - the sender voice owns those (split by dimension).
+Local climate (optional): if brief.climate_context is set, you may open on ONE
+  angle from brief.climate_context.angles, but cite only climate facts that
+  also appear in brief.verified_entities.
+Sign-off: close with a voice-adaptive gratitude line, then the sender's first
+  name on the next line. Map by sender voice: warm -> "Thanks,"; neutral ->
+  "Best regards,"; formal -> "Sincerely,". At most one thank-you; do not
+  over-thank. For linkedin_dm use a short "Thanks," then the first name -
+  nothing formal.
+Punctuation: plain ASCII only. Do NOT use em-dashes or en-dashes anywhere -
+  use a hyphen "-", a comma, or split the sentence. Straight quotes only, no
+  curly quotes, no ellipsis character.
 Channel-specific constraints:
 <copy the relevant channel column from the channel rules table verbatim>
 Frontmatter requirement: emit the YAML block at the very top of the output
   file with no content above it. The block must contain `subject` (email only,
-  ≤55 chars), `channel`, and `recipient`. The naturalizer will preserve the
-  frontmatter automatically — the subject is safest inside it.
-Evidence available (use as written — do NOT extend):
+  <=55 chars, about 6-7 words), `channel`, and `recipient`. The naturalizer
+  preserves the frontmatter automatically - the subject is safest inside it.
+Evidence available (use as written - do NOT extend):
   - Verified entities: <list from brief.verified_entities>
   - Personalization signals: <list from brief.personalization_hooks>
   - Recent news with implications: <list from brief.card_recent_news>
 Forbidden:
   - Any number, date, customer name, product name, or metric not in
     brief.verified_entities.
-  - Generic openers: "I hope this finds you well", "I came across your
-    profile", "I noticed your company", "Just reaching out", "I wanted to
-    introduce".
+  - Generic OPENERS (the first sentence after the salutation, not the
+    salutation itself, which is required): "I hope this finds you well",
+    "I came across your profile", "I noticed your company", "Just reaching
+    out", "I wanted to introduce".
   - Adjective stacks ("innovative, scalable, transformative").
   - Hyperbole ("revolutionary", "game-changing", "10x").
   - Decorative affirmatives ("Absolutely", "Certainly", "Indeed").
+  - Em-dashes, en-dashes, curly quotes, or the ellipsis character anywhere in
+    the letter. ASCII punctuation only.
   - Self-promotion in paragraph 1.
+  - Naming, hinting at, or flattering the recipient's inferred personality or
+    communication style. The reader calibration must stay invisible in the text.
   - Marketing-framework toolkit beyond Rule of One + one persuasion lever.
     This is short cold outreach, not a landing page.
 Open questions / gaps: if brief.personalization_hooks contains zero items
-  with `verified: true`, emit STATUS: BLOCKED — do not draft.
+  with `verified: true`, emit STATUS: BLOCKED - do not draft.
 ```
 
 The brief file already carries `channel_format_rules` (a verbatim copy of the channel rules row); the dispatch above also embeds the rules to be safe.
@@ -169,11 +255,12 @@ After every agent in a wave returns:
 1. Verify the output file exists and is non-empty.
 1. Verify `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS`. On `BLOCKED` or `NEEDS_CONTEXT`, record the failure in `state.md` and continue with other drafts — do not auto-retry.
 1. Verify the file starts with a YAML frontmatter block (`---` on line 1).
-1. For `email` / `email_generic`: the frontmatter must contain a `subject:` key with ≤55 chars.
+1. For `email` / `email_generic`: the frontmatter must contain a `subject:` key with \<=55 chars.
+1. Verify the salutation and sign-off are present. Email/email_generic: a salutation line at the top of the body, and a sign-off of a gratitude close ("Thanks,"/"Best regards,"/"Sincerely,") followed by the sender's first name. linkedin_dm: a casual "Hi <first>," opener and a short "Thanks," + first-name close. Mark `failed_draft: missing_salutation` or `failed_draft: missing_signoff` if either is absent.
 1. Verify body word count is within channel budget:
-   - `email` / `email_generic`: 120–180 words (count words in body only, excluding frontmatter, subject, sign-off line).
-   - `linkedin_dm`: 60–100 words (count words in body only, excluding frontmatter).
-1. If any check fails for a particular draft, mark it `failed_draft` in `state.md`. Phase 5 will list it as `### Skipped: <Name> — <reason>` instead of including a letter.
+   - `email` / `email_generic`: 120-180 words (count body words only, excluding frontmatter, subject, the salutation line, and the sign-off lines).
+   - `linkedin_dm`: 60-100 words (count body words only, excluding frontmatter, the salutation line, and the sign-off lines).
+1. If any check fails for a particular draft, mark it `failed_draft` in `state.md`. Phase 5 will list it as `### Skipped: <Name>: <reason>` instead of including a letter.
 
 Update `state.md`: Phase → `drafts_complete`, append a `Drafts` list (path per file, plus pass/fail flag).
 
@@ -201,37 +288,44 @@ Dispatch one `expert-naturalizer` agent per surviving draft, in parallel waves o
 ```
 Mode: in-place rewrite
 Input file: .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md
-Output file: same path — overwrite
+Output file: same path - overwrite
 Severity: Light
   (the copywriter just wrote this; AI-pattern density is bounded;
    this is short cold outreach, not generic long copy)
 Strategy:
   - Vocabulary swaps only where an avoid-list term degrades trust
-  - Em-dash reduction (keep ≤1 per letter)
+  - Remove ALL em-dashes and en-dashes - convert each to a hyphen, a comma, or
+    a sentence break. Zero tolerance, not "reduce".
+  - Strip curly quotes and the ellipsis character; output straight ASCII
+    quotes and "..." only
   - Break mechanical antithesis if present
   - Restore natural contractions ("don't", "you're") where the tone allows
-  - Do NOT cut sentences for length compliance — preserve length within ±5%
-  - Do NOT rebuild paragraph variance — short letters are 1–3 paragraphs
+  - Do NOT cut sentences for length compliance - preserve length within +/-5%
+  - Do NOT rebuild paragraph variance - short letters are 1-3 paragraphs
 Preserve list (immutable):
   - The YAML frontmatter block at the top of the file (auto-preserved)
+  - The salutation line and the sign-off lines (gratitude close + sender first
+    name) - keep both present; smooth wording only, never drop the greeting or
+    the closing
   - Recipient's first name (first appearance and every appearance)
-  - Sender's first name (sign-off line on email)
   - Company name, product names, and every proper noun from
     brief.verified_entities
-  - Every number, date, metric, and URL — verbatim
+  - Every number, date, metric, and URL - verbatim
   - The personalization-hook sentence (paragraph 1, the sentence containing
-    the cited signal) — substance preserved; minor word swaps only if the
+    the cited signal) - substance preserved; minor word swaps only if the
     cited entity stays untouched
-  - The CTA sentence — verbatim
-Word-count target: preserve length within ±5%. Channel budget is the hard
-  floor/ceiling:
-  - email / email_generic: body 120–180 words
-  - linkedin_dm: 60–100 words
+  - The CTA sentence - verbatim
+  - The reader-calibrated shape - do not reorder the paragraphs, re-expand a
+    deliberately brief letter, or move the leading angle. Smooth wording only.
+Word-count target: preserve length within +/-5%. Channel budget is the hard
+  floor/ceiling, measured excluding the salutation and sign-off lines:
+  - email / email_generic: body 120-180 words
+  - linkedin_dm: 60-100 words
   If naturalization would push the count outside the budget, return the
   input unchanged with a note in the change report.
-Long-document handling: N/A — input is 60–180 words.
+Long-document handling: N/A - input is 60-180 words.
 Web research: no
-Format awareness: <email | email_generic | linkedin_dm> — do NOT introduce
+Format awareness: <email | email_generic | linkedin_dm> - do NOT introduce
   headings, bullet lists, or markdown decoration.
 Medium routing override: "Email between colleagues" for email and
   email_generic; "Chat, DMs, comments, casual Markdown" for linkedin_dm.
@@ -244,8 +338,10 @@ After each naturalizer returns:
 
 1. Read the rewritten draft.
 1. Confirm the YAML frontmatter is intact and `subject:` (email) is unchanged from the pre-naturalize snapshot. If `subject:` drifted, revert the draft from the snapshot and mark `naturalize_reverted: subject_drift` in `state.md`.
-1. Count body words (excluding frontmatter, subject, sign-off line). If outside the channel budget by >5%, revert from snapshot and mark `naturalize_reverted: length_out_of_bounds`.
+1. Count body words (excluding frontmatter, subject, the salutation line, and the sign-off lines). If outside the channel budget by >5%, revert from snapshot and mark `naturalize_reverted: length_out_of_bounds`.
 1. Confirm every entity from `brief.verified_entities` still appears in the body. If a verified entity was removed, revert and mark `naturalize_reverted: entity_dropped`.
+1. Confirm the salutation and sign-off survived. If the naturalizer dropped the greeting or the closing, revert from snapshot and mark `naturalize_reverted: structure_dropped`.
+1. Scan the body for AI-artifact punctuation: em-dashes and en-dashes (the `—` and `–` characters), curly quotes, and the ellipsis character. If any are found, re-dispatch the naturalizer ONCE with an instruction to replace each flagged character with grammatical ASCII (a hyphen, comma, period, straight quote, or "...") and change nothing else, then re-scan. If artifacts still remain, mark `naturalize_artifacts_remain` in `state.md` and downgrade the run STATUS to `DONE_WITH_CONCERNS` - never emit a letter that still contains them.
 
 After processing all drafts, delete the `.pre-naturalize` snapshots:
 
@@ -290,24 +386,26 @@ For every contact processed in Phase 3, in the order they appeared in the card's
 **Letter block (email / email_generic):**
 
 ```markdown
-### To <Name> (<Title>) — Email
+### To <Name> (<Title>): Email
 
 **To**: <recipient email or "<generic@domain> (cc: <Name>)" if email_generic>
 **Subject**: <subject from draft frontmatter>
 
-<body of the draft, with frontmatter stripped>
+<body of the draft, with frontmatter stripped - it already opens with the salutation and ends with the gratitude sign-off plus sender first name>
 
-— <Sender first name from brief.sender_voice or "Sender">
+*Reader calibration: <reader_style.social_style, or "role-priorities" when null> (<reader_style.confidence>) - <one-line basis: the cited evidence cue, or the role priorities the letter led with>*
 ```
 
 **Letter block (linkedin_dm):**
 
 ```markdown
-### To <Name> (<Title>) — LinkedIn DM
+### To <Name> (<Title>): LinkedIn DM
 
 **LinkedIn**: <linkedin_url>
 
 <body of the draft, with frontmatter stripped>
+
+*Reader calibration: <reader_style.social_style, or "role-priorities" when null> (<reader_style.confidence>) - <one-line basis: the cited evidence cue, or the role priorities the letter led with>*
 ```
 
 **Skipped block (no channel or failed draft):**
@@ -315,10 +413,10 @@ For every contact processed in Phase 3, in the order they appeared in the card's
 ```markdown
 ### Skipped: <Name> (<Title>)
 
-**Reason**: <one line — "no contact route" | "copywriter blocked: <message>" | "naturalize reverted: <reason>" | "draft failed validation: <reason>">
+**Reason**: <one line: "no contact route" | "copywriter blocked: <message>" | "naturalize reverted: <reason>" | "draft failed validation: <reason>">
 ```
 
-Between blocks insert a `---` separator line.
+Between blocks insert a `---` separator line. Omit the `*Reader calibration:*` line entirely when `personality_mode == "off"` (no profiling ran, so there is nothing to disclose).
 
 Open the section with a heading and close it with a generated-line footer:
 

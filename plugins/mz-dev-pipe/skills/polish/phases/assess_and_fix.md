@@ -119,6 +119,8 @@ Focus on:
 Report concise, actionable findings.
 ```
 
+**Minimalism gate.** When proposing fix approaches above, climb the minimalism ladder: prefer deleting code or using a standard-library / native / already-installed-dependency solution over writing new custom code, and don't introduce an abstraction a single fix doesn't yet need. For a non-trivial fix, web-validate the approach before writing it. Code health — validation, error handling, security, tests — is exempt. See [`skills/shared/minimalism.md`](../../shared/minimalism.md).
+
 ### 3.3 Save research
 
 Write findings to `.mz/task/<task_name>/research.md`.

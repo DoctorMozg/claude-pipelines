@@ -15,13 +15,14 @@ Memory activates automatically on install — no configuration needed.
 
 ### Hook Lifecycle
 
-| Hook                  | Event            | What it does                                                                     |
-| --------------------- | ---------------- | -------------------------------------------------------------------------------- |
-| **Memory inject**     | SessionStart     | Reads `.mz/memory/MEMORY.md` (Pinned + Activity Log) and injects into context    |
-| **Memory capture**    | SessionEnd       | Scans completed tasks, pulls Decisions/Lessons sections, attaches `[branch@sha]` |
-| **Memory reinject**   | PostCompact      | Re-injects memory after context compaction                                       |
-| **Memory precompact** | PreCompact       | Snapshots in-flight working state from the transcript before compaction          |
-| **Memory prompt**     | UserPromptSubmit | Selectively injects pinned + matching log entries based on prompt keywords       |
+| Hook                  | Event                         | What it does                                                                     |
+| --------------------- | ----------------------------- | -------------------------------------------------------------------------------- |
+| **Memory inject**     | SessionStart                  | Reads `.mz/memory/MEMORY.md` (Pinned + Activity Log) and injects into context    |
+| **Memory capture**    | SessionEnd                    | Scans completed tasks, pulls Decisions/Lessons sections, attaches `[branch@sha]` |
+| **Memory reinject**   | PostCompact                   | Re-injects memory after context compaction                                       |
+| **Memory precompact** | PreCompact                    | Snapshots in-flight working state from the transcript before compaction          |
+| **Memory prompt**     | UserPromptSubmit              | Selectively injects pinned + matching log entries based on prompt keywords       |
+| **Journal capture**   | PostToolUse `AskUserQuestion` | Appends every approval gate and input prompt verbatim to `.mz/journal.md`        |
 
 ### Storage
 
@@ -74,6 +75,16 @@ Before the harness compresses the transcript, `memory-precompact.sh` reads `tran
 
 When `MZ_MEMORY_COMPRESS=1` is set and `claude` is on PATH, SessionEnd will detach a background `memory-compress.sh` process whenever the Activity Log exceeds 300 entries. It keeps the most recent 100 verbatim and replaces the rest with a themed summary (`## Recurring decisions`, `## Resolved bugs`, etc.). Failure is silent — compression is best-effort and never blocks the session.
 
+## Interaction Journal
+
+Alongside curated memory, `mz-memory` records a raw **interaction journal** at `.mz/journal.md` — one global, append-only, gitignored log of every approval gate, input prompt, and decision across all skills. Where `MEMORY.md` is the distilled recall store, the journal is the verbatim audit trail of how agents and the user actually negotiated each step.
+
+A `PostToolUse` hook matched to `AskUserQuestion` captures every gate and input automatically — question and answer, verbatim — so the trail survives even when context is compacted and the model forgets it is mid-gate. Skills may append richer entries (skill, task, phase, the artifact under review) via `journal-append.sh`. `<private>…</private>` regions are redacted to `[redacted]` before writing, with code formatting preserved.
+
+Decisions worth recalling are promoted from the journal into memory: write a `## Decisions` section into the task's `state.md` and the SessionEnd capture lifts it into the Activity Log, and thus into the next session's injected context. The journal itself is disposable scratch; the memory store is what persists.
+
+The entry format, the two-layer (hook + skill) capture model, and the redaction convention are specified in [`guidelines/JOURNAL_GUIDELINES.md`](../../guidelines/JOURNAL_GUIDELINES.md).
+
 ## Manual Notes: `/memory-note`
 
 ```
@@ -107,15 +118,18 @@ This is **complementary** to the global memory system this plugin provides:
 
 ## File Reference
 
-| File                                          | Purpose                                                                 |
-| --------------------------------------------- | ----------------------------------------------------------------------- |
-| `.mz/memory/MEMORY.md`                        | Project memory store with Pinned + Activity Log sections                |
-| `.mz/memory/.compress.lock`                   | Atomic lock held by background compression                              |
-| `.claude/agent-memory/<agent>/MEMORY.md`      | Per-agent native memory (managed by Claude Code, bridged on capture)    |
-| `scripts/lib/common.sh`                       | Shared helpers: `find_project_root`, `strip_private`, `atomic_write`, … |
-| `scripts/memory-{inject,capture,reinject}.sh` | Core SessionStart / SessionEnd / PostCompact hooks                      |
-| `scripts/memory-precompact.sh`                | PreCompact handover-snapshot hook                                       |
-| `scripts/memory-prompt-inject.sh`             | UserPromptSubmit selective-injection hook                               |
-| `scripts/memory-compress.sh`                  | Optional background LLM compaction of the Activity Log                  |
-| `scripts/memory-note.sh`                      | CLI helper invoked by the `/memory-note` skill                          |
-| `skills/memory-note/SKILL.md`                 | Manual-note slash command with approval gate                            |
+| File                                          | Purpose                                                                      |
+| --------------------------------------------- | ---------------------------------------------------------------------------- |
+| `.mz/memory/MEMORY.md`                        | Project memory store with Pinned + Activity Log sections                     |
+| `.mz/memory/.compress.lock`                   | Atomic lock held by background compression                                   |
+| `.mz/journal.md`                              | Append-only interaction journal (gates, inputs, decisions) — gitignored      |
+| `.claude/agent-memory/<agent>/MEMORY.md`      | Per-agent native memory (managed by Claude Code, bridged on capture)         |
+| `scripts/lib/common.sh`                       | Shared helpers: `find_project_root`, `strip_private`, `atomic_write`, …      |
+| `scripts/memory-{inject,capture,reinject}.sh` | Core SessionStart / SessionEnd / PostCompact hooks                           |
+| `scripts/memory-precompact.sh`                | PreCompact handover-snapshot hook                                            |
+| `scripts/memory-prompt-inject.sh`             | UserPromptSubmit selective-injection hook                                    |
+| `scripts/memory-compress.sh`                  | Optional background LLM compaction of the Activity Log                       |
+| `scripts/journal-capture.sh`                  | PostToolUse(AskUserQuestion) hook — records gates/inputs to `.mz/journal.md` |
+| `scripts/journal-append.sh`                   | CLI helper — flock-guarded, `<private>`-redacting journal appender           |
+| `scripts/memory-note.sh`                      | CLI helper invoked by the `/memory-note` skill                               |
+| `skills/memory-note/SKILL.md`                 | Manual-note slash command with approval gate                                 |

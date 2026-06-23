@@ -1,7 +1,7 @@
 ---
 name: freelance-pitch
 description: ALWAYS invoke when the user wants to draft a freelance proposal for a single gig — by rank from /freelance-search, by URL, or picked from a list. Triggers: "freelance pitch", "draft proposal", "pitch this gig", "proposal for gig 3".
-argument-hint: "[<rank-N> | <gig-URL>]"
+argument-hint: "[<rank-N> | <gig-URL>] [personality:off]"
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
@@ -80,7 +80,8 @@ Parse `$ARGUMENTS`:
 
 - Integer (e.g. `3`) → `rank_arg`.
 - URL (starts with `http://` or `https://`) → `url_arg`.
-- Empty → interactive picker.
+- `personality:off` token (anywhere in `$ARGUMENTS`) → `personality_mode = off` (default `on`); disables the Phase 1.6 reader-style read so proposals use neutral structure.
+- Empty (no rank or URL) → interactive picker.
 
 Discover the most recent freelance-search run:
 

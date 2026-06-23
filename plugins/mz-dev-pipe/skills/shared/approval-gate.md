@@ -58,9 +58,22 @@ Never embed the verbatim artifact in the question body — Surface 1 already car
 - **Reject** → update state to `aborted_by_user`, stop. Do not re-dispatch any agent.
 - **Any other reply** → treat as feedback. Apply the requested changes, overwrite the artifact, return to Surface 1, re-emit the full updated plan message from scratch (full verbatim — never a diff, never a summary), re-present the selector. **Loop until explicit Approve.** Never proceed without explicit approval.
 
+## Journal logging
+
+Every gate is recorded in the interaction journal (`.mz/journal.md`). In attended mode the `mz-memory` `PostToolUse` hook captures the `AskUserQuestion` question and answer verbatim automatically — nothing is required for the audit baseline. You MAY append an enrichment entry (skill, task, phase, the verbatim artifact) for a record that outlives the chat transcript; wrap any sensitive span in `<private>…</private>` so it is redacted before write.
+
+In **unattended mode there is no `AskUserQuestion` call, so the hook never fires** — the orchestrator MUST append the gate entry itself or the auto-approved decision leaves no audit trace (see below). See `guidelines/JOURNAL_GUIDELINES.md` for the entry format and redaction convention.
+
 ## Unattended mode (`MZ_DEV_PIPE_AUTO_APPROVE`)
 
 When the environment variable `MZ_DEV_PIPE_AUTO_APPROVE=1` is set, the orchestrator skips the `AskUserQuestion` call and logs `auto-approved (unattended mode)` to chat and to `.mz/task/<task_name>/state.md` under `## Auto-approvals`. The plan message (Surface 1) is still emitted so the chat transcript shows what would have been approved.
+
+Because the journaling hook fires on `AskUserQuestion` — which is skipped here — the orchestrator also appends the auto-approval to `.mz/journal.md` (gate label, `auto-approved`, task, phase) so unattended runs keep a complete audit trail. Append it with a single Bash redirect, wrapping any sensitive span in `<private>`:
+
+```bash
+printf '### %s · <skill> · <task> · gate\n- outcome: auto-approved (unattended)\n- phase: <n> (<name>)\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>.mz/journal.md
+```
 
 This bypass exists for CI and scheduled runs. It is opt-in only — never default-on. Variant gates with menu actions (more than `Approve / Reject`) MUST NOT auto-approve; they require an explicit value choice.
 

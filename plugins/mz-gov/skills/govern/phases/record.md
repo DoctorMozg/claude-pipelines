@@ -65,9 +65,27 @@ Report the absolute path, the number, and the initialized status, then STATUS:.
 
 The writer must **create** a new file, never clobber an existing numbered artifact. If it reports an overwrite risk it could not resolve, treat that as `BLOCKED`.
 
-## Step 4.4 — Update state and advance
+## Step 4.4 — Update state, promote to recall, advance
 
-Record in `state.md`: the durable artifact path, its number, and its initialized status. Set `Phase: 5`, `phase_complete: true` for Phase 4, refresh `what_remains` (e.g. "link commit/PR", "recommend next skill"). Emit a visible block — the written path, number, and status — then read `phases/enforce.md`.
+Record in `state.md`: the durable artifact path, its number, and its initialized status. Set `Phase: 5`, `phase_complete: true` for Phase 4, refresh `what_remains` (e.g. "link commit/PR", "recommend next skill").
+
+**Promote the decision into recall memory.** Add (or append to) a `## Decisions` section in `state.md` with a one-line summary of what was decided and where it landed:
+
+```
+## Decisions
+- <decision title> → <docs path> (<one-way | two-way> door, signed <approver>)
+```
+
+`mz-memory`'s SessionEnd capture harvests `## Decisions` into the Activity Log, so the decision resurfaces in the next session's injected context with no cross-plugin call. For a load-bearing invariant the user will want enforced for the life of the project, also recommend pinning it via `/memory-note`.
+
+**Record the decision in the interaction journal.** The sign-off gate's question and answer were already captured by the `AskUserQuestion` hook; append a `decision` entry to `.mz/journal.md` that ties the decision to its durable artifact and signature. Wrap any sensitive span in `<private>`:
+
+```bash
+printf '### %s · govern · <task_name> · decision\n- artifact: <docs path> (#<NNNN>, status <status>)\n- door: <one-way | two-way> · signed: <approver>@<ISO>\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>.mz/journal.md
+```
+
+Emit a visible block — the written path, number, status, and the promoted decision line — then read `phases/enforce.md`.
 
 ## Notes
 

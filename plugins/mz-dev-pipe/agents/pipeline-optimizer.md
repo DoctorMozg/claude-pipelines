@@ -148,6 +148,8 @@ After per-file optimization:
 
 ### Step 4: Report
 
+Keep the report prose minimal — the deliverable is the leaner code, not a description of it. If your summary runs longer than the diff it describes, cut it. The irony to avoid: prose defending a simplification can re-add the very bulk you removed.
+
 ## Output Format
 
 ```markdown

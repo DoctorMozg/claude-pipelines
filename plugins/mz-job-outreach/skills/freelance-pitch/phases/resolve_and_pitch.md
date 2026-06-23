@@ -47,6 +47,16 @@ Collect tone preference — a closed-choice input collector. Call `AskUserQuesti
 
 The user's tone pick from Phase 1 IS the approval. No further gate needed at this step. Update `state.md` `Phase` to `tone_picked`.
 
+## Phase 1.6: Reader-style read (inline)
+
+Skipped when `personality:off` was passed; otherwise runs inline here (no subagent). This subtly calibrates the proposal to how the client reads, using the Social Styles model (Driver / Analytical / Amiable / Expressive). It is grounded-only, never names the trait, and never overrides the tone preference's sign-off or register (split by dimension).
+
+1. **Role priorities (always).** From `gig.client_name_or_handle`, `gig.domain_or_industry`, and any role or title in the listing, note what this kind of buyer tends to prioritize (e.g. an agency lead leans to delivery and reliability; a founder to speed and outcomes; a procurement contact to price and risk). When nothing is inferable, stay neutral and mirror the listing's own register - a terse listing earns a terse proposal.
+1. **Footprint (only when the client is named).** If `gig.client_name_or_handle` is a real name or handle (not "Undisclosed"), do a bounded public look-up (WebSearch/WebFetch, at most 3 calls) of their public professional signal - posts, bio, talks. If a citable cue supports a Social Style, record it with the cue; otherwise leave the style unset and keep role-priorities only. Professional signal only; never infer from photos or protected attributes.
+1. **Compose the directive.** Write 2-4 imperative lines telling the writer the relative emphasis and length of the proposal's sections - based on the style when set, else on role-priorities. The directive shapes structure only: it never names the trait and never touches the salutation, sign-off, or voice register.
+
+Store the result in `state.md` as `ReaderStyle` (the `social_style` or `role-priorities`, a `confidence`, and the `calibration_directive`). A thin or absent footprint yields a role-priorities or neutral directive - that is the expected common case for freelance gigs, not a failure. Update `state.md` `Phase` to `reader_style_read`.
+
 ## Phase 2: Generate proposal
 
 Dispatch `freelance-proposal-writer`:
@@ -70,6 +80,17 @@ Ground every pricing bracket in gig.budget_range_raw verbatim OR
 strategy.rate_floor verbatim. If both absent, use "Rate to be discussed".
 
 Apply the banned-phrase scan; rewrite any flagged sentence.
+
+Open with a subject line and a salutation, close with a gratitude-leaning
+sign-off, and use plain ASCII punctuation only - no em-dashes, en-dashes,
+curly quotes, or ellipsis (write price ranges with a hyphen).
+
+Reader calibration: <paste state.ReaderStyle.calibration_directive here, or
+omit this whole line when personality:off or no directive was produced>. Apply
+it to the relative emphasis and length of the proposal's sections, staying
+inside the 350-word cap. It shapes structure only - never name or allude to the
+client's inferred style, and never change the salutation, sign-off, or voice
+register (those follow the tone preference).
 ```
 
 Read `<run_dir>/_pitch_temp/draft_v1.md`. Capture word count, engagement type assumed, and any `MILESTONE_UNGROUNDED:` warnings the writer surfaced.
@@ -80,7 +101,7 @@ Update `state.md` `Phase` to `draft_v1_written`.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `<run_dir>/_pitch_temp/draft_v1.md` (or the current `draft_vN.md`) with the Read tool. Capture its full contents into context, along with the word count, tone, engagement type assumed, and any `MILESTONE_UNGROUNDED:` warnings surfaced by the writer.
+**Pre-read**: Read `<run_dir>/_pitch_temp/draft_v1.md` (or the current `draft_vN.md`) with the Read tool. Capture its full contents into context, along with the word count, tone, engagement type assumed, and any `MILESTONE_UNGROUNDED:` warnings surfaced by the writer. Grep the draft for AI-artifact punctuation (`grep -lP "[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]" <run_dir>/_pitch_temp/draft_vN.md`); if any is present, re-dispatch the proposal-writer once with a fix instruction and overwrite the draft before emitting Surface 1.
 
 **Surface 1 — emit the plan message.** Output the proposal draft verbatim as a normal markdown chat message. Emit the full verbatim contents of `<run_dir>/_pitch_temp/draft_vN.md` — do not substitute a path, summary, or placeholder. Structure:
 

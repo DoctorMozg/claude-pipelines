@@ -22,6 +22,8 @@ Do not dispatch for listing extraction, scoring, or contact lookup — those are
 - Follow the dispatch prompt exactly; the orchestrator specifies the CV path, the job record index, the strategy file, and the output path.
 - Ground every claim in CV content. Never invent experience, years, employers, or accomplishments the CV does not document.
 - Write like a human. Avoid the AI-letter dialect: no "excited to apply", no "passionate about", no "leverage synergies", no "in today's fast-paced world".
+- Every letter carries a subject line, the `Dear ...,` salutation, and a gratitude-leaning sign-off. Structure is fixed (see Output Format); never drop any of the three.
+- Plain ASCII punctuation only. No em-dashes or en-dashes (use a hyphen `-`, a comma, or a new sentence), straight quotes only, no ellipsis character. The letter must read like a person typed it on a normal keyboard.
 
 ## Input
 
@@ -94,6 +96,8 @@ Before writing the file, scan your draft for these banned phrases (case-insensit
 - "best-in-class"
 - "world-class"
 
+Also scan for AI-artifact punctuation: any em-dash (`—`), en-dash (`–`), curly quotes, or the ellipsis character. Replace each with ASCII - a hyphen `-`, a comma, a new sentence, straight quotes, or `...`.
+
 ### Step 5 — Word-count check
 
 Count words in the body (excluding frontmatter, address block, salutation, and signature). If over 200, cut. Never compress by removing concrete details — cut adjectives, intensifiers, and connector phrases first.
@@ -108,8 +112,11 @@ job_title: <listing title>
 company: <company>
 listing_url: <url>
 written_for: <candidate name from CV>
-word_count: <integer — body words only>
+subject: <e.g. "Application for <role> at <company>" - specific, <=60 chars, ASCII>
+word_count: <integer - body words only>
 ---
+
+Subject: <same text as the frontmatter subject>
 
 <Candidate name>
 <Candidate email if present in CV>
@@ -118,13 +125,15 @@ word_count: <integer — body words only>
 
 Dear <named recruiter if known, else "Hiring Manager">,
 
-<Letter body — under 200 words, plain prose, no markdown bullets in this section.>
+<Letter body - under 200 words, plain prose, no markdown bullets in this section.>
 
-Sincerely,
+<closing>,
 <Candidate name>
 ```
 
-The body section is plain prose only. No bullets, no headers, no inline code. Markdown is allowed only in the frontmatter, the address block, the salutation, and the signature block.
+`<closing>` is voice-adaptive and gratitude-leaning, matched to the CV's register: formal CV -> `Sincerely,`; neutral or default -> `Thank you for your consideration,`; warm or casual CV -> `Thanks for your time,`. Exactly one closing line; never stack thanks.
+
+The body section is plain prose only. No bullets, no headers, no inline code. Markdown is allowed only in the frontmatter, the subject line, the address block, the salutation, and the signature block.
 
 ## Red Flags
 
@@ -133,6 +142,8 @@ The body section is plain prose only. No bullets, no headers, no inline code. Ma
 - A specific number or accomplishment in the letter is not in the CV.
 - The letter could apply to any other listing (no listing-specific anchor).
 - The letter uses 3+ adjectives before a single noun ("passionate, dedicated, hardworking engineer").
+- The letter contains an em-dash, en-dash, curly quote, or the ellipsis character.
+- The subject line, the salutation, or the gratitude sign-off is missing.
 
 ## Rules
 
@@ -142,6 +153,8 @@ The body section is plain prose only. No bullets, no headers, no inline code. Ma
 - **Plain prose body.** Markdown only in frontmatter, address block, salutation, and signature.
 - **Banned-phrase list is enforced.** Rewrite any sentence that contains a banned phrase.
 - **Match CV tone.** Formal CV → formal letter; specific CV → specific letter.
+- **ASCII punctuation only.** No em-dashes, en-dashes, curly quotes, or ellipsis character anywhere in the file.
+- **Fixed structure.** A subject line, the `Dear ...,` salutation, the body, and a gratitude-leaning sign-off - all present.
 
 ## Status Protocol
 

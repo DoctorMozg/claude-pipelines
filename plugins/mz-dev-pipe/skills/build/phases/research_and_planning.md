@@ -78,6 +78,8 @@ Report concise findings. No fluff.
 
 Run 1.1 and 1.2 **in parallel** — they are independent.
 
+**Minimalism gate.** The approach comparison above must climb the minimalism ladder before recommending custom code: for each candidate, ask whether the code needs to exist at all, and whether a standard-library, native-platform, or already-installed-dependency solution removes the need to write it. For a non-trivial or unfamiliar task, the web research in 1.2/1.3 is where you find the existing library or confirm the current best practice *before* anything custom is planned. Code health — validation, error handling, security, tests — is exempt. See [`skills/shared/minimalism.md`](../../shared/minimalism.md).
+
 ### 1.3 Domain research (if needed)
 
 If the task involves external APIs, protocols, libraries, or domain knowledge that isn't obvious from the codebase, spawn a third `pipeline-researcher` agent (model: **sonnet**) with:

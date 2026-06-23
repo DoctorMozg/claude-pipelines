@@ -105,6 +105,8 @@ ______________________________________________________________________
 
 Regardless of fix complexity, dispatch a `pipeline-coder` agent with the diagnosis context and a minimal-fix constraint. Do not apply fixes directly in the orchestrator — orchestrators only route, they never write code.
 
+**Minimalism gate.** Before composing the dispatch, apply the minimalism ladder to the fix design: the smallest fix deletes code or leans on a standard-library / native / already-installed primitive rather than adding a new one, and never introduces a speculative abstraction the single bug doesn't require. Bug fixes that need validation, error handling, or a security guard are code health — keep them. See [`skills/shared/minimalism.md`](../../shared/minimalism.md).
+
 ### 4.2 Apply fix
 
 Dispatch a `pipeline-coder` agent (model: **opus**):

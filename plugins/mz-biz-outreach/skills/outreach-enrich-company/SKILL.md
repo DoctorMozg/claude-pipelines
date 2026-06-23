@@ -1,7 +1,7 @@
 ---
 name: outreach-enrich-company
 description: ALWAYS invoke when the user wants to deepen the dossier on a company card AND/OR generate LinkedIn/email outreach letters from it. Fans out 5 enrichment subagents (news, tech, growth, reputation, contacts) to fill gaps left by the base research, then drafts and naturalizes one letter per Key Contact. Triggers - "enrich <card>", "go deeper on <card>", "deepen research on <company>", "write outreach letters for <card>", "draft messages from <card>", "generate letters for this card".
-argument-hint: "<path/to/company_card.md>" [channels:email|linkedin|both] [sender:<voice text or path>] [enrich:only|skip]
+argument-hint: "<path/to/company_card.md>" [channels:email|linkedin|both] [sender:<voice text or path>] [enrich:only|skip] [personality:off]
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
@@ -13,7 +13,7 @@ allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebF
 You are an orchestrator that takes a company card produced by `/outreach-research` and does two things, in this order:
 
 1. **Deepen the dossier**. Fan out five specialist enrichment subagents in parallel — `outreach-news-finder`, `outreach-tech-analyst`, `outreach-growth-analyst`, `outreach-scanner`, `outreach-contact-finder` — each instructed to find data **not already in the card** (gap-filling, not duplicating). Their findings are merged into a new `## Deeper Intelligence` section appended to the card.
-1. **Draft outreach letters**. Using the original card data plus the deeper intelligence as personalization fuel, draft one letter per named Key Contact via `expert-copywriter`, then mandatorily naturalize each via `expert-naturalizer`. The letters are appended as a `## Outreach Letters` section inside the card.
+1. **Draft outreach letters**. Using the original card data plus the deeper intelligence as personalization fuel, draft one letter per named Key Contact via `expert-copywriter` — each subtly calibrated to the contact's inferred communication style (Social Styles, produced grounded-only by `outreach-personality-profiler`) — then mandatorily naturalize each via `expert-naturalizer`. The letters are appended as a `## Outreach Letters` section inside the card.
 
 The whole pipeline is fully automatic — no approval gates, no mid-run prompts. The user invokes the skill, the skill enriches and writes letters, the card now holds them both.
 
@@ -45,6 +45,8 @@ Invoke when the user has a company card (produced by `/outreach-research`, lives
   - `sender:<inline text or path>` — overrides the sender voice. Inline text becomes the voice description; a path is read as a sender bio markdown file. Default: read `<run>/strategy.json` `sender_voice` field if present.
   - `enrich:only` — run the deep-enrichment phase and skip letter drafting (card gets `## Deeper Intelligence` but no `## Outreach Letters`).
   - `enrich:skip` — skip the deep-enrichment phase and draft letters directly from the existing card content only.
+  - `brief:<run_name>` — pull the local business-climate dossier from an `outreach-brief` run; the combo matching the card's sector and location seeds the letters with regional-climate angles. Default: unset (company data only).
+  - `personality:off` — disable reader-style calibration entirely (skip the Phase 3 profiling wave; letters use neutral structure). Default: on — role-based priorities always shape the leading angle, and footprint profiling runs automatically when a contact has a usable public profile.
   - Default (neither flag): both phases run.
 
 If `$ARGUMENTS` is empty or no source can be resolved (see Source Resolution below), emit `STATUS: BLOCKED` with a clear message and stop.
@@ -57,6 +59,8 @@ Extract from `$ARGUMENTS`:
 - **channels_override** — from `channels:<value>` (default: unset → per-contact auto-detect).
 - **sender_override** — from `sender:<value>` (default: unset → use strategy.json or fallback voice).
 - **enrich_mode** — from `enrich:<value>`: `only`, `skip`, or unset (default unset = both phases run).
+- **brief_run** — optional, from `brief:<run_name>`; resolves to `.mz/outreach/<brief_run>/climate.json` (default: unset).
+- **personality_mode** — from `personality:<value>`: `off` disables reader-style calibration; any other value or absent = `on` (default).
 
 ### Source resolution
 
@@ -88,6 +92,7 @@ Validate the card at `source_path` before any other work:
 - **Card snapshot** — `.mz/task/<task_name>/card_parsed.json`. Structured extract of the source card, consumed by the deep-enrichment subagents in Phase 2 so they know what is ALREADY documented.
 - **Enrichment artifacts** — `.mz/task/<task_name>/enrichment/<agent_slug>.json`. One JSON per Phase 2 subagent (`news.json`, `tech.json`, `growth.json`, `reputation.json`, `contacts.json`).
 - **Briefs** — `.mz/task/<task_name>/briefs/<contact_slug>.json`. One brief per contact selected for drafting.
+- **Profiles** — `.mz/task/<task_name>/profiles/<contact_slug>.json`. One reader-style read per profiled contact (Social Style or role-priorities, evidence, confidence, calibration directive), written by `outreach-personality-profiler` in Phase 3 and merged into the briefs. Absent when `personality:off`.
 - **Drafts** — `.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md`. One draft file per (contact, channel) pair. Each draft carries YAML frontmatter (`subject`, `channel`, `recipient`) followed by the body.
 - **Card lifecycle** — the card ends this run at `target_path = .mz/outreach/active/<today>_<company_slug>.md`. If `source_path != target_path`, the source file is deleted in the final card-rewrite phase (move semantics). Research-baseline cards at `.mz/outreach/<run>/companies/<slug>.md` and stale-dated active cards (`active/<other-date>_<slug>.md`) are removed by this run.
 
@@ -104,7 +109,7 @@ Validate the card at `source_path` before any other work:
 | 0   | Setup + card validation           | — (orchestrator)                                                                                                          | Inline below                   |
 | 1   | Parse card + light web enrichment | — (orchestrator + WebSearch)                                                                                              | Inline below                   |
 | 2   | Deep enrichment via subagents     | `outreach-news-finder`, `outreach-tech-analyst`, `outreach-growth-analyst`, `outreach-scanner`, `outreach-contact-finder` | `phases/deep_enrichment.md`    |
-| 3   | Draft letters                     | `expert-copywriter`                                                                                                       | `phases/draft_and_finalize.md` |
+| 3   | Reader profiling + draft letters  | `outreach-personality-profiler`, `expert-copywriter`                                                                      | `phases/draft_and_finalize.md` |
 | 4   | Naturalize letters                | `expert-naturalizer`                                                                                                      | `phases/draft_and_finalize.md` |
 | 5   | Rewrite card (deeper + letters)   | — (orchestrator, Read + Write)                                                                                            | `phases/draft_and_finalize.md` |
 | 6   | Verification summary              | — (orchestrator)                                                                                                          | Inline below                   |
@@ -125,6 +130,7 @@ Derive:
 ```bash
 mkdir -p .mz/task/<task_name>/enrichment
 mkdir -p .mz/task/<task_name>/briefs
+mkdir -p .mz/task/<task_name>/profiles
 mkdir -p .mz/task/<task_name>/drafts
 mkdir -p .mz/outreach/active
 ```
@@ -145,6 +151,8 @@ RunDir: <run_dir or "default">
 ChannelsOverride: <value or "auto">
 SenderOverride: <value or "strategy.json|default">
 EnrichMode: <both | only | skip>
+BriefRun: <brief_run or null>
+PersonalityMode: <on | off>
 ```
 
 ### Phase 1: Parse card + light web enrichment
@@ -184,6 +192,10 @@ If `sender_override` was supplied as an argument, it overrides the strategy.json
 
 Record `strategy_source` per brief: `strategy.json` if loaded from disk, `default` if fallback applied, `sender_override` if argument was used. If `default`, the final STATUS will be `DONE_WITH_CONCERNS`.
 
+#### Local-climate context
+
+If `brief_run` was supplied, read `.mz/outreach/<brief_run>/climate.json` and select the combo whose `industry` and `region` best match the card's sector and location (prefer an exact region match, then industry; if none match, skip climate context and letters fall back to company data). Capture the matched combo's `signals` and `top_outreach_angles` as `climate_context`, carried into Phase 3 brief-building. If the file is missing, warn and continue without it.
+
 #### Light web enrichment
 
 This is a small fast pre-pass for the orchestrator to grab per-contact signals the Phase 2 subagents won't touch. The deep, multi-source enrichment happens in Phase 2 via subagents. Hard cap here: 6 calls.
@@ -217,6 +229,7 @@ Contacts drafted:       <N>   (channels: <breakdown>)   # 0 if enrich_mode == on
 Contacts skipped:       <M>   (no contact route)
 Light web calls:        <K>   (cap 6)
 Naturalize reverted:    <R>   (drafts where naturalize was rolled back)
+Reader profiles:        <P>   (footprint: <F>, role-priority: <RP>)   # absent if personality:off
 Strategy source:        <strategy.json | default | sender_override>
 STATUS: <DONE | DONE_WITH_CONCERNS>
 ```
@@ -239,6 +252,8 @@ N/A — orchestration skill, not a discipline skill.
 
 - You drafted a letter referencing a personalization hook that came from your own background knowledge rather than the card, the light-pass enrichment, or the Phase 2 deeper intelligence.
 - You wrote a letter that names a product, customer, metric, or date not in the contact's `verified_entities` list (which now includes Phase 2 findings).
+- You asserted a Social Style for a contact without a citable public-footprint cue. With no evidence the profiler must fall back to role-based priorities — never guess a style from the title alone.
+- A letter named or alluded to the recipient's inferred personality or communication style. The reader calibration must stay invisible in the text.
 - You skipped the naturalize pass for any draft. The naturalize pass is mandatory.
 - You wrote the letters or the deeper intelligence to a separate file outside the card. Both outputs must be appended inside the card.
 - You ran the copywriter or naturalizer in the background (writer agents must be foreground waves).
@@ -260,7 +275,7 @@ Before emitting `STATUS: DONE`, confirm:
 1. If `source_path != target_path`, the source file no longer exists.
 1. `.mz/outreach/active/` contains exactly one file matching `*_<company_slug>.md`.
 1. If `enrich_mode != "skip"`, the card at `target_path` contains a `## Deeper Intelligence` section with at least one populated subsection.
-1. If `enrich_mode != "only"`, the card at `target_path` contains a `## Outreach Letters` section. Every non-skipped (contact, channel) pair produced one letter under that section. Each letter shows a `**Subject**:` line (email only) plus the body. The `## Naturalization report` block does NOT appear under any letter in the final card.
+1. If `enrich_mode != "only"`, the card at `target_path` contains a `## Outreach Letters` section. Every non-skipped (contact, channel) pair produced one letter under that section. Each email letter shows a `**Subject**:` line; every letter opens with a salutation and closes with a voice-adaptive gratitude sign-off (`Thanks,` / `Best regards,` / `Sincerely,`) plus the sender's first name. No letter body contains em-dashes, en-dashes, curly quotes, or the ellipsis character. When `personality_mode != "off"`, each letter carries a `*Reader calibration: ...*` provenance line and no letter names or alludes to the inferred trait. The `## Naturalization report` block does NOT appear under any letter in the final card.
 1. The card retains its original `*Generated: <date> | Sources: <list>*` footer above the new sections.
 1. New footers sit at the bottom of each new section: `*Deeper intelligence: <date> | subagents: <N> | failed: <M>*` and `*Letters generated: <date> | naturalized: yes | light queries: <K> | reverted: <R>*`.
 1. Section order on the card is: original sections → `## Deeper Intelligence` (if present) → `## Outreach Letters` (if present) → `## Interaction History` (if it existed before).

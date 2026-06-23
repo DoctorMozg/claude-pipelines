@@ -363,6 +363,10 @@ listing, ground every claim in the CV (never fabricate experience), and
 avoid AI clichés ("excited to apply", "passionate", "leverage",
 "synergy", "in today's fast-paced world").
 
+Include a subject line, the "Dear ...," salutation, and a gratitude-leaning
+sign-off, all per the agent playbook. Use plain ASCII punctuation only - no
+em-dashes, en-dashes, curly quotes, or ellipsis characters.
+
 Use the front-matter wrapper format specified in the agent playbook;
 the body is plain text.
 ```
@@ -370,7 +374,8 @@ the body is plain text.
 After all letter-writers return:
 
 1. Verify each `letters/<job_slug>.md` exists and is non-empty.
-1. Spot-check 2 letters via Read for: word count under 200, no banned cliché phrases. If a letter fails the check, append an `Errors:` line to `state.md` but continue (the report links to it regardless).
+1. Grep every letter for AI-artifact punctuation: `grep -lP "[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]" <RUN_DIR>/letters/*.md`. For each hit, re-dispatch that one `job-letter-writer` once with a "replace em-dashes/en-dashes/curly-quotes/ellipsis with ASCII, change nothing else" instruction. If artifacts persist, append an `Errors:` line to `state.md` and continue.
+1. Spot-check 2 letters via Read for: word count under 200, a subject line, the salutation, a gratitude sign-off, and no banned cliché phrases. If a letter fails the check, append an `Errors:` line to `state.md` but continue (the report links to it regardless).
 
 Update `state.md` `Phase` to `letters_complete`.
 

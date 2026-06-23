@@ -211,3 +211,50 @@ prepend_to_pinned() {
     { print }
   ' "$memory_file" | atomic_write "$memory_file"
 }
+
+# --- Interaction journal (.mz/journal.md) ------------------------------------
+# The journal is a global, append-only, gitignored audit trail of approval
+# gates, input prompts, and decisions. Separate from MEMORY.md: the journal is
+# the raw firehose; MEMORY.md is the curated recall store fed from it.
+
+# Replace <private>...</private> regions with [redacted] WITHOUT collapsing the
+# surrounding whitespace — verbatim journal artifacts must keep their code
+# indentation and blank lines (unlike strip_private, which collapses spaces).
+redact_private() {
+  if command -v perl >/dev/null 2>&1; then
+    perl -0777 -pe 's|<private>.*?</private>|[redacted]|gs'
+  else
+    sed -E 's|<private>[^<]*</private>|[redacted]|g'
+  fi
+}
+
+# Seed the journal with a header if it does not exist yet.
+ensure_journal_file() {
+  local journal_file="$1"
+  local journal_dir
+  journal_dir=$(dirname "$journal_file")
+  mkdir -p "$journal_dir"
+  [[ -f "$journal_file" ]] && return 0
+  {
+    printf '# Interaction Journal\n\n'
+    printf '<!-- Auto-managed by mz-memory journal-capture. Append-only, newest last. -->\n'
+    printf '<!-- Raw audit trail of approval gates, input prompts, and decisions. Gitignored scratch. -->\n\n'
+  } >"$journal_file"
+}
+
+# Append a pre-formatted markdown block (read from stdin) to the journal, after
+# redacting <private> regions. Serializes concurrent writers with flock when
+# available; degrades to a plain append if flock is missing. No-op on empty
+# input. Always returns 0 so a logging failure never derails the caller.
+journal_append() {
+  local journal_file="$1"
+  local block
+  block=$(cat)
+  [[ -n "$block" ]] || return 0
+  ensure_journal_file "$journal_file"
+  block=$(printf '%s' "$block" | redact_private)
+  {
+    flock 9 2>/dev/null || true
+    printf '%s\n\n' "$block" >>"$journal_file"
+  } 9>>"${journal_file}.lock"
+}

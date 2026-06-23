@@ -11,6 +11,14 @@ Sector hint: <sector or "not specified">
 Write your strategy to: <RUN_DIR>/strategy.json
 ```
 
+If a brief run was supplied (`BriefRun` is set in `state.md`), append its captured brief and local-climate dossier to the dispatch so the strategy is grounded in both:
+
+```
+Captured brief (from outreach-brief): <verbatim contents of .mz/outreach/<brief_run>/brief.json>
+Local business climate: <verbatim contents of .mz/outreach/<brief_run>/climate.json — per industry × region economic, regulatory, deal, and pain-point signals, plus proposal hooks>
+Fold the brief's offering, ICP, and geography into target_profile; fold the climate signals and proposal hooks into outreach_angles; and weight scoring toward the signals the climate surfaces.
+```
+
 Read `strategy.json`. Extract target profile, scoring weights, outreach angles, source hints.
 Update `.mz/task/<task_name>/state.md` `Phase` field to `strategy_complete`.
 

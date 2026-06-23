@@ -68,7 +68,7 @@ For each file in your work unit:
 
 ### Step 4: Report
 
-List every file you created or modified with a brief summary of changes.
+List every file you created or modified with a brief summary of changes. Keep the report prose minimal — if your explanation runs longer than the code it describes, cut it. Note what you deliberately kept minimal or skipped in a line or two; do not write a defense of the implementation.
 
 ## Output Format
 
