@@ -102,25 +102,27 @@ if [[ -f "$PROJECT_DIR/pyproject.toml" ]] || [[ -f "$PROJECT_DIR/setup.py" ]] ||
   PY_INSTALL=""
 
   if [[ -f "$PROJECT_DIR/pyproject.toml" ]]; then
-    # Detect test runner
-    grep -q 'pytest' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TEST="pytest"
-    grep -q 'unittest' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TEST="python -m unittest"
+    # Detect test runner — pytest wins when both are mentioned
+    if ! grep -q 'pytest' "$PROJECT_DIR/pyproject.toml" 2>/dev/null \
+      && grep -q 'unittest' "$PROJECT_DIR/pyproject.toml" 2>/dev/null; then
+      PY_TEST="python -m unittest"
+    fi
 
-    # Detect linter
+    # Detect linter — first match wins, most specific pattern first
     grep -q '\[tool\.ruff\]' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_LINT="ruff check"
-    grep -q 'flake8' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_LINT="flake8"
-    grep -q 'pylint' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_LINT="pylint"
+    grep -q 'flake8' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_LINT="${PY_LINT:-flake8}"
+    grep -q 'pylint' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_LINT="${PY_LINT:-pylint}"
 
-    # Detect formatter
+    # Detect formatter — first match wins, most specific pattern first
     grep -q '\[tool\.ruff\.format\]' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_FMT="ruff format"
-    grep -q '\[tool\.black\]' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_FMT="black"
-    grep -q 'autopep8' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_FMT="autopep8"
+    grep -q '\[tool\.black\]' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_FMT="${PY_FMT:-black}"
+    grep -q 'autopep8' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_FMT="${PY_FMT:-autopep8}"
     [[ -z "$PY_FMT" ]] && grep -q 'ruff' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_FMT="ruff format"
 
-    # Detect type checker
+    # Detect type checker — first match wins, most specific pattern first
     grep -q '\[tool\.mypy\]' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TYPE="mypy"
-    grep -q 'pyright' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TYPE="pyright"
-    grep -q 'pytype' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TYPE="pytype"
+    grep -q 'pyright' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TYPE="${PY_TYPE:-pyright}"
+    grep -q 'pytype' "$PROJECT_DIR/pyproject.toml" 2>/dev/null && PY_TYPE="${PY_TYPE:-pytype}"
 
     # Detect package manager
     if [[ -f "$PROJECT_DIR/uv.lock" ]] || grep -q '\[tool\.uv\]' "$PROJECT_DIR/pyproject.toml" 2>/dev/null; then
