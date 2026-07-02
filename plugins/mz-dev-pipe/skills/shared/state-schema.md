@@ -66,6 +66,8 @@ Migration is read-time, forward-only, and purely additive — no data loss, no f
 
 The `1 → 2` row is purely additive: a skill reading a `schema_version: 1` file adds the three ledger keys and proceeds. No prior key changes type or name.
 
+**Legacy Status tokens**: files written before enum enforcement may carry `Status: completed` or `Status: in_progress`. On read, normalize them to `complete` / `running`, rewrite the file, and log the normalization. These are token spellings, not schema versions — normalizing them does not bump `schema_version`.
+
 ## Mismatch policy
 
 When a skill reads a `state.md` whose `schema_version` it does not recognize:

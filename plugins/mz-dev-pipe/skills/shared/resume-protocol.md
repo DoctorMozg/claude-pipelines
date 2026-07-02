@@ -8,6 +8,7 @@ Every mz-dev-pipe skill, in its Phase 0 setup, MUST:
 
 1. **Compute the candidate task name** from `$ARGUMENTS` per the skill's naming convention (`<YYYY_MM_DD>_<skill>_<slug>`, with `_v2`, `_v3` collision suffixes).
 1. **Check for an existing state file** at `.mz/task/<candidate_task_name>/state.md`.
+1. **Normalize legacy Status tokens** before branching: on read, treat `Status: completed` as `complete` and `Status: in_progress` as `running`; rewrite the file with the normalized token and log `Normalized legacy Status token.` to chat.
 1. **Branch on what is found**:
    - **No file** → fresh task. Proceed with normal Phase 0 setup (create directory, write new state file with `schema_version: 2`, `phase_complete: false`, `what_remains: []`).
    - **File exists with `Status: complete` or `Status: aborted_by_user`** → finished task. Auto-suffix `_v2` / `_v3` and proceed as fresh task. Log the suffix bump to chat.

@@ -336,4 +336,4 @@ Summarize the report to the user directly (not via AskUserQuestion). Include:
 - Similar patterns found (if any) as follow-up suggestions
 - Link to the full report file
 
-Update state status to `completed`.
+Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`.

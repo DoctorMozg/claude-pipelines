@@ -225,7 +225,7 @@ Display:
 - Any deferred observations the user should know about for follow-up work
 - Final test and lint status
 
-Update state file status to `completed`.
+Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`.
 
 ______________________________________________________________________
 

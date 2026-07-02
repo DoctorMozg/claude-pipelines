@@ -55,7 +55,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 1. Parse `$ARGUMENTS` for a `scope:` token (case-insensitive: `branch` | `global` | `working`). Default is `branch`. Treat every remaining token as a path or glob override and record it for Phase 1.
 1. Compute `task_name = <YYYY_MM_DD>_decomment_<slug>`. Slug rules: `branch_diff` for the default branch scope, `global` for global scope, `working` for working-tree scope, or the first 20 chars of the explicit path token when a path override is supplied. Same-day collisions append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/` and `.mz/task/<task_name>/proposals/`.
-1. Write `state.md` with frontmatter: `schema_version: 2`, `Status: in_progress`, `Phase: 0`, `PhaseName: setup`, `Started: <ISO timestamp>`, `Iteration: 1`, `FilesWritten: []`, `phase_complete: false`, `what_remains: []`, `scope_mode: <mode>`, `scope_files: []`, `proposals_done: 0`, `proposals_skipped: 0`, `files_with_edits: 0`, `total_edits: 0`, `edits_applied: 0`, `edits_failed: 0`.
+1. Write `state.md` with frontmatter: `schema_version: 2`, `Status: running`, `Phase: 0`, `PhaseName: setup`, `Started: <ISO timestamp>`, `Iteration: 1`, `FilesWritten: []`, `phase_complete: false`, `what_remains: []`, `scope_mode: <mode>`, `scope_files: []`, `proposals_done: 0`, `proposals_skipped: 0`, `files_with_edits: 0`, `total_edits: 0`, `edits_applied: 0`, `edits_failed: 0`.
 1. Resume check — if `state.md` already exists at the computed path, Read it and present a resume gate via AskUserQuestion with three options: **Resume** from `Phase: <N>`, **Restart** fresh (overwrite state and rebuild artifacts), or **Abort** (no changes). Honor the user's choice before proceeding.
 1. Proceed to Phase 1 (Read `phases/scan.md` and execute).
 
@@ -122,7 +122,7 @@ Verification: see phases/apply.md for the final-state checklist.
 
 Each phase updates `.mz/task/<task_name>/state.md` per the per-phase steps in its phase file; never rely on conversation memory for cross-phase state.
 
-Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: completed`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade.
 
 ## References
 

@@ -233,4 +233,4 @@ Summarize the report directly. Include:
 - Recommended next action (fix with `/debug`, monitor, or close)
 - Link to the full report file
 
-Update state status to `completed`.
+Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`.

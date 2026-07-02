@@ -19,7 +19,7 @@ Read `edits.json` and apply every edit via the Edit tool. Record success and fai
 
 Read `state.md`. Assert all of:
 
-- `Status: in_progress`
+- `Status: running`
 - Last recorded gate is `diff_approved` or `auto_approved`
 - `Phase: 3_complete`
 
@@ -54,7 +54,7 @@ Do not re-read each file after its edits succeed. The Edit tool errors on failed
 After the apply loop completes:
 
 - `Phase: 4_complete`
-- `Status: completed`
+- `Status: complete`
 - `edits_applied: <count>`
 - `edits_failed: <count>`
 - `FilesWritten:` append `apply_log.md`, `apply_failures.md`, `summary.md` to the existing list
@@ -132,5 +132,5 @@ Substitute the actual counts and paths. If `edits_failed` is zero, still emit th
 - Every edit id present in `edits.json` appears in exactly one of `apply_log.md` or `apply_failures.md`.
 - The summary file exists at `${summary_path}` with the resolved date and slug substituted into the path.
 - No file in the `file_path` set of `edits.json` was touched by anything other than Edit tool calls during this phase.
-- `state.md` final state: `Status: completed`, `Phase: 4_complete`, both apply counters populated.
+- `state.md` final state: `Status: complete`, `Phase: 4_complete`, both apply counters populated.
 - The final chat message names the summary report path and the failure count.

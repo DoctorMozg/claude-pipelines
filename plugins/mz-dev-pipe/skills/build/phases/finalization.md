@@ -185,7 +185,7 @@ Output:
 
 **If PASS**:
 
-- Update state file status to `completed`
+- Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`
 - Write a summary to `.mz/task/<task_name>/summary.md` listing all files changed, tests added, and key decisions
 - Report to user: task is complete, here's what was done
 

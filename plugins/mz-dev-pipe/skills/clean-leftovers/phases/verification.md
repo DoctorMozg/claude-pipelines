@@ -88,7 +88,8 @@ Structure:
 - Files in scope: <N>
 - Files edited: <N>
 - Iterations: <N>
-- Final status: <complete|complete_with_residuals|failed>
+- Final status: <complete|failed>
+- Residuals: <N> (0 when none)
 
 ## Artifacts removed (by category)
 | Category | Original hits | Removed | Residual |
@@ -146,7 +147,8 @@ If `Final status: failed`, replace the first line with `Cleanup incomplete — s
 
 Update `state.md`:
 
-- `Status: complete | complete_with_residuals | failed`
+- `Status: complete | failed`
+- `residuals_count: <N>` (skill-specific key; number of residual hits accepted by the user, `0` when none)
 - `Phase: 4`
 - Append `verification_scan.md`, `residuals.md`, `lint_results.md`, and the final report path to `FilesWritten`.
 

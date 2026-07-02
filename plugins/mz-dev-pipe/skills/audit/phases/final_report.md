@@ -52,4 +52,4 @@ Display:
 - Deferred counts (below-cap + low severity)
 - Suggest `/build`, `/debug`, or `/polish` for the user to follow up on specific findings.
 
-Update state file status to `completed`.
+Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`.

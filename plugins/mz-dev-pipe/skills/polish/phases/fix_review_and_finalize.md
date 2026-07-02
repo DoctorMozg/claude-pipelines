@@ -302,7 +302,7 @@ Write `.mz/task/<task_name>/summary.md`:
 
 Report to user: all criteria pass, here's what was done.
 
-Update state to `completed`.
+Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`.
 
 ______________________________________________________________________
 

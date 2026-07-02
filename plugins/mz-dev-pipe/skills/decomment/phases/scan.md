@@ -106,7 +106,7 @@ Update `state.md`:
 - `scope_files: <count>` (rows in candidates.md, not raw scope_files.txt)
 - `FilesWritten: [scope_files.txt, candidates.md]`
 
-If `candidates.md` has zero candidate rows (every path was filtered out), emit this chat message: `0 code candidates after filtering. Nothing to do.` Set `state.md` → `Status: completed`, `Phase: aborted_empty_scope`, and exit. Do not dispatch any proposer.
+If `candidates.md` has zero candidate rows (every path was filtered out), emit this chat message: `0 code candidates after filtering. Nothing to do.` Set `state.md` → `Status: complete`, `Phase: aborted_empty_scope`, and exit. Do not dispatch any proposer.
 
 ## Red Flags
 
