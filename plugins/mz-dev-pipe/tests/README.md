@@ -39,6 +39,7 @@ Instead, the static smoke validates:
 1. Every `shared/<file>.md` link in the build skill resolves to a real file.
 1. The contract matrix passes for all dispatched agents.
 1. Every fixture file parses as Python.
+1. No skill file writes a non-enum state `Status` token (`completed`, `in_progress`, `complete_with_residuals`) — the schema enum is `pending|running|complete|aborted_by_user|failed` and `resume-protocol` branches on exact tokens.
 
 Output is written to `.mz/metrics/smoke/<YYYY_MM_DD>.json` so CI can compare runs over time. A red cell here means a refactor broke the wiring before any user could trigger the bug.
 

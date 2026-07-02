@@ -10,6 +10,9 @@
 #   2. Every shared/ reference resolves to a real file.
 #   3. The contract matrix passes for all dispatched agents.
 #   4. The fixture/ repo is well-formed (parses as Python).
+#   5. No skill writes a non-enum state Status token (the schema enum is
+#      pending|running|complete|aborted_by_user|failed; resume-protocol
+#      branches on exact tokens, so `completed`/`in_progress` break resume).
 #
 # Result is written to .mz/metrics/smoke/<date>.json so CI can compare runs
 # over time.
@@ -87,6 +90,19 @@ if command -v python3 >/dev/null 2>&1; then
   done
 else
   echo "WARN: python3 not on PATH, skipping fixture parse check"
+fi
+
+# --- Check 5: no non-enum state Status tokens in skill files ----------------
+SKILLS_DIR="$REPO_ROOT/plugins/mz-dev-pipe/skills"
+bad_status=$(grep -rn -E 'Status:?[[:space:]]*`?(completed|in_progress|complete_with_residuals)`?|status to `(completed|in_progress)`' \
+  "$SKILLS_DIR" --include='*.md' \
+  | grep -v 'shared/state-schema.md' \
+  | grep -v 'shared/resume-protocol.md' \
+  || true)
+if [ -z "$bad_status" ]; then
+  record_pass
+else
+  record_fail "non-enum Status tokens found: $(echo "$bad_status" | head -5 | tr '\n' ';')"
 fi
 
 # --- Write JSON report -----------------------------------------------------
