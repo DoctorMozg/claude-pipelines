@@ -22,7 +22,7 @@ ______________________________________________________________________
 
 **Goal**: Validate every chunk's optimization against the behavior-preservation contract.
 
-**Initialize `review_iteration = 0` before entering the review loop.** This counter governs the Phase 6 respawn loop bound.
+**Read `review_iteration` from `state.md`** (initialized to `0` at Phase 0 setup). Never re-initialize it here — this section is re-entered by the Phase 6 rejection loop, and a reset would unbound `MAX_REVIEW_ITERATIONS`. This counter governs the Phase 6 respawn loop bound.
 
 ### 5.1 Dispatch reviewers
 
