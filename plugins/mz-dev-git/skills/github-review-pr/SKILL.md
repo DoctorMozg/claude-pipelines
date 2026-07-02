@@ -50,7 +50,7 @@ If no argument is provided, ask the user for a PR URL.
 ### 1. Dispatch
 
 1. Validate via `gh pr view` that the normalized PR reference is accessible. On failure, escalate via AskUserQuestion.
-1. Launch the `github-pr-reviewer` agent with the PR reference as the prompt.
+1. Launch the `github-pr-reviewer` agent with a prompt containing the PR reference, `task_name: <task_name>`, and the instruction: `Write intermediate artifacts under .mz/task/<task_name>/ — do not invent a task directory.`
 1. After the agent completes, parse its final message for the `STATUS:` line:
    - `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS` → update `state.md` to `Status: complete`, `Phase: 1`. On `DONE_WITH_CONCERNS`, also log the concerns block into `state.md`.
    - `STATUS: NEEDS_CONTEXT` → re-dispatch **once** with the requested context; on a second `NEEDS_CONTEXT`, escalate via AskUserQuestion.

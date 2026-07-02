@@ -44,7 +44,7 @@ If no argument is provided, detect the current repository from `gh repo view --j
 
 ### 1. Dispatch
 
-1. Launch the `github-pr-scanner` agent with the repository list as the prompt.
+1. Launch the `github-pr-scanner` agent with a prompt containing the repository list, `task_name: <task_name>`, and the instruction: `Write intermediate artifacts under .mz/task/<task_name>/ — do not invent a task directory.`
 1. The agent scans for PRs where the user is requested for review, mentioned, assigned, or has changes requested on their own PRs, then fans out one `github-pr-info-scorer` haiku agent per PR (in parallel waves of up to 6) to gather metadata, complexity signals, and unanswered-question state.
 1. Every PR returned by the scan is scored into one of three tiers — Tier 1 (directly asked, unanswered), Tier 2 (review or action requested), or Tier 3 (informational) — and ranked within its tier by complexity and age.
 1. After completion, display the path to the triage report at `.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).

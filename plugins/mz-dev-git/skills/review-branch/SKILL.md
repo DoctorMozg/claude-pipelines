@@ -53,6 +53,8 @@ Dispatch `Agent(branch-reviewer)` in the foreground with the following prompt:
 
 ```
 Review the current branch against <base-branch>.
+task_name: <task_name>
+Write all intermediate artifacts (branch_info.md, phase*_*.md) under .mz/task/<task_name>/ — do not invent a task directory.
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
 Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers in a SEPARATE assistant message after Phase 3.5 returns, reading the prompts from plugins/mz-dev-pipe/skills/audit/references/blinded_lenses.md, and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1.
 Use researcher agents for domain research if the implementation topic is complex.

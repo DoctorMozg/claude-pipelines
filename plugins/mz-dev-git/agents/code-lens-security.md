@@ -60,10 +60,11 @@ The dispatch prompt from `branch-reviewer` provides:
 
 Write a markdown table to the output file with these columns:
 
-`file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame`
+`file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame | map_match`
 
 - `category` is fixed to `security` for every row.
 - `triggering_frame` is fixed to `security` for every row.
+- `map_match`: when the dispatch includes a prior-concerns map, the key of the matching entry (match by file path, overlapping line range, topic similarity); leave empty when no map was provided or nothing matches. Never suppress a matching finding — tag it.
 - `severity` uses one of `Critical:`, `Nit:`, `Optional:`, `FYI:`.
 - `tldr` ≤140 chars in `<what's wrong> → <how to fix>` form. If it does not fit, the finding is too vague — sharpen it.
 - `description` ≤512 chars — quote the minimum code span and explain in 1–2 sentences why it is a defect (was the legacy `evidence` field).
@@ -71,9 +72,9 @@ Write a markdown table to the output file with these columns:
 
 Example row:
 
-| file               | line_start | line_end | severity  | category | confidence | tldr                                                                            | description                                                                                                                                                                                       | suggested_fix                                                                                                                                    | triggering_frame |
-| ------------------ | ---------- | -------- | --------- | -------- | ---------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
-| `src/api/users.py` | 42         | 48       | Critical: | security | 88         | `order_by` interpolated into raw SQL → allowlist column names then parameterize | User-supplied `order_by` is interpolated directly into the SQL string (`f"... ORDER BY {order_by}"`). No allowlist, no parameterization. Tainted path: `request.args` -> `order_by` -> raw query. | Validate `order_by` against an allowlist of column names, then use the validated column with the ORM (`.order_by(Column)`) or a bound parameter. | security         |
+| file               | line_start | line_end | severity  | category | confidence | tldr                                                                            | description                                                                                                                                                                                       | suggested_fix                                                                                                                                    | triggering_frame | map_match |
+| ------------------ | ---------- | -------- | --------- | -------- | ---------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- | ---------- |
+| `src/api/users.py` | 42         | 48       | Critical: | security | 88         | `order_by` interpolated into raw SQL → allowlist column names then parameterize | User-supplied `order_by` is interpolated directly into the SQL string (`f"... ORDER BY {order_by}"`). No allowlist, no parameterization. Tainted path: `request.args` -> `order_by` -> raw query. | Validate `order_by` against an allowlist of column names, then use the validated column with the ORM (`.order_by(Column)`) or a bound parameter. | security         |  |
 
 After the table, write a `## Code Snippets` section in the same file. For each row in the findings table (in table order), add one numbered entry:
 

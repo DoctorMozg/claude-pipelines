@@ -59,13 +59,14 @@ The dispatch prompt from `branch-reviewer` supplies:
 Write a single markdown table to the output file. Columns, in order:
 
 ```
-| file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame |
+| file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame | map_match |
 ```
 
 Fixed values for this lens:
 
 - `category` = `architecture`
 - `triggering_frame` = `architecture`
+- `map_match`: when the dispatch includes a prior-concerns map, the key of the matching entry (match by file path, overlapping line range, topic similarity); leave empty when no map was provided or nothing matches. Never suppress a matching finding — tag it.
 
 Severity labels: `Critical:`, `Nit:`, `Optional:`, `FYI:`. Use `Critical:` only for defects that will materially obstruct future change (a god class now forcing every feature through one file, a layering violation that infects every new caller). Prefer `Optional:` for "refactor-worthy" items.
 
