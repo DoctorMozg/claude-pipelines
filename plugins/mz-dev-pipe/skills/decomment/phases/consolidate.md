@@ -23,18 +23,23 @@ Glob `${proposals_dir}*.md` and Read every file. Parse each as YAML. Expected pr
 
 ```yaml
 schema_version: 1
-file: <absolute path>
+file_path: <absolute path>
+language: <detected language>
+proposer: pipeline-decomment-proposer
+status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
+concerns: [list of concern strings — blocker reason when status is BLOCKED, empty when DONE]
 edits:
   - id: e1
-    line_start: <int>
-    line_end: <int>
     category: A|B|C|D|E|F
     rationale: <one-line reason>
+    line_start: <int>
+    line_end: <int>
     old_string: <verbatim bytes>
     new_string: <verbatim bytes>
-status: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
-context_request: <only when status is NEEDS_CONTEXT>
-block_reason: <only when status is BLOCKED>
+skipped:
+  - line_start: <int>
+    line_end: <int>
+    reason: <why preserved>
 ```
 
 Validate `schema_version: 1`. If a proposal is malformed (parse failure, missing required keys, wrong schema_version), append a row to `apply_warnings.md` under the malformed-proposals table and skip it. Do not abort the phase.
@@ -52,7 +57,7 @@ A `DONE` proposal with an empty `edits:` list is valid (no AI artifacts found in
 Iterate every contributing proposal in dispatch order. For each edit in the proposal's `edits[]` array, assign a global sequential id `e<N>` (`e1`, `e2`, ... across all files combined) and collect into a single edit list with these fields:
 
 - `id` — `e1`, `e2`, ...
-- `file_path` — absolute path (verbatim from proposal `file:`)
+- `file_path` — absolute path (verbatim from proposal `file_path:`)
 - `category` — A | B | C | D | E | F
 - `rationale` — verbatim from proposer
 - `line_start`, `line_end` — verbatim from proposer
@@ -177,7 +182,7 @@ Write to `${task_dir}skipped.md`. Two tables — NEEDS_CONTEXT first, BLOCKED se
 | --------- | ------ |
 ```
 
-The `proposer_request` column carries the verbatim `context_request` field from the proposal. The BLOCKED `reason` column carries the verbatim `block_reason` field.
+The `proposer_request` column carries the verbatim `## Required Context` block from the proposal artifact. The BLOCKED `reason` column carries the verbatim `concerns` list from the stub proposal.
 
 ### 8. Write `apply_warnings.md`
 
@@ -218,7 +223,7 @@ Consolidation complete: <N> edits across <K> files. Gate incoming.
 ## Red Flags
 
 - You let overlapping edits through to Phase 4 — the Edit tool will silently fail on the second match attempt because the first edit already consumed surrounding context. Per-file overlap detection is mandatory.
-- You wrote `edits.json` with relative paths — Phase 4 needs absolute paths. Drop any proposal with a relative `file:` field.
+- You wrote `edits.json` with relative paths — Phase 4 needs absolute paths. Drop any proposal with a relative `file_path:` field.
 - You included BLOCKED or NEEDS_CONTEXT proposals' edits in `edits.json` — those proposals contribute zero edits; only DONE and DONE_WITH_CONCERNS do.
 - You truncated `old_string` inside `edits.json` — truncation is display-only and happens in `diff.md` only. The Phase 4 Edit calls need the full bytes to match.
 - You sorted edits across files when overlap-detecting — overlap is per-file, never global. Lines on the same range in different files do not conflict.
