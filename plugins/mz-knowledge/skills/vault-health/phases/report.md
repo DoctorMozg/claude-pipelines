@@ -58,7 +58,7 @@ Top tags: ...
 
 ## After writing
 
-1. Update `state.md`: `Status: completed`, `Phase: 2`, `Completed: <ISO timestamp>`.
+1. Update `state.md`: `Status: complete`, `Phase: 2`, `Completed: <ISO timestamp>`.
 1. Print: `Audit written to <vault_path>/_vault_audit_<date>.md — N orphans, N broken links, N stubs.`
 
 ## Error handling

@@ -68,7 +68,7 @@ entries:
     notes: "optional note on promote new maturity or edit description"
 ```
 
-3. Update `state.md`: `Status: completed`, `Phase: 2`, `Completed: <ISO timestamp>`, plus the totals above.
+3. Update `state.md`: `Status: complete`, `Phase: 2`, `Completed: <ISO timestamp>`, plus the totals above.
 
 ### Archive confirmation (only if any `archive_pending`)
 

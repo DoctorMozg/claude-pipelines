@@ -39,7 +39,7 @@ Update `state.md`:
 
 ```
 schema_version: 2
-Status: completed
+Status: complete
 Phase: 2
 Completed: <ISO timestamp>
 OutboundWritten: <N>
