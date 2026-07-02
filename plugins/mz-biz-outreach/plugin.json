@@ -2,5 +2,5 @@
   "description": "Business outreach intelligence \u2014 /outreach-brief captures the outreach brief via an iterative clarification loop then researches local industry climate (economic, regulatory, deals, pain points) per target market, feeding the other skills via a `brief:` arg; /outreach-research runs the full company-discovery pipeline (sources, scout, reputation, enrichment, scoring, dossiers, output in `.mz/outreach/<run>/companies/`); /outreach-enrich-company fans out 5 specialist subagents to deepen the card beyond the base research and then drafts naturalized LinkedIn/email letters into it; /outreach-update-card logs a dated interaction entry. Both writer skills relocate the card to `.mz/outreach/active/<YYYY-MM-DD>_<slug>.md` with the last interaction date as prefix",
   "license": "MIT",
   "name": "mz-biz-outreach",
-  "version": "0.49.0"
+  "version": "0.50.0"
 }

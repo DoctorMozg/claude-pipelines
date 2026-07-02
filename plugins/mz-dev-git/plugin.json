@@ -2,5 +2,5 @@
   "description": "Git workflow review pipelines \u2014 branch-level deep review with multi-lens fan-out (bugs, security, architecture, performance, maintainability). Depends on mz-dev-pipe for cross-plugin web research dispatch.",
   "license": "MIT",
   "name": "mz-dev-git",
-  "version": "0.49.0"
+  "version": "0.50.0"
 }
