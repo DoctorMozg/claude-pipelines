@@ -111,7 +111,7 @@ Per-rule actions:
 ```
 
 - `<id>` = rule filename without `.md`.
-- `<plugin-version>` = read from `${CLAUDE_PLUGIN_ROOT}/../plugin.json` → `version`. If unreadable, use literal `unknown`.
+- `<plugin-version>` = read from `${CLAUDE_PLUGIN_ROOT}/plugin.json` → `version`. If unreadable, use literal `unknown`.
 - `source` comment records the original filename; if the rule has `paths:` frontmatter, append `| scope: <glob>` (comma-join multiple globs).
 - `<rule-body>` = rule file content with YAML frontmatter stripped. If the body contains any H1 heading (`# `), demote to H2 before injection. H2 and below pass through verbatim.
 
