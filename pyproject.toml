@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mozg-pipelines-tooling"
+version = "0.1.0"
+description = "Provider rendering and validation tooling for mozg-pipelines"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.11,<3",
+  "pyyaml>=6.0,<7",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.17,<2",
+  "pytest>=8.4,<9",
+  "ruff>=0.12,<0.14",
+  "types-pyyaml>=6.0.12,<7",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mozg_pipelines"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+pythonpath = ["src"]
+testpaths = ["tests/codex_migration"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [".claude", "plugins"]
+
+[tool.ruff.lint]
+select = ["ANN", "B", "E", "F", "I", "PT", "RUF", "SIM", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+explicit_package_bases = true
+mypy_path = "src"
+files = ["src", "tests/codex_migration"]

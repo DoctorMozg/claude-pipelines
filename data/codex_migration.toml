@@ -1,0 +1,53 @@
+schema_version = 1
+source_marketplace = ".claude-plugin/marketplace.json"
+
+[[packages]]
+name = "mz-dev-base"
+disposition = "ready"
+
+[[packages]]
+name = "mz-dev-pipe"
+disposition = "ready"
+
+[[packages]]
+name = "mz-research-pipe"
+disposition = "dependent"
+dependencies = ["mz-dev-pipe"]
+
+[[packages]]
+name = "mz-dev-git"
+disposition = "dependent"
+dependencies = ["mz-dev-pipe"]
+
+[[packages]]
+name = "mz-biz-outreach"
+disposition = "dependent"
+dependencies = ["mz-creative"]
+
+[[packages]]
+name = "mz-job-outreach"
+disposition = "ready"
+
+[[packages]]
+name = "mz-creative"
+disposition = "ready"
+
+[[packages]]
+name = "mz-funny"
+disposition = "ready"
+
+[[packages]]
+name = "mz-memory"
+disposition = "ready"
+
+[[packages]]
+name = "mz-design"
+disposition = "ready"
+
+[[packages]]
+name = "mz-knowledge"
+disposition = "ready"
+
+[[packages]]
+name = "mz-gov"
+disposition = "ready"
