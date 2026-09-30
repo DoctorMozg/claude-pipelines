@@ -55,15 +55,16 @@ ______________________________________________________________________
 
 ### `/naturalize` — AI-Text Rewriter
 
-Detects AI patterns (vocabulary spikes, mechanical antithesis, em-dash overuse, low burstiness, fractal summaries, five-paragraph templates), shows you the analysis, gets approval, then rewrites via the expert-naturalizer agent. Optional in-place file update gate when input came from a file.
+Rewrites in a single expert-naturalizer pass that detects AI patterns (vocabulary spikes, mechanical antithesis, em-dash overuse, low burstiness, fractal summaries, five-paragraph templates) and fixes them. Detection diagnostics land in the report appended to the output. Optional in-place file update gate when input came from a file.
 
 ```
 /naturalize <paste your text here>
 /naturalize @file:docs/intro.md
 /naturalize research:yes @file:blog_draft.md
+/naturalize preserve:robust,leverage @file:security_notes.md
 ```
 
-**Pipeline**: Pattern analysis (+ optional web research) → user approval → expert-naturalizer (opus) → optional in-place update gate
+**Pipeline**: expert-naturalizer (opus; detection + optional web research + rewrite) → optional in-place update gate
 
 **Modifiers**: `@file:<path>` (lets you optionally overwrite the original after the rewrite), `research:yes` (refreshes the embedded vocabulary list against current 2025–2026 pattern data).
 

@@ -1,8 +1,8 @@
-# Phase 2: Rewriting + Phase 2.5: Optional File Update
+# Phase 1: Rewriting + Phase 2: Optional File Update
 
-## Phase 2: Rewriting (expert-naturalizer)
+## Phase 1: Rewriting (expert-naturalizer)
 
-### 2.1 Prepare dispatch context
+### 1.1 Prepare dispatch context
 
 Compute the output path:
 
@@ -12,7 +12,7 @@ output_path = .mz/reports/<YYYY_MM_DD>_naturalize_<slug>.md
 
 Use today's date with underscores. Slug from setup. On collision append `_v2`, `_v3`.
 
-### 2.2 Dispatch expert-naturalizer
+### 1.2 Dispatch expert-naturalizer
 
 Compose a compact dispatch prompt. Do **not** repeat the agent's general instructions — the agent file is self-contained.
 
@@ -22,22 +22,15 @@ Dispatch prompt template:
 Mode: standalone rewrite
 Input file: .mz/task/<task_name>/input.md
 Output file: <output_path>
-Severity: <Light|Medium|Heavy AI from analysis.md>
-Strategy: <copy the "Proposed rewriting strategy" section from analysis.md>
-Preserve list:
-  - All code blocks (fenced and inline)
-  - All tables
-  - Proper names: <comma-separated from analysis.md>
-  - File paths, URLs, version strings
-  - Domain-specific technical terms: <list from analysis.md>
-Word-count target: <copy "Estimated word-count delta" from analysis.md>
+Severity: detect yourself (no pre-computed analysis)
+preserve: <terms from the user's preserve: argument, or "none — rely on auto-preserve detection">
 Long-document handling: <chunk by H2 if word count > 2000, else single pass>
-Web research: <yes|no — pass through user's research: flag>
+research: <yes|no — pass through user's research: flag>
 ```
 
 Dispatch as a single Agent tool call. `subagent_type: expert-naturalizer`. Wait for completion.
 
-### 2.3 Validate the rewrite
+### 1.3 Validate the rewrite
 
 After the agent returns:
 
@@ -45,23 +38,22 @@ After the agent returns:
 1. Verify the agent emitted `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS`.
 1. Read the output file. Confirm:
    - Original code blocks, tables, proper names preserved
-   - Naturalization report appended at the bottom
-   - Word count is in the expected range (±5% of target delta)
+   - Naturalization report appended at the bottom (it carries the detection diagnostics — severity, pattern counts, burstiness before/after)
 1. On `BLOCKED` or `NEEDS_CONTEXT`, escalate via AskUserQuestion.
 
 Update `state.md`: phase → `rewrite_complete`, append output path to `FilesWritten`.
 
-## Phase 2.5: Optional In-Place File Update Gate
+## Phase 2: Optional In-Place File Update Gate
 
 This phase runs **only** when the original input came from `@file:<path>` (not from inline text). The user may want the rewritten text to overwrite the original file in place.
 
-### 2.5.1 Decide whether to offer the gate
+### 2.1 Decide whether to offer the gate
 
 If `state.md` shows `InputSource: inline`, skip this phase entirely.
 
 If `state.md` shows `InputSource: file:<path>`, proceed to the gate.
 
-### 2.5.2 Variant gate — file update offer
+### 2.2 Variant gate — file update offer
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
@@ -98,7 +90,7 @@ Sample of changes (first 3):
   - **Skip** — leave the original file unchanged; the report stays at .mz/reports/
   - **Diff** — show a fuller diff first, then choose Apply or Skip
 
-### 2.5.4 Response handling
+### 2.3 Response handling
 
 - **Apply** → write the rewritten content to the original file path. Update `state.md`: `FileUpdateApplied: yes`. Confirm with a one-line message: `Original file updated: <path>`.
 - **Skip** → leave the original file untouched. Update `state.md`: `FileUpdateApplied: no`. Confirm: `Original file unchanged. Rewrite available at <output_path>`.
@@ -122,11 +114,11 @@ Burstiness: <before> → <after>
 File update: <yes|no|n/a>
 ```
 
-`File update: n/a` for inline-text inputs. `yes`/`no` for `@file:` inputs based on Phase 2.5 outcome.
+`File update: n/a` for inline-text inputs. `yes`/`no` for `@file:` inputs based on Phase 2 outcome.
 
 ## Error Handling within these phases
 
 - `expert-naturalizer` returns `BLOCKED` → preserve original input untouched, escalate via AskUserQuestion.
 - `expert-naturalizer` returns `NEEDS_CONTEXT` → re-dispatch once with the missing context (usually a clearer preserve list).
-- File path from `@file:` becomes unwritable between Phase 0 and Phase 2.5 → warn the user, keep the report as the canonical artifact.
+- File path from `@file:` becomes unwritable between Phase 0 and Phase 2 → warn the user, keep the report as the canonical artifact.
 - Diff command unavailable → fall back to listing the first 5 differing paragraphs side-by-side.

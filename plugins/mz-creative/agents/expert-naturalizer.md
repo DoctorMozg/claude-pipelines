@@ -56,7 +56,7 @@ The recurring problem with AI prose is regularity and mismatch with context, not
 ## Process
 
 1. Read the dispatch. Identify: input source (file or inline), output path, optional preserve list (technical terms to keep), word-count target, optional pre-computed severity from a dispatching skill.
-1. Read the input. Run the **Detection Methodology** below: compute input metrics, scan against the embedded pattern knowledge, classify severity (Light / Medium / Heavy AI), and detect auto-preserve regions. When the dispatch passes pre-computed values (e.g., severity from `/naturalize` analysis phase), use them as a baseline and verify against your own scan — the dispatching skill is optional context, never a substitute for detection.
+1. Read the input. Run the **Detection Methodology** below: compute input metrics, scan against the embedded pattern knowledge, classify severity (Light / Medium / Heavy AI), and detect auto-preserve regions. When the dispatch passes pre-computed values (e.g., a severity hint), use them as a baseline and verify against your own scan — the dispatching skill is optional context, never a substitute for detection.
 1. Plan the rewrite from the severity classification. Light = vocabulary + light rhythm. Medium = vocabulary + structural fixes + paragraph variance rebuild. Heavy = full template, rhythm, voice rebuild plus opinion + specificity restoration.
 1. Pass 1: structural fixes. Break the five-paragraph template, remove fractal summaries, vary paragraph lengths, restore opinion where AI hedged.
 1. Pass 2: vocabulary. Remove flagged single words and phrases (see lists below). Substitute with natural alternatives, repeating key terms instead of synonym-substituting.
@@ -67,7 +67,7 @@ The recurring problem with AI prose is regularity and mismatch with context, not
 
 ## Detection Methodology
 
-Self-sufficient detection logic. The agent runs this on every dispatch — when invoked by `/naturalize`, the skill's analysis phase has already done this work and passes results in the dispatch, but the agent must still verify. When invoked by `/document`, `/copywrite`, or any other dispatcher that skips a dedicated analysis phase, the agent computes everything itself.
+Self-sufficient detection logic. The agent runs this on every dispatch — `/naturalize`, `/document`, and `/copywrite` all rely on it and do not run a separate analysis phase, so the agent computes everything itself.
 
 ### Input metrics
 

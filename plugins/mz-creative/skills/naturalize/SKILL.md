@@ -1,6 +1,6 @@
 ---
 name: naturalize
-description: ALWAYS invoke when the user wants to rewrite AI-generated text to sound human. Triggers: "humanize this text", "make this sound less like AI", "rewrite to be more natural", "remove AI patterns from", "naturalize this prose", "de-AI this draft". Detects AI patterns first, gets user approval, then rewrites via the expert-naturalizer agent.
+description: ALWAYS invoke when the user wants to rewrite AI-generated text to sound human. Triggers: "humanize this text", "make this sound less like AI", "rewrite to be more natural", "remove AI patterns from", "naturalize this prose", "de-AI this draft". Rewrites in a single expert-naturalizer pass (detection runs inside the agent), with an optional in-place file update.
 argument-hint: <text or @file:path to rewrite>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet
@@ -10,12 +10,11 @@ model: sonnet
 
 ## Overview
 
-Rewrites AI-generated text to read as if a human wrote it. Detects AI patterns first (vocabulary spikes, structural templates, sentence-rhythm uniformity, em-dash overuse, etc.), presents findings for user approval, then dispatches `expert-naturalizer` (opus) to rewrite. Optional web research pass to refresh pattern data before analysis.
+Rewrites AI-generated text to read as if a human wrote it. Dispatches `expert-naturalizer` (opus) directly: the agent detects AI patterns (vocabulary spikes, structural templates, sentence-rhythm uniformity, em-dash overuse, etc.), classifies severity, and rewrites in one pass. There is no separate analysis phase or analysis approval gate — detection diagnostics land in the naturalization report appended to the output. Optional web research is performed by the agent itself when `research:yes` is set.
 
 ## When to Use
 
 - User has AI-generated prose and wants it rewritten to sound human
-- User wants to detect AI patterns in a document before rewriting
 - Triggers: "humanize this", "make this sound less like AI", "remove AI patterns from", "rewrite to be natural"
 
 ### When NOT to use
@@ -31,7 +30,8 @@ Rewrites AI-generated text to read as if a human wrote it. Detects AI patterns f
 
 - Inline text following the skill invocation (the entire arg block becomes the input)
 - `@file:<path>` — read text from the specified file
-- `research:yes` — pull current AI pattern data from authoritative web sources before analysis (use when the embedded vocabulary may be 18+ months old)
+- `research:yes` — have the agent pull current AI pattern data from authoritative web sources before rewriting (use when the embedded vocabulary may be 18+ months old; slower)
+- `preserve:<term1>,<term2>,...` — domain terms the rewrite must keep verbatim even if they appear on the avoid list (e.g., `preserve:robust,leverage`)
 
 If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a file path. Never guess.
 
@@ -40,58 +40,28 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 - **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reports/`
 - **CHUNK_THRESHOLD**: 2000 (words above this trigger section-by-section rewriting)
-- **MAX_PATTERNS_REPORTED**: 30 (top patterns shown in approval gate)
 
 ## Core Process
 
 ### Phase Overview
 
-| #   | Phase                                      | File                  | Loop?             |
-| --- | ------------------------------------------ | --------------------- | ----------------- |
-| 0   | Setup                                      | inline below          | —                 |
-| 1   | Pattern analysis (+ optional web research) | `phases/analysis.md`  | —                 |
-| 1.5 | Analysis approval gate                     | inline below          | feedback sub-loop |
-| 2   | Rewriting (expert-naturalizer)             | `phases/rewriting.md` | —                 |
-| 2.5 | Optional in-place file update gate         | `phases/rewriting.md` | —                 |
+| #   | Phase                              | File                  | Loop? |
+| --- | ---------------------------------- | --------------------- | ----- |
+| 0   | Setup                              | inline below          | —     |
+| 1   | Rewriting (expert-naturalizer)     | `phases/rewriting.md` | —     |
+| 2   | Optional in-place file update gate | `phases/rewriting.md` | —     |
 
 ### Phase 0: Setup
 
-1. Parse `$ARGUMENTS`. Detect: inline text vs `@file:` reference, presence of `research:yes`.
+1. Parse `$ARGUMENTS`. Detect: inline text vs `@file:` reference, presence of `research:yes`, optional `preserve:` list.
 1. If empty → `AskUserQuestion` for input source. Never guess.
 1. If `@file:` referenced, read the file and verify it is text (not binary, not too large to fit in context — if >50KB, warn the user).
 1. `task_name` = `<YYYY_MM_DD>_naturalize_<slug>` where slug derives from the input (file basename or first 5 words of inline text). On collision append `_v2`, `_v3`.
 1. Create `.mz/task/<task_name>/`.
 1. Write the input text to `.mz/task/<task_name>/input.md` for reference.
-1. Write `state.md`: schema_version: 2, Status, Phase, Started, phase_complete: false, what_remains: [], InputSource, ResearchRequested, FilesWritten.
-1. Emit a visible setup block: `task_name`, input source, length in words, research flag.
-
-### Phase 1.5: Analysis Approval Gate
-
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
-
-**Pre-read**: Read `.mz/task/<task_name>/analysis.md` and capture the full contents (detected patterns, severity, sentence-rhythm metrics, proposed rewriting strategy) into context.
-
-**Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/analysis.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
-
-```
-## Analysis ready for review — naturalize
-
-<verbatim contents of .mz/task/<task_name>/analysis.md>
-
----
-**Approve** → proceed to Phase 2 (rewriting)  ·  **Reject** → task marked aborted, no rewrite performed  ·  reply with feedback to revise
-```
-
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the analysis — it lives in the plan message above.
-
-- question: `The analysis above is ready for review.`
-- options: **Approve** — proceed to Phase 2 (rewriting) · **Reject** — abort task, no rewrite performed
-
-**Response handling**:
-
-- **Approve** → update state to `analysis_approved`, proceed to Phase 2.
-- **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Any other reply (feedback)** → adjust the rewriting strategy per feedback, overwrite `analysis.md`, return to Surface 1, re-read `analysis.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+1. Write `state.md`: schema_version: 2, Status, Phase, Started, phase_complete: false, what_remains: [], InputSource, ResearchRequested, PreserveList, FilesWritten.
+1. Emit a visible setup block: `task_name`, input source, length in words, research flag, preserve list.
+1. Proceed straight to Phase 1 — no analysis step, no approval gate.
 
 ## Techniques
 
@@ -99,16 +69,16 @@ Techniques: delegated to phase files — see Phase Overview table above.
 
 ## Common Rationalizations
 
-| Rationalization                                       | Rebuttal                                                                              |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| "the text looks fine, skip analysis"                  | structural AI patterns are invisible without checking; vocabulary alone is not enough |
-| "skip the approval gate to save time"                 | the user may want to preserve technical terms the agent would otherwise replace       |
-| "skip web research, the embedded list is good enough" | AI vocabulary shifts every 18 months; `research:yes` exists for a reason              |
+| Rationalization                       | Rebuttal                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| "the text looks fine, skip the agent" | structural AI patterns are invisible without the agent's detection pass              |
+| "run my own pattern analysis first"   | the agent's Detection Methodology already does this; a second pass only adds latency |
+| "rewrite it inline, it's short"       | inline rewrites skip the agent's safety rails and verification checklist             |
 
 ## Red Flags
 
 - You rewrote the text inline without dispatching `expert-naturalizer`.
-- You skipped the analysis approval gate.
+- You ran a separate orchestrator-side pattern analysis or added an approval gate before rewriting.
 - You over-edited a code block, table, or proper name.
 - You added a citation, statistic, or named source that wasn't in the input.
 - You "improved" text that was already human-written.
@@ -145,9 +115,10 @@ If any phase is incomplete, print the blocker explicitly.
 Update `.mz/task/<task_name>/state.md` after each phase:
 
 - `Status:` `pending` | `running` | `complete` | `aborted_by_user` | `failed`
-- `Phase:` `0` | `1` | `1.5` | `2` | `2.5`
+- `Phase:` `0` | `1` | `2`
 - `InputSource:` `inline` | `file:<path>`
 - `ResearchRequested:` `yes` | `no`
+- `PreserveList:` comma-separated terms or `none`
 - `FilesWritten:` cumulative list
 - `FileUpdateApplied:` `yes` | `no` | `n/a` (only relevant when `@file:` was used)
 
