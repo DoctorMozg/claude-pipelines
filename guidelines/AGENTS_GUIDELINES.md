@@ -121,7 +121,7 @@ Subagents receive only their own system prompt, the dispatching agent's `prompt`
 - Version strings, dates, proper nouns, technical terms
 - Headings, list markers, table structure
 
-Compression applies to articles, hedging, pleasantries, and connective fluff — never to load-bearing identifiers or structured data. The init-rule `memory-hygiene.md` (memory files) and `internal-artifact-compression.md` (pipeline scratch artifacts) cover the same discipline outside dispatch prompts; cross-reference them rather than restating the rules in agent bodies.
+Compress by selection, not by telegraphese. Cut repeated instructions, pleasantries, and hedging, and point to files instead of pasting them, but keep full sentences: dropped articles and connectives save few tokens and leave the receiving model guessing how facts relate. The same discipline covers internal artifacts that only agents read, such as `state.md`, research notes, and reviewer summaries fed back to coders. Anything a human reads stays plain prose: final reports, plans shown at approval gates, documentation, commit messages, and the output of prose-writing agents (`expert-naturalizer`, `expert-technical-writer`, `expert-copywriter`, `expert-report-writer`).
 
 ## 8. Output Cap and File-Based Handoff
 

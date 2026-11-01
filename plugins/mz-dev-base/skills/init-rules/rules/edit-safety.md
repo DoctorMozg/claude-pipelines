@@ -1,10 +1,6 @@
-## Edit Integrity
-
-Before EVERY file edit, re-read the file. After editing, read it again to confirm the change applied correctly. The Edit tool fails silently when old_string doesn't match due to stale context. Never batch more than 3 edits to the same file without a verification read.
-
 ## No Semantic Search
 
-You have grep, not an AST. When renaming or changing any function/type/variable, you MUST search separately for:
+Grep matches text, not symbols. When renaming or changing a function, type, or variable, search separately for:
 
 - Direct calls and references
 - Type-level references (interfaces, generics)
@@ -13,7 +9,7 @@ You have grep, not an AST. When renaming or changing any function/type/variable,
 - Re-exports and barrel file entries
 - Test files and mocks
 
-Do not assume a single grep caught everything.
+When a code-intelligence plugin provides the LSP tool, use it to find references, and still grep for string literals and dynamic imports, which it can't see.
 
 ## One Source of Truth
 
@@ -21,4 +17,4 @@ Never fix a display problem by duplicating data or state. One source, everything
 
 ## Destructive Action Safety
 
-Never delete a file without verifying nothing else references it. Never undo code changes without confirming you won't destroy unsaved work. Never push to a shared repository unless explicitly told to.
+Before deleting a file, check that nothing references it. Don't discard uncommitted changes you didn't make. Ask before pushing, force-pushing, rewriting published history, or bypassing hooks with `--no-verify`.

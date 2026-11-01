@@ -1,15 +1,15 @@
-## Sub-Agent Swarming
+## Context After Compaction
 
-For tasks touching >5 independent files, you MUST launch parallel sub-agents (5-8 files per agent). Each agent gets its own context window. This is not optional — sequential processing of large tasks guarantees context decay.
+Long sessions are compacted automatically near the context limit, and afterwards what you remember of a file is a summary, not the file. Before an edit that depends on code outside the lines you are replacing, re-read the file if the session was compacted or the file may have changed outside your own edits.
 
-## Context Decay Awareness
+## Partial Reads
 
-After 10+ messages in a conversation, you MUST re-read any file before editing it. Do not trust your memory of file contents. Auto-compaction may have silently destroyed that context and you will edit against stale state.
+When a read ends with a notice that only part of the file was shown, page through the rest with offset and limit, or Grep for what you need. Don't reason about code you haven't seen.
 
-## File Read Budget
+## Large and Truncated Output
 
-Each file read is capped at 2,000 lines. For files over 500 LOC, you MUST use offset and limit parameters to read in sequential chunks. Never assume you have seen a complete file from a single read.
+When a tool result is replaced by a saved-file path and a preview, read that file instead of re-running the command. Output from a failing command can be cut to its head and tail with nothing saved, so redirect long test or build output to a file and read the part you need. If a search returns suspiciously few results, narrow the scope and run it again.
 
-## Tool Result Blindness
+## Subagents
 
-Tool results over 50,000 characters are silently truncated to a 2,000-byte preview. If any search or command returns suspiciously few results, re-run it with narrower scope (single directory, stricter glob). State when you suspect truncation occurred.
+Use subagents for independent work that can run in parallel, for noisy exploration whose details you don't need, or for a review by a reader who hasn't seen your reasoning. Work you can finish in a handful of tool calls is faster and cheaper done directly.

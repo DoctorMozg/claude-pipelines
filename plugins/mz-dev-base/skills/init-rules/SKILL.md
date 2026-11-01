@@ -15,6 +15,8 @@ Install curated development rules based on detected project context. Two deliver
 - `--target=rules` (default) — write rule files into `.claude/rules/` (project) or `~/.claude/rules/` (global). Files with `paths:` frontmatter stay path-scoped.
 - `--target=claudemd` — inject rule content directly into `./CLAUDE.md` (project) or `~/.claude/CLAUDE.md` (global), wrapped in sentinel blocks for idempotent re-runs and clean uninstall.
 
+Personal preference groups install only when the user picks them. Every install also proposes a few settings entries that Claude Code enforces on its own (ask before `git push`, deny `.env` reads, a pre-commit Stop hook, attribution off). Re-runs also clean up stale content: rules this skill has retired, installs from older versions, and hand-written CLAUDE.md copies of retired or rewritten sections. One approval gate covers all of it together with the settings.
+
 ## When to Use
 
 Triggers: "init rules", "set up rules", "install rules", "configure coding rules", "onboard project".
@@ -31,27 +33,36 @@ Triggers: "init rules", "set up rules", "install rules", "configure coding rules
 - `global` → scope to `~/.claude/`
 - `--target=rules` (default) → write as individual rule files
 - `--target=claudemd` → inject into CLAUDE.md with sentinel blocks
-- `--force` → overwrite existing rule files / replace existing sentinel blocks
-- `--uninstall` → remove rules previously installed by this skill (mode-aware)
+- `--force` → overwrite existing rule files / replace existing sentinel blocks, including unmarked legacy files from older installs
+- `--uninstall` → remove rules previously installed by this skill (mode-aware) and the settings entries it adds, exact matches only
 
 Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; never guess.
 
+## Constants
+
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`
+- **TASK_DIR**: `.mz/task/`
+
+Phase files write `<SKILL_DIR>` and `<PLUGIN_ROOT>` because they get no variable substitution when read. Replace each with the absolute path above before reading a file or running a Bash command.
+
 ## Core Process
 
-| Phase | Goal                         | Details         |
-| ----- | ---------------------------- | --------------- |
-| 0     | Setup + user approval        | Inline below    |
-| 1     | Install / update / uninstall | `phases/run.md` |
+| Phase | Goal                                    | Details                                         |
+| ----- | --------------------------------------- | ----------------------------------------------- |
+| 0     | Setup                                   | Inline below                                    |
+| 1     | Select, approve, and apply rule changes | `phases/run.md`                                 |
+| 1     | Plan and apply settings entries         | `phases/enforce.md`, from run.md Steps 5 and 7d |
 
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`: scope (`project`/`global`), target (`rules`/`claudemd`), `--force`, `--uninstall`. Unknown token → AskUserQuestion.
 1. `task_name` = `<YYYY_MM_DD>_init_rules_<scope>_<target>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`.
-1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO>`, `phase_complete: false`, `what_remains: []`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `Installed: []`, `Replaced: []`, `Skipped: []`, `Removed: []`. `schema_version: 2` is the first line of the file.
+1. Create `<TASK_DIR><task_name>/`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO>`, `phase_complete: false`, `what_remains: []`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `AgentsMd: n/a`, `PersonalGroups: []`, `Installed: []`, `Replaced: []`, `Upgraded: []`, `Skipped: []`, `Removed: []`, `Retired: []`, `HandRemoved: []`, `SettingsAdded: []`, `SettingsRemoved: []`. `schema_version: 2` is the first line of the file.
 1. Emit setup block: task_name, resolved target path, mode flags.
 
-For `--target=claudemd` installs, the approval gate in Phase 1 Step 4b must run before any write. A single run-level confirmation covers all subsequent writes in the run.
+Every run, in both modes and for uninstall, passes the single approval gate in Phase 1 Step 6 before its first write. That one confirmation covers every write in the run.
 
 Read `phases/run.md` and proceed to Phase 1.
 
@@ -74,22 +85,29 @@ Verification: delegated to phase files — see Phase Overview table above.
 ## Error Handling
 
 - **Empty / ambiguous argument** → AskUserQuestion; never guess.
-- **Missing tooling** — if `${CLAUDE_PLUGIN_ROOT}` is unset or the bundled `rules/` directory is not readable, AskUserQuestion with the failing path.
+- **Missing tooling** — if `<SKILL_DIR>` is still a literal `${...}` token or the bundled `rules/` directory is not readable, AskUserQuestion with the failing path.
 - **No detected contexts** → still install universal rules; if target not writable, retry once then AskUserQuestion.
 - **CLAUDE.md unreadable or unwritable** → AskUserQuestion with the exact path and error; do not fall back silently.
+- **Project loads AGENTS.md and claudemd mode would create CLAUDE.md** → Phase 1 Step 1 asks first, because the new file would stop AGENTS.md from loading.
 - **Duplicate sentinel IDs found in CLAUDE.md** (manual edit or prior bug) → stop, report the conflicting lines, ask the user to resolve before re-running.
 - **Plugin version unreadable** → use literal `unknown` for the version tag and note it in the report.
+- **Settings file is not valid JSON** → AskUserQuestion with the path and jq's message; never overwrite it.
+- **`jq` not installed** → skip the settings step, say so in the plan, and print the settings fragment in the report for manual use.
 - Never guess — any ambiguity escalates via AskUserQuestion rather than silent overwrite or skip.
 
 ## State Management
 
-After each phase, update `.mz/task/<task_name>/state.md` with:
+After each phase, update `<TASK_DIR><task_name>/state.md` with:
 
 - `Status:` `running` | `complete` | `aborted_by_user` | `failed`
 - `Phase:` current phase number
 - `DetectedContexts:` list of detected language/tooling tags
-- `Installed:` / `Replaced:` / `Skipped:` / `Removed:` filenames or rule ids touched in this run
+- `AgentsMd:` the AGENTS.md guard answer from Phase 1 Step 1 (`import`, `rules`, `claudemd-only`, or `n/a`)
+- `PersonalGroups:` personal groups chosen in Phase 1 Step 4
+- `Installed:` / `Replaced:` / `Upgraded:` / `Skipped:` / `Removed:` / `Retired:` filenames or rule ids touched in this run
+- `HandRemoved:` headings of hand-written CLAUDE.md sections removed by the stale scan
+- `SettingsAdded:` / `SettingsRemoved:` settings entries written or removed
 
 Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `<TASK_DIR><task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

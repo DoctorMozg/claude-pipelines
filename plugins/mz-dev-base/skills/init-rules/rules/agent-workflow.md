@@ -1,23 +1,22 @@
 ## Pre-Implementation Clarity
 
-Before writing code, state any assumptions you are making out loud. If multiple interpretations of the request exist, surface them and pick one explicitly — never silently choose. If something is unclear, stop and ask. Do not hide confusion behind plausible-looking code.
-
-- Name your assumptions before implementing, even the "obvious" ones.
-- If the request has two or more reasonable readings, list them and choose one on the record.
-- Unknown domain terms, unclear acceptance criteria, and ambiguous scope are all stop-and-ask triggers.
+Before writing code, state the assumptions you are making. If the request has readings that would lead to materially different work, or the target itself is unclear, ask. Otherwise pick the most likely reading, say which one you picked, and continue. Don't hide confusion behind plausible-looking code.
 
 ## Planning
 
-- When planning a feature in a complex domain, always use web search and fetching to validate approaches. Don't try to figure out complex things solely from internal knowledge.
-- Always ask the user at least 5 important questions before starting, then continue asking until all aspects of the planned functionality are completely full and clear.
+When a feature spec is unclear, interview the user until it is clear before planning: scope, edge cases, acceptance criteria, and constraints.
 
-## Phased Execution
+## Milestones
 
-Never attempt multi-file refactors in a single response. Break work into explicit phases. Complete Phase 1, run verification, and wait for explicit approval before Phase 2. Each phase must touch no more than 5 files.
+Break large changes into milestones, each with a check that proves it works. Run through agreed milestones without stopping; pause only before steps that are hard to reverse, change the agreed scope, or affect things other people will see. Ask for approval at every milestone only when the user wants that.
+
+## Finish the Task
+
+Carry authorized work through to the end. When the next step is already covered by the request or the agreed plan, do it instead of ending with "Shall I…?" or "Would you like me to…?". Stop once the task's checks pass, without starting review rounds, polish passes, or extra verification nobody asked for. If you stop short, say what is left and why.
 
 ## Plan and Build Are Separate Steps
 
-When asked to "make a plan" or "think about this first," output only the plan. No code until the user says go. When the user provides a written plan, follow it exactly. If you spot a real problem, flag it and wait — don't improvise. If instructions are vague (e.g. "add a settings page"), don't start building. Outline what you'd build and where it goes. Get approval first.
+When asked to "make a plan" or "think about this first," output only the plan. No code until the user says go. When the user provides a written plan, follow it. If you spot a real problem, say so, and stop to wait only if it invalidates the plan. If instructions are vague (e.g. "add a settings page"), outline what you'd build and where it goes, and get approval before building.
 
 ## TDD Task Framing
 
@@ -27,7 +26,7 @@ Convert tasks into verifiable criteria before implementing. Weak criteria ("make
 - "Fix the bug" → "write a test that reproduces it, then make it pass"
 - "Refactor X" → "ensure tests pass before and after, with no behavior change"
 
-For multi-step work, each plan step must carry an explicit `verify:` check so it's obvious when the step is done:
+For multi-step work, give each plan step a `verify:` check so it's obvious when the step is done:
 
 ```
 1. [Step] → verify: [concrete check — test passes, lint clean, log line appears]
@@ -39,4 +38,4 @@ If you cannot write a `verify:` line for a step, the step is too vague — rewri
 
 ## Information Verification
 
-When about to recommend something that relies on specialized domain knowledge, use web search to verify accuracy before presenting it. Prioritize this for non-trivial claims where being wrong could lead to bad logic or wasted debugging time.
+Before recommending something that rests on specialized domain knowledge, or planning a feature in a complex domain, check a current source such as web search or official docs instead of relying on memory. Prioritize this where being wrong would mean bad logic or wasted debugging time.

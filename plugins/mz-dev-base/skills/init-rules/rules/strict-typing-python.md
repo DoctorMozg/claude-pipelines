@@ -5,10 +5,10 @@ paths:
 
 ## Strict Typing Rules (Python)
 
-- All function parameters and return types must have type hints.
-- Use `TypedDict` or Pydantic models instead of raw `dict` for structured data.
-- Use `Protocol` for structural typing where polymorphism is needed.
-- Avoid `Any` unless interfacing with untyped third-party code — add a comment explaining why.
+- All function parameters and return types have type hints.
+- Use `TypedDict` or Pydantic models instead of raw `dict` and `tuple` for structured data.
+- Use `Protocol` for structural typing where polymorphism is needed; avoid unnecessary abstract base classes.
+- Avoid `Any` unless interfacing with untyped third-party code, and add a comment explaining why.
 - Use `tuple[str, int]` style (lowercase) over `Tuple[str, int]` for Python 3.10+.
 
 ### General
