@@ -8,7 +8,7 @@ description: >-
   pipelines. NOT for removing dead code / unused imports — that is the cleanup skill.
 argument-hint: '[scope:branch|global|working] [type:code|container|llm_hyperparams|build_pipeline|system] <target + metric + goal>'
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Performance Optimization Pipeline
@@ -200,7 +200,7 @@ Profiling found the dominant bottleneck. The backlog below ranks the falsifiable
 ---
 **Approve** → proceed to Phase 4 (candidate generation & verification)  ·  **Reject** → mark task aborted  ·  reply with feedback to revise
 
-Approve cost (estimated): per hypothesis ≈ 4 candidate agents (Opus) + 4 serial measurements (Haiku) + 1 promotion (Sonnet) × ~22k tokens ≈ ~$<Y.YY>
+Approve cost (estimated): per hypothesis ≈ 4 candidate agents (Opus) + 4 serial measurements (Haiku) × ~22k tokens ≈ ~$<Y.YY>
 ```
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the backlog in the question body, it lives in the plan message above:

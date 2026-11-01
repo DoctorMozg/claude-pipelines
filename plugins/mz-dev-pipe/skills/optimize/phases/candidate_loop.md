@@ -17,6 +17,24 @@ Take the top unattempted hypothesis from `backlog.md`. **First read the `## Hist
 
 ## 4.2 Stage A — parallel candidate implementation
 
+**Snapshot the base first.** An `isolation: worktree` agent starts from the repository's default branch (or local HEAD under `worktree.baseRef: "head"`), never from the working tree. Without a snapshot, a candidate would miss the user's uncommitted edits and every win promoted in an earlier round, since promotions stay uncommitted. So it would optimize stale code and be measured against a different baseline. Before dispatch, snapshot the working tree into a commit object without touching the user's index, branch, or HEAD. Run it as one Bash call:
+
+```bash
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+idx="$(mktemp -d)/index"
+GIT_INDEX_FILE="$idx" git read-tree HEAD
+GIT_INDEX_FILE="$idx" git add -A -- . ':(exclude).claude/worktrees'
+tree=$(GIT_INDEX_FILE="$idx" git write-tree)
+base=$(git -c user.name=mz-optimize -c user.email=mz-optimize@localhost \
+  commit-tree "$tree" -p HEAD -m "mz optimize <task_name> iter<N> <H#> base")
+git update-ref "refs/mz/optimize/<task_name>/iter<N>-<H#>" "$base"
+rm -r "$(dirname "$idx")"
+echo "BASE_SHA=$base"
+```
+
+`read-tree HEAD` keeps tracked files that match an ignore rule; `add -A` then records modified, deleted, and untracked files. The ref keeps the commit safe from `git gc` until §4.10 deletes it. Record `base_sha: <BASE_SHA>` in `state.md`.
+
 Dispatch `CANDIDATE_COUNT` `pipeline-perf-candidate` agents in **one** message (parallel), each in its own worktree (`isolation: worktree`).
 
 **Diversification rule.** The candidates must not be four variants of one change. Assign each a *distinct* transformation class — or a distinct mechanism within the hypothesis — drawn from the toolkit's Transformation catalog. Diversity is what makes the round informative: if all four converge on the same edit, the round taught nothing. On a re-entry after a `DEAD END`, the next round diversifies *away* from the failed class entirely.
@@ -28,19 +46,22 @@ Implement ONE performance-optimization candidate. Do not measure it.
 
 Hypothesis:        <H# title and prediction from backlog.md>
 Transformation:    <the distinct class assigned to THIS candidate>
-Contract:          .mz/task/<task_name>/contract.md
+Base commit:       <BASE_SHA>
+Contract:          <repo root>/.mz/task/<task_name>/contract.md
 History buffer:    <the ## History block from state.md — transforms already tried>
 Allowed scope:     <change_space classes + scope paths from the contract>
 
-Implement exactly one change of the assigned transformation class in your worktree.
-Then run the correctness command and report its result:
+First pin your worktree to the base commit and verify HEAD equals it; return
+STATUS: BLOCKED if it does not. Then implement exactly one change of the assigned
+transformation class and commit it. Then run the correctness command and report its result:
 
   correctness_command: <correctness_command from contract.md>
 
 Then STOP. Do NOT benchmark or measure — measurement is serial and orchestrator-driven.
 
-Report: the diff, the correctness result (pass / fail per test + overall), the
-transformation class, and which mechanism from the hypothesis you targeted.
+Report: the candidate commit SHA, the diff against the base commit, the correctness
+result (pass / fail per test + overall), the transformation class, and which mechanism
+from the hypothesis you targeted.
 
 If your candidate would require a change OUTSIDE the allowed scope — a cross-module
 or architectural change, a file outside the scope paths, or a transformation class
@@ -55,7 +76,7 @@ boundary it crosses, and why the candidate needs it.
 
 Each `pipeline-perf-candidate` agent returns one terminal `STATUS`. Route on it:
 
-- `STATUS: DONE` — the candidate is implemented and `correctness_command` ran green (or, for a `manual` contract, correctness is deferred to the Phase 4.7 checkpoint). The worktree advances to Stage B.
+- `STATUS: DONE` — the candidate is implemented and committed on `BASE_SHA`, and `correctness_command` ran green (or, for a `manual` contract, correctness is deferred to the Phase 4.7 checkpoint). The worktree advances to Stage B. A `DONE` without a candidate commit SHA counts as malformed output.
 - `STATUS: DONE_WITH_CONCERNS` — the candidate is implemented but `correctness_command` failed. Discard it immediately — a faster wrong answer is not a candidate — and record the correctness failure in the history buffer.
 - `STATUS: NEEDS_CONTEXT` with a `## Boundary approval needed` section — the candidate needs a change outside the allowed scope. It does not advance yet; it parks the Phase 4.5 boundary pause (§4.6).
 - `STATUS: NEEDS_CONTEXT` for a missing dispatch field — re-dispatch the agent with the field supplied, up to `MAX_CANDIDATE_REVIEW_RETRIES` times, then drop the candidate.
@@ -107,18 +128,21 @@ For each survivor, compare the measured outcome against the hypothesis's *predic
 
 ## 4.8 Winner promotion
 
-Among survivors, the winner is the candidate with the best measured value (on a tie, lowest CV, then lowest risk). Promote its diff into the working tree by dispatching `pipeline-coder`:
+Among survivors, the winner is the candidate with the best measured value (on a tie, lowest CV, then lowest risk). Promote it by applying its commit's diff against `BASE_SHA` to the working tree, in one Bash call:
 
+```bash
+set -eu
+cd "$(git rev-parse --show-toplevel)"
+patch=".mz/task/<task_name>/patches/iter<N>_<H#>.patch"
+mkdir -p "$(dirname "$patch")"
+git diff --binary <BASE_SHA> <CANDIDATE_SHA> > "$patch"
+git apply --check "$patch"
+git apply "$patch"
 ```
-Promote a verified optimization candidate into the working tree.
 
-Source diff:  <the winning candidate's diff, or its worktree path>
-Apply to:     the main working tree
+Worktrees share the object store, so the candidate commit is readable from the main checkout. The patch is exactly the measured change, and no agent re-types it, so nothing invalidates the measurement. `git apply` writes files only; the user's index and branch stay as they were. Record `winner_patch: <path>` in `state.md`: Phase 5 reverts a rejected promotion with `git apply -R <winner_patch>`.
 
-Apply the diff exactly — do not re-optimize, re-design, or "improve" it. It is
-already measured; any edit invalidates the measurement. After applying, confirm the
-file(s) apply cleanly with no conflict.
-```
+If `git apply --check` fails, the working tree changed after the snapshot. Do not force the patch. Keep it, record `PROMOTION CONFLICT` with the patch path in the history buffer, tell the user which files conflict, and route the round as a `DEAD END` (§4.11).
 
 If the contract's `correctness_command` is `manual`, run the **Phase 4.7 Manual Correctness Checkpoint** in `SKILL.md` now, before continuing — a human must confirm behavior is unchanged before the candidate is banked.
 
@@ -128,7 +152,7 @@ If no candidate survived §4.5 for this hypothesis, emit `DEAD END` for it and r
 
 ## 4.10 Worktree cleanup
 
-Before §4.11, **remove every candidate worktree** from this round — the winner's diff is already promoted into the working tree by `pipeline-coder`; the losers are discarded. Leave no orphan worktree. Verify the cleanup with the orchestrator's git tooling. This runs every round, win or `DEAD END`.
+Before §4.11, **remove every candidate worktree** from this round — the winner's patch is already applied and saved under `patches/`; the losers are discarded. Run `git worktree remove --force <path>` for each (`git worktree unlock <path>` first if git reports it locked). Then delete the round's base ref with `git update-ref -d refs/mz/optimize/<task_name>/iter<N>-<H#>`. Leave no orphan worktree or ref: verify with `git worktree list` and `git for-each-ref refs/mz/optimize/<task_name>/`. This runs every round, win or `DEAD END`.
 
 ## 4.11 Round outcome & routing
 

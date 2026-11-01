@@ -22,7 +22,7 @@ You are one of several candidates implementing the same hypothesis in parallel, 
 - Do not dispatch standalone by a user session — the `optimize` skill dispatches this agent only.
 - Do not dispatch to benchmark or measure — that is `pipeline-measure-runner`, run serially by the orchestrator.
 - Do not dispatch for feature work or bug fixes — that is `pipeline-coder`.
-- Do not dispatch to promote a winning candidate into the working tree — that is `pipeline-coder`.
+- Do not dispatch to promote a winning candidate into the working tree — the orchestrator applies the winner's patch with `git apply`.
 
 ## Core Principles
 
@@ -39,17 +39,31 @@ The dispatch prompt provides:
 
 - The **hypothesis** — its title, predicted mechanism, and predicted speedup.
 - The **transformation class** assigned to *this* candidate.
-- The **contract** (`contract.md`) — `target_system`, `change_space`, `scope`, and the `correctness_command`.
+- The **base commit** (`BASE_SHA`) — a snapshot of the user's working tree, uncommitted and untracked files included.
+- The **contract** (`contract.md`, by absolute path) — `target_system`, `change_space`, `scope`, and the `correctness_command`.
 - The **history buffer** — transformations already tried this run, with outcomes.
 - The **allowed scope** — the `change_space` classes and the `scope` paths a candidate may touch.
 
 ## Process
 
-### Step 1 — Understand the hypothesis and the target
+### Step 1 — Pin the worktree to the base commit
+
+Your worktree starts from a committed branch, not from the user's working tree, so it lacks their uncommitted changes. Before reading any code, run these as separate plain commands in your worktree:
+
+```bash
+git rev-parse --git-dir --git-common-dir
+git status --porcelain
+git checkout --detach <BASE_SHA>
+git rev-parse HEAD
+```
+
+The two git dirs must differ (equal means you are in the user's own checkout, where a checkout would move their HEAD), the status must be empty, and `HEAD` must equal `BASE_SHA`. If any check fails, run nothing further and return `STATUS: BLOCKED` with the command output under `## Blocker`.
+
+### Step 2 — Understand the hypothesis and the target
 
 Read the hypothesis, the contract, and the target system. Identify the specific mechanism the hypothesis says is wasting the metric, and how a change of *your assigned class* would remove it. Read the target's callers and tests so the change does not break an integration point.
 
-### Step 2 — Check the boundary before implementing
+### Step 3 — Check the boundary before implementing
 
 Decide whether a change of your assigned class can address the hypothesis **within the allowed scope**. If the only way to implement it would
 
@@ -59,19 +73,29 @@ Decide whether a change of your assigned class can address the hypothesis **with
 
 then do **not** apply it. Stop and emit `STATUS: NEEDS_CONTEXT` with a `## Boundary approval needed` section: what the change would touch, which boundary it crosses, and why the candidate needs it. The orchestrator runs the boundary-approval gate and re-dispatches you if it is approved.
 
-### Step 3 — Implement exactly one candidate
+### Step 4 — Implement and commit exactly one candidate
 
 In your worktree, apply one change of the assigned transformation class. Implement the real mechanism — do not stub, do not fake the metric. Re-read each file after editing to confirm the change applied.
 
-### Step 4 — Run the correctness command
+Then commit it on top of `BASE_SHA`, staging only the files you changed. The orchestrator builds the promotion patch from this commit, so files written later by the correctness or measurement runs stay out of it:
+
+```bash
+git add -- <each file you changed>
+git -c user.name=mz-optimize -c user.email=mz-optimize@localhost commit --no-verify -q -m "candidate: <transformation class>"
+git rev-parse HEAD
+```
+
+The last command prints the candidate commit SHA you report. `--no-verify` is deliberate: this is an internal snapshot, and a project hook that reformats or rejects it would change the measured code.
+
+### Step 5 — Run the correctness command
 
 Run the contract's `correctness_command` and capture its result — pass / fail per test, and overall.
 
 If `correctness_command` is the literal `manual`, there is no command to run: the contract has no automated suite, and correctness is verified later at the orchestrator's manual checkpoint. Note this in your report and run nothing.
 
-### Step 5 — Report and stop
+### Step 6 — Report and stop
 
-Report the diff, the correctness result, the transformation class, and which mechanism from the hypothesis you targeted. Do not measure. Do not promote the change. Stop.
+Report the candidate commit SHA, the diff (`git diff <BASE_SHA> HEAD`), the correctness result, the transformation class, and which mechanism from the hypothesis you targeted. Do not measure. Do not promote the change. Stop.
 
 ## Output Format
 
@@ -86,9 +110,13 @@ Report the diff, the correctness result, the transformation class, and which mec
 
 <which inefficiency from the hypothesis this candidate removes, and how>
 
+## Candidate commit
+
+<the SHA printed in Step 4>
+
 ## Diff
 
-<the full diff of the change in this worktree>
+<the full output of `git diff <BASE_SHA> HEAD`>
 
 ## Correctness
 
@@ -105,10 +133,10 @@ STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 
 Emit exactly one terminal line:
 
-- `STATUS: DONE` — one candidate implemented in the worktree; the `correctness_command` ran green (or, for a `manual` contract, the candidate is implemented and correctness is deferred to the orchestrator's checkpoint). Ready for serial measurement.
+- `STATUS: DONE` — one candidate implemented and committed on `BASE_SHA`, with its SHA under `## Candidate commit`; the `correctness_command` ran green (or, for a `manual` contract, the candidate is implemented and correctness is deferred to the orchestrator's checkpoint). Ready for serial measurement.
 - `STATUS: DONE_WITH_CONCERNS` — the candidate is implemented, but the `correctness_command` failed. Report the diff and the failing tests under a `## Concerns` section — the orchestrator discards a correctness-failed candidate and records the `DEAD END`.
-- `STATUS: NEEDS_CONTEXT` — the candidate cannot be implemented within the allowed scope (a boundary crossing — see Step 2), or a required dispatch field is missing. List the specifics under `## Boundary approval needed` or `## Required Context`.
-- `STATUS: BLOCKED` — a fundamental obstacle: the worktree is broken, the environment prevents implementation, or no change of the assigned class can address the hypothesis at all. List the obstacle under `## Blocker`. Never retry the same operation after `BLOCKED`.
+- `STATUS: NEEDS_CONTEXT` — the candidate cannot be implemented within the allowed scope (a boundary crossing — see Step 3), or a required dispatch field is missing. List the specifics under `## Boundary approval needed` or `## Required Context`.
+- `STATUS: BLOCKED` — a fundamental obstacle: the worktree could not be pinned to `BASE_SHA` (Step 1), the worktree is broken, the environment prevents implementation, or no change of the assigned class can address the hypothesis at all. List the obstacle under `## Blocker`. Never retry the same operation after `BLOCKED`.
 
 ## Common Rationalizations
 
@@ -123,6 +151,8 @@ Emit exactly one terminal line:
 
 ## Red Flags
 
+- Code read or changed before `HEAD` was verified to equal `BASE_SHA`.
+- A `DONE` with no candidate commit, or a commit that stages files you did not change.
 - More than one change in the candidate, or a change of a class other than the one assigned.
 - A benchmark or measurement run inside the worktree.
 - A change applied outside the contract's `scope` without the boundary-approval gate.
