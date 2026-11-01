@@ -136,9 +136,8 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
         (HookEvent.POST_COMPACT, HookEvent.SESSION_START),
         (HookEvent.PRE_COMPACT, None),
     )
-    assert {script.adapter for script in memory_hook.scripts} >= {
-        HookScriptAdapter.USER_PROMPT_JOURNAL,
-        HookScriptAdapter.COMPACTION_REINJECT,
+    assert HookScriptAdapter.USER_PROMPT_JOURNAL in {
+        script.adapter for script in memory_hook.scripts
     }
 
 
@@ -225,10 +224,7 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
             "SessionStart": ("${PLUGIN_ROOT}/scripts/detect-tooling.sh",),
         },
         "mz-memory": {
-            "SessionStart": (
-                "${PLUGIN_ROOT}/scripts/memory-reinject.sh",
-                "${PLUGIN_ROOT}/scripts/memory-inject.sh",
-            ),
+            "SessionStart": ("${PLUGIN_ROOT}/scripts/memory-inject.sh",),
             "UserPromptSubmit": (
                 "${PLUGIN_ROOT}/scripts/journal-capture.sh",
                 "${PLUGIN_ROOT}/scripts/memory-prompt-inject.sh",
@@ -240,7 +236,7 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
             "SessionStart": ("${PLUGIN_ROOT}/scripts/vault-context.sh",),
         },
     }
-    assert rendered_hooks["mz-memory"]["SessionStart"][0]["matcher"] == "compact"
+    assert rendered_hooks["mz-memory"]["SessionStart"][0]["matcher"] == "startup|clear|compact"
     assert rendered_hooks["mz-knowledge"]["PostToolUse"][0]["matcher"] == "Write|Edit|MultiEdit"
     assert all(
         "once" not in handler

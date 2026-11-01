@@ -402,15 +402,13 @@ ______________________________________________________________________
 
 ### [`mz-memory`](plugins/mz-memory/) — Project Memory
 
-Cross-session project memory that persists knowledge automatically — injects on session start, captures completed tasks on session end, re-injects after compaction, snapshots handover state before compaction, and selectively injects relevant memory per prompt.
+Cross-session project memory that persists knowledge automatically — injects on session start and again after `/clear` or compaction, captures completed tasks on session end, and selectively injects relevant memory per prompt.
 
-| Hook                  | Event            | What it does                                              |
-| --------------------- | ---------------- | --------------------------------------------------------- |
-| **Memory inject**     | SessionStart     | Loads `.mz/memory/MEMORY.md` into context                 |
-| **Memory capture**    | SessionEnd       | Captures completed task summaries, prunes to 200 lines    |
-| **Memory reinject**   | PostCompact      | Re-injects memory after context compaction                |
-| **Memory precompact** | PreCompact       | Snapshots in-flight working state before compaction       |
-| **Memory prompt**     | UserPromptSubmit | Selectively injects memory matching the prompt's keywords |
+| Hook               | Event            | What it does                                                         |
+| ------------------ | ---------------- | -------------------------------------------------------------------- |
+| **Memory inject**  | SessionStart     | Loads `.mz/memory/MEMORY.md` into context on startup, clear, compact |
+| **Memory capture** | SessionEnd       | Captures completed task summaries, prunes to 200 lines               |
+| **Memory prompt**  | UserPromptSubmit | Selectively injects memory matching the prompt's keywords            |
 
 | Skill           | Command                       | What it does                                                    |
 | --------------- | ----------------------------- | --------------------------------------------------------------- |

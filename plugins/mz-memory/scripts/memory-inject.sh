@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# SessionStart hook (once: true) — injects project memory into context.
-# Shared inject_memory() is also sourced by memory-reinject.sh and
-# memory-prompt-inject.sh.
+# SessionStart hook: injects project memory on startup, after /clear and after compaction.
+# hooks.json skips resume and fork because the reused transcript already holds the memory.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
@@ -42,33 +41,17 @@ build_payload() {
   printf '%s' "$payload"
 }
 
-inject_memory() {
-  local event_name="${1:-SessionStart}"
-  local prefix="${2:-Project memory}"
-
-  local body
-  body=$(build_payload) || return 1
-
-  local payload="${prefix} (.mz/memory/MEMORY.md):
-${body}"
-
-  # PreCompact + PostCompact reject hookSpecificOutput per the validator.
-  # Stdout is read as additional context for those events.
-  if [[ "$event_name" == "PostCompact" || "$event_name" == "PreCompact" ]]; then
-    printf '%s\n' "$payload"
-  else
-    jq -n --arg event "$event_name" --arg payload "$payload" \
-      '{hookSpecificOutput: {hookEventName: $event, additionalContext: $payload}}'
-  fi
+emit_context() {
+  jq -n --arg payload "$1" \
+    '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $payload}}'
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  ensure_memory_file "$MEMORY_FILE"
+ensure_memory_file "$MEMORY_FILE"
 
-  if ! inject_memory "SessionStart" "Project memory"; then
-    jq -n --arg event "SessionStart" --arg payload \
-      "Project memory initialized at .mz/memory/MEMORY.md (empty). Memory accumulates as tasks complete." \
-      '{hookSpecificOutput: {hookEventName: $event, additionalContext: $payload}}'
-  fi
-  exit 0
+if body=$(build_payload); then
+  emit_context "Project memory (.mz/memory/MEMORY.md):
+${body}"
+else
+  emit_context "Project memory initialized at .mz/memory/MEMORY.md (empty). Memory accumulates as tasks complete."
 fi
+exit 0

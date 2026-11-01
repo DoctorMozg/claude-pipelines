@@ -1,15 +1,5 @@
 {
   "hooks": {
-    "PostCompact": [
-      {
-        "hooks": [
-          {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-reinject.sh",
-            "type": "command"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "hooks": [
@@ -19,16 +9,6 @@
           }
         ],
         "matcher": "AskUserQuestion"
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-precompact.sh",
-            "type": "command"
-          }
-        ]
       }
     ],
     "SessionEnd": [
@@ -46,10 +26,10 @@
         "hooks": [
           {
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-inject.sh",
-            "once": true,
             "type": "command"
           }
-        ]
+        ],
+        "matcher": "startup|clear|compact"
       }
     ],
     "UserPromptSubmit": [
