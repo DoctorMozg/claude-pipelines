@@ -10,7 +10,7 @@ Decide which governance artifact (if any) this decision needs, then draft a popu
 
 ## Step 1.1 — Dispatch the router
 
-Dispatch `gov-router` (sonnet, read-only). It reads `references/artifact-router.md` and runs the two-gate algorithm itself — your prompt carries only the decision and the overrides, not the algorithm. Dispatch prompt:
+Dispatch `gov-router` (sonnet; it writes only `routing.md`). It reads `references/artifact-router.md` and runs the two-gate algorithm itself — your prompt carries only the decision and the overrides, not the algorithm. Dispatch prompt:
 
 ```
 Route the governance artifact for this change.
@@ -93,5 +93,5 @@ Record `WEIGHT` (`light`/`heavy`) and the resolved artifact type in `state.md` �
 
 ## Notes
 
-- The router is read-only and never drafts — the draft is the orchestrator's job, the durable write is `gov-artifact-writer`'s. Three distinct lanes; keep them distinct.
+- The router writes only `routing.md` and never drafts — the draft is the orchestrator's job, the durable write is `gov-artifact-writer`'s. Three distinct lanes; keep them distinct.
 - `draft.md` is the single source the Phase 2 critics read and the Phase 3 gate presents. There is exactly one `draft.md`; revisions overwrite it in place, never fork it.

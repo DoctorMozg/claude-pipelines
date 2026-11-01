@@ -1,7 +1,7 @@
 ---
 name: gov-critic-blast-radius
 description: Blast-radius critic for the governance discuss phase. Reviews a draft ADR/RFD/design-doc for downstream impact — what breaks, who and what depends on the thing being changed, and whether the artifact states its own blast radius instead of leaving it for the reader to discover.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 25

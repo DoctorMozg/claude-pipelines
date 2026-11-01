@@ -1,7 +1,7 @@
 ---
 name: gov-critic-quick
 description: Light-path consolidated governance critic for simple ADRs. Reviews a draft decision artifact across all four governance lenses — alternatives, reversibility, blast radius, and assumptions — in a single pass, and its output is the final verdict with no separate synthesizer.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: sonnet
 effort: high
 maxTurns: 20

@@ -1,7 +1,7 @@
 ---
 name: ui-designer
 description: Visual layout and composition critic. Reviews UI design documents for grid systems, alignment, whitespace, visual hierarchy, density, scannability, and composition quality.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 30

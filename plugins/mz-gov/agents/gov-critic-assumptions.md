@@ -1,7 +1,7 @@
 ---
 name: gov-critic-assumptions
 description: Unstated-assumptions critic for the governance discuss phase. Reviews a draft ADR/RFD/design-doc for the premises it silently rests on — what must be true for the decision to work, whether those premises are stated and warranted, and what the failure mode is if one of them is wrong.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 25

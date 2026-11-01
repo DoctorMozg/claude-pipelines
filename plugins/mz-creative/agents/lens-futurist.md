@@ -1,7 +1,7 @@
 ---
 name: lens-futurist
 description: Futurist lens — forward-looking thinker who approaches problems through emerging trends, disruption cycles, convergences, and long-term trajectories. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill.
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
 maxTurns: 40

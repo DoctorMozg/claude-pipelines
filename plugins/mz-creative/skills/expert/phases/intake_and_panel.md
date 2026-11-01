@@ -176,6 +176,6 @@ Proceed to Phase 2 (Round Loop).
 
 ## Notes
 
-- Phase 1 is not gated against the user before panel-selection (the researcher is read-only). The gate sits at Phase 1.5.
+- Phase 1 is not gated against the user before panel-selection (the researcher writes only `research.md`). The gate sits at Phase 1.5.
 - Image references (`@image:`) are intentionally unsupported — `/expert` is text-only by design. If the user provides one, note in intake.md and continue.
 - Panel selection is orchestrator-owned on purpose: delegating it to an agent would require loading the brief + research into a second context and re-reading the agent roster. Inline selection saves 1 agent call per run.

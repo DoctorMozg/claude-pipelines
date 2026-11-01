@@ -17,10 +17,10 @@ Sources to prioritize:
 Banned: AI-generated detection lists, undated blogs, social posts
 Output: a list of patterns NOT in the embedded vocabulary list (provided below) — focus on what's NEW since 2024
 Embedded list (do not repeat these): <copy the avoid lists from expert-naturalizer.md, abbreviated>
-Output path: .mz/task/<task_name>/web_research.md
+Return the findings inline; the orchestrator saves them to .mz/task/<task_name>/web_research.md
 ```
 
-Wait for completion. Append findings to a new section in the analysis (or note the supplementary file path).
+Wait for completion. `pipeline-web-researcher` is read-only and returns its findings inline, so write its response verbatim to `.mz/task/<task_name>/web_research.md` yourself, then add a short section to the analysis that points to that file.
 
 If `research:yes` is not set, skip this step.
 

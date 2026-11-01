@@ -1,7 +1,7 @@
 ---
 name: art-designer
 description: Visual aesthetics and color theory critic. Reviews UI design documents for color harmony, palette relationships, type pairing, type scale, mood coherence, and aesthetic consistency.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 30

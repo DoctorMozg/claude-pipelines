@@ -74,10 +74,11 @@ Explicit review request on security-sensitive code — code-reviewer's primary t
 
 Every agent must explicitly declare `tools:`. Omitting the field grants the complete tool set including every MCP tool — this is the `TOOL_SPRAWL` anti-pattern.
 
-- Read-only agents (reviewers, researchers, analyzers, lens specialists, scanners) must NOT include `Write` or `Edit`. If an otherwise read-only agent writes a report, document that writer role explicitly and keep the rest of the allowlist narrow.
+- Analysis agents (reviewers, researchers, analyzers, lens specialists, critics, scanners) must NOT include `Edit`. Include `Write` only when the dispatch requires an output file: an agent that writes its findings to an orchestrator-named output path holds `Write`, limited to that single OUTPUT artifact, and never modifies the files it reviews. Agents that return findings inline stay without `Write`, and the orchestrator persists their response.
 - Common canonical sets:
   - Read-only analysis: `Read, Grep, Glob`
   - Read-only research with web: `Read, Grep, Glob, WebFetch, WebSearch`
+  - File-writing analysis (lens, critic): `Read, Write, Grep, Glob`, plus `WebFetch, WebSearch` when it researches
   - Writer/coder: `Read, Write, Edit, Bash, Glob, Grep`
   - Test runner: `Read, Bash, Grep`
 - Never list invented tool names (`FileRead`, `ShellExec`, `Execute`). The runtime silently drops unknown names — the agent appears to work in dry runs but fails when that tool is actually needed.
@@ -175,7 +176,7 @@ Agents fall into one of six archetypes. Each archetype has a distinct process sp
 
 | Archetype                  | Process spine                                                                                 | Tool defaults                                              | Model default |
 | -------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------- |
-| **Analysis / lens**        | Gather → scan → deep-analyze → synthesize → prioritize → report                               | `Read, Grep, Glob`                                         | sonnet        |
+| **Analysis / lens**        | Gather → scan → deep-analyze → synthesize → prioritize → report                               | `Read, Grep, Glob` (+ `Write` for its output file)         | sonnet        |
 | **Generation / coder**     | Understand requirements → gather context → design → generate → validate → document            | `Read, Write, Edit, Bash, Glob, Grep`                      | opus          |
 | **Validation / reviewer**  | Load criteria → scan → check rules → collect violations → assess severity → emit VERDICT      | `Read, Grep, Glob, Bash`                                   | opus          |
 | **Orchestration**          | Plan → prepare → dispatch phases → monitor → verify → report                                  | `Read, Agent(<allowed-subagent>), Write, Bash, Grep, Glob` | opus          |
@@ -408,7 +409,7 @@ Before merging any new or modified agent:
 - [ ] Standalone agent `description` opens with `Use this agent when…` and includes 2–4 `<example>` blocks (6 is the hard upper limit) each with Context/user/assistant/commentary; pipeline-only agent description clearly states purpose and trigger conditions (Rules 3–4).
 - [ ] `description` front-loads key trigger within first 250 characters (Rule 3).
 - [ ] `tools:` is explicitly set — no omission (Rule 5).
-- [ ] Read-only agent omits `Write` and `Edit` from tools (Rule 5).
+- [ ] Analysis agent omits `Edit`, and holds `Write` only for its orchestrator-named output file (Rule 5).
 - [ ] No invented tool names (`FileRead`, `ShellExec`, etc.) in `tools:` (Rules 5, 18).
 - [ ] `model:` is set intentionally — pipeline subagent uses explicit tier; standalone plugin agent uses explicit tier unless a documented runtime-supported inherit mode is chosen (Rule 6).
 - [ ] Tool allowlist justified by least-privilege — no tools present that the agent's archetype doesn't use (Rules 5, 7).

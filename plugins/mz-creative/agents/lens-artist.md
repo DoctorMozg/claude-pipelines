@@ -1,7 +1,7 @@
 ---
 name: lens-artist
 description: Artist lens — visual thinker who approaches problems through aesthetics, form, sensory experience, and emotional resonance. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill.
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
 maxTurns: 40

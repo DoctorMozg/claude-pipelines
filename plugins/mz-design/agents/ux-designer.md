@@ -1,7 +1,7 @@
 ---
 name: ux-designer
 description: User flow and interaction critic. Reviews UI design documents for information architecture, user flows, interaction patterns, microcopy, and Nielsen usability heuristics compliance.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 30

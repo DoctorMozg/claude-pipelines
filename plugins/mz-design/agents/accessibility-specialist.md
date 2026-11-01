@@ -1,7 +1,7 @@
 ---
 name: accessibility-specialist
 description: WCAG 2.2 accessibility critic and hard-gate validator. Reviews UI design documents for contrast ratios, keyboard navigation, screen-reader semantics, focus management, motion sensitivity, and target sizes.
-tools: Read, Grep, Glob, Bash
+tools: Read, Write, Grep, Glob, Bash
 model: opus
 effort: high
 maxTurns: 30

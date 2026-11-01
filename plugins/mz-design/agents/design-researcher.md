@@ -1,7 +1,7 @@
 ---
 name: design-researcher
 description: Gathers context for a UI/UX design task by scanning the codebase for existing components, design tokens, and style files, and researching domain patterns and accessibility requirements via web search.
-tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
+tools: Read, Write, Grep, Glob, Bash, WebFetch, WebSearch
 model: sonnet
 effort: high
 maxTurns: 40

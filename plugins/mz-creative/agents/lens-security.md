@@ -1,7 +1,7 @@
 ---
 name: lens-security
 description: Security lens — appsec thinker who approaches problems through threat modeling (STRIDE), attack surface, data handling, authZ, supply chain, compliance, and blast radius. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill.
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
 maxTurns: 40

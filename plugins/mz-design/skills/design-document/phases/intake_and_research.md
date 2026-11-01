@@ -101,7 +101,7 @@ Proceed to Phase 2.
 
 ## Notes
 
-- Phase 1 is not gated. The user already approved the intent by invoking the skill; research is read-only and low-risk.
+- Phase 1 is not gated. The user already approved the intent by invoking the skill; research writes only `intake.md` and `research.md` under `.mz/design/` and is low-risk.
 - The researcher uses WebSearch but never WebFetch on authenticated URLs (docs sites only).
 - Image references are intentionally not decoded. The pipeline's ceiling is text; the writer leaves TODO markers for visual references in the final doc.
 - Keep the researcher focused on the domain of the brief. Do not expand scope to the whole product.

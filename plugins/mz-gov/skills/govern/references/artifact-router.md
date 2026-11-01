@@ -5,7 +5,7 @@ The `gov-router` agent reads this file to answer two questions in order:
 1. **Gate A — does this change need a governance artifact at all?**
 1. **Gate B — if yes, which one (ADR / RFD / design doc)?**
 
-Work the gates top-to-bottom. Stop at the first definite answer. The router is read-only — its only output is the routing file described at the end.
+Work the gates top-to-bottom. Stop at the first definite answer. The router modifies nothing — its only output is the routing file described at the end.
 
 ______________________________________________________________________
 

@@ -1,7 +1,7 @@
 ---
 name: gov-critic-reversibility
 description: One-way-door critic for the governance discuss phase. Reviews a draft ADR/RFD/design-doc to classify the decision as reversible (two-way door) or irreversible (one-way door), and checks that any irreversibility is justified and met with a proportionally high decision bar.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 25

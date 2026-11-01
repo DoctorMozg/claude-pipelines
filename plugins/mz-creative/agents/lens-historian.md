@@ -1,7 +1,7 @@
 ---
 name: lens-historian
 description: Historian lens — context-aware thinker who approaches problems through historical precedent, patterns of change, cultural context, and path dependence. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill.
-tools: Read, Grep, Glob, WebFetch, WebSearch
+tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
 maxTurns: 40

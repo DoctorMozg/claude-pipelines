@@ -309,5 +309,5 @@ FilesWritten:
 
 - Critic parallelism is load-bearing. Sequential critic dispatch triples latency and introduces ordering bias — never serialize them.
 - The synthesizer is the only agent that writes `critique_<N>.md`. Do not let critics write to that filename.
-- The revision writer is the only agent that modifies `design.md`, `wireframes.md`, and `wcag-report.md` inside the loop. Critics are read-only.
+- The revision writer is the only agent that modifies `design.md`, `wireframes.md`, and `wcag-report.md` inside the loop. Critics write only their own `iter_<N>_<agent>.md` files.
 - `WCAG_GATE` is a separate axis from `VERDICT`. A critic can PASS (no Critical findings in its lane) while the accessibility-specialist's WCAG hard gate still FAILs — treat both axes independently when parsing.

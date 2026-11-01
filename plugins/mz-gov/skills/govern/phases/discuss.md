@@ -20,7 +20,7 @@ ______________________________________________________________________
 
 ## Step L — Light path (single quick critic)
 
-A simple ADR. Dispatch `gov-critic-quick` (sonnet, read-only). It runs all four lenses itself in one pass and **its `VERDICT:` is the verdict of record** — there is no synthesizer behind it. Single-agent dispatch, no wave manifest. Set `iteration = 1`.
+A simple ADR. Dispatch `gov-critic-quick` (sonnet; it writes only its own review file). It runs all four lenses itself in one pass and **its `VERDICT:` is the verdict of record** — there is no synthesizer behind it. Single-agent dispatch, no wave manifest. Set `iteration = 1`.
 
 Dispatch prompt (`<N>` is the current iteration):
 
@@ -80,7 +80,7 @@ Purpose: adversarial review of draft.md, iteration <N>
 - gov-critic-assumptions   — load-bearing premises
 ```
 
-Then spawn **all four agents in one message** (a single tool block with four parallel Agent calls — never sequentially; serial dispatch triples latency and biases ordering). Each is opus, read-only. Per-critic dispatch prompts — identical except the lens, the output path, and the focus line:
+Then spawn **all four agents in one message** (a single tool block with four parallel Agent calls — never sequentially; serial dispatch triples latency and biases ordering). Each is opus and writes only its own review file. Per-critic dispatch prompts — identical except the lens, the output path, and the focus line:
 
 **gov-critic-alternatives**
 
@@ -228,6 +228,6 @@ Two named options; guidance rides the free-text reply field.
 
 - Critic parallelism on the heavy path is load-bearing — the four critics are fully independent and go in one message. The synthesizer is the only agent that writes `discussion_<N>.md`; critics never write that filename.
 - Critics emit `VERDICT:` (not the four-status `STATUS:` protocol for their verdict line, though they close with `STATUS:` too). The synthesizer and quick-critic verdicts both fail closed: a missing `VERDICT:` line counts as FAIL, never an assumed PASS.
-- The draft is revised by the orchestrator between iterations; the critics are strictly read-only. One `draft.md`, overwritten in place each round.
+- The draft is revised by the orchestrator between iterations; the critics write only their own review files and never modify `draft.md`. One `draft.md`, overwritten in place each round.
 - Convergence is zero `Critical:` across all lenses — `Nit:`/`Optional:`/`FYI:` never block the loop.
 - On resume into Phase 2, the discuss loop restarts from iteration 1 — earlier `discuss_<N>_*.md` files are left on disk, but a fresh wave is dispatched (the draft may have changed since). A heavy decision therefore re-spends its critic panel on resume; this is intentional and stays bounded by `MAX_DISCUSS_ITERATIONS`.
