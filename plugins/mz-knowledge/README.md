@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-knowledge.webp" alt="mz-knowledge: Obsidian knowledge vault" width="100%"></p>
+
 # mz-knowledge
 
 Full lifecycle management for a personal Obsidian knowledge vault — bootstrap, capture, atomize, triage, link, review, and query.

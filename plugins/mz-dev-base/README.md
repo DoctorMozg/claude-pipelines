@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-dev-base.webp" alt="mz-dev-base: everyday dev foundations" width="100%"></p>
+
 # mz-dev-base
 
 Foundation plugin for Claude Code — standalone agents, coding rules, and utility skills for everyday development workflows.

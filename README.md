@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/hero/mozg-pipelines.webp" alt="mozg-pipelines: multi-agent plugins for Claude Code" width="100%"></p>
+
 # mozg-pipelines
 
 Multi-agent plugins for [Claude Code](https://claude.com/claude-code). Autonomous development pipelines, code review, deep research, and business intelligence — all as slash commands.

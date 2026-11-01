@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-biz-outreach.webp" alt="mz-biz-outreach: business outreach intelligence" width="100%"></p>
+
 # mz-biz-outreach
 
 Autonomous business-outreach pipelines for Claude Code. Four complementary skills work on a shared card lifecycle: `/outreach-brief` **captures an outreach brief** (iterative clarification loop) and **researches the local business climate** of each target market; `/outreach-research` **discovers companies** and produces dossier cards; `/outreach-enrich-company` **deepens a card** via 5 specialist subagents and drafts naturalized LinkedIn/email letters inside it; `/outreach-update-card` **logs dated interaction entries** at the bottom of the card. The brief and climate feed `/outreach-research` and `/outreach-enrich-company` via a `brief:` argument. Both writer skills relocate the card to `.mz/outreach/active/<YYYY-MM-DD>_<slug>.md` (last-interaction-date prefix).

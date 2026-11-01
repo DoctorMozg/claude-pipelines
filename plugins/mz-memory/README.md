@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-memory.webp" alt="mz-memory: cross-session project memory" width="100%"></p>
+
 # mz-memory
 
 Cross-session project memory for [Claude Code](https://claude.com/claude-code). Automatically persists knowledge across sessions, re-injects after compaction, captures pre-compaction handover state, selectively injects relevant memory on each prompt, and ships a `/memory-note` skill for manual pinning.

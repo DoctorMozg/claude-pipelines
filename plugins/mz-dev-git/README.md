@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-dev-git.webp" alt="mz-dev-git: multi-lens code review" width="100%"></p>
+
 # mz-dev-git
 
 Git and GitHub review pipelines for Claude Code. Multi-lens deep review of local branch changes and GitHub pull requests, plus daily PR triage.

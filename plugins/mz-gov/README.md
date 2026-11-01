@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-gov.webp" alt="mz-gov: AI-era dev governance" width="100%"></p>
+
 # mz-gov
 
 Lightweight development governance for solo devs and small teams building **with AI coding agents**. Generates, discusses, enforces, and reviews the decisions behind your code — and records which were proposed by an agent and approved by a human.

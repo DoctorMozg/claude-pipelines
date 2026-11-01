@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-research-pipe.webp" alt="mz-research-pipe: deep research &amp; synthesis" width="100%"></p>
+
 # mz-research-pipe
 
 Autonomous research and content pipelines — skills that produce reports and rewritten artifacts rather than mutating application code. Spun off from `mz-dev-pipe` so the dev plugin stays focused on build/debug/audit/cleanup/optimize/polish/verify.

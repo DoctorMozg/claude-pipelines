@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-dev-pipe.webp" alt="mz-dev-pipe: autonomous dev pipelines" width="100%"></p>
+
 # mz-dev-pipe
 
 Autonomous multi-agent development pipelines for Claude Code. Each skill orchestrates specialized agents through phased workflows — research, plan, implement, review, test — with user approval gates and iterative convergence.

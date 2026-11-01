@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-creative.webp" alt="mz-creative: expert panels &amp; writing" width="100%"></p>
+
 # mz-creative
 
 Multi-perspective AI panels and creative writing pipelines. Two intent families share the plugin: **panels** that run a roster of intellectual lenses across an idea (brainstorm or critique), and **writing pipelines** that produce documentation, naturalized prose, and promotional copy with built-in approval gates.

@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-job-outreach.webp" alt="mz-job-outreach: job &amp; freelance hunting" width="100%"></p>
+
 # mz-job-outreach
 
 Autonomous job-hunt and freelance-hunt pipelines for Claude Code. Four skills cover the two-axis matrix (salaried vs freelance × discovery vs targeted output):

@@ -1,3 +1,5 @@
+<p align="center"><img src="../../assets/hero/mz-design.webp" alt="mz-design: UI/UX design documents" width="100%"></p>
+
 # mz-design
 
 Iterative UI/UX design-document generation with multi-critic refinement.
