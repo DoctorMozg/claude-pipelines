@@ -131,11 +131,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
     memory_hook = hook_specs["mz-memory"]
     assert tuple(
         (mapping.source_event, mapping.target_event) for mapping in memory_hook.events
-    ) == (
-        (HookEvent.POST_TOOL_USE, HookEvent.USER_PROMPT_SUBMIT),
-        (HookEvent.POST_COMPACT, HookEvent.SESSION_START),
-        (HookEvent.PRE_COMPACT, None),
-    )
+    ) == ((HookEvent.POST_TOOL_USE, HookEvent.USER_PROMPT_SUBMIT),)
     assert HookScriptAdapter.USER_PROMPT_JOURNAL in {
         script.adapter for script in memory_hook.scripts
     }

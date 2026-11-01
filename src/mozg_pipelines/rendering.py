@@ -55,7 +55,6 @@ _AGENT_CALL = re.compile(r"Agent\((?P<role>[a-z0-9][a-z0-9-]*)\)")
 _SUPPORTED_HOOK_EVENT_MOVES = frozenset(
     {
         (HookEvent.POST_TOOL_USE, HookEvent.USER_PROMPT_SUBMIT),
-        (HookEvent.POST_COMPACT, HookEvent.SESSION_START),
     }
 )
 _DEPENDENCY_CONTRACT_PATH = Path("mozg-dependencies.json")
@@ -381,8 +380,6 @@ def _adapt_hook_group(
 
     if source_event is HookEvent.POST_TOOL_USE and target_event is HookEvent.USER_PROMPT_SUBMIT:
         adapted_group.pop("matcher", None)
-    elif source_event is HookEvent.POST_COMPACT and target_event is HookEvent.SESSION_START:
-        adapted_group["matcher"] = "compact"
     adapted_group["hooks"] = adapted_handlers
     return adapted_group
 
@@ -395,17 +392,7 @@ def _adapt_hook_script(
 ) -> str:
     if adapter is HookScriptAdapter.USER_PROMPT_JOURNAL:
         return _CODEX_USER_PROMPT_JOURNAL
-
-    adapted_contents = _adapt_contents(spec, source_path, contents)
-    if adapter is HookScriptAdapter.COMPACTION_REINJECT:
-        if "PostCompact" not in adapted_contents:
-            raise RenderError(
-                source_path,
-                RenderFailure.INVALID_SOURCE,
-                "compaction reinject adapter requires a PostCompact source script",
-            )
-        return adapted_contents.replace("PostCompact", "SessionStart")
-    return adapted_contents
+    return _adapt_contents(spec, source_path, contents)
 
 
 def _render_dependency_contract(spec: CodexPackageSpec, staging_root: Path) -> Path | None:

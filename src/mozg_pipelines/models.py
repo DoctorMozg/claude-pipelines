@@ -78,7 +78,6 @@ class HookEvent(StrEnum):
 class HookScriptAdapter(StrEnum):
     PASSTHROUGH = "passthrough"
     USER_PROMPT_JOURNAL = "user-prompt-journal"
-    COMPACTION_REINJECT = "compaction-reinject"
 
 
 class PackageDisposition(StrEnum):

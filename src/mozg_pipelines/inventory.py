@@ -366,11 +366,6 @@ def _hook_event_mappings(package_name: str) -> tuple[HookEventMapping, ...]:
             source_event=HookEvent.POST_TOOL_USE,
             target_event=HookEvent.USER_PROMPT_SUBMIT,
         ),
-        HookEventMapping(
-            source_event=HookEvent.POST_COMPACT,
-            target_event=HookEvent.SESSION_START,
-        ),
-        HookEventMapping(source_event=HookEvent.PRE_COMPACT, target_event=None),
     )
 
 
@@ -379,8 +374,6 @@ def _hook_script_adapter(package_name: str, source: RepositoryPath) -> HookScrip
         return HookScriptAdapter.PASSTHROUGH
     if source.endswith("/scripts/journal-capture.sh"):
         return HookScriptAdapter.USER_PROMPT_JOURNAL
-    if source.endswith("/scripts/memory-reinject.sh"):
-        return HookScriptAdapter.COMPACTION_REINJECT
     return HookScriptAdapter.PASSTHROUGH
 
 

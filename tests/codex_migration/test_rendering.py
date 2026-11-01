@@ -150,118 +150,101 @@ def test_renderer_refuses_to_replace_an_existing_target(
     assert caught.value.kind is RenderFailure.TARGET_EXISTS
 
 
-def test_renderer_adapts_hook_events_and_scripts_for_codex(
+type HookPackageBuilder = Callable[
+    [tuple[HookEventMapping, ...], dict[str, object]], CodexPackageSpec
+]
+
+_MEMORY_SCRIPT_SOURCES = {
+    "journal-capture.sh": "legacy journal script\n",
+    "memory-inject.sh": 'echo "${CLAUDE_PLUGIN_ROOT}"\n',
+}
+
+
+def _command(script: str) -> dict[str, object]:
+    return {"command": f"${{CLAUDE_PLUGIN_ROOT}}/scripts/{script}", "type": "command"}
+
+
+@pytest.fixture
+def hook_package(
     tmp_path: Path,
     package_spec_factory: Callable[[Path, str], CodexPackageSpec],
     write_role: Callable[[Path], None],
     write_skill: Callable[[Path, str], None],
+) -> HookPackageBuilder:
+    def build(
+        events: tuple[HookEventMapping, ...], source_hooks: dict[str, object]
+    ) -> CodexPackageSpec:
+        spec = package_spec_factory(tmp_path, "0.49.0")
+        hook = HookSpec(
+            source="plugins/mz-memory/hooks/hooks.json",
+            target="hooks/hooks.json",
+            events=events,
+            scripts=(
+                HookScriptSpec(
+                    source="plugins/mz-memory/scripts/journal-capture.sh",
+                    target="scripts/journal-capture.sh",
+                    adapter=HookScriptAdapter.USER_PROMPT_JOURNAL,
+                ),
+                HookScriptSpec(
+                    source="plugins/mz-memory/scripts/memory-inject.sh",
+                    target="scripts/memory-inject.sh",
+                ),
+            ),
+        )
+        spec = spec.model_copy(
+            update={"catalog": spec.catalog.model_copy(update={"hooks": (hook,)})}
+        )
+        write_skill(
+            spec.source_root / spec.catalog.skills[0].source / "SKILL.md",
+            "Use provider-neutral execution.\n",
+        )
+        write_role(spec.source_root / spec.catalog.roles[0].source)
+
+        source_hook = spec.source_root / hook.source
+        source_hook.parent.mkdir(parents=True)
+        source_hook.write_text(json.dumps({"hooks": source_hooks}), encoding="utf-8")
+        scripts_dir = spec.source_root / "plugins/mz-memory/scripts"
+        scripts_dir.mkdir(parents=True)
+        for script, contents in _MEMORY_SCRIPT_SOURCES.items():
+            path = scripts_dir / script
+            path.write_text(contents, encoding="utf-8")
+            path.chmod(0o755)
+        return spec
+
+    return build
+
+
+def test_renderer_adapts_hook_events_and_scripts_for_codex(
+    hook_package: HookPackageBuilder,
 ) -> None:
-    spec = package_spec_factory(tmp_path, "0.49.0")
-    hook = HookSpec(
-        source="plugins/mz-memory/hooks/hooks.json",
-        target="hooks/hooks.json",
-        events=(
+    spec = hook_package(
+        (
             HookEventMapping(
                 source_event=HookEvent.POST_TOOL_USE,
                 target_event=HookEvent.USER_PROMPT_SUBMIT,
             ),
-            HookEventMapping(
-                source_event=HookEvent.POST_COMPACT, target_event=HookEvent.SESSION_START
-            ),
             HookEventMapping(source_event=HookEvent.PRE_COMPACT, target_event=None),
         ),
-        scripts=(
-            HookScriptSpec(
-                source="plugins/mz-memory/scripts/journal-capture.sh",
-                target="scripts/journal-capture.sh",
-                adapter=HookScriptAdapter.USER_PROMPT_JOURNAL,
-            ),
-            HookScriptSpec(
-                source="plugins/mz-memory/scripts/memory-reinject.sh",
-                target="scripts/memory-reinject.sh",
-                adapter=HookScriptAdapter.COMPACTION_REINJECT,
-            ),
-            HookScriptSpec(
-                source="plugins/mz-memory/scripts/session-start.sh",
-                target="scripts/session-start.sh",
-            ),
-        ),
-    )
-    spec = spec.model_copy(update={"catalog": spec.catalog.model_copy(update={"hooks": (hook,)})})
-    skill_root = spec.source_root / spec.catalog.skills[0].source
-    write_skill(skill_root / "SKILL.md", "Use provider-neutral execution.\n")
-    write_role(spec.source_root / spec.catalog.roles[0].source)
-
-    source_hook = spec.source_root / hook.source
-    source_hook.parent.mkdir(parents=True)
-    source_hook.write_text(
-        json.dumps(
-            {
-                "hooks": {
-                    "PostToolUse": [
-                        {
-                            "matcher": "AskUserQuestion",
-                            "hooks": [
-                                {
-                                    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/journal-capture.sh",
-                                    "type": "command",
-                                }
-                            ],
-                        }
-                    ],
-                    "PreCompact": [
-                        {
-                            "hooks": [
-                                {
-                                    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-precompact.sh",
-                                    "type": "command",
-                                }
-                            ]
-                        }
-                    ],
-                    "PostCompact": [
-                        {
-                            "hooks": [
-                                {
-                                    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-reinject.sh",
-                                    "type": "command",
-                                }
-                            ]
-                        }
-                    ],
-                    "SessionStart": [
-                        {
-                            "hooks": [
-                                {
-                                    "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh",
-                                    "once": True,
-                                    "type": "command",
-                                }
-                            ]
-                        }
-                    ],
+        {
+            "PostToolUse": [
+                {"matcher": "AskUserQuestion", "hooks": [_command("journal-capture.sh")]}
+            ],
+            "PreCompact": [{"hooks": [_command("handover.sh")]}],
+            "SessionStart": [
+                {
+                    "matcher": "startup|clear|compact",
+                    "hooks": [{**_command("memory-inject.sh"), "once": True}],
                 }
-            }
-        ),
-        encoding="utf-8",
+            ],
+        },
     )
-    for script, contents in (
-        ("journal-capture.sh", "legacy journal script\n"),
-        ("memory-reinject.sh", 'inject_memory "PostCompact"\n'),
-        ("session-start.sh", "echo session-start\n"),
-    ):
-        path = spec.source_root / "plugins/mz-memory/scripts" / script
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(contents, encoding="utf-8")
-        path.chmod(0o755)
 
     result = render_codex_package(spec)
 
     assert result.hook_paths == (Path("hooks/hooks.json"),)
     assert result.hook_script_paths == (
         Path("scripts/journal-capture.sh"),
-        Path("scripts/memory-reinject.sh"),
-        Path("scripts/session-start.sh"),
+        Path("scripts/memory-inject.sh"),
     )
     rendered_hooks: object = json.loads(
         (spec.package_root / "hooks/hooks.json").read_text(encoding="utf-8")
@@ -280,22 +263,14 @@ def test_renderer_adapts_hook_events_and_scripts_for_codex(
             ],
             "SessionStart": [
                 {
-                    "matcher": "compact",
+                    "matcher": "startup|clear|compact",
                     "hooks": [
                         {
-                            "command": "${PLUGIN_ROOT}/scripts/memory-reinject.sh",
+                            "command": "${PLUGIN_ROOT}/scripts/memory-inject.sh",
                             "type": "command",
                         }
                     ],
-                },
-                {
-                    "hooks": [
-                        {
-                            "command": "${PLUGIN_ROOT}/scripts/session-start.sh",
-                            "type": "command",
-                        }
-                    ]
-                },
+                }
             ],
         }
     }
@@ -303,10 +278,29 @@ def test_renderer_adapts_hook_events_and_scripts_for_codex(
     assert "UserPromptSubmit" in journal_script
     assert ".prompt" in journal_script
     assert "AskUserQuestion" not in journal_script
-    assert (spec.package_root / "scripts/memory-reinject.sh").read_text(encoding="utf-8") == (
-        'inject_memory "SessionStart"\n'
+    assert (spec.package_root / "scripts/memory-inject.sh").read_text(encoding="utf-8") == (
+        'echo "${PLUGIN_ROOT}"\n'
     )
     assert validate_package(spec.catalog, spec.policy, spec.package_root).is_valid is True
+
+
+def test_renderer_rejects_unsupported_hook_event_move(
+    hook_package: HookPackageBuilder,
+) -> None:
+    spec = hook_package(
+        (
+            HookEventMapping(
+                source_event=HookEvent.POST_COMPACT, target_event=HookEvent.SESSION_START
+            ),
+        ),
+        {"PostCompact": [{"hooks": [_command("memory-inject.sh")]}]},
+    )
+
+    with pytest.raises(RenderError, match="PostCompact -> SessionStart") as caught:
+        render_codex_package(spec)
+
+    assert caught.value.kind is RenderFailure.INVALID_SOURCE
+    assert not spec.package_root.exists()
 
 
 def test_renderer_writes_dependency_contract_for_external_role_guidance(
