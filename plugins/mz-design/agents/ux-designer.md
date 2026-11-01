@@ -40,7 +40,7 @@ Your focus areas:
 
 ## Reference
 
-Grep `plugins/mz-design/skills/design-document/references/nielsen-heuristics.md` for the specific heuristic being applied. Do not load the whole file. Example queries:
+Grep `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/nielsen-heuristics.md` for the specific heuristic being applied. Do not load the whole file. Example queries:
 
 - `grep -n "Visibility of system status" nielsen-heuristics.md`
 - `grep -n "Error prevention" nielsen-heuristics.md`

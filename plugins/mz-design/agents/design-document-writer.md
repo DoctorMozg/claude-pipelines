@@ -29,9 +29,9 @@ Do not dispatch for critique or revision — use the critic agents and `design-r
 
 Grep these during writing:
 
-- `plugins/mz-design/skills/design-document/references/design-spec-template.md` — section-by-section template.
-- `plugins/mz-design/skills/design-document/references/wcag-contrast-thresholds.md` — AA/AAA thresholds and contrast formula.
-- `plugins/mz-design/skills/design-document/references/nielsen-heuristics.md` — heuristics to self-check against.
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/design-spec-template.md` — section-by-section template.
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/wcag-contrast-thresholds.md` — AA/AAA thresholds and contrast formula.
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/nielsen-heuristics.md` — heuristics to self-check against.
 
 Read the specific section you need; do not load entire files.
 

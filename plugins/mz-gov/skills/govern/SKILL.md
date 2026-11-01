@@ -34,6 +34,7 @@ Takes a development decision and runs it through a five-phase lifecycle — rout
 - **MAX_DISCUSS_ITERATIONS**: 3 | **MAX_PANEL_AGENTS**: 4 | **TASK_DIR**: `.mz/task/`
 - **DECISIONS_DIR**: `docs/decisions/` | **RFCS_DIR**: `docs/rfcs/` | **DESIGN_DIR**: `docs/design/`
 - **Default statuses**: ADR `proposed` | RFD `prediscussion` | design `draft`
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

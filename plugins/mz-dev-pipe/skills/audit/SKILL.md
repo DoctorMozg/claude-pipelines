@@ -56,6 +56,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **Severity caps**: resolved per `shared/severity-lattice.md` — `quick` mode for standard, `pre-PR` mode for deep.
 - **TASK_DIR**: `.mz/task/` | **LEDGER_PATH**: `.mz/reports/audit_ledger.md` (deep mode only)
 - **HOTSPOT_LOOKBACK_DAYS**: 90 (deep mode only — git log lookback for hotspot table; falls back to all-history on shallow clones)
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

@@ -26,7 +26,7 @@ artifact: <adr | rfd | design | auto>   (auto = you choose)
 rich: <true | false>
 
 ## Algorithm
-Read skills/govern/references/artifact-router.md and apply Gate A then Gate B verbatim.
+Read <SKILL_DIR>/references/artifact-router.md and apply Gate A then Gate B verbatim.
 
 ## Output
 Write the routing decision to .mz/task/<task_name>/routing.md and emit the decision block (ARTIFACT / GATE_FIRED / WEIGHT / STATUS_VOCAB / OVERRIDE + rationale), then STATUS:.

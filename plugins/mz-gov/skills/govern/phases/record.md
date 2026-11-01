@@ -45,8 +45,8 @@ type: <adr | rfd | design>
 target_dir: <docs/decisions/ | docs/rfcs/ | docs/design/>
 
 ## Template and status vocabulary
-template: skills/govern/references/<adr-nygard|adr-madr|rfd|design-doc>-template.md
-status set: skills/govern/references/status-vocabularies.md  (initialize status for this type)
+template: <SKILL_DIR>/references/<adr-nygard|adr-madr|rfd|design-doc>-template.md
+status set: <SKILL_DIR>/references/status-vocabularies.md  (initialize status for this type)
 
 ## Numbering
 Sequential NNNN — glob the target dir for the max, zero-pad to four, and

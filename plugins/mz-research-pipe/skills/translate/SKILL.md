@@ -46,6 +46,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **MAX_WIKTIONARY_LOOKUPS**: 10 (per-run cap across all chunks)
 - **MAX_MYMEMORY_QUERIES**: 9 (per-run cap, under MyMemory 5K-char/day free tier)
 - **TASK_DIR**: `.mz/task/`
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

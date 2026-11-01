@@ -179,21 +179,21 @@ Line-based grep is fast and exact for most of Markdown but fails on these edge c
 
 ## Grep Access Hints
 
-Use these greps to jump straight to the rule you need; do not load the whole file into context. Run from the worktree root.
+Use these greps to jump straight to the rule you need; do not load the whole file into context. Set `RULES` to the path you opened this file from.
 
 ```bash
 # Jump to the NEVER-translate table.
-rg -A30 'Table A' plugins/mz-dev-pipe/skills/translate/references/markdown-preservation-rules.md
+rg -A30 'Table A' "$RULES"
 
 # Jump to the ALWAYS-translate table.
-rg -A20 'Table B' plugins/mz-dev-pipe/skills/translate/references/markdown-preservation-rules.md
+rg -A20 'Table B' "$RULES"
 
 # Find the exact fenced-code rules.
-rg -A5 'fenced code' plugins/mz-dev-pipe/skills/translate/references/markdown-preservation-rules.md
+rg -A5 'fenced code' "$RULES"
 
 # Pull the Tier-1 parity check block.
-rg -A25 'Structural Parity Checks' plugins/mz-dev-pipe/skills/translate/references/markdown-preservation-rules.md
+rg -A25 'Structural Parity Checks' "$RULES"
 
 # Look up frontmatter policy only.
-rg -A15 'Frontmatter Handling' plugins/mz-dev-pipe/skills/translate/references/markdown-preservation-rules.md
+rg -A15 'Frontmatter Handling' "$RULES"
 ```

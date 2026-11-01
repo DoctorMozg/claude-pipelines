@@ -95,13 +95,13 @@ Sources are assembled in two steps: canonical freelance defaults (split into `sc
 
 ### Step 2.1 — Canonical freelance defaults
 
-Canonical freelance sources are stored at `${CLAUDE_PLUGIN_ROOT}/skills/freelance-search/sources/freelance_canonical.json`. The file has two arrays: `scrape_sources` (12 entries — Arc.dev, Gun.io, Braintrust, Lemon.io, Toptal, Malt, YunoJuno, Worksome, freelance.de, Contra, Codementor, Dribbble Jobs) and `guidance_sources` (6 entries — MarketerHire, South Park Commons, On Deck, Lenny's, Reforge, Working Not Working).
+Canonical freelance sources are stored at `<SKILL_DIR>/sources/freelance_canonical.json`. The file has two arrays: `scrape_sources` (12 entries — Arc.dev, Gun.io, Braintrust, Lemon.io, Toptal, Malt, YunoJuno, Worksome, freelance.de, Contra, Codementor, Dribbble Jobs) and `guidance_sources` (6 entries — MarketerHire, South Park Commons, On Deck, Lenny's, Reforge, Working Not Working).
 
 Copy both arrays into `<RUN_DIR>/sources.json` as a single flat array:
 
 ```bash
 jq '.scrape_sources + .guidance_sources' \
-   "${CLAUDE_PLUGIN_ROOT}/skills/freelance-search/sources/freelance_canonical.json" \
+   "<SKILL_DIR>/sources/freelance_canonical.json" \
    > "<RUN_DIR>/sources.json"
 ```
 
@@ -124,7 +124,7 @@ Dispatch `job-source-researcher`:
 Augment the canonical freelance-board list with niche or regional sources.
 
 Mode: freelance
-Canonical file: ${CLAUDE_PLUGIN_ROOT}/skills/freelance-search/sources/freelance_canonical.json
+Canonical file: <SKILL_DIR>/sources/freelance_canonical.json
 Strategy file: <RUN_DIR>/search_strategy.json
 Existing canonical sources file: <RUN_DIR>/sources.json
 Source-yield history: .mz/outreach/_history/source_quality.json (treat as empty if missing)

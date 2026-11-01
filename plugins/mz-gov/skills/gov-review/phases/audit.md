@@ -65,8 +65,8 @@ Use the artifact's filename (not its absolute path) as the role label — paths 
 Audit this governance artifact against the six-axis review rubric.
 
 Artifact:      <absolute path to the one artifact>
-Rubric:        skills/gov-review/references/review-rubric.md
-Status vocab:  skills/govern/references/status-vocabularies.md  (for Axis 6 status validity)
+Rubric:        <SKILL_DIR>/references/review-rubric.md
+Status vocab:  <PLUGIN_ROOT>/skills/govern/references/status-vocabularies.md  (for Axis 6 status validity)
 
 Read the rubric in full, score all six axes against the artifact's own text, and return your per-axis table, severity-labeled findings, the VERDICT: line, and STATUS:. Keep findings concrete and self-contained — they are collected into an aggregate report. Be concise.
 ```

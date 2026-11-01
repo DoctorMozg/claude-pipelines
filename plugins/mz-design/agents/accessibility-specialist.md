@@ -40,7 +40,7 @@ Your focus areas:
 
 ## Reference Files
 
-- `plugins/mz-design/skills/design-document/references/wcag-contrast-thresholds.md` — grep for the exact threshold and formula.
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/wcag-contrast-thresholds.md` — grep for the exact threshold and formula.
 
 Do not load the whole reference file; grep for the section you need.
 

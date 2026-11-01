@@ -63,6 +63,10 @@ Two separate directories are used:
 
 `task_name` follows the pattern `<YYYY_MM_DD>_job_search_<slug>`; `run_name` is `<YYYY_MM_DD>_job_search_<preferences_slug>`. Same-day collisions append `_v2`, `_v3`.
 
+## Constants
+
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+
 ## Core Process
 
 ### Phase Overview

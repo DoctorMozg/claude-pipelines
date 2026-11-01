@@ -41,6 +41,7 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 - **TASK_NAME_FORMAT**: `<YYYY_MM_DD>_design_<slug>`
 - **WCAG_AA_NORMAL**: 4.5
 - **WCAG_AA_LARGE**: 3.0
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

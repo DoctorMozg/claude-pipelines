@@ -91,10 +91,10 @@ Sources are assembled in two steps: canonical defaults always queried, plus dyna
 
 ### Step 2.1 — Canonical defaults
 
-Canonical job-board defaults are stored in the skill's own data file at `${CLAUDE_PLUGIN_ROOT}/skills/job-search/sources/job_canonical.json`. The orchestrator copies this array into `<RUN_DIR>/sources.json` as the baseline.
+Canonical job-board defaults are stored in the skill's own data file at `<SKILL_DIR>/sources/job_canonical.json`. The orchestrator copies this array into `<RUN_DIR>/sources.json` as the baseline.
 
 ```bash
-cp "${CLAUDE_PLUGIN_ROOT}/skills/job-search/sources/job_canonical.json" "<RUN_DIR>/sources.json"
+cp "<SKILL_DIR>/sources/job_canonical.json" "<RUN_DIR>/sources.json"
 ```
 
 Each entry already carries `tier: "canonical"`, `scrape_allowed: true`, and `language_hint: "en"`. The file currently lists 10 boards: LinkedIn Jobs, Indeed, Wellfound, RemoteOK, WeWorkRemotely, Hacker News Who-Is-Hiring, Otta, Lever ATS (via Google), Greenhouse ATS, and Ashby ATS.
@@ -119,7 +119,7 @@ Dispatch `job-source-researcher`:
 Augment the canonical job-board list with niche or regional sources.
 
 Mode: job
-Canonical file: ${CLAUDE_PLUGIN_ROOT}/skills/job-search/sources/job_canonical.json
+Canonical file: <SKILL_DIR>/sources/job_canonical.json
 Strategy file: <RUN_DIR>/search_strategy.json
 Existing canonical sources file: <RUN_DIR>/sources.json
 Source-yield history: .mz/outreach/_history/source_quality.json (treat as empty if missing)

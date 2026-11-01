@@ -31,7 +31,7 @@ When rules conflict, resolve in this order:
 1. Category-specific cleanup rules below.
 1. Heuristic detections (WHAT-not-WHY similarity score, dead-code block detection).
 
-The catalog at `plugins/mz-dev-pipe/skills/clean-leftovers/references/artifact-catalog.md` is the source of truth for patterns. Grep it per category — do not read the whole file.
+The catalog at `${CLAUDE_PLUGIN_ROOT}/skills/clean-leftovers/references/artifact-catalog.md` is the source of truth for patterns. Grep it per category — do not read the whole file.
 
 ## Your Job
 

@@ -18,7 +18,7 @@ Each cleaner gets this dispatch (compressed — the agent definition carries the
 Task: Clean leftover artifacts in the listed files per the approved detection.md plan.
 
 Detection input: .mz/task/<task_name>/detection.md
-Pattern catalog: plugins/mz-dev-pipe/skills/clean-leftovers/references/artifact-catalog.md (grep per category — do not read whole file)
+Pattern catalog: <SKILL_DIR>/references/artifact-catalog.md (grep per category — do not read whole file)
 Web research:    .mz/task/<task_name>/web_research.md (additional patterns from Phase 1)
 
 Files in this work unit:

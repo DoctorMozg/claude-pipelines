@@ -93,7 +93,7 @@ For `mode: translate`, follow this sequence. Each step is a hard requirement, no
 
 The full catalog of placeholder syntaxes — i18next, ICU MessageFormat, vue-i18n, react-i18next Trans, printf family, Python/.NET/Ruby/Symfony — plus the combined ripgrep-compatible regex lives in a reference file. Do not load the whole file. Grep it for the framework you need:
 
-- `Grep 'plugins/mz-dev-pipe/skills/translate/references/placeholder-patterns.md'` for the specific framework section (e.g., `## i18next`, `## ICU MessageFormat`, `## printf`) and for `## Combined Regex`. Do not load the whole file.
+- `Grep '${CLAUDE_PLUGIN_ROOT}/skills/translate/references/placeholder-patterns.md'` for the specific framework section (e.g., `## i18next`, `## ICU MessageFormat`, `## printf`) and for `## Combined Regex`. Do not load the whole file.
 
 The substitution strategy is always the same regardless of framework: enumerate, replace with `[[Pn]]`, translate, restore, verify parity. The reference file has worked examples per framework.
 

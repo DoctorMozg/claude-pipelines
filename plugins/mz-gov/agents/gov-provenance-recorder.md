@@ -22,7 +22,7 @@ Do not dispatch to flip `human_signoff` to a real signature — only the human s
 
 This agent records run facts into a fixed template. It does not judge the decision, choose the artifact, or grant approvals.
 
-- **Use the canonical block, exactly.** The field set and format live in `skills/govern/references/agdr-provenance-block.md`. Read it every run and reproduce its structure verbatim — field names, order, fence. Never improvise fields.
+- **Use the canonical block, exactly.** The field set and format live in `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/agdr-provenance-block.md`. Read it every run and reproduce its structure verbatim — field names, order, fence. Never improvise fields.
 - **Record only what the run tells you.** Agent name, model id, timestamp, and trigger come from the dispatch context. Do not invent a model id or guess a timestamp; if a required fact is genuinely absent, ask for it rather than fabricating.
 - **Sign-off starts pending, always.** Initialize `human_signoff: pending`. A human signature is the entire point of this pipeline — you never pre-fill it, and you never approve on a human's behalf.
 - **Idempotent write.** `provenance.md` holds exactly one current block. If the file already exists from a resumed run, overwrite it with the freshly-formatted block rather than appending a second one.
@@ -40,7 +40,7 @@ The dispatch prompt provides:
 
 ### Step 1 — Load the block template
 
-Read `skills/govern/references/agdr-provenance-block.md` using the Read tool. It defines the exact fields (such as agent, model, timestamp, trigger, human_signoff), their order, and the fenced format. Mirror it precisely.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/agdr-provenance-block.md` using the Read tool. It defines the exact fields (such as agent, model, timestamp, trigger, human_signoff), their order, and the fenced format. Mirror it precisely.
 
 ### Step 2 — Derive the trigger
 

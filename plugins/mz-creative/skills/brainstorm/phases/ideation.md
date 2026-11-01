@@ -4,7 +4,7 @@ Dispatch the 5 selected lens agents in parallel using the ideation behavior cont
 
 ## 2.1 Load the behavior contract
 
-Read `plugins/mz-creative/skills/brainstorm/behaviors/ideation.md`. This file defines the dispatch prompt template with `{variable}` placeholders inside a fenced `text` code block. That block is the entire message to send to each lens agent — nothing before it, nothing after it. You must substitute variables per-agent before dispatching.
+Read `<SKILL_DIR>/behaviors/ideation.md`. This file defines the dispatch prompt template with `{variable}` placeholders inside a fenced `text` code block. That block is the entire message to send to each lens agent — nothing before it, nothing after it. You must substitute variables per-agent before dispatching.
 
 ## 2.2 Prepare per-agent context
 

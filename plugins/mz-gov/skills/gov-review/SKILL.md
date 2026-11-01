@@ -38,6 +38,8 @@ None. This skill is read-only — it scores artifacts and writes a report under 
 - **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reviews/`
 - **ARTIFACT_DIRS**: `docs/decisions/*.md`, `docs/rfcs/*.md`, `docs/design/*.md` (the default glob set when no path/glob is supplied)
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Expand `<PLUGIN_ROOT>/...` in phase files the same way.
 
 ## Core Process
 

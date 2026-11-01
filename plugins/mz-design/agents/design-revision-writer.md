@@ -29,9 +29,9 @@ Do not dispatch for fresh document creation — use `design-document-writer` for
 
 Grep these when needed:
 
-- `plugins/mz-design/skills/design-document/references/design-spec-template.md`
-- `plugins/mz-design/skills/design-document/references/wcag-contrast-thresholds.md`
-- `plugins/mz-design/skills/design-document/references/nielsen-heuristics.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/design-spec-template.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/wcag-contrast-thresholds.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/nielsen-heuristics.md`
 
 ## Inputs
 

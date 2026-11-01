@@ -39,6 +39,7 @@ If `$ARGUMENTS` is empty, ask the user via `AskUserQuestion`. Never guess.
 - **ROUNDS**: 3 (fixed — no early stopping, no convergence check)
 - **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reports/`
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Available Lenses
 

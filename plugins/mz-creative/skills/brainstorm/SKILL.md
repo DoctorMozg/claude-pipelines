@@ -33,6 +33,7 @@ Invoke when the user wants creative ideation, multi-perspective thinking, or div
 - **TOTAL_LENSES**: 16
 - **MAJORITY_THRESHOLD**: 3
 - **TASK_DIR**: `.mz/task/`
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Available Lenses
 

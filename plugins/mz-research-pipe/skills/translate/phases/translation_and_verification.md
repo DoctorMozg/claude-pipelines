@@ -35,7 +35,7 @@ Each dispatch description contains only:
 
 - `task_dir` (absolute path), unit spec (source path + optional `chunk_range` + `chunk_id`), `source_lang` / `target_lang` (ISO 639-1), `output_path`, `output_mode`.
 - `glossary_path` pointer (read-only) and a one-line reminder to emit the glossary delta to `<task_dir>/glossary_delta_<chunk_id>.json`.
-- Grep pointers at the reference files, not inline content: `Grep references/placeholder-patterns.md for the framework section and Combined Regex`, and `Grep references/markdown-preservation-rules.md for the element type you need (e.g. rg -A5 'fenced code')`.
+- Grep pointers at the reference files, not inline content: `Grep <SKILL_DIR>/references/placeholder-patterns.md for the framework section and Combined Regex`, and `Grep <SKILL_DIR>/references/markdown-preservation-rules.md for the element type you need (e.g. rg -A5 'fenced code')`.
 - `mode: translate`.
 - One explicit line: `run Tier-1 structural verification and emit the confidence report to <task_dir>/confidence_<chunk_id>.json before returning`.
 
@@ -48,7 +48,7 @@ source_lang: en  target_lang: ru
 output_path: docs/guide.ru.md  output_mode: sidecar
 glossary_path: <task_dir>/glossary.json (read-only; emit delta to glossary_delta_<chunk_id>.json)
 mode: translate
-references: grep references/placeholder-patterns.md and references/markdown-preservation-rules.md
+references: grep <SKILL_DIR>/references/placeholder-patterns.md and <SKILL_DIR>/references/markdown-preservation-rules.md
 Required: run Tier-1 and emit confidence_<chunk_id>.json before returning.
 ```
 

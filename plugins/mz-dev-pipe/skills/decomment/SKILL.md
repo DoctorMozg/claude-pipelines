@@ -49,6 +49,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 | `task_dir`                    | `.mz/task/<YYYY_MM_DD>_decomment_<slug>/`      | All phases                                                              |
 | `proposals_dir`               | `${task_dir}proposals/`                        | Phase 2 output, Phase 3 input                                           |
 | `summary_path`                | `.mz/reports/<YYYY_MM_DD>_decomment_<slug>.md` | Phase 4 final summary                                                   |
+| `SKILL_DIR`                   | `${CLAUDE_SKILL_DIR}`                          | Phase files write `<SKILL_DIR>/...`; expand to this absolute path first |
 
 ### Phase 0 — Setup
 
@@ -126,9 +127,9 @@ Maintain the progress ledger on every phase transition: set `phase_complete: fal
 
 ## References
 
-- `plugins/mz-dev-pipe/skills/shared/scope-parameter.md` — scope modes + git commands
-- `plugins/mz-dev-pipe/skills/shared/approval-gate.md` — two-surface gate pattern
-- `plugins/mz-dev-pipe/skills/shared/state-schema.md` — state.md schema
-- `plugins/mz-dev-pipe/skills/shared/resume-protocol.md` — resume entry contract
-- `plugins/mz-dev-pipe/skills/shared/agent-status-protocol.md` — four-status STATUS vocabulary
+- `${CLAUDE_PLUGIN_ROOT}/skills/shared/scope-parameter.md` — scope modes + git commands
+- `${CLAUDE_PLUGIN_ROOT}/skills/shared/approval-gate.md` — two-surface gate pattern
+- `${CLAUDE_PLUGIN_ROOT}/skills/shared/state-schema.md` — state.md schema
+- `${CLAUDE_PLUGIN_ROOT}/skills/shared/resume-protocol.md` — resume entry contract
+- `${CLAUDE_PLUGIN_ROOT}/skills/shared/agent-status-protocol.md` — four-status STATUS vocabulary
 - `references/per-language-comment-syntax.md` — language-specific comment tokens + preserve markers (read by proposer)

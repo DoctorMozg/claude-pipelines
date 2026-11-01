@@ -45,6 +45,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **WHAT_WHY_SIMILARITY_THRESHOLD**: 0.7 — token-overlap threshold for flagging WHAT-not-WHY candidates.
 - **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reports/`
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

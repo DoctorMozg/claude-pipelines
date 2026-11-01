@@ -32,6 +32,11 @@ Triggers: "gov init", "install governance policy", "set up governance", "add gov
 
 Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; never guess.
 
+## Constants
+
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Expand `<PLUGIN_ROOT>/...` in phase files the same way.
+
 ## Core Process
 
 | Phase | Goal                         | Details         |
@@ -70,7 +75,7 @@ Verification: delegated to phase file — after install, grep `CLAUDE.md` for ex
 ## Error Handling
 
 - **Empty / ambiguous / conflicting argument** → AskUserQuestion; never guess.
-- **Missing tooling** — if `${CLAUDE_PLUGIN_ROOT}` is unset or `skills/gov-init/policy/governance-policy.md` is not readable, AskUserQuestion with the failing path.
+- **Missing tooling** — if `${CLAUDE_SKILL_DIR}/policy/governance-policy.md` is not readable, AskUserQuestion with the failing path.
 - **`CLAUDE.md` unreadable or unwritable** → AskUserQuestion with the exact path and error; never fall back silently.
 - **Duplicate `mz-gov:governance-policy` sentinels found** (manual edit or prior bug) → stop, report the conflicting lines, ask the user to resolve before re-running.
 - **Plugin version unreadable** → use the literal `unknown` for the version tag and note it in the report.

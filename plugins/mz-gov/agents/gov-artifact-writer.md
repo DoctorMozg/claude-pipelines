@@ -24,7 +24,7 @@ Do not dispatch to format the provenance block itself — `gov-provenance-record
 - **Write only what was approved.** The approved draft is the spec. Carry its content faithfully into the template; do not add, drop, or "improve" decisions that already cleared the gate.
 - **Sequential numbering, then re-check at write time.** Compute the next number by globbing existing files, but never trust that number blindly — re-check the exact target path immediately before writing, because the directory may have changed since you globbed.
 - **Provenance travels with the artifact.** The AgDR fence from `provenance.md` belongs in the artifact header so the decision's AI-origin and human sign-off stay attached to the durable record, not just the scratch dir.
-- **Status comes from the vocabulary, never a guess.** Initialize status from `skills/govern/references/status-vocabularies.md` for this artifact type. The vocabularies are open-ended sets — read the file; do not hardcode an enum.
+- **Status comes from the vocabulary, never a guess.** Initialize status from `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/status-vocabularies.md` for this artifact type. The vocabularies are open-ended sets — read the file; do not hardcode an enum.
 - **Idempotent intent, honest path.** Report the exact path you wrote. If a collision forced a higher number than you first computed, say so.
 
 ## Inputs
@@ -34,7 +34,7 @@ The dispatch prompt provides:
 - The approved draft (path to `.mz/task/<task_name>/draft.md`).
 - The artifact type and its target directory (`docs/decisions/` for adr, `docs/rfcs/` for rfd, `docs/design/` for design).
 - The provenance block (`.mz/task/<task_name>/provenance.md`, with `human_signoff` now set to a real signature).
-- The matching template under `skills/govern/references/` and the task name.
+- The matching template under `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/` and the task name.
 
 ## Process
 
@@ -56,10 +56,10 @@ An empty directory yields `0001`. Build the slug from the decision title (kebab-
 
 ### Step 3 — Assemble the artifact
 
-Read the matching template under `skills/govern/references/` and populate it from the approved draft. In the header:
+Read the matching template under `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/` and populate it from the approved draft. In the header:
 
 - Embed the AgDR provenance fence read from `provenance.md`, verbatim, including the real `human_signoff`.
-- Initialize the `status` field to the configured starting value for this artifact type, read from `skills/govern/references/status-vocabularies.md`. Never invent a status string and never assume the vocabulary from memory.
+- Initialize the `status` field to the configured starting value for this artifact type, read from `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/status-vocabularies.md`. Never invent a status string and never assume the vocabulary from memory.
 
 ### Step 4 — Collision-recheck and write
 

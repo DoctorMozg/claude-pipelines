@@ -27,7 +27,7 @@ for N in 1..3:
 
 ## Step 2.1 — Build context packet from the critique behavior
 
-Load `plugins/mz-creative/skills/expert/behaviors/critique.md`. That file defines the dispatch prompt template with `{variable}` placeholders inside a fenced `text` code block. That block is the entire message to send to each lens agent — nothing before it, nothing after it. You must substitute variables per-agent and per-round before dispatching.
+Load `<SKILL_DIR>/behaviors/critique.md`. That file defines the dispatch prompt template with `{variable}` placeholders inside a fenced `text` code block. That block is the entire message to send to each lens agent — nothing before it, nothing after it. You must substitute variables per-agent and per-round before dispatching.
 
 ### Per-agent variable substitution
 

@@ -72,7 +72,7 @@ You are critiquing a design draft from a UX flow and heuristics lens.
 - .mz/design/<task_name>/wireframes.md
 
 ## Reference
-Grep plugins/mz-design/skills/design-document/references/nielsen-heuristics.md for any heuristic you apply. Do not load the whole file.
+Grep <SKILL_DIR>/references/nielsen-heuristics.md for any heuristic you apply. Do not load the whole file.
 
 ## Your Lens
 Task flows, IA, interaction patterns, microcopy, state coverage, cognitive load, Nielsen's 10 heuristics. See your agent spec for detailed criteria.
@@ -122,7 +122,7 @@ You are critiquing a design draft from a WCAG 2.2 AA lens and owning the WCAG ha
 - .mz/design/<task_name>/wcag-report.md
 
 ## Reference
-Grep plugins/mz-design/skills/design-document/references/wcag-contrast-thresholds.md for thresholds and the contrast formula.
+Grep <SKILL_DIR>/references/wcag-contrast-thresholds.md for thresholds and the contrast formula.
 
 ## Your Job
 1. Re-compute every contrast ratio in wcag-report.md from scratch using the WCAG formula.

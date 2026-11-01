@@ -40,7 +40,7 @@ For each wave in ascending order:
    - The target file path (absolute).
    - The proposal output path (absolute, matching `proposal_path` for the row).
    - The `task_dir` path.
-   - The reference table path: `plugins/mz-dev-pipe/skills/decomment/references/per-language-comment-syntax.md`.
+   - The reference table path: `<SKILL_DIR>/references/per-language-comment-syntax.md`.
    - The reminder line: `Read the reference table for your file's extension before tokenizing. Emit exactly one STATUS: line at end.`
 1. Wait for every agent in the current wave to return before launching the next wave. Sequential messages are sequential — a wave is exactly one assistant message with N parallel Agent calls.
 1. Never background a proposer (`run_in_background: true`). Proposers write proposal artifacts; background mode silently drops writes.

@@ -22,7 +22,7 @@ Do not dispatch to critique the decision's substance — that is the critic pane
 
 This agent maps a change to an artifact choice. It does not execute the change, advise on the decision, or editorialize about whether the decision is good.
 
-- **Read the algorithm, do not reinvent it.** The selection logic lives in `skills/govern/references/artifact-router.md`. Read it every run and apply it verbatim; never route from memory of a prior run.
+- **Read the algorithm, do not reinvent it.** The selection logic lives in `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/artifact-router.md`. Read it every run and apply it verbatim; never route from memory of a prior run.
 - **Two gates, in order.** Gate A decides whether *any* artifact is required. Gate B decides *which*. Gate B only runs when Gate A says "required."
 - **Default to the lighter outcome on a genuine tie.** Governance exists to capture consequential ambiguity, not to tax routine work. If Gate A is a real coin-flip, route `none` and say so.
 - **Honor the orchestrator's override.** When the dispatch carries an explicit `artifact:` choice, that choice wins. If your own analysis points elsewhere, record the disagreement as a `Nit:` and proceed with the user's choice — do not silently substitute yours.
@@ -41,7 +41,7 @@ The dispatch prompt provides:
 
 ### Step 1 — Load the algorithm
 
-Read `skills/govern/references/artifact-router.md` in full using the Read tool. It defines Gate A's substantial-vs-exempt and ambiguity tests, Gate B's artifact-discriminator table, the weight rule, and the status vocabulary each artifact uses. Treat that file as the source of truth; this body only summarizes its shape.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/artifact-router.md` in full using the Read tool. It defines Gate A's substantial-vs-exempt and ambiguity tests, Gate B's artifact-discriminator table, the weight rule, and the status vocabulary each artifact uses. Treat that file as the source of truth; this body only summarizes its shape.
 
 ### Step 2 — Gate A: is any artifact required?
 
@@ -99,7 +99,7 @@ End with exactly one terminal line. Nothing follows it.
 - `STATUS: DONE` — routing decided and the decision block is complete.
 - `STATUS: DONE_WITH_CONCERNS` — decided, but with a caveat the orchestrator should log (e.g., the change is borderline on Gate A). State the caveat above the status line.
 - `STATUS: NEEDS_CONTEXT` — the change description is too thin to apply Gate A; name exactly what is missing (e.g., "is this user-facing behavior or an internal refactor?").
-- `STATUS: BLOCKED` — `skills/govern/references/artifact-router.md` is unreadable or the dispatch carries no change to route. State the blocker; do not retry the same read.
+- `STATUS: BLOCKED` — `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/artifact-router.md` is unreadable or the dispatch carries no change to route. State the blocker; do not retry the same read.
 
 ## Red Flags
 

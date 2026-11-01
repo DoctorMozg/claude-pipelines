@@ -215,5 +215,3 @@ Write `.mz/task/<task_name>/findings.md`:
 ```
 
 Update state file phase to `findings_consolidated`.
-
-After writing, run `pre-commit run --files plugins/mz-dev-pipe/skills/audit/phases/consolidate_deep.md` and fix any issues before reporting STATUS: DONE.

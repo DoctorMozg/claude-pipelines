@@ -34,7 +34,7 @@ Save the synthesis to `.mz/task/<task_name>/synthesis_round_<N>.md`.
 
 ### 3.3 Dispatch voting round
 
-Load `plugins/mz-creative/skills/brainstorm/behaviors/ideation.md`. Substitute variables per-voter:
+Load `<SKILL_DIR>/behaviors/ideation.md`. Substitute variables per-voter:
 
 | Variable                  | Value                                                                                            |
 | ------------------------- | ------------------------------------------------------------------------------------------------ |
