@@ -38,7 +38,7 @@ Reviews all changes on the current branch against its base branch. Walks every m
 
 ### `/github-review-pr` — Pull Request Review
 
-Deep-reviews a GitHub PR in an isolated worktree. Reads the diff, comments, and discussions, runs the same multi-lens analysis as `/review-branch`, cross-references existing reviewer feedback, and writes a severity-labeled report.
+Deep-reviews a GitHub PR in a temporary worktree that it creates and removes. Reads the diff, comments, and discussions, runs the same multi-lens analysis as `/review-branch`, cross-references existing reviewer feedback, and writes a severity-labeled report.
 
 ```
 /github-review-pr https://github.com/owner/repo/pull/123
@@ -62,19 +62,19 @@ Scans GitHub repositories for PRs needing your attention — review requested, m
 
 Specialized worker agents used by the skills above. You don't invoke these directly — the skills orchestrate them.
 
-| Agent                         | Role                                                                                            |
-| ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| **branch-reviewer**           | Top-level orchestrator. Walks each changed file, fans out 5 code-lens agents, merges findings   |
-| **branch-info-collector**     | Pipeline collector — runs git metadata commands and scans for prior review reports              |
-| **github-pr-reviewer**        | Top-level PR orchestrator. Sets up isolated worktree, dispatches branch-reviewer, writes report |
-| **github-pr-scanner**         | Multi-repo PR triage orchestrator. Fans out github-pr-info-scorer per PR, produces tier ranking |
-| **github-pr-data-fetcher**    | Pipeline collector — bulk PR list + dedup + zero-result smoke tests across multiple repos       |
-| **github-pr-info-scorer**     | Per-PR haiku scorer — lightweight metadata + complexity + answered/unanswered classification    |
-| **code-lens-bugs**            | Pipeline lens — scans diff for logic errors, off-by-one, null access, races, resource leaks     |
-| **code-lens-security**        | Pipeline lens — scans for injection, auth bypass, secret exposure, SSRF, IDOR, weak crypto      |
-| **code-lens-architecture**    | Pipeline lens — scans for SOLID violations, coupling, layering, pattern drift, god classes      |
-| **code-lens-performance**     | Pipeline lens — scans for N+1, blocking I/O in async, missing indexes, O(n²) hot paths          |
-| **code-lens-maintainability** | Pipeline lens — scans for unclear naming, complexity, magic values, dead code, duplication      |
+| Agent                         | Role                                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| **branch-reviewer**           | Top-level orchestrator. Walks each changed file, fans out 5 code-lens agents, merges findings    |
+| **branch-info-collector**     | Pipeline collector — runs git metadata commands and scans for prior review reports               |
+| **github-pr-reviewer**        | Top-level PR orchestrator. Sets up a temp PR worktree, dispatches branch-reviewer, writes report |
+| **github-pr-scanner**         | Multi-repo PR triage orchestrator. Fans out github-pr-info-scorer per PR, produces tier ranking  |
+| **github-pr-data-fetcher**    | Pipeline collector — bulk PR list + dedup + zero-result smoke tests across multiple repos        |
+| **github-pr-info-scorer**     | Per-PR haiku scorer — lightweight metadata + complexity + answered/unanswered classification     |
+| **code-lens-bugs**            | Pipeline lens — scans diff for logic errors, off-by-one, null access, races, resource leaks      |
+| **code-lens-security**        | Pipeline lens — scans for injection, auth bypass, secret exposure, SSRF, IDOR, weak crypto       |
+| **code-lens-architecture**    | Pipeline lens — scans for SOLID violations, coupling, layering, pattern drift, god classes       |
+| **code-lens-performance**     | Pipeline lens — scans for N+1, blocking I/O in async, missing indexes, O(n²) hot paths           |
+| **code-lens-maintainability** | Pipeline lens — scans for unclear naming, complexity, magic values, dead code, duplication       |
 
 All five `code-lens-*` agents and the four `github-pr-*` collectors/scorers are **pipeline-only** — dispatched exclusively by their orchestrators. They are not user-invocable.
 

@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read
 
 ## Overview
 
-Dispatch the `github-pr-reviewer` agent to perform a thorough review of a GitHub pull request in an isolated worktree. Produces a report under `.mz/reviews/` with severity-labeled findings and a verdict.
+Dispatch the `github-pr-reviewer` agent to perform a thorough review of a GitHub pull request in a temporary PR worktree that the agent creates and removes. Produces a report under `.mz/reviews/` with severity-labeled findings and a verdict.
 
 ## When to Use
 
@@ -50,8 +50,9 @@ If no argument is provided, ask the user for a PR URL.
 ### 1. Dispatch
 
 1. Validate via `gh pr view` that the normalized PR reference is accessible. On failure, escalate via AskUserQuestion.
-1. Launch the `github-pr-reviewer` agent with the PR reference as the prompt.
-1. After the agent completes, parse its final message for the `STATUS:` line:
+1. Launch the `github-pr-reviewer` agent with the PR reference and `task_name: <task_name>` as the prompt.
+1. After the agent returns, whatever its status, run `git worktree list` and remove any leftover `.claude/worktrees/pr-<pr_number>-*` entry with `git worktree remove --force <path>`. The agent removes its own worktree, but a turn limit or crash can stop it first.
+1. Parse the agent's final message for the `STATUS:` line:
    - `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS` → update `state.md` to `Status: complete`, `Phase: 1`. On `DONE_WITH_CONCERNS`, also log the concerns block into `state.md`.
    - `STATUS: NEEDS_CONTEXT` → re-dispatch **once** with the requested context; on a second `NEEDS_CONTEXT`, escalate via AskUserQuestion.
    - `STATUS: BLOCKED` → escalate via AskUserQuestion with the blocker reason. Never auto-retry on `BLOCKED`.
@@ -59,7 +60,7 @@ If no argument is provided, ask the user for a PR URL.
 
 ## Techniques
 
-Delegated to phase files — see Phase Overview table above. Detailed technique (worktree isolation, diff-plus-context reading, multi-lens fan-out, two-signal Critical gate, CI-result cross-referencing, severity labeling) lives in `plugins/mz-dev-git/agents/github-pr-reviewer.md` and the code-lens-\* agent files.
+Delegated to phase files — see Phase Overview table above. Detailed technique (PR worktree setup and cleanup, diff-plus-context reading, multi-lens fan-out, two-signal Critical gate, CI-result cross-referencing, severity labeling) lives in `plugins/mz-dev-git/agents/github-pr-reviewer.md` and the code-lens-\* agent files.
 
 ## Common Rationalizations
 

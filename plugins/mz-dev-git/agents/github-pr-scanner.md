@@ -268,7 +268,7 @@ For a thorough code review on any PR above, run:
 
 ```
 
-That dispatches the `github-pr-reviewer` agent in an isolated worktree and writes a severity-labeled review report alongside this triage report.
+That dispatches the `github-pr-reviewer` agent, which reviews the PR in a temporary worktree and writes a severity-labeled review report alongside this triage report.
 ```
 
 ### Status Protocol
