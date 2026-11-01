@@ -317,6 +317,7 @@ def build_codex_package_spec(
             "WebSearch",
             "WebFetch",
             "${CLAUDE_PLUGIN_ROOT}",
+            "${CLAUDE_SKILL_DIR}",
             "CLAUDE.md",
             ".claude/rules",
         ),

@@ -60,6 +60,7 @@ allowed-tools: Agent, Read, TaskCreate
 
 Use $ARGUMENTS. AskUserQuestion before TaskCreate.
 Use WebSearch and WebFetch. Read ${CLAUDE_PLUGIN_ROOT}, CLAUDE.md, and .claude/rules.
+Bundled files live under ${CLAUDE_SKILL_DIR}/references.
 Coordinate Agent(s), then delegate through Agent(pipeline-researcher).
 """,
         encoding="utf-8",
@@ -115,6 +116,7 @@ Coordinate Agent(s), then delegate through Agent(pipeline-researcher).
     assert "web search" in rendered_skill
     assert "web fetch" in rendered_skill
     assert "${PLUGIN_ROOT}" in rendered_skill
+    assert "<directory containing this SKILL.md>/references" in rendered_skill
     assert "AGENTS.md" in rendered_skill
     assert ".codex/rules" in rendered_skill
     assert "Coordinate Codex subagent(s)" in rendered_skill
@@ -127,6 +129,7 @@ Coordinate Agent(s), then delegate through Agent(pipeline-researcher).
     assert "WebSearch" not in rendered_skill
     assert "WebFetch" not in rendered_skill
     assert "${CLAUDE_PLUGIN_ROOT}" not in rendered_skill
+    assert "${CLAUDE_SKILL_DIR}" not in rendered_skill
     assert "CLAUDE.md" not in rendered_skill
     assert ".claude/rules" not in rendered_skill
     assert "Agent(pipeline-researcher)" not in rendered_skill

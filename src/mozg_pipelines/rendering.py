@@ -47,6 +47,8 @@ _COMMON_CODEX_TRANSFORMS = (
     ("WebSearch", "web search"),
     ("WebFetch", "web fetch"),
     ("${CLAUDE_PLUGIN_ROOT}", "${PLUGIN_ROOT}"),
+    # Codex substitutes no variables in SKILL.md bodies, but it gives the model each skill's path.
+    ("${CLAUDE_SKILL_DIR}", "<directory containing this SKILL.md>"),
     ("CLAUDE.md", "AGENTS.md"),
     (".claude/rules", ".codex/rules"),
     ("Agent(s)", "Codex subagent(s)"),
