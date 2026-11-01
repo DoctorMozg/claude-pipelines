@@ -26,7 +26,7 @@ packages = ["src/mozg_pipelines"]
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
 pythonpath = ["src"]
-testpaths = ["tests/codex_migration"]
+testpaths = ["tests/codex_migration", "tests/mz_memory"]
 
 [tool.ruff]
 line-length = 100
@@ -41,4 +41,4 @@ python_version = "3.12"
 strict = true
 explicit_package_bases = true
 mypy_path = "src"
-files = ["src", "tests/codex_migration"]
+files = ["src", "tests/codex_migration", "tests/mz_memory"]
