@@ -67,11 +67,20 @@ Follow vault CLAUDE.md conventions for tag taxonomy and any additional frontmatt
 
 Terminal status:
 - STATUS: DONE with `proposals.md` written.
-- STATUS: NEEDS_CONTEXT if input is too vague, too long, or would exceed 10 proposals — describe the blocker in one sentence.
+- STATUS: DONE_WITH_CONCERNS if you processed only the start of the input — quote the first sentence left unprocessed.
+- STATUS: NEEDS_CONTEXT if input is too vague or would exceed 10 proposals — describe the blocker in one sentence.
+- STATUS: BLOCKED if this prompt lacks the input content or the output path.
 ```
 
 ## After the agent returns
 
+1. Act on the agent's terminal `STATUS:` line first. Any status other than `DONE` means the proposals are missing or do not cover the whole input, so never go on to the gate as if they did:
+   - `DONE` → continue with the next step.
+   - `DONE_WITH_CONCERNS` → the agent atomized only the start of the input. Record `PartialInput: true` and the first unprocessed sentence it quoted in `state.md`, then ask via AskUserQuestion whether to review the proposals for the processed part only, leaving the rest for another run, or to stop and split the input. On review, continue with the next step. On stop, set `Status: blocked` with the unprocessed remainder in `what_remains` and stop.
+   - `NEEDS_CONTEXT` → the input is too vague or would exceed 10 proposals. Ask via AskUserQuestion, quoting the agent's one-sentence blocker, how to revise the input, then re-run this phase on the revised input.
+   - `BLOCKED` → the dispatch prompt lacked the input or the output path. Fill in the missing field and re-dispatch once; if the agent blocks again, set `Status: blocked` with its reason in `what_remains` and stop.
+   - No status line, or one not listed here → handle it as `BLOCKED`.
+   - No answer to a question above → set `Status: blocked` with the open question in `what_remains` and stop. A missing answer is never approval.
 1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/proposals.md`.
 1. Validate structurally:
    - File parses as YAML with a `proposals:` list.

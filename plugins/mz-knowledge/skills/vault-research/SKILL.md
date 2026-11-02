@@ -9,7 +9,7 @@ allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, 
 
 ## Overview
 
-Discipline skill that atomizes a long research report into permanent notes, pre-filtering known noise sections before atomization. Reuses `atomization-proposer` (dispatched once per 450-word window — matches the agent's 500-word input cap) and `link-suggester`. Produces claim-style atomic notes under the vault's permanent folder inside a `research/` subfolder, each carrying `type: research`, `source_type: research-report`, and full provenance.
+Discipline skill that atomizes a long research report into permanent notes, pre-filtering known noise sections before atomization. Reuses `atomization-proposer` (dispatched once per 450-word window, below the agent's 2000-word input cap) and `link-suggester`. Produces claim-style atomic notes under the vault's permanent folder inside a `research/` subfolder, each carrying `type: research`, `source_type: research-report`, and full provenance.
 
 ## When to Use
 
@@ -27,7 +27,7 @@ Turning a generated research, brainstorm or deep-research report from `.mz/resea
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **MAX_NOTES**: 15 (hard cap across all atomization windows; excess proposals are deduped and truncated)
 - **LONG_REPORT_THRESHOLD_WORDS**: 2000 (warn the user before proceeding on reports above this size)
-- **ATOMIZATION_WAVE_WORD_CAP**: 450 (per-window word budget; `atomization-proposer` caps at 500 so 450 leaves headroom)
+- **ATOMIZATION_WAVE_WORD_CAP**: 450 (per-window word budget, below `atomization-proposer`'s 2000-word input cap)
 - **NOISE_SECTIONS**: `["Vote Tally", "Voting History", "Panel Perspectives", "Methodology", "Deliberately Cut", "All Ideas by Round"]`
 
 ## Core Process
@@ -156,11 +156,11 @@ Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/link_sug
 
 ## Common Rationalizations
 
-| Rationalization                                                  | Rebuttal                                                                                                                                                                                               |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| "Send the whole report to atomization-proposer in one dispatch." | "atomization-proposer has a 500-word input cap; oversized input returns DONE_WITH_CONCERNS with only partial processing. The 450-word windowing scheme exists to keep every dispatch fully processed." |
-| "Noise sections are obvious — skip the user approval gate."      | "The user may want to include methodology or panel-perspectives sections; every exclusion needs explicit approval. Silent drops destroy information the user intended to capture."                     |
-| "Run all atomization windows in parallel for speed."             | "Sequential windows are required because each dispatch writes to a numbered output file and shares agent context; parallel writes would collide and produce interleaved output."                       |
+| Rationalization                                                  | Rebuttal                                                                                                                                                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Send the whole report to atomization-proposer in one dispatch." | "atomization-proposer has a 2000-word input cap; oversized input returns DONE_WITH_CONCERNS with only partial processing. The 450-word windowing scheme exists to keep every dispatch fully processed." |
+| "Noise sections are obvious — skip the user approval gate."      | "The user may want to include methodology or panel-perspectives sections; every exclusion needs explicit approval. Silent drops destroy information the user intended to capture."                      |
+| "Run all atomization windows in parallel for speed."             | "Sequential windows are required because each dispatch writes to a numbered output file and shares agent context; parallel writes would collide and produce interleaved output."                        |
 
 ## Red Flags
 

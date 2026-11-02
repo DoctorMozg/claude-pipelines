@@ -2,7 +2,7 @@
 name: vault-ingest
 description: 'Turns a voice memo, screenshot, PDF or YouTube video into a transcribed fleeting note. Use when the user wants media captured into the vault ("ingest audio", "transcribe voice", "ingest PDF"). Not for existing captures (use process-notes).'
 argument-hint: '<path or URL> [modality hint: voice|image|pdf|youtube]'
-allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(ffprobe *), Bash(pdfinfo *), Bash(awk *), Bash(true *), Grep, Glob, AskUserQuestion
+allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(which *), Bash(ffprobe *), Bash(pdfinfo *), Bash(awk *), Bash(true *), Grep, Glob, AskUserQuestion
 ---
 
 # Vault Ingest

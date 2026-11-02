@@ -51,7 +51,7 @@ Resolving a `[[wikilink]]`: search the vault for a `.md` whose basename (minus e
 
 ## Folder Layout (PARA + Zettelkasten hybrid)
 
-Numbered prefixes force order in the file explorer. Create a folder only when it receives its first note — no empty scaffolding.
+Numbered prefixes force order in the file explorer. `inbox/` (fleeting captures) and `daily/` (daily notes) are unnumbered on purpose: the mz-knowledge skills read those exact paths, so never rename them. Create a folder only when it receives its first note — no empty scaffolding.
 
 ```text
 {{FOLDER_LAYOUT}}
@@ -170,7 +170,7 @@ Skip code-shaped skills (`build`, `debug`, `audit`, `verify`, `optimize`, `revie
 | `{{VAULT_PURPOSE}}`        | `VaultPurpose` from state.md                              | `Personal second brain for AI and engineering knowledge`       |
 | `{{VAULT_ROOT}}`           | `Vault` from state.md (absolute path)                     | `/home/user/Obsidian/MyVault`                                  |
 | `{{DATE_TODAY}}`           | Current date                                              | `2026-04-16`                                                   |
-| `{{FOLDER_LAYOUT}}`        | Folders created in Step 1, formatted as the numbered list | See default layout in scaffold_vault.md                        |
+| `{{FOLDER_LAYOUT}}`        | Folders created in Step 1, one per line, exact names      | See default layout in scaffold_vault.md                        |
 | `{{PERMANENT_HIERARCHY}}`  | `PrimaryTopics` formatted as tree under `04 - Permanent/` | `04 - Permanent/\n├── AI/\n├── Engineering/\n└── Business/`    |
 | `{{FRONTMATTER_TEMPLATE}}` | Based on `FrontmatterStyle`                               | `created: YYYY-MM-DD\ntype: {{NOTE_TYPES_LIST}}\ntags: []`     |
 | `{{TAG_STYLE_NOTE}}`       | Based on `TagStyle`                                       | `hierarchical with /: #ai/llm, #status/draft`                  |

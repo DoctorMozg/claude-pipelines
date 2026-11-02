@@ -68,7 +68,7 @@ For each window from `wave_offset` to `AtomizationWindows - 1`, in order:
 
 1. Update `state.md`: increment `wave_offset` to `<wave_offset + 1>`, append this window's output path to `WindowProposalPaths:` (YAML list).
 
-1. Continue to the next window. **Dispatches are sequential, never parallel.** `atomization-proposer` is a single stateful agent instance with a 500-word input cap; sequential windows with 450-word budgets guarantee every dispatch returns `STATUS: DONE` without partial processing.
+1. Continue to the next window. **Dispatches are sequential, never parallel.** `atomization-proposer` is a single stateful agent instance with a 2000-word input cap; sequential windows with 450-word budgets guarantee every dispatch returns `STATUS: DONE` without partial processing.
 
 If any window returns `STATUS: NEEDS_CONTEXT`, record the window index under `state.md` `SkippedWindows:` and continue with the next window — do not abort the whole run for one empty window.
 
@@ -236,7 +236,7 @@ vault-research complete:
 
 ## Error handling
 
-- **An atomization window dispatch returns `DONE_WITH_CONCERNS`** → the window was over the 500-word cap. Record `Phase2WindowOverflow: <index>` in `state.md` and halt with an escalation via AskUserQuestion. The windowing in Phase 1 should have prevented this — investigate why the 450-word budget leaked.
+- **An atomization window dispatch returns `DONE_WITH_CONCERNS`** → the window was over the 2000-word cap. Record `Phase2WindowOverflow: <index>` in `state.md` and halt with an escalation via AskUserQuestion. The windowing in Phase 1 should have prevented this — investigate why the 450-word budget leaked.
 - **File-write verification fails in Step 4.7** → halt immediately, record `Phase2WriteError: <path>` in `state.md`, escalate via AskUserQuestion. Do not proceed to link suggestions with missing notes.
 - **`link-suggester` returns `NEEDS_CONTEXT`** → the vault root is unreachable. Record `Phase3VaultError` in `state.md` and finalize with `LinksAdded: 0` — the notes are already written and usable without links.
 - **Drift detected in Step 7** (a target note in `link_suggestions.md` no longer exists) → skip that link, record `DriftedLinkTargets:` in `state.md`, continue with the surviving links.

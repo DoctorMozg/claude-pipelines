@@ -19,8 +19,8 @@ The default PARA+Zettelkasten layout. Skip folders whose note type the user disa
 | `02 - Areas/`     | (always)           | Ongoing responsibilities, no end date        |
 | `03 - Resources/` | resource           | Reference material                           |
 | `04 - Permanent/` | permanent          | Evergreen atomic notes                       |
-| `05 - Fleeting/`  | fleeting           | Raw captures — promote or delete within days |
-| `06 - Daily/`     | daily              | Daily notes, YYYY-MM-DD.md                   |
+| `inbox/`          | fleeting           | Raw captures — promote or delete within days |
+| `daily/`          | daily              | Daily notes, YYYY-MM-DD.md                   |
 | `07 - Archives/`  | (always)           | Retired notes kept for link integrity        |
 | `99 - Meta/`      | (always)           | Templates, attachments, vault-support files  |
 
@@ -48,7 +48,7 @@ If `ExistingCLAUDE` is false, write a new CLAUDE.md. Read the template from `<SK
 
 - Replace `{{VAULT_PURPOSE}}` with `VaultPurpose` from state.md.
 - Replace `{{VAULT_ROOT}}` with the absolute vault path.
-- Replace `{{FOLDER_LAYOUT}}` with the actual folders created in Step 1 (preserving the numbered-prefix format).
+- Replace `{{FOLDER_LAYOUT}}` with the actual folders created in Step 1, each under its exact name from the table.
 - Replace `{{PERMANENT_HIERARCHY}}` with a tree showing each `PrimaryTopics` entry as a top-level subfolder under `04 - Permanent/`, with a placeholder comment `# add subfolders as notes accumulate`.
 - Replace `{{FRONTMATTER_TEMPLATE}}` with the frontmatter block matching `FrontmatterStyle`:
   - Minimal: `created`, `type`, `tags`
@@ -203,7 +203,8 @@ Return control to SKILL.md Phase 2 for verification.
 - Never create `.obsidian/` — that is the Obsidian app's responsibility.
 - Never write notes (only templates and governance files). Note creation is for `vault-ingest` and `process-notes`.
 - The `{{placeholder}}` syntax in templates is Obsidian Templater/Templates plugin syntax — write it literally, do not resolve it.
-- Folder names use the `-` (space-dash-space) separator after the number prefix. This is intentional for Obsidian sidebar readability.
+- Numbered folder names use the `-` (space-dash-space) separator after the number prefix. This is intentional for Obsidian sidebar readability.
+- `inbox/` and `daily/` stay unnumbered and lowercase: vault-ingest writes captures to `inbox/`, vault-triage reads them from there, and process-notes and the SessionStart hook look for daily notes in `daily/`. Never rename or number them.
 
 ## Common Rationalizations
 
