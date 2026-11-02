@@ -1,0 +1,45 @@
+schema_version: "1.1"
+name: naturalize-behavior-newsletter
+description: 'An engineering newsletter intro with em dashes, semicolons, an arrow and an ellipsis; the rewrite must drop them, keep its numbers and names, and stay near its length.'
+tags: [behavior, naturalizer-ab]
+plugins: ["../..", "../../../mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:naturalize @file:newsletter.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 30
+  timeout_seconds: 900
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: naturalize-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_naturalize_'
+    target: trace
+  - name: naturalizer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: 'expert-naturalizer'
+  # The fixture keeps banned characters out of code and quotes, so any hit is prose; digit ranges such as 3–5 are allowed.
+  - name: no-banned-punctuation
+    type: regex
+    pattern: '—|;|…|→|←|⇒|(?<![0-9])–|–(?![0-9])'
+    match: not_contains
+    target: { source: file, path: newsletter.md }
+  # 110 to 210 words is −35% to +25% of the input, since cutting filler is the job; it also proves the file exists for the not_contains grader above.
+  - name: length-kept
+    type: regex
+    pattern: '^\s*(?:\S+\s+){109,209}\S+\s*$'
+    target: { source: file, path: newsletter.md }
+  - name: facts-kept
+    type: regex
+    pattern: '^(?=[\s\S]*840 ?ms)(?=[\s\S]*310 ?ms)(?=[\s\S]*Postgres 16)(?=[\s\S]*Lena Ortiz)(?=[\s\S]*March 14)(?=[\s\S]*(?:^|\n)# Platform Notes)'
+    target: { source: file, path: newsletter.md }
+  # AskUserQuestion isn't available in eval sessions, so a gate would show up as a request in chat.
+  - name: approval-not-requested
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+    match: not_contains
