@@ -54,6 +54,10 @@ PHASE_TABLE = re.compile(r"^\|\s*Phase\s*\|[^\n]*\n(?P<delimiter>\|[-: |]+\|\n)?
 HEADING = re.compile(r"^#+ [^\n]*$", re.MULTILINE)
 TABLE_OF_CONTENTS = re.compile(r"^(?:## Contents|\*\*Contents:?\*\*)", re.MULTILINE)
 REFERENCE_TOC_MIN_LINES = 100
+# SKILL.md loads in full on every invocation; phase files load once per phase.
+SKILL_MAX_CHARS = 20_000
+SKILL_MAX_LINES = 500
+PHASE_MAX_LINES = 400
 
 
 def _skill_dir_files(doc: PluginDoc, folder: str) -> list[Path]:
@@ -160,4 +164,20 @@ class TestStructure:
                 too_long = text.count("\n") > REFERENCE_TOC_MIN_LINES
                 if too_long and not TABLE_OF_CONTENTS.search(text):
                     violations.append(f"{reference.relative_to(REPO_ROOT).as_posix()}: no TOC")
+        assert_no_violations(violations)
+
+    def test_skill_and_phase_files_fit_size_limits(self, skills: DocSet) -> None:
+        violations: list[str] = []
+        for doc in skills.docs:
+            text = doc.path.read_text(encoding="utf-8")
+            if len(text) >= SKILL_MAX_CHARS or text.count("\n") >= SKILL_MAX_LINES:
+                violations.append(
+                    f"{doc.relative}: {len(text)} chars, {text.count(chr(10))} lines "
+                    f"(limit {SKILL_MAX_CHARS} chars, {SKILL_MAX_LINES} lines)"
+                )
+            for phase in _skill_dir_files(doc, "phases"):
+                lines = phase.read_text(encoding="utf-8").count("\n")
+                if lines >= PHASE_MAX_LINES:
+                    relative = phase.relative_to(REPO_ROOT).as_posix()
+                    violations.append(f"{relative}: {lines} lines (limit {PHASE_MAX_LINES})")
         assert_no_violations(violations)

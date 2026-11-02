@@ -1,3 +1,4 @@
+import json
 import re
 from collections.abc import Hashable
 from dataclasses import dataclass
@@ -112,3 +113,58 @@ def skills() -> DocSet:
     doc_set = _load_doc_set("*/skills/*/SKILL.md")
     assert doc_set.docs, f"no SKILL.md files found under {PLUGINS_DIR}"
     return doc_set
+
+
+@dataclass(frozen=True)
+class PluginFile:
+    """A skill, phase, reference, agent or shared file, read once for the cross-file checks."""
+
+    path: Path
+    plugin: str
+    text: str
+
+    @property
+    def relative(self) -> str:
+        return self.path.relative_to(REPO_ROOT).as_posix()
+
+    @property
+    def skill_dir(self) -> Path | None:
+        parts = self.path.relative_to(PLUGINS_DIR / self.plugin).parts
+        return PLUGINS_DIR / self.plugin / "skills" / parts[1] if parts[0] == "skills" else None
+
+    @property
+    def is_shared(self) -> bool:
+        return self.path.parent == PLUGINS_DIR / self.plugin / "shared"
+
+
+@pytest.fixture(scope="session")
+def plugin_files() -> tuple[PluginFile, ...]:
+    # Consumer plugins reach mz-base/shared through a symlink; reading it once avoids double counts.
+    paths = [
+        *PLUGINS_DIR.glob("*/skills/**/*.md"),
+        *PLUGINS_DIR.glob("*/agents/*.md"),
+        *PLUGINS_DIR.glob("mz-base/shared/*.md"),
+    ]
+    return tuple(
+        PluginFile(
+            path=path,
+            plugin=path.relative_to(PLUGINS_DIR).parts[0],
+            text=path.read_text(encoding="utf-8"),
+        )
+        for path in sorted(paths)
+    )
+
+
+@pytest.fixture(scope="session")
+def agent_plugins() -> dict[str, str]:
+    """Every agent name mapped to the plugin that ships it."""
+    return {path.stem: path.parts[-3] for path in PLUGINS_DIR.glob("*/agents/*.md")}
+
+
+@pytest.fixture(scope="session")
+def declared_dependencies() -> dict[str, frozenset[str]]:
+    declared: dict[str, frozenset[str]] = {}
+    for manifest in sorted(PLUGINS_DIR.glob("*/.claude-plugin/plugin.json")):
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        declared[payload["name"]] = frozenset(payload.get("dependencies", []))
+    return declared
