@@ -139,7 +139,7 @@ class HookEventMapping(FrozenModel):
     target_event: HookEvent | None
 
 
-class HookScriptSpec(FrozenModel):
+class ScriptSpec(FrozenModel):
     source: RepositoryPath
     target: RepositoryPath
     adapter: HookScriptAdapter = HookScriptAdapter.PASSTHROUGH
@@ -149,7 +149,6 @@ class HookSpec(FrozenModel):
     source: RepositoryPath
     target: RepositoryPath
     events: tuple[HookEventMapping, ...] = ()
-    scripts: tuple[HookScriptSpec, ...] = ()
 
 
 class ExactTransformSpec(FrozenModel):
@@ -231,6 +230,8 @@ class Catalog(FrozenModel):
     roles: tuple[RoleSpec, ...] = ()
     role_resources: tuple[RoleResourceSpec, ...] = ()
     hooks: tuple[HookSpec, ...] = ()
+    # Hooks and skills both run files from scripts/, so scripts render whether or not hooks exist.
+    scripts: tuple[ScriptSpec, ...] = ()
     transforms: tuple[ExactTransformSpec, ...] = ()
     # The plugin's shared/ folder (often a link to mz-base's); it renders to shared/ in the package.
     shared_root: RepositoryPath | None = None
@@ -257,6 +258,7 @@ class Catalog(FrozenModel):
 
         self._validate_role_resources(skill_names, role_names)
         self._validate_hook_targets()
+        self._validate_script_targets()
         self._validate_transforms()
         return self
 
@@ -310,14 +312,6 @@ class Catalog(FrozenModel):
         if duplicate_hook_target is not None:
             raise ValueError(f"duplicate hook target: {duplicate_hook_target}")
 
-        script_targets = [script.target for hook in self.hooks for script in hook.scripts]
-        duplicate_script_target = next(
-            (target for target in script_targets if script_targets.count(target) > 1),
-            None,
-        )
-        if duplicate_script_target is not None:
-            raise ValueError(f"duplicate hook script target: {duplicate_script_target}")
-
         for hook in self.hooks:
             source_events = [event.source_event for event in hook.events]
             duplicate_source_event = next(
@@ -326,6 +320,15 @@ class Catalog(FrozenModel):
             )
             if duplicate_source_event is not None:
                 raise ValueError(f"duplicate hook event mapping: {duplicate_source_event}")
+
+    def _validate_script_targets(self) -> None:
+        script_targets = [script.target for script in self.scripts]
+        duplicate_script_target = next(
+            (target for target in script_targets if script_targets.count(target) > 1),
+            None,
+        )
+        if duplicate_script_target is not None:
+            raise ValueError(f"duplicate script target: {duplicate_script_target}")
 
     def _validate_transforms(self) -> None:
         transforms = [(transform.source, transform.match) for transform in self.transforms]

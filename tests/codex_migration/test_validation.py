@@ -9,10 +9,10 @@ from mozg_pipelines.models import (
     Catalog,
     HookEvent,
     HookEventMapping,
-    HookScriptSpec,
     HookSpec,
     ProviderPolicy,
     RoleResourceSpec,
+    ScriptSpec,
     SkillSpec,
 )
 from mozg_pipelines.validation import validate_catalog, validate_package
@@ -331,14 +331,14 @@ def test_catalog_validation_requires_declared_hook_sources(
                             target_event=HookEvent.SESSION_START,
                         ),
                     ),
-                    scripts=(
-                        HookScriptSpec(
-                            source="plugins/mz-dev-pipe/scripts/session-start.sh",
-                            target="scripts/session-start.sh",
-                        ),
-                    ),
                 ),
-            )
+            ),
+            "scripts": (
+                ScriptSpec(
+                    source="plugins/mz-dev-pipe/scripts/session-start.sh",
+                    target="scripts/session-start.sh",
+                ),
+            ),
         }
     )
     write_skill(tmp_path / catalog.skills[0].source / "SKILL.md", _DEFAULT_SKILL_BODY)
@@ -348,7 +348,7 @@ def test_catalog_validation_requires_declared_hook_sources(
 
     assert tuple((issue.code, issue.path) for issue in report.issues) == (
         ("missing-hook-source", "plugins/mz-dev-pipe/hooks/hooks.json"),
-        ("missing-hook-script-source", "plugins/mz-dev-pipe/scripts/session-start.sh"),
+        ("missing-script-source", "plugins/mz-dev-pipe/scripts/session-start.sh"),
     )
 
 
@@ -364,14 +364,14 @@ def test_package_validation_requires_declared_hook_outputs(
                 HookSpec(
                     source="plugins/mz-dev-pipe/hooks/hooks.json",
                     target="hooks/hooks.json",
-                    scripts=(
-                        HookScriptSpec(
-                            source="plugins/mz-dev-pipe/scripts/session-start.sh",
-                            target="scripts/session-start.sh",
-                        ),
-                    ),
                 ),
-            )
+            ),
+            "scripts": (
+                ScriptSpec(
+                    source="plugins/mz-dev-pipe/scripts/session-start.sh",
+                    target="scripts/session-start.sh",
+                ),
+            ),
         }
     )
     package_root = tmp_path / "package"
@@ -382,5 +382,5 @@ def test_package_validation_requires_declared_hook_outputs(
 
     assert tuple((issue.code, issue.path) for issue in report.issues) == (
         ("missing-rendered-hook", "hooks/hooks.json"),
-        ("missing-rendered-hook-script", "scripts/session-start.sh"),
+        ("missing-rendered-script", "scripts/session-start.sh"),
     )

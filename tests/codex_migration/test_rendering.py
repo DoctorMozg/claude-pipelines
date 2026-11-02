@@ -12,9 +12,9 @@ from mozg_pipelines.models import (
     HookEvent,
     HookEventMapping,
     HookScriptAdapter,
-    HookScriptSpec,
     HookSpec,
     RoleResourceSpec,
+    ScriptSpec,
 )
 from mozg_pipelines.rendering import (
     CodexPackageSpec,
@@ -188,21 +188,20 @@ def hook_package(
             source="plugins/mz-memory/hooks/hooks.json",
             target="hooks/hooks.json",
             events=events,
-            scripts=(
-                HookScriptSpec(
-                    source="plugins/mz-memory/scripts/journal-capture.sh",
-                    target="scripts/journal-capture.sh",
-                    adapter=HookScriptAdapter.USER_PROMPT_JOURNAL,
-                ),
-                HookScriptSpec(
-                    source="plugins/mz-memory/scripts/memory-inject.sh",
-                    target="scripts/memory-inject.sh",
-                ),
+        )
+        scripts = (
+            ScriptSpec(
+                source="plugins/mz-memory/scripts/journal-capture.sh",
+                target="scripts/journal-capture.sh",
+                adapter=HookScriptAdapter.USER_PROMPT_JOURNAL,
+            ),
+            ScriptSpec(
+                source="plugins/mz-memory/scripts/memory-inject.sh",
+                target="scripts/memory-inject.sh",
             ),
         )
-        spec = spec.model_copy(
-            update={"catalog": spec.catalog.model_copy(update={"hooks": (hook,)})}
-        )
+        catalog = spec.catalog.model_copy(update={"hooks": (hook,), "scripts": scripts})
+        spec = spec.model_copy(update={"catalog": catalog})
         write_skill(
             spec.source_root / spec.catalog.skills[0].source / "SKILL.md",
             "Use provider-neutral execution.\n",
@@ -251,7 +250,7 @@ def test_renderer_adapts_hook_events_and_scripts_for_codex(
     result = render_codex_package(spec)
 
     assert result.hook_paths == (Path("hooks/hooks.json"),)
-    assert result.hook_script_paths == (
+    assert result.script_paths == (
         Path("scripts/journal-capture.sh"),
         Path("scripts/memory-inject.sh"),
     )
@@ -310,6 +309,33 @@ def test_renderer_rejects_unsupported_hook_event_move(
 
     assert caught.value.kind is RenderFailure.INVALID_SOURCE
     assert not spec.package_root.exists()
+
+
+def test_renderer_ships_scripts_of_a_package_without_hooks(
+    tmp_path: Path,
+    package_spec_factory: Callable[[Path, str], CodexPackageSpec],
+    write_role: Callable[[Path], None],
+    write_skill: Callable[[Path, str], None],
+) -> None:
+    spec = package_spec_factory(tmp_path, "0.49.0")
+    script = ScriptSpec(source="plugins/mz-creative/scripts/check.sh", target="scripts/check.sh")
+    spec = spec.model_copy(
+        update={"catalog": spec.catalog.model_copy(update={"scripts": (script,)})}
+    )
+    write_skill(spec.source_root / spec.catalog.skills[0].source / "SKILL.md", "Run the check.\n")
+    write_role(spec.source_root / spec.catalog.roles[0].source)
+    source = spec.source_root / script.source
+    source.parent.mkdir(parents=True)
+    source.write_text('exec "${CLAUDE_PLUGIN_ROOT}/lib.sh"\n', encoding="utf-8")
+    source.chmod(0o755)
+
+    result = render_codex_package(spec)
+
+    rendered = spec.package_root / script.target
+    assert (result.hook_paths, result.script_paths) == ((), (Path("scripts/check.sh"),))
+    assert rendered.read_text(encoding="utf-8") == 'exec "${PLUGIN_ROOT}/lib.sh"\n'
+    assert rendered.stat().st_mode & 0o111
+    assert validate_package(spec.catalog, spec.policy, spec.package_root).is_valid is True
 
 
 def test_renderer_writes_dependency_contract_for_external_role_guidance(

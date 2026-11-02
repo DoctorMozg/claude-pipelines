@@ -18,6 +18,7 @@ from mozg_pipelines.models import (
     HookSpec,
     IssueSeverity,
     ProviderPolicy,
+    ScriptSpec,
     ValidationIssue,
     ValidationReport,
 )
@@ -157,7 +158,9 @@ def validate_catalog(catalog: Catalog, source_root: Path) -> ValidationReport:
                 issues.append(issue)
 
     for hook in catalog.hooks:
-        issues.extend(_validate_hook_sources(root, hook))
+        issues.extend(_validate_hook_source(root, hook))
+    for script in catalog.scripts:
+        issues.extend(_validate_script_source(root, script))
     if catalog.shared_root is not None:
         issues.extend(_shared_root_issues(root, catalog.shared_root))
 
@@ -230,16 +233,16 @@ def validate_package(
                     hook.target,
                 )
             )
-        for script in hook.scripts:
-            rendered_script = root / script.target
-            if not _is_contained(root, rendered_script) or not rendered_script.is_file():
-                issues.append(
-                    _error(
-                        "missing-rendered-hook-script",
-                        f"Rendered hook script is missing: {script.target}",
-                        script.target,
-                    )
+    for script in catalog.scripts:
+        rendered_script = root / script.target
+        if not _is_contained(root, rendered_script) or not rendered_script.is_file():
+            issues.append(
+                _error(
+                    "missing-rendered-script",
+                    f"Rendered script is missing: {script.target}",
+                    script.target,
                 )
+            )
 
     text_files = tuple(
         path
@@ -398,7 +401,7 @@ def _unreadable_source_issue(
     return None
 
 
-def _validate_hook_sources(root: Path, hook: HookSpec) -> tuple[ValidationIssue, ...]:
+def _validate_hook_source(root: Path, hook: HookSpec) -> tuple[ValidationIssue, ...]:
     issues: list[ValidationIssue] = []
     hook_source = root / hook.source
     if not _is_contained(root, hook_source) or not hook_source.is_file():
@@ -413,22 +416,21 @@ def _validate_hook_sources(root: Path, hook: HookSpec) -> tuple[ValidationIssue,
         issue = _unreadable_source_issue(root, hook_source, hook.source)
         if issue is not None:
             issues.append(issue)
-
-    for script in hook.scripts:
-        script_source = root / script.source
-        if not _is_contained(root, script_source) or not script_source.is_file():
-            issues.append(
-                _error(
-                    "missing-hook-script-source",
-                    f"Hook script does not exist: {script.source}",
-                    script.source,
-                )
-            )
-        else:
-            issue = _unreadable_source_issue(root, script_source, script.source)
-            if issue is not None:
-                issues.append(issue)
     return tuple(issues)
+
+
+def _validate_script_source(root: Path, script: ScriptSpec) -> tuple[ValidationIssue, ...]:
+    script_source = root / script.source
+    if not _is_contained(root, script_source) or not script_source.is_file():
+        return (
+            _error(
+                "missing-script-source",
+                f"Script does not exist: {script.source}",
+                script.source,
+            ),
+        )
+    issue = _unreadable_source_issue(root, script_source, script.source)
+    return () if issue is None else (issue,)
 
 
 def _validate_manifest(

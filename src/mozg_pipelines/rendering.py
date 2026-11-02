@@ -120,7 +120,7 @@ class RenderResult(FrozenModel):
     skill_paths: tuple[Path, ...]
     role_resource_paths: tuple[Path, ...]
     hook_paths: tuple[Path, ...]
-    hook_script_paths: tuple[Path, ...]
+    script_paths: tuple[Path, ...]
     shared_path: Path | None
     dependency_contract_path: Path | None
 
@@ -169,7 +169,8 @@ def render_codex_package(spec: CodexPackageSpec) -> RenderResult:
             staging_root = Path(temporary_directory) / spec.policy.plugin_name
             skill_paths = _render_skills(spec, staging_root)
             role_resource_paths = _render_role_resources(spec, staging_root)
-            hook_paths, hook_script_paths = _render_hooks(spec, staging_root)
+            hook_paths = _render_hooks(spec, staging_root)
+            script_paths = _render_scripts(spec, staging_root)
             shared_path = _render_shared(spec, staging_root)
             dependency_contract_path = _render_dependency_contract(spec, staging_root)
             _write_manifest(spec, staging_root)
@@ -191,7 +192,7 @@ def render_codex_package(spec: CodexPackageSpec) -> RenderResult:
         skill_paths=skill_paths,
         role_resource_paths=role_resource_paths,
         hook_paths=hook_paths,
-        hook_script_paths=hook_script_paths,
+        script_paths=script_paths,
         shared_path=shared_path,
         dependency_contract_path=dependency_contract_path,
     )
@@ -255,11 +256,8 @@ def _render_role_resources(spec: CodexPackageSpec, staging_root: Path) -> tuple[
     return tuple(rendered_paths)
 
 
-def _render_hooks(
-    spec: CodexPackageSpec, staging_root: Path
-) -> tuple[tuple[Path, ...], tuple[Path, ...]]:
+def _render_hooks(spec: CodexPackageSpec, staging_root: Path) -> tuple[Path, ...]:
     hook_paths: list[Path] = []
-    script_paths: list[Path] = []
     for hook in sorted(spec.catalog.hooks, key=lambda item: item.target):
         source_hook_path = spec.source_root / hook.source
         target_hook_path = staging_root / hook.target
@@ -269,25 +267,29 @@ def _render_hooks(
             encoding="utf-8",
         )
         hook_paths.append(target_hook_path.relative_to(staging_root))
+    return tuple(hook_paths)
 
-        for script in sorted(hook.scripts, key=lambda item: item.target):
-            source_script_path = spec.source_root / script.source
-            target_script_path = staging_root / script.target
-            try:
-                source_contents = source_script_path.read_text(encoding="utf-8")
-                source_mode = source_script_path.stat().st_mode
-            except (OSError, UnicodeError) as error:
-                logger.error("Cannot read hook script source %s: %s", source_script_path, error)
-                raise RenderError(source_script_path, RenderFailure.IO_ERROR, str(error)) from error
 
-            target_script_path.parent.mkdir(parents=True, exist_ok=True)
-            target_script_path.write_text(
-                _adapt_hook_script(spec, script.adapter, source_script_path, source_contents),
-                encoding="utf-8",
-            )
-            target_script_path.chmod(source_mode)
-            script_paths.append(target_script_path.relative_to(staging_root))
-    return tuple(hook_paths), tuple(script_paths)
+def _render_scripts(spec: CodexPackageSpec, staging_root: Path) -> tuple[Path, ...]:
+    script_paths: list[Path] = []
+    for script in sorted(spec.catalog.scripts, key=lambda item: item.target):
+        source_script_path = spec.source_root / script.source
+        target_script_path = staging_root / script.target
+        try:
+            source_contents = source_script_path.read_text(encoding="utf-8")
+            source_mode = source_script_path.stat().st_mode
+        except (OSError, UnicodeError) as error:
+            logger.error("Cannot read script source %s: %s", source_script_path, error)
+            raise RenderError(source_script_path, RenderFailure.IO_ERROR, str(error)) from error
+
+        target_script_path.parent.mkdir(parents=True, exist_ok=True)
+        target_script_path.write_text(
+            _adapt_script(spec, script.adapter, source_script_path, source_contents),
+            encoding="utf-8",
+        )
+        target_script_path.chmod(source_mode)
+        script_paths.append(target_script_path.relative_to(staging_root))
+    return tuple(script_paths)
 
 
 def _adapt_hook_config(spec: CodexPackageSpec, hook: HookSpec, source_path: Path) -> str:
@@ -398,7 +400,7 @@ def _adapt_hook_group(
     return adapted_group
 
 
-def _adapt_hook_script(
+def _adapt_script(
     spec: CodexPackageSpec,
     adapter: HookScriptAdapter,
     source_path: Path,

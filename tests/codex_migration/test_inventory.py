@@ -311,9 +311,10 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
     assert tuple(
         (mapping.source_event, mapping.target_event) for mapping in memory_hook.events
     ) == ((HookEvent.POST_TOOL_USE, HookEvent.USER_PROMPT_SUBMIT),)
-    assert HookScriptAdapter.USER_PROMPT_JOURNAL in {
-        script.adapter for script in memory_hook.scripts
-    }
+    memory_scripts = next(
+        spec.catalog.scripts for spec in specs if spec.catalog.suite_name == "mz-memory"
+    )
+    assert HookScriptAdapter.USER_PROMPT_JOURNAL in {script.adapter for script in memory_scripts}
 
 
 def test_blocked_package_cannot_build_a_codex_spec(
@@ -360,8 +361,8 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
         len(package.skill_sources) * len(package.role_sources) for package in renderable_packages
     )
     assert sum(len(result.hook_paths) for result in results) == 3
-    assert sum(len(result.hook_script_paths) for result in results) == sum(
-        len(package.hook_script_sources) for package in renderable_packages
+    assert sum(len(result.script_paths) for result in results) == sum(
+        len(package.script_sources) for package in renderable_packages
     )
     assert {
         result.package_root.name

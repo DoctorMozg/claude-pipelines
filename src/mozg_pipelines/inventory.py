@@ -14,7 +14,6 @@ from mozg_pipelines.models import (
     HookEvent,
     HookEventMapping,
     HookScriptAdapter,
-    HookScriptSpec,
     HookSpec,
     Identifier,
     IssueSeverity,
@@ -30,6 +29,7 @@ from mozg_pipelines.models import (
     RepositoryPath,
     RoleResourceSpec,
     RoleSpec,
+    ScriptSpec,
     SkillSpec,
     ValidationIssue,
     ValidationReport,
@@ -81,7 +81,7 @@ class PackageInventory(MarketplaceModel):
     skill_sources: tuple[RepositoryPath, ...]
     role_sources: tuple[RepositoryPath, ...]
     hook_config: RepositoryPath | None = None
-    hook_script_sources: tuple[RepositoryPath, ...] = ()
+    script_sources: tuple[RepositoryPath, ...] = ()
     shared_root: RepositoryPath | None = None
 
 
@@ -257,7 +257,7 @@ def discover_packages(plan: MigrationPlan, repository_root: Path) -> tuple[Packa
                 skill_sources=_skill_sources(root, source_root, package_plan),
                 role_sources=_source_files(root, source_root / "agents", "*.md"),
                 hook_config=_source_file(root, source_root / "hooks" / "hooks.json"),
-                hook_script_sources=_source_files(root, source_root / "scripts", "*"),
+                script_sources=_source_files(root, source_root / "scripts", "*"),
                 shared_root=_source_directory(root, source_root / "shared"),
             )
         )
@@ -303,7 +303,6 @@ def build_codex_package_spec(
         for skill in skills
         for role in roles
     )
-    hooks = _build_hook_specs(package)
     catalog = Catalog(
         schema_version=1,
         suite_name=package.plan.name,
@@ -311,7 +310,8 @@ def build_codex_package_spec(
         dependencies=package.plan.dependencies,
         roles=roles,
         role_resources=role_resources,
-        hooks=hooks,
+        hooks=_build_hook_specs(package),
+        scripts=_build_script_specs(package),
         shared_root=package.shared_root,
     )
     policy = ProviderPolicy(
@@ -354,23 +354,24 @@ def build_codex_package_spec(
 def _build_hook_specs(package: PackageInventory) -> tuple[HookSpec, ...]:
     if package.hook_config is None:
         return ()
-
-    package_source = Path(package.marketplace.source)
-    scripts = tuple(
-        HookScriptSpec(
-            source=source,
-            target=Path(source).relative_to(package_source).as_posix(),
-            adapter=_hook_script_adapter(package.plan.name, source),
-        )
-        for source in package.hook_script_sources
-    )
     return (
         HookSpec(
             source=package.hook_config,
             target="hooks/hooks.json",
             events=_hook_event_mappings(package.plan.name),
-            scripts=scripts,
         ),
+    )
+
+
+def _build_script_specs(package: PackageInventory) -> tuple[ScriptSpec, ...]:
+    package_source = Path(package.marketplace.source)
+    return tuple(
+        ScriptSpec(
+            source=source,
+            target=Path(source).relative_to(package_source).as_posix(),
+            adapter=_hook_script_adapter(package.plan.name, source),
+        )
+        for source in package.script_sources
     )
 
 
