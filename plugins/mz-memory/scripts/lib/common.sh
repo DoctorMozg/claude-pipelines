@@ -7,6 +7,9 @@
 # All functions here must remain exit-code-clean: callers `set -euo pipefail`
 # and depend on these returning 0 even when the underlying operation no-ops.
 
+# Inside the curator's own claude -p child every mz-memory hook is a no-op.
+[[ "${MZ_MEMORY_CURATOR:-}" == "1" ]] && exit 0
+
 MZ_MEMORY_VERSION="v2"
 MZ_PIN_START="<!-- mz-pinned-start -->"
 MZ_PIN_END="<!-- mz-pinned-end -->"

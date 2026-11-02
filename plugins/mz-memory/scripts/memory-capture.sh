@@ -9,6 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck source=lib/lessons.sh
 source "${SCRIPT_DIR}/lib/lessons.sh"
+# shellcheck source=lib/curator.sh
+source "${SCRIPT_DIR}/lib/curator.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"
@@ -114,13 +116,21 @@ fi
 # Advance only after the log write succeeded, so a failed run is retried next time.
 mv -f "$NEXT_MARKER" "$CAPTURE_MARKER"
 
-# Compression is on by default and MZ_MEMORY_COMPRESS=0 opts out. Detached so SessionEnd never waits on the LLM.
+# The lessons cap holds without the LLM; eviction is a few hundred lines of awk, so it runs inline.
+enforce_lessons_cap "$LESSONS_FILE" "$TODAY"
+
+# Compression and curation are on by default and MZ_MEMORY_COMPRESS=0 opts out of both.
+# Both run detached so SessionEnd never waits on the LLM.
 if [[ "${MZ_MEMORY_COMPRESS:-1}" != "0" ]] && command -v claude >/dev/null 2>&1; then
   LOG_LEN=$(extract_log "$MEMORY_FILE" 9999 | awk 'END { print NR }')
   if [[ "${LOG_LEN:-0}" -gt "$MZ_COMPRESS_THRESHOLD" ]]; then
     nohup "${SCRIPT_DIR}/memory-compress.sh" >/dev/null 2>&1 &
     disown 2>/dev/null || true
   fi
+fi
+if curator_enabled && lessons_need_curation "$LESSONS_FILE"; then
+  nohup "${SCRIPT_DIR}/lessons-curate.sh" >/dev/null 2>&1 &
+  disown 2>/dev/null || true
 fi
 
 exit 0
