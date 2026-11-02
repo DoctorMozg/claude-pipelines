@@ -1,4 +1,4 @@
-.PHONY: smoke contract-matrix pytest test validate gh-smoke eval help
+.PHONY: smoke contract-matrix pytest test validate gh-smoke hooks-smoke eval help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
@@ -22,6 +22,7 @@ help:
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
+	@echo "  hooks-smoke       Run the memory and tooling hooks in live headless sessions (spends tokens)"
 	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
 	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads plugins/<n>/evals/flags; spends tokens)"
 
@@ -50,9 +51,12 @@ validate:
 	if [ -n "$$failed" ]; then echo "validate --strict failed:$$failed"; exit 1; fi; \
 	echo "validate --strict passed: marketplace and $$(ls -d plugins/*/ | wc -l) plugins"
 
-# Live GitHub and model calls, so it stays out of `test` and CI.
+# Live GitHub and model calls, so they stay out of `test` and CI. Run as modules so they share smoke_common.
 gh-smoke:
-	@$(PYTHON) -I tests/e2e/gh_smoke.py
+	@$(PYTHON) -E -s -m tests.e2e.gh_smoke
+
+hooks-smoke:
+	@$(PYTHON) -E -s -m tests.e2e.hooks_smoke
 
 # Targets the repo root so a case's `plugins:` may also load sibling plugins: dependencies and
 # cross-plugin near misses. --trust-plugin and --scaffold are safe only because every suite and

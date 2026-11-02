@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/record.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

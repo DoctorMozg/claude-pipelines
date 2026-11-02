@@ -16,6 +16,15 @@ from pathlib import Path
 
 import yaml
 
+from tests.e2e.smoke_common import (
+    Check,
+    SmokeError,
+    print_checks,
+    result_event,
+    run_claude,
+    stream_events,
+)
+
 log = logging.getLogger("gh_smoke")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -54,10 +63,6 @@ TOTAL_PRS = re.compile(r"\*\*Total PRs found\*\*: (?P<total>\d+)")
 STATUS_LINE = re.compile(r"STATUS: (?P<status>[A-Z_]+)")
 
 
-class SmokeError(RuntimeError):
-    """A precondition or tool failure that stops the run before any verdict."""
-
-
 @dataclass(frozen=True)
 class Run:
     label: str
@@ -71,17 +76,6 @@ class RunResult:
     run: Run
     status: str
     cost_usd: float
-
-
-@dataclass(frozen=True)
-class Check:
-    label: str
-    expected: object
-    actual: object
-
-    @property
-    def passed(self) -> bool:
-        return self.expected == self.actual
 
 
 def gh(*args: str) -> str:
@@ -226,34 +220,19 @@ def execute(run: Run, workdir: Path, agents_file: Path, max_usd: float) -> RunRe
     ]
     transcript = workdir / f"{run.label}.jsonl"
     log.info("starting %s", run.label)
-    try:
-        with transcript.open("w", encoding="utf-8") as out:
-            subprocess.run(
-                command,
-                cwd=workdir,
-                stdout=out,
-                stderr=subprocess.STDOUT,
-                timeout=RUN_TIMEOUT_S,
-                check=False,
-            )
-    except subprocess.TimeoutExpired:
-        log.error("%s timed out after %ds", run.label, RUN_TIMEOUT_S)
+    if not run_claude(command, workdir, transcript, RUN_TIMEOUT_S):
         return RunResult(run, "TIMEOUT", 0.0)
     return read_result(run, transcript)
 
 
 def read_result(run: Run, transcript: Path) -> RunResult:
-    for line in reversed(transcript.read_text(encoding="utf-8").splitlines()):
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if event.get("type") == "result":
-            statuses = STATUS_LINE.findall(str(event.get("result", "")))
-            status = statuses[-1] if statuses else "NO_STATUS"
-            return RunResult(run, status, float(event.get("total_cost_usd", 0.0)))
-    log.error("%s left no result event; see %s", run.label, transcript)
-    return RunResult(run, "NO_RESULT", 0.0)
+    event = result_event(stream_events(transcript))
+    if event is None:
+        log.error("%s left no result event; see %s", run.label, transcript)
+        return RunResult(run, "NO_RESULT", 0.0)
+    statuses = STATUS_LINE.findall(str(event.get("result", "")))
+    status = statuses[-1] if statuses else "NO_STATUS"
+    return RunResult(run, status, float(event.get("total_cost_usd", 0.0)))
 
 
 def read_artifact(path: Path) -> str:
@@ -344,12 +323,7 @@ def verdict(result: RunResult) -> list[Check]:
 def report(results: Sequence[RunResult], workdir: Path) -> bool:
     all_passed = True
     for result in results:
-        print(f"\n{result.run.label} (${result.cost_usd:.3f})")
-        for check in verdict(result):
-            all_passed &= check.passed
-            mark = "PASS" if check.passed else "FAIL"
-            detail = "" if check.passed else f"  expected {check.expected!r}, got {check.actual!r}"
-            print(f"  {mark}  {check.label}{detail}")
+        all_passed &= print_checks(f"{result.run.label} (${result.cost_usd:.3f})", verdict(result))
     total = sum(result.cost_usd for result in results)
     print(f"\n{'passed' if all_passed else 'FAILED'}; cost ${total:.3f}; artifacts in {workdir}")
     return all_passed

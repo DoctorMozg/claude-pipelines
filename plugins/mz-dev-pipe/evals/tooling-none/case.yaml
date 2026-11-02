@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: tooling-none
+description: 'A repo with no recognized manifest gets an empty ecosystems map and no tooling context.'
+tags: [hooks, tooling]
+plugins: ["../..", "../../../mz-base"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Reply with just OK.
+  allowed_tools: []
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: tooling-json-written
+    type: regex
+    pattern: '"ecosystems": \{\s*\}'
+    target: { source: file, path: .mz/tooling.json }
+  - name: no-tooling-announced
+    type: regex
+    pattern: 'Project tooling detected'
+    match: not_contains
+    target: trace

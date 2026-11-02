@@ -1,0 +1,9 @@
+{
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
+  "description": "Test fixture for hooks_smoke: records the source of every SessionStart, so a run can tell resume and compact apart from a hook that stayed silent.",
+  "name": "hook-recorder",
+  "version": "0.0.0"
+}
