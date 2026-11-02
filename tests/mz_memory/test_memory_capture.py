@@ -1,3 +1,4 @@
+import json
 import os
 import shlex
 import time
@@ -9,7 +10,6 @@ import pytest
 
 LOG_START = "<!-- mz-log-start -->"
 LOG_END = "<!-- mz-log-end -->"
-COMPRESSED_MARK = "<!-- mz-compressed -->"
 MAX_LOG_LINES = 400
 COMPRESS_THRESHOLD = 300
 
@@ -322,17 +322,24 @@ class TestBackgroundCompression:
         bin_dir = project / "bin"
         bin_dir.mkdir()
         stub = bin_dir / "claude"
-        summary = "## Recurring decisions\n- [2026-10-01] summarized older work"
-        stub.write_text(
-            f"#!/usr/bin/env bash\ncat >/dev/null\nprintf '%s' {shlex.quote(summary)}\n"
+        reply = json.dumps(
+            {
+                "type": "result",
+                "subtype": "success",
+                "is_error": False,
+                "structured_output": {"operations": []},
+            }
         )
+        stub.write_text(f"#!/usr/bin/env bash\ncat >/dev/null\nprintf '%s' {shlex.quote(reply)}\n")
         stub.chmod(0o755)
         return {**capture_env, "PATH": f"{bin_dir}{os.pathsep}{capture_env['PATH']}"}
 
     @staticmethod
     def _compression_finished(project: Path) -> bool:
-        lock = project / ".mz" / "memory" / ".compress.lock"
-        return COMPRESSED_MARK in _log_region(project) and not lock.exists()
+        memory_dir = project / ".mz" / "memory"
+        return (memory_dir / "activity.archive.md").exists() and not (
+            memory_dir / ".compress.lock"
+        ).exists()
 
     def test_log_past_the_threshold_is_compressed_by_default(
         self,
@@ -363,4 +370,4 @@ class TestBackgroundCompression:
         capture_runner({**compress_env, "MZ_MEMORY_COMPRESS": "0"})
 
         assert not _wait_until(lambda: self._compression_finished(project), seconds=1.5)
-        assert COMPRESSED_MARK not in _log_region(project)
+        assert len(_log_region(project)) > COMPRESS_THRESHOLD

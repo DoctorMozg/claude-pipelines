@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Keeps .mz/memory/lessons.md bounded. A curator model proposes operations by lesson ID, this
-# code applies them, and deterministic eviction enforces the line cap. Source after lessons.sh.
+# The shared curator behind lessons.md and the MEMORY.md Digest: a model proposes operations by
+# item ID and this code applies them under guards. Lessons also get a line cap. Source after lessons.sh.
 
 MZ_LESSONS_MAX_LINES=500
 MZ_LESSONS_EVICT_TO=480
@@ -10,17 +10,14 @@ MZ_CURATOR_MAX_OPS=30
 MZ_CURATOR_MAX_REMOVED=10
 MZ_CURATOR_TIMEOUT=180
 MZ_CURATOR_BUDGET_USD=0.50
-MZ_LESSONS_OPS_MAX=1000
+MZ_CURATOR_OPS_MAX=1000
+# Well past the child's timeout, so only a run that was killed leaves a lock this old.
+MZ_STALE_LOCK_MINUTES=10
 # A lesson seen this often is a promotion candidate, so eviction never drops it.
 MZ_LESSON_KEEP_N=3
 
 _lessons_region() {
-  local lessons_file="$1" start="$2" end="$3"
-  awk -v start="$start" -v end="$end" '
-    $0 == start { capture = 1; next }
-    $0 == end { capture = 0 }
-    capture && NF { print }
-  ' "$lessons_file" 2>/dev/null || true
+  _memory_region "$1" "$2" "$3" 2>/dev/null | awk 'NF' || true
 }
 
 # curator_enabled — the LLM curator needs the CLI and jq, and MZ_MEMORY_COMPRESS=0 turns it off.
@@ -163,17 +160,60 @@ apply_curator_ops() {
   {
     flock 9 2>/dev/null || true
     ensure_lessons_file "$lessons_file"
-    local next_id result
-    next_id=$(next_lesson_number L "$lessons_file" "$archive")
+    local config result
+    config=$(jq -cn --arg today "$today" --argjson next "$(next_lesson_number L "$lessons_file" "$archive")" \
+      --argjson max_chars "$MZ_LESSON_MAX_CHARS" \
+      '{prefix: "L", label: "curated lessons", today: $today, next: $next, max_chars: $max_chars}')
     # Files, not arguments: a full lessons file is past Linux's 128 KiB cap on one argument.
-    result=$(jq -n \
-      --rawfile curated <(_lessons_region "$lessons_file" "$MZ_LESSONS_START" "$MZ_LESSONS_END") \
-      --rawfile inbox <(_lessons_region "$lessons_file" "$MZ_INBOX_START" "$MZ_INBOX_END") \
-      --rawfile ops_json <(printf '%s' "$ops") --arg today "$today" --argjson next "$next_id" \
-      --argjson max_ops "$MZ_CURATOR_MAX_OPS" --argjson max_removed "$MZ_CURATOR_MAX_REMOVED" \
-      --argjson max_chars "$MZ_LESSON_MAX_CHARS" -f /dev/stdin <<'JQ'
-def lesson_re: "^- \\[(?<id>L-[0-9]+)\\] n=(?<n>[0-9]+) last=(?<last>[0-9]{4}-[0-9]{2}-[0-9]{2}) trig=(?<trig>[^ ]+) src=(?<src>[^ ]+) tags=(?<tags>[^ ]*) :: (?<text>.+)$";
-def inbox_re: "^- \\[(?<id>I-[0-9]+)\\] (?<date>[0-9-]+) trig=(?<trig>[^ ]+) src=(?<src>[^ ]+) status=(?<status>[^ ]+) :: (?<text>.+)$";
+    result=$(curator_apply "$config" \
+      <(_lessons_region "$lessons_file" "$MZ_LESSONS_START" "$MZ_LESSONS_END") \
+      <(_lessons_region "$lessons_file" "$MZ_INBOX_START" "$MZ_INBOX_END") \
+      <(printf '%s' "$ops")) || return 1
+
+    if [[ "$(jq -r '.status' <<<"$result")" == "applied" ]]; then
+      cp -f "$lessons_file" "${lessons_file}.bak"
+      _emit_lessons_file "$(jq -r '.curated[]' <<<"$result")" "$(jq -r '.inbox[]' <<<"$result")" \
+        | atomic_write "$lessons_file"
+      jq -r '.archive[].line' <<<"$result" >>"$archive"
+    fi
+    curator_log_events "$result" "$ops_log"
+  } 9>>"${lessons_file}.lock"
+}
+
+# take_run_lock <lock_dir> — one background run at a time. A lock older than any run can last was
+# left by a killed run, so it is cleared. The caller removes the lock on exit.
+take_run_lock() {
+  local lock_dir="$1"
+  if [[ -d "$lock_dir" ]] && [[ -n "$(find "$lock_dir" -maxdepth 0 -mmin "+${MZ_STALE_LOCK_MINUTES}" 2>/dev/null)" ]]; then
+    rmdir "$lock_dir" 2>/dev/null || true
+  fi
+  mkdir "$lock_dir" 2>/dev/null
+}
+
+# curator_event <ops_log> <event> <why> — record a run-level event, such as a failed call.
+curator_event() {
+  jq -cn --arg date "$(date +%Y-%m-%d)" --arg event "$2" --arg why "$3" '{date: $date, event: $event, why: $why}' \
+    >>"$1" 2>/dev/null || true
+}
+
+# curator_log_events <result_json> <ops_log> — append the run's events, keeping the newest entries.
+curator_log_events() {
+  jq -c '.log[]' <<<"$1" >>"$2"
+  if [[ "$(wc -l <"$2")" -gt "$MZ_CURATOR_OPS_MAX" ]]; then
+    tail -n "$MZ_CURATOR_OPS_MAX" "$2" | atomic_write "$2"
+  fi
+}
+
+# curator_apply <config_json> <curated_file> <inbox_file> <ops_file> — apply the model's operations
+# to a curated list and its inbox; print the outcome as JSON. Config: prefix, label, today, next, max_chars.
+curator_apply() {
+  local config="$1" curated="$2" inbox="$3" ops="$4"
+  jq -n --argjson cfg "$config" --rawfile curated "$curated" --rawfile inbox "$inbox" \
+    --rawfile ops_json "$ops" --argjson max_ops "$MZ_CURATOR_MAX_OPS" \
+    --argjson max_removed "$MZ_CURATOR_MAX_REMOVED" -f /dev/stdin <<'JQ'
+$cfg.today as $today | $cfg.max_chars as $max_chars | $cfg.prefix as $prefix |
+def item_re: "^- \\[(?<id>" + $prefix + "-[0-9]+)\\] n=(?<n>[0-9]+) last=(?<last>[0-9]{4}-[0-9]{2}-[0-9]{2}) trig=(?<trig>[^ ]+) src=(?<src>[^ ]+) tags=(?<tags>[^ ]*) :: (?<text>.+)$";
+def inbox_re: "^- \\[(?<id>[A-Z]-[0-9]+)\\] (?<date>[0-9-]+) trig=(?<trig>[^ ]+) src=(?<src>[^ ]+) status=(?<status>[^ ]+) :: (?<text>.+)$";
 def lines: split("\n") | map(select(length > 0));
 def render: "- [\(.id)] n=\(.n) last=\(.last) trig=\(.trig) src=\(.src) tags=\(.tags) :: \(.text)";
 def pad4: tostring | if length < 4 then ("000" + .)[-4:] else . end;
@@ -187,46 +227,47 @@ def operations: $ops_json | fromjson | if type == "object" and (.operations | ty
 
 def reject($op; $why): .log += [{date: $today, event: "rejected", op: ($op.op // null), why: $why}];
 def applied($op; $in; $ls; $result): .log += [{date: $today, event: "applied", op: $op.op, inbox: $in, lessons: $ls, result: $result}];
-def new_id: "L-" + (.next | pad4);
-def consume($ids; $into): reduce $ids[] as $i (.; .archive += ["\($today) into=\($into): \(.inbox[$i].raw)"] | del(.inbox[$i]));
-def add_lesson($id; $fields): .lessons[$id] = ($fields + {id: $id}) | .next += 1 | .used[$id] = true;
+def archive($kind; $line): .archive += [{kind: $kind, line: $line}];
+def new_id: $prefix + "-" + (.next | pad4);
+def consume($ids; $into): reduce $ids[] as $i (.; archive("inbox"; "\($today) into=\($into): \(.inbox[$i].raw)") | del(.inbox[$i]));
+def add_item($id; $fields): .items[$id] = ($fields + {id: $id}) | .next += 1 | .used[$id] = true;
 
-# Consumed inbox items leave .inbox and touched lessons are marked used, so each id serves one operation.
+# Consumed inbox items leave .inbox and touched items are marked used, so each id serves one operation.
 def apply_op($op):
   . as $s
   | ($op.inbox | ids) as $in | ($op.lessons | ids) as $ls
   | ($in | length) as $ni | ($ls | length) as $nl
   | ($op.text // "" | clean_text) as $text | ($op.tags | clean_tags) as $tags
   | if any($in[]; $s.inbox[.] == null) then reject($op; "unknown or already covered inbox id")
-    elif any($ls[]; $s.lessons[.] == null or $s.used[.] == true) then reject($op; "unknown or already used lesson id")
+    elif any($ls[]; $s.items[.] == null or $s.used[.] == true) then reject($op; "unknown or already used lesson id")
     elif $op.op == "ADD" and $ni > 0 and $nl == 0 and $text != "" then
       .inbox[$in[0]] as $first | new_id as $id
       | consume($in; $id)
-      | add_lesson($id; {n: $ni, last: $today, trig: $first.trig, src: $first.src, tags: $tags, text: $text})
+      | add_item($id; {n: $ni, last: $today, trig: $first.trig, src: $first.src, tags: $tags, text: $text})
       | applied($op; $in; $ls; $id)
     elif $op.op == "MERGE" and $ni > 0 and $nl == 1 then
-      $ls[0] as $id | .lessons[$id].text as $old_text
+      $ls[0] as $id | .items[$id].text as $old_text
       | consume($in; $id)
-      | .lessons[$id].n += $ni | .lessons[$id].last = $today | .used[$id] = true
+      | .items[$id].n += $ni | .items[$id].last = $today | .used[$id] = true
       # A rewrite much shorter than the original has usually lost details, so the original stays.
-      | (if $text != "" and ($text | length) >= ($old_text | length) * 0.6 then .lessons[$id].text = $text else . end)
+      | (if $text != "" and ($text | length) >= ($old_text | length) * 0.6 then .items[$id].text = $text else . end)
       | applied($op; $in; $ls; $id)
     elif $op.op == "SUPERSEDE" and $ni > 0 and $nl == 1 and $text != "" and .removed < $max_removed then
-      .lessons[$ls[0]] as $old | .inbox[$in[0]] as $first | new_id as $id
-      | .archive += ["\($today) superseded_by=\($id): \($old | render)"] | del(.lessons[$ls[0]]) | .removed += 1
+      .items[$ls[0]] as $old | .inbox[$in[0]] as $first | new_id as $id
+      | archive("curated"; "\($today) superseded_by=\($id): \($old | render)") | del(.items[$ls[0]]) | .removed += 1
       | consume($in; $id)
-      | add_lesson($id; {n: $ni, last: $today, trig: $first.trig, src: $first.src,
+      | add_item($id; {n: $ni, last: $today, trig: $first.trig, src: $first.src,
           tags: (if $tags != "" then $tags else $old.tags end), text: $text})
       | applied($op; $in; $ls; $id)
     elif $op.op == "DROP" and $ni > 0 and $nl == 0 then
       ($op.reason // "" | clean_text) as $why
-      | reduce $in[] as $i (.; .archive += ["\($today) dropped (\($why)): \(.inbox[$i].raw)"] | del(.inbox[$i]))
+      | reduce $in[] as $i (.; archive("inbox"; "\($today) dropped (\($why)): \(.inbox[$i].raw)") | del(.inbox[$i]))
       | applied($op; $in; $ls; null)
     elif $op.op == "COMBINE" and $nl >= 2 and $ni == 0 and $text != "" and .removed + $nl <= $max_removed then
-      [.lessons[$ls[]]] as $olds | new_id as $id
-      | .archive += [$olds[] | "\($today) combined_into=\($id): \(render)"]
-      | del(.lessons[$ls[]]) | .removed += $nl
-      | add_lesson($id; {n: ([$olds[].n] | add), last: ([$olds[].last] | max), trig: $olds[0].trig, src: $olds[0].src,
+      [.items[$ls[]]] as $olds | new_id as $id
+      | reduce $olds[] as $o (.; archive("curated"; "\($today) combined_into=\($id): \($o | render)"))
+      | del(.items[$ls[]]) | .removed += $nl
+      | add_item($id; {n: ([$olds[].n] | add), last: ([$olds[].last] | max), trig: $olds[0].trig, src: $olds[0].src,
           tags: (if $tags != "" then $tags else [$olds[].tags | tag_list[]] | clean_tags end), text: $text})
       | applied($op; $in; $ls; $id)
     else reject($op; "malformed, or over the removal cap")
@@ -234,39 +275,26 @@ def apply_op($op):
 
 ($curated | lines) as $curated_lines
 | ($inbox | lines) as $inbox_lines
-| ([$curated_lines[] | capture(lesson_re) | .n |= tonumber] | map({key: .id, value: .}) | from_entries) as $lessons
+| ([$curated_lines[] | capture(item_re) | .n |= tonumber] | map({key: .id, value: .}) | from_entries) as $items
 | ([$inbox_lines[] | . as $raw | capture(inbox_re) | .raw = $raw] | map({key: .id, value: .}) | from_entries) as $inbox_items
-| ($lessons | length) as $before
+| ($items | length) as $before
 | operations as $all
 | reduce ($all[:$max_ops][] | select(type == "object")) as $op (
-    {lessons: $lessons, inbox: $inbox_items, used: {}, removed: 0, next: $next, archive: [],
+    {items: $items, inbox: $inbox_items, used: {}, removed: 0, next: $cfg.next, archive: [],
       log: (if ($all | length) > $max_ops then [{date: $today, event: "rejected", why: "ignored \(($all | length) - $max_ops) operation(s) past the cap of \($max_ops)"}] else [] end)};
     apply_op($op))
-| (.lessons | length) as $after
+| (.items | length) as $after
 | . as $final
 | if $before - $after > ([2, ($before * 0.2 | floor)] | max) then
-    {status: "aborted", log: [{date: $today, event: "aborted", why: "curated lessons would shrink from \($before) to \($after)"}]}
+    {status: "aborted", log: [{date: $today, event: "aborted", why: "\($cfg.label) would shrink from \($before) to \($after)"}]}
   else {
     status: "applied",
-    curated: (([.lessons[]] | sort_by([-.n, -(.last | day_number), .id]) | map(render))
-      + [$curated_lines[] | select(test(lesson_re) | not)]),
+    curated: (([.items[]] | sort_by([-.n, -(.last | day_number), .id]) | map(render))
+      + [$curated_lines[] | select(test(item_re) | not)]),
     # Untouched inbox lines keep their place, including any the parser could not read.
     inbox: [$inbox_lines[] | select((capture(inbox_re).id // null) as $id | $id == null or $final.inbox[$id] != null)],
     archive: .archive,
     log: .log
   } end
 JQ
-    ) || return 1
-
-    if [[ "$(jq -r '.status' <<<"$result")" == "applied" ]]; then
-      cp -f "$lessons_file" "${lessons_file}.bak"
-      _emit_lessons_file "$(jq -r '.curated[]' <<<"$result")" "$(jq -r '.inbox[]' <<<"$result")" \
-        | atomic_write "$lessons_file"
-      jq -r '.archive[]' <<<"$result" >>"$archive"
-    fi
-    jq -c '.log[]' <<<"$result" >>"$ops_log"
-    if [[ "$(wc -l <"$ops_log")" -gt "$MZ_LESSONS_OPS_MAX" ]]; then
-      tail -n "$MZ_LESSONS_OPS_MAX" "$ops_log" | atomic_write "$ops_log"
-    fi
-  } 9>>"${lessons_file}.lock"
 }

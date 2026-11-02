@@ -15,6 +15,9 @@ MZ_PIN_START="<!-- mz-pinned-start -->"
 MZ_PIN_END="<!-- mz-pinned-end -->"
 MZ_LOG_START="<!-- mz-log-start -->"
 MZ_LOG_END="<!-- mz-log-end -->"
+# The Digest sits between Pinned and the Activity Log; the first compression creates it.
+MZ_DIGEST_START="<!-- mz-digest-start -->"
+MZ_DIGEST_END="<!-- mz-digest-end -->"
 # The stored Activity Log is capped in lines. Compression starts below the cap so old lines
 # are summarized before pruning would drop them.
 MZ_LOG_MAX_LINES=400
@@ -152,29 +155,32 @@ _emit_memory_header() {
   printf '<!-- mz-memory:%s -->\n\n' "$MZ_MEMORY_VERSION"
 }
 
-# Extract the Pinned region (between marker comments). Empty string if the
-# region is absent (caller already ran ensure_memory_file in normal flow).
-extract_pinned() {
-  local memory_file="$1"
-  awk -v start="$MZ_PIN_START" -v end="$MZ_PIN_END" '
+_memory_region() {
+  awk -v start="$2" -v end="$3" '
     $0 == start { capture = 1; next }
     $0 == end { capture = 0 }
     capture { print }
-  ' "$memory_file"
+  ' "$1"
+}
+
+# Extract the Pinned region (between marker comments). Empty string if the
+# region is absent (caller already ran ensure_memory_file in normal flow).
+extract_pinned() {
+  _memory_region "$1" "$MZ_PIN_START" "$MZ_PIN_END"
 }
 
 # Extract the Activity Log region, capped at $2 lines (most recent first).
 extract_log() {
-  local memory_file="$1"
-  local max_lines="${2:-200}"
-  awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" '
-    $0 == start { capture = 1; next }
-    $0 == end { capture = 0 }
-    capture { print }
-  ' "$memory_file" | head -n "$max_lines" || true
+  _memory_region "$1" "$MZ_LOG_START" "$MZ_LOG_END" | head -n "${2:-200}" || true
+}
+
+# Extract the Digest items, highest count first. Empty until a compression has produced one.
+extract_digest() {
+  _memory_region "$1" "$MZ_DIGEST_START" "$MZ_DIGEST_END" | awk 'NF' || true
 }
 
 # Prepend entries from stdin to the Activity Log and prune it to $2 lines, new entries included.
+# Holds the MEMORY.md lock, so a compression applying its result cannot overwrite these entries.
 prepend_to_log() {
   local memory_file="$1"
   local max_lines="${2:-$MZ_LOG_MAX_LINES}"
@@ -182,22 +188,25 @@ prepend_to_log() {
   new_block=$(cat)
   [[ -n "$new_block" ]] || return 0
 
-  # ENVIRON, unlike awk -v, keeps backslashes in entries literal.
-  MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" -v max="$max_lines" '
-    BEGIN { in_log = 0; new = ENVIRON["MZ_NEW_BLOCK"]; count = split(new, new_lines, "\n") }
-    $0 == start {
-      print
-      for (i = 1; i <= count && i <= max; i++) print new_lines[i]
-      in_log = 1
-      next
-    }
-    $0 == end { in_log = 0; print; next }
-    in_log {
-      count++
-      if (count > max) next
-    }
-    { print }
-  ' "$memory_file" | atomic_write "$memory_file"
+  {
+    flock 9 2>/dev/null || true
+    # ENVIRON, unlike awk -v, keeps backslashes in entries literal.
+    MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" -v max="$max_lines" '
+      BEGIN { in_log = 0; new = ENVIRON["MZ_NEW_BLOCK"]; count = split(new, new_lines, "\n") }
+      $0 == start {
+        print
+        for (i = 1; i <= count && i <= max; i++) print new_lines[i]
+        in_log = 1
+        next
+      }
+      $0 == end { in_log = 0; print; next }
+      in_log {
+        count++
+        if (count > max) next
+      }
+      { print }
+    ' "$memory_file" | atomic_write "$memory_file"
+  } 9>>"${memory_file}.lock"
 }
 
 # Prepend a block of pre-formatted entries into the Pinned region. No prune
@@ -209,14 +218,41 @@ prepend_to_pinned() {
   new_block=$(cat)
   [[ -n "$new_block" ]] || return 0
 
-  awk -v start="$MZ_PIN_START" -v new="$new_block" '
-    $0 == start {
-      print
-      printf "%s\n", new
-      next
+  {
+    flock 9 2>/dev/null || true
+    MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_PIN_START" '
+      $0 == start { print; print ENVIRON["MZ_NEW_BLOCK"]; next }
+      { print }
+    ' "$memory_file" | atomic_write "$memory_file"
+  } 9>>"${memory_file}.lock"
+}
+
+# swap_digest_and_log <memory_file> <digest_file> <log_file> — print MEMORY.md with the Digest and
+# the Activity Log replaced by the two files' lines. The caller holds the lock and writes the result.
+swap_digest_and_log() {
+  local memory_file="$1" digest_file="$2" log_file="$3"
+  local has_digest=0 want_digest=0
+  grep -qxF "$MZ_DIGEST_START" "$memory_file" && has_digest=1
+  [[ -s "$digest_file" ]] && want_digest=1
+  awk -v ds="$MZ_DIGEST_START" -v de="$MZ_DIGEST_END" -v ls="$MZ_LOG_START" -v le="$MZ_LOG_END" \
+    -v digest_file="$digest_file" -v log_file="$log_file" \
+    -v has_digest="$has_digest" -v want_digest="$want_digest" '
+    function dump(path,   line) { while ((getline line < path) > 0) print line; close(path) }
+    $0 == ds { print; dump(digest_file); in_digest = 1; next }
+    in_digest && $0 == de { in_digest = 0; print; next }
+    in_digest { next }
+    # A file without a Digest gets one just above the Activity Log heading, or its marker.
+    !has_digest && want_digest && !inserted && ($0 == "## Activity Log" || $0 == ls) {
+      printf "## Digest\n\n%s\n", ds
+      dump(digest_file)
+      printf "%s\n\n", de
+      inserted = 1
     }
+    $0 == ls { print; dump(log_file); in_log = 1; next }
+    in_log && $0 == le { in_log = 0; print; next }
+    in_log { next }
     { print }
-  ' "$memory_file" | atomic_write "$memory_file"
+  ' "$memory_file"
 }
 
 # --- Interaction journal (.mz/journal.md) ------------------------------------
