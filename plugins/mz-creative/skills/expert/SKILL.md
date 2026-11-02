@@ -3,7 +3,6 @@ name: expert
 description: 'Critiques one proposal or plan from several expert angles and reports strengths, weaknesses and risks. Use when the user says "critique this idea", "strengths and weaknesses of" or "poke holes in my plan". Not for generating ideas (use brainstorm).'
 argument-hint: <idea or proposal to review>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(test *), Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
-model: sonnet
 ---
 
 # Expert Consultation Pipeline

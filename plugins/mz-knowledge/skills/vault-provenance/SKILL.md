@@ -2,7 +2,6 @@
 name: vault-provenance
 description: 'Classifies claims in one vault note by epistemic status and back-fills its sources frontmatter. Use when the user wants claims and sources checked ("epistemic status", "provenance", "mark claims"). Not for whole-vault audits (use vault-health).'
 argument-hint: <note name or path>
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, AskUserQuestion
 ---
 

@@ -2,7 +2,6 @@
 name: gov-init
 description: 'Installs, updates or removes the governance policy in CLAUDE.md. Use when the user wants governance set up ("gov init", "install governance policy", "set up governance"). Not for running a decision (use govern) or auditing records (use gov-review).'
 argument-hint: '[project|global] [--force] [--uninstall]'
-model: sonnet
 allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Glob, Grep, AskUserQuestion
 ---
 

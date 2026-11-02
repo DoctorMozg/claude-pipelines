@@ -2,7 +2,6 @@
 name: outreach-research
 description: 'Ranks target companies for what the user sells, as a lead list. Use when the user wants to know who to target ("find companies", "find potential clients", "lead generation"). Not for deepening a card or writing letters (use outreach-enrich-company).'
 argument-hint: <target description> [sector:filter] [limit:N]
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Read, Write, Glob, Grep, WebFetch, WebSearch, AskUserQuestion
 ---
 

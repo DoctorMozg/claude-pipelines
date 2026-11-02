@@ -2,7 +2,6 @@
 name: translate
 description: 'Translates docs and i18n resources into another language. Use when the user says "translate X to Y" or "localize", or wants files or docs in another language. Not for one phrase or sentence (answer inline) or same-language rewording (use naturalize).'
 argument-hint: <natural language request — e.g. "translate README.md to Russian" or "translate locales/en.json to fr mode:i18n">
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(rg *), Bash(awk *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch
 ---
 

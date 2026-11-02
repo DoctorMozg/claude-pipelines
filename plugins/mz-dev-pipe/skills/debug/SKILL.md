@@ -2,7 +2,6 @@
 name: debug
 description: 'Fixes a bug test-first, or tests a hypothesis without fixing. Use when the user reports a bug, error, failing test or stack trace, or says "debug X" or "is X actually doing Y". Not for new features (use build) or getting a suite green (use polish).'
 argument-hint: '[scope:branch|global|working] [certainty:low|high] <bug report or hypothesis — error message, stack trace, failing test, description, GitHub issue URL, or behavioral question>'
-model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 

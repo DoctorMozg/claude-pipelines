@@ -2,7 +2,6 @@
 name: init-rules
 description: 'Installs coding rules per project or globally. Use when the user wants Claude to follow the same habits or conventions in a project or every session ("init rules", "install rules", "onboard project"). Not for an Obsidian vault (use obsidian-init).'
 argument-hint: '[project|global] [--target=rules|claudemd] [--force] [--uninstall]'
-model: sonnet
 allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(command -v *), Bash(jq *), Bash(dirname *), Bash(printf *), Bash(mv *), Bash(rm *), Glob, Grep, AskUserQuestion
 ---
 

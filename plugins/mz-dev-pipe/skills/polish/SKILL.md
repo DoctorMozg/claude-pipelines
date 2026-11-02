@@ -2,7 +2,6 @@
 name: polish
 description: 'Brings existing code up to stated criteria such as passing tests. Use when the user says "polish X", "make tests pass" or "fix failing tests", or has code that must clear its quality gates. Not for one bug (use debug) or a new feature (use build).'
 argument-hint: '[scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>'
-model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 

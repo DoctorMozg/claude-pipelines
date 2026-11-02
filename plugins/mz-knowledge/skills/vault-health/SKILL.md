@@ -2,7 +2,6 @@
 name: vault-health
 description: 'Audits a whole Obsidian vault for orphan notes, broken wikilinks, stubs, stale notes and tag inconsistencies. Use when the user wants a vault audit ("vault health check", "find orphan notes"). Not for frontmatter schema rules (use vault-schema).'
 argument-hint: '[vault path or leave empty to use OBSIDIAN_VAULT_PATH env]'
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Glob, Grep, Write, AskUserQuestion
 ---
 

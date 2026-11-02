@@ -132,6 +132,15 @@ class TestFrontmatter:
                 )
         assert_no_violations(violations)
 
+    def test_skill_sets_no_model(self, skills: DocSet) -> None:
+        # Skill model: swaps the session model mid-turn, losing cache hits (user, 2026-11-02).
+        violations = [
+            f"{item.doc.relative}: sets model {item.frontmatter['model']!r}; pin it on agents"
+            for item in skills.parsed
+            if "model" in item.frontmatter
+        ]
+        assert_no_violations(violations)
+
     def test_argument_hint_is_a_string(self, skills: DocSet) -> None:
         # An unquoted hint such as `[base-branch]` parses as a YAML list, not as text.
         violations = [

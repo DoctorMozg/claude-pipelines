@@ -2,7 +2,6 @@
 name: outreach-brief
 description: 'Captures an outreach brief (offer, targets) and researches the local business climate. Use when the user wants to scope outreach ("draft an outreach brief", "prep outreach", "research local market"). Not for finding companies (use outreach-research).'
 argument-hint: '[<seed description of the outreach>]'
-model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 

@@ -2,7 +2,6 @@
 name: freelance-pitch
 description: 'Drafts a grounded freelance proposal for one gig. Use when the user wants to pitch a specific gig, by rank, URL or pick ("freelance pitch", "draft proposal", "pitch this gig", "proposal for gig 3"). Not for finding gigs (use freelance-search).'
 argument-hint: "[<rank-N> | <gig-URL>] [personality:off]"
-model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash(tr *), Bash(sed *), Bash(cut *), Bash(cp *), Bash(rm *), Bash(sha1sum *), Bash(shasum *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 

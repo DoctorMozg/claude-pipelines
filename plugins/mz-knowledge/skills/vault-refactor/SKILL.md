@@ -2,7 +2,6 @@
 name: vault-refactor
 description: 'Renames or moves a vault note and rewrites every reference to it. Use when the user wants a note renamed or moved with wikilinks updated ("rename note", "move note", "vault refactor", "update wikilinks"). Not for bulk link cleanup (use vault-health).'
 argument-hint: '<old_name>::<new_name_or_path> [vault path]'
-model: opus
 allowed-tools: Agent, Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(mv *), Bash(sha256sum *), Bash(shasum *), AskUserQuestion
 ---
 

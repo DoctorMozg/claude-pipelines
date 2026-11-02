@@ -2,7 +2,6 @@
 name: obsidian-markdown
 description: 'Applies Obsidian Flavored Markdown (wikilinks, embeds, callouts, frontmatter properties). Use when the user wants to write or edit vault notes ("add a callout", "use a wikilink", "OFM syntax"). Not for .base database views (use obsidian-bases).'
 argument-hint: '[optional: specific OFM feature or note to work on]'
-model: haiku
 allowed-tools: Read
 ---
 

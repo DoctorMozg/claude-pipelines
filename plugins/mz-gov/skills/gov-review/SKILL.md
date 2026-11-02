@@ -2,7 +2,6 @@
 name: gov-review
 description: 'Audits ADRs, RFDs and design docs into a read-only findings report. Use when the user wants existing decision records checked ("review our ADRs", "audit decision records", "check governance docs"). Not for reviewing code changes (use review-branch).'
 argument-hint: '[path-or-glob] [docs/decisions|docs/rfcs|docs/design]'
-model: sonnet
 allowed-tools: Agent(gov-audit-reviewer), Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), AskUserQuestion
 ---
 

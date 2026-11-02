@@ -2,7 +2,6 @@
 name: obsidian-cli
 description: 'Runs the obsidian CLI to read, create, search and edit vault notes. Use when the user wants vault work done from a shell ("obsidian CLI", "vault command line", "obsidian read/create/search from shell"). Not for OFM syntax (use obsidian-markdown).'
 argument-hint: '[vault operation: read|create|append|search|tags|backlinks|property]'
-model: haiku
 allowed-tools: Bash(obsidian read *), Bash(obsidian daily:read *), Bash(obsidian search *), Bash(obsidian tags *), Bash(obsidian backlinks *), Bash(obsidian create *), Bash(obsidian append *), Bash(obsidian daily:append *), Bash(obsidian property:set *), Read
 ---
 

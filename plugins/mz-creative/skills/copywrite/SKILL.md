@@ -3,7 +3,6 @@ name: copywrite
 description: 'Writes promotional copy: landing pages, emails, announcements, social posts, release notes and pitch one-pagers. Use when the user says "write a landing page", "draft a launch email" or "sell this feature". Not for technical docs (use document).'
 argument-hint: <what to promote, plus format:landing|email|announcement|social|changelog|pitch>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(git log *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
-model: sonnet
 ---
 
 # Copywriting Pipeline

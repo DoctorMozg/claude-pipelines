@@ -2,7 +2,6 @@
 name: vault-answer
 description: 'Answers a question from vault notes with inline wikilink citations and an Unknowns list. Use when the user wants a note-grounded answer ("what does my vault say about X", "search my vault for Y"). Not for codebase or web questions (use ask).'
 argument-hint: <question>
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Grep, Glob, Write, AskUserQuestion
 ---
 

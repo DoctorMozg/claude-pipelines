@@ -3,7 +3,6 @@ name: naturalize
 description: 'Rewrites machine-sounding or overly polished text so a real person seems to have written it. Use when the user wants existing text to sound human ("humanize this text", "make this sound less like AI"). Not for new promotional copy (use copywrite).'
 argument-hint: <text or @file:path to rewrite>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
-model: sonnet
 ---
 
 # Text Naturalization Pipeline

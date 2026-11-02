@@ -2,7 +2,6 @@
 name: build
 description: 'Builds a new feature, module or component test-first, with code review. Use when the user wants something new built or implemented ("build X", "implement Y", "add feature"). Not for bug fixes (use debug) or bringing code up to criteria (use polish).'
 argument-hint: <task description>
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(mv *), Bash(printf *), Bash(perl -0777 -pe *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
@@ -130,7 +129,7 @@ Create tests **before any implementation** with `pipeline-test-writer` (model: o
 
 ### Phase 4: Test Review
 
-Spawn TWO review agents in parallel (model: sonnet): the unified `pipeline-test-reviewer` (covers gaps + quality in one pass) and `pipeline-code-reviewer` (test-code craftsmanship). The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Set `Phase: test_review_passed`.
+Spawn TWO review agents in parallel (model: sonnet, since this pass reads only test code and Phase 7 reviews production code on opus): the unified `pipeline-test-reviewer` (covers gaps + quality in one pass) and `pipeline-code-reviewer` (test-code craftsmanship). The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Set `Phase: test_review_passed`.
 
 ### Phase 5: Verify RED
 

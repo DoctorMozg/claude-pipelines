@@ -2,7 +2,6 @@
 name: vault-schema
 description: 'Validates vault frontmatter against a note-type schema and migrates notes to match. Use when the user wants frontmatter checked ("vault schema", "frontmatter validation", "schema migration"). Not for links, orphans, stubs or tags (use vault-health).'
 argument-hint: '<validate|migrate> [vault path]'
-model: sonnet
 allowed-tools: Agent, Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(sha256sum *), Bash(awk *), Bash(cut *), AskUserQuestion
 ---
 

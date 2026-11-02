@@ -3,7 +3,6 @@ name: memory-note
 description: 'Saves a note or decision to project memory. Use when the user wants something remembered ("remember that", "note this", "save to memory", "pin this decision"). Not for lookups (open MEMORY.md).'
 argument-hint: '<the note, verbatim as the user wrote it>  [--log to append to Activity Log instead of Pinned]'
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory-note.sh *), Bash(date *), Read, AskUserQuestion
-model: haiku
 ---
 
 # Memory Note

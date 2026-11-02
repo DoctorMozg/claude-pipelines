@@ -2,7 +2,6 @@
 name: process-notes
 description: 'Turns fleeting notes, long notes and raw captures into permanent atomic notes. Use when the user wants notes processed or atomized ("process fleeting notes", "atomize this note"). Not for a fast keep/merge/discard pass (use vault-triage).'
 argument-hint: '<note name, daily note date YYYY-MM-DD, #fleeting tag, or paste raw text>'
-model: opus
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, AskUserQuestion
 ---
 

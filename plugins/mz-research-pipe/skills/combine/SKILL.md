@@ -2,7 +2,6 @@
 name: combine
 description: 'Consolidates existing local research, task artifacts and prior reports into one unified report. Use when the user says "combine our findings" or "pull together everything we found so far". Not for new research from scratch (use deep-research).'
 argument-hint: '[output:<path>] [sources:<glob>] [scope:branch|global|working] [sections:<csv>] <task — what to synthesize>'
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git log *), Bash(git status *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 

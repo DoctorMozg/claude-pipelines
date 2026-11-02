@@ -2,7 +2,6 @@
 name: vault-connect
 description: 'Proposes typed wikilinks between a note and related vault notes. Use when the user wants a note connected to the vault ("link notes", "suggest wikilinks", "improve link density"). Not for splitting a capture into new notes (use process-notes).'
 argument-hint: <note name or path to find links for>
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, Glob, AskUserQuestion
 ---
 

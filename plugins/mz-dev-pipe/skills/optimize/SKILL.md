@@ -2,7 +2,6 @@
 name: optimize
 description: 'Makes code, containers, builds or LLM hyperparameters faster, smaller or cheaper, keeping only changes a benchmark proves. Use when the user says "optimize", "make it faster" or "speed up the build". Not for tidying code (use cleanup).'
 argument-hint: '[scope:branch|global|working] [type:code|container|llm_hyperparams|build_pipeline|system] <target + metric + goal>'
-model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 

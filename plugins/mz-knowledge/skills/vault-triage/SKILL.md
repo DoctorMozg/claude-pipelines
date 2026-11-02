@@ -2,7 +2,6 @@
 name: vault-triage
 description: 'Triages inbox fleeting notes with promote, merge, discard or defer decisions. Use when the user wants the inbox cleared fast ("triage inbox", "fleeting review", "clear inbox", "batch decide"). Not for resurfacing permanent notes (use vault-review).'
 argument-hint: '[vault path]'
-model: sonnet
 allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Bash(sha256sum *), Bash(shasum *), Glob, AskUserQuestion
 ---
 

@@ -2,7 +2,6 @@
 name: vault-research
 description: 'Atomizes a research or brainstorm report from .mz/ into permanent vault notes. Use when the user wants a report imported ("ingest research", "import report", "atomize report", "research to notes"). Not for the user''s own captures (use process-notes).'
 argument-hint: <report path>
-model: opus
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, AskUserQuestion
 ---
 

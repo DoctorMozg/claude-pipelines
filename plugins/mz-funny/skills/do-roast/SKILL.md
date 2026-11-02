@@ -2,7 +2,6 @@
 name: do-roast
 description: 'Roasts code in a character voice, each joke tied to a real finding. Use when the user wants a funny review of code or a PR ("roast this code", "do-roast", "make fun of", "character roast of"). Not for a serious code review (use review-branch).'
 argument-hint: <persona> <freeform target — path, branch, text, or natural-language scope>
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git diff *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(sha256sum *), Bash(shasum *), Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
 

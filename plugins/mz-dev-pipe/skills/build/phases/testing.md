@@ -73,7 +73,7 @@ Set `test_review_iteration = 0`.
 
 ### 4.1 Parallel reviews
 
-Spawn TWO review agents **in parallel** (both model: **sonnet**):
+Spawn TWO review agents **in parallel** (both model: **sonnet**). `pipeline-code-reviewer` is pinned to opus, but here it reads test code only; Phase 7 gives the production code its opus review.
 
 **Agent A — Test Reviewer** (`pipeline-test-reviewer` — combined coverage + quality):
 

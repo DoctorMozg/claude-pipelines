@@ -2,7 +2,6 @@
 name: freelance-search
 description: 'Finds and ranks freelance gigs and consulting work matched to a CV from vetted niche boards. Use when the user wants freelance or contract work ("find freelance gigs", "freelance search", "freelance hunt"). Not for salaried roles (use job-search).'
 argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [pitches:topN]'
-model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(tr *), Bash(sha1sum *), Bash(cut *), Bash(jq *), Bash(mv *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 

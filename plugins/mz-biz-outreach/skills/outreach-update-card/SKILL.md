@@ -2,7 +2,6 @@
 name: outreach-update-card
 description: 'Logs a dated outreach action in a company card''s Interaction History. Use when the user wants to record an interaction ("log action on a card", "I just emailed them, add it to the card"). Not for drafting the letter (use outreach-enrich-company).'
 argument-hint: '"<path/to/card.md>" "<action description>"'
-model: haiku
 allowed-tools: Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), AskUserQuestion
 ---
 

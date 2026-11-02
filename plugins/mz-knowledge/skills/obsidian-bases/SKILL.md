@@ -2,7 +2,6 @@
 name: obsidian-bases
 description: 'Builds and edits Obsidian Bases (.base files) with filters, formulas and views. Use when the user wants a database view of vault notes (".base file", "Bases view", "filter formula", "vault database"). Not for note syntax (use obsidian-markdown).'
 argument-hint: '[optional: base file name or query to build]'
-model: haiku
 allowed-tools: Read
 ---
 

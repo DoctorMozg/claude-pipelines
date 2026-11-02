@@ -2,7 +2,6 @@
 name: clean-leftovers
 description: 'Removes AI-run residue, code included: signatures, phase markers, stubs. Use when the user says "clean leftovers", "remove AI markers" or "clean up after the pipeline". Not for comment-only tidying (use decomment) or refactors (use cleanup).'
 argument-hint: '[scope:branch|global|working] [path or glob]'
-model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
 

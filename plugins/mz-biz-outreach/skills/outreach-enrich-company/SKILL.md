@@ -2,7 +2,6 @@
 name: outreach-enrich-company
 description: 'Adds fresh detail to a thin saved company profile and drafts messages to its people. Use when the user wants it filled out or messages written ("enrich a card", "draft messages from a card"). Not for companies with no card (use outreach-research).'
 argument-hint: '"<path/to/company_card.md>" [channels:email|linkedin|both] [sender:<voice text or path>] [enrich:only|skip] [personality:off]'
-model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(cp *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 

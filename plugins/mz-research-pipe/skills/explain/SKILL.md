@@ -2,7 +2,6 @@
 name: explain
 description: 'Explains how existing code works in a diagram-rich report on design and weak spots, read-only. Use when the user says "walk me through", "diagram this" or "explain this module". Not for a short sourced answer to a question (use ask).'
 argument-hint: '[scope:branch|global|working] [output:<path>] <scope or question — e.g. "src/auth/", "how does the payment flow work", "explain the WebSocket reconnection logic">'
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 

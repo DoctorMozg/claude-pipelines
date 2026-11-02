@@ -2,7 +2,6 @@
 name: review-branch
 description: 'Reviews every change on the current git branch against its base and writes a findings report. Use when the user says "review my branch", "what did I change" or "check this before I push". Not for a pushed GitHub PR (use github-review-pr).'
 argument-hint: '[base-branch (default: main)]'
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git branch --show-current *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, AskUserQuestion
 ---
 

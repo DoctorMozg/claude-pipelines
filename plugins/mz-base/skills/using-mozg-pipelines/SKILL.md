@@ -2,7 +2,6 @@
 name: using-mozg-pipelines
 description: 'Separates look-alike mozg skills and chains several per task. Use when the user is unsure which of their tools fits or what they have ("which pipeline fits", "what plugins do I have", "route this"). Not when the user named a skill (invoke it).'
 argument-hint: '[task description]'
-model: haiku
 allowed-tools: Read, AskUserQuestion
 ---
 

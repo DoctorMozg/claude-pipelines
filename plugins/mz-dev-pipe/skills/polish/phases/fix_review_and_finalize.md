@@ -62,7 +62,7 @@ If no `uncovered` criteria remain (all already had tests, or this loop has run b
 
 Determine fix strategy based on failure count and complexity. All fixes MUST be performed by dispatching a `pipeline-coder` agent — the orchestrator never edits code directly.
 
-**Few failures (1-3), concentrated in 1-2 files**: Dispatch a single `pipeline-coder` agent (model: **sonnet**) with the specific failure list and error output. Use the same dispatch prompt below, scoped to the affected files.
+**Few failures (1-3), concentrated in 1-2 files**: Dispatch a single `pipeline-coder` agent (model: **sonnet**, overriding its opus pin because a fix this narrow doesn't need opus) with the specific failure list and error output. Use the same dispatch prompt below, scoped to the affected files.
 
 **Multiple failures, spread across files**: Spawn `pipeline-coder` agents (model: **opus**) in parallel, one per file group:
 

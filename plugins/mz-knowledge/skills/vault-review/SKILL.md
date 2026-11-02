@@ -2,7 +2,6 @@
 name: vault-review
 description: 'Builds a ranked queue of permanent notes and runs a daily, weekly or monthly review session. Use when the user wants notes surfaced for review ("review session", "notes due for review", "weekly review"). Not for clearing the inbox (use vault-triage).'
 argument-hint: '[optional: review mode — daily|weekly|monthly, or leave empty for smart queue]'
-model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(mv *), Read, Write, Glob, Grep, AskUserQuestion
 ---
 

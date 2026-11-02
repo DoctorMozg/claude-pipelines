@@ -2,7 +2,6 @@
 name: job-search
 description: 'Finds job vacancies, scores them against a CV and ranks a shortlist with cover letters. Use when the user wants a job hunt ("find me a job", "search jobs", "match vacancies to my CV", "find openings"). Not for freelance gigs (use freelance-search).'
 argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [contacts:topN] [letters:topN]'
-model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(cp *), Bash(tr *), Bash(sha1sum *), Bash(cut *), Bash(jq *), Bash(mv *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 

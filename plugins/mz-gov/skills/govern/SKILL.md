@@ -2,7 +2,6 @@
 name: govern
 description: 'Runs a substantial design decision through review and sign-off into an ADR, RFD or design doc. Use when the user wants a choice made and recorded ("should I X or Y", "ADR for X", "decide between A and B"). Not for auditing records (use gov-review).'
 argument-hint: <decision to govern> [artifact:adr|rfd|design|auto] [rich]
-model: sonnet
 allowed-tools: Agent(gov-router), Agent(gov-provenance-recorder), Agent(gov-critic-alternatives), Agent(gov-critic-reversibility), Agent(gov-critic-blast-radius), Agent(gov-critic-assumptions), Agent(gov-critic-quick), Agent(gov-discussion-synthesizer), Agent(gov-artifact-writer), AskUserQuestion, Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(mv *), Bash(gh pr view *), Bash(gh auth status *), Bash(curl *), Glob, Grep
 ---
 

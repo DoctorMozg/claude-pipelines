@@ -2,7 +2,6 @@
 name: job-recruiter-info
 description: 'Finds recruiter, hiring-manager and careers contacts for one job or company. Use when the user wants to know who to apply to ("find a recruiter", "who recruits for X", "careers email for X"). Not for B2B contacts (use outreach-enrich-company).'
 argument-hint: '"<job listing URL or company name>" [region:<region>] [language:<lang>]'
-model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash(mv *), Bash(rm *), Bash(rmdir *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 
