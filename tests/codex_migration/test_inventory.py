@@ -112,28 +112,83 @@ def test_package_plan_rejects_duplicate_excluded_skills() -> None:
         )
 
 
-def test_migration_plan_reads_manifest_only_from_claude_plugin_dir(tmp_path: Path) -> None:
-    (tmp_path / ".claude-plugin").mkdir()
-    (tmp_path / ".claude-plugin/marketplace.json").write_text(
-        json.dumps({"owner": {"name": "Owner"}, "plugins": [{"name": "mz-x", "source": "./mz-x"}]}),
-        encoding="utf-8",
+def _write_marketplace(root: Path, *names: str) -> MigrationPlan:
+    (root / ".claude-plugin").mkdir()
+    plugins = [{"name": name, "source": f"./{name}"} for name in names]
+    (root / ".claude-plugin/marketplace.json").write_text(
+        json.dumps({"owner": {"name": "Owner"}, "plugins": plugins}), encoding="utf-8"
     )
-    manifest = json.dumps({"name": "mz-x", "version": "1.0.0", "description": "Example."})
-    (tmp_path / "mz-x").mkdir()
-    (tmp_path / "mz-x/plugin.json").write_text(manifest, encoding="utf-8")
-    plan = MigrationPlan(
+    for name in names:
+        manifest_dir = root / name / ".claude-plugin"
+        manifest_dir.mkdir(parents=True)
+        (manifest_dir / "plugin.json").write_text(
+            json.dumps({"name": name, "version": "1.0.0", "description": "Example."}),
+            encoding="utf-8",
+        )
+    return MigrationPlan(
         schema_version=1,
         source_marketplace=".claude-plugin/marketplace.json",
-        packages=(PackagePlanSpec(name="mz-x", disposition=PackageDisposition.READY),),
+        packages=tuple(
+            PackagePlanSpec(name=name, disposition=PackageDisposition.READY) for name in names
+        ),
     )
 
+
+def test_migration_plan_reads_manifest_only_from_claude_plugin_dir(tmp_path: Path) -> None:
+    plan = _write_marketplace(tmp_path, "mz-x")
+    manifest = tmp_path / "mz-x/.claude-plugin/plugin.json"
+    legacy_manifest = manifest.rename(tmp_path / "mz-x/plugin.json")
+
     legacy_report = validate_migration_plan(plan, tmp_path)
-    (tmp_path / "mz-x/.claude-plugin").mkdir()
-    (tmp_path / "mz-x/plugin.json").rename(tmp_path / "mz-x/.claude-plugin/plugin.json")
+    legacy_manifest.rename(manifest)
     packages = discover_packages(plan, tmp_path)
 
     assert tuple(issue.code for issue in legacy_report.issues) == ("invalid-package-manifest",)
     assert packages[0].source_manifest.version == "1.0.0"
+
+
+class TestSharedFolderDiscovery:
+    def test_real_and_linked_shared_folders_reach_the_catalog(self, tmp_path: Path) -> None:
+        plan = _write_marketplace(tmp_path, "mz-base", "mz-x")
+        (tmp_path / "mz-base/shared").mkdir()
+        (tmp_path / "mz-base/shared/scope.md").write_text("Scope.\n", encoding="utf-8")
+        (tmp_path / "mz-x/shared").symlink_to("../mz-base/shared", target_is_directory=True)
+
+        packages = discover_packages(plan, tmp_path)
+        specs = tuple(
+            build_codex_package_spec(package, tmp_path, tmp_path / "out" / package.plan.name)
+            for package in packages
+        )
+
+        assert tuple(package.shared_root for package in packages) == (
+            "mz-base/shared",
+            "mz-x/shared",
+        )
+        assert tuple(spec.catalog.shared_root for spec in specs) == (
+            "mz-base/shared",
+            "mz-x/shared",
+        )
+
+    def test_plugin_without_shared_folder_has_no_shared_root(self, tmp_path: Path) -> None:
+        plan = _write_marketplace(tmp_path, "mz-x")
+
+        package = discover_packages(plan, tmp_path)[0]
+        spec = build_codex_package_spec(package, tmp_path, tmp_path / "out")
+
+        assert package.shared_root is None
+        assert spec.catalog.shared_root is None
+
+    def test_dangling_shared_link_is_kept_for_the_validator_to_reject(self, tmp_path: Path) -> None:
+        plan = _write_marketplace(tmp_path, "mz-x")
+        (tmp_path / "mz-x/shared").symlink_to("../mz-base/shared", target_is_directory=True)
+
+        assert discover_packages(plan, tmp_path)[0].shared_root == "mz-x/shared"
+
+    def test_shared_file_in_place_of_a_folder_is_ignored(self, tmp_path: Path) -> None:
+        plan = _write_marketplace(tmp_path, "mz-x")
+        (tmp_path / "mz-x/shared").write_text("not a folder\n", encoding="utf-8")
+
+        assert discover_packages(plan, tmp_path)[0].shared_root is None
 
 
 def test_load_migration_plan_reports_missing_file(tmp_path: Path) -> None:

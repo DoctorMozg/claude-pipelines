@@ -81,6 +81,7 @@ class PackageInventory(MarketplaceModel):
     role_sources: tuple[RepositoryPath, ...]
     hook_config: RepositoryPath | None = None
     hook_script_sources: tuple[RepositoryPath, ...] = ()
+    shared_root: RepositoryPath | None = None
 
 
 class MigrationPlanLoadFailure(StrEnum):
@@ -244,6 +245,7 @@ def discover_packages(plan: MigrationPlan, repository_root: Path) -> tuple[Packa
                 role_sources=_source_files(root, source_root / "agents", "*.md"),
                 hook_config=_source_file(root, source_root / "hooks" / "hooks.json"),
                 hook_script_sources=_source_files(root, source_root / "scripts", "*"),
+                shared_root=_source_directory(root, source_root / "shared"),
             )
         )
     return tuple(packages)
@@ -297,6 +299,7 @@ def build_codex_package_spec(
         roles=roles,
         role_resources=role_resources,
         hooks=hooks,
+        shared_root=package.shared_root,
     )
     policy = ProviderPolicy(
         provider=Provider.CODEX,
@@ -434,6 +437,13 @@ def _skill_sources(
 
 def _source_file(root: Path, path: Path) -> RepositoryPath | None:
     if not path.is_file():
+        return None
+    return path.relative_to(root).as_posix()
+
+
+# Keeps a link's own path, dangling or not: the renderer validates and dereferences it.
+def _source_directory(root: Path, path: Path) -> RepositoryPath | None:
+    if not (path.is_dir() or path.is_symlink()):
         return None
     return path.relative_to(root).as_posix()
 
