@@ -19,7 +19,7 @@ This repository is a public plugin registry for Claude Code. It provides agents 
 1. Add agent/skill files in their respective subdirectories
 1. Register the plugin in `.claude-plugin/marketplace.json` with `name`, `source`, `category` and `keywords`
 1. Add a `[[packages]]` entry for it to `data/codex_migration.toml`, with the same `dependencies` as its manifest. `tests/codex_migration/test_inventory.py` pins the plugin list, the dependency map and the skill and agent counts, so update it in the same change
-1. Run `claude plugin validate --strict .`, `claude plugin validate --strict plugins/<name>` and `make test`, which runs the Python tests as well as the contract matrix and smoke test.
+1. Run `make validate`, which runs `claude plugin validate --strict` on the repo and every plugin, and `make test`, which runs the Python tests as well as the contract matrix and smoke test.
 
 ## Bumping Versions
 

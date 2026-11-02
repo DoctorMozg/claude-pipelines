@@ -453,7 +453,7 @@ Exceptions:
 
 Run this before merging a new or changed agent.
 
-**Mechanical checks.** These suit a script. Until a repo script runs them in `make test`, check them by hand. `claude plugin validate --strict` covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
+**Mechanical checks.** These suit a script. Until a repo script runs them in `make test`, check them by hand. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
 
 - [ ] The frontmatter parses with a strict YAML parser and has no unknown keys (§1).
 - [ ] `name` is kebab-case, 3-50 characters and two to four words, is unique across the marketplace, and matches the filename (§20).
