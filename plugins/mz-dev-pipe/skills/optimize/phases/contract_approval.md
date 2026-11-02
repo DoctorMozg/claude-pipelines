@@ -4,7 +4,7 @@
 
 **Draft the contract.** Determine `target_type` (from `type:` or inferred from the target), then assemble `<PROJECT_ROOT>/.mz/task/<task_name>/contract.md`:
 
-- `target_type: code` → dispatch `pipeline-tooling-detector` with `project_root: <PROJECT_ROOT>` to auto-fill `measure_command`, `correctness_command`, and `change_space` from project manifests.
+- `target_type: code` → dispatch `pipeline-tooling-detector` with `project_root: <PROJECT_ROOT>` and `output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`, then read that file to auto-fill `measure_command`, `correctness_command`, and `change_space`.
 - `target_type: container | llm_hyperparams | build_pipeline | system | generic` → propose defaults from domain knowledge. For any domain outside confident coverage, dispatch `pipeline-researcher` (with `WebFetch` / `WebSearch`) for current best practice before drafting. Mark any field you genuinely cannot propose `<NEEDS USER INPUT: ...>`.
 - `target_type: system` → keep one end-to-end metric and make `change_space` a list of objects, each tagging `{class, domain, paths}`, so the run can attribute the metric across components and follow the bottleneck as it moves between domains.
 

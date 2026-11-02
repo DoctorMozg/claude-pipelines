@@ -29,12 +29,12 @@ Output a structured list:
 
 For each item include: the exact regex or substring; one real-world example; the tool/source that emits it; first-observed date if known.
 
-Output path: <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md
+Return the list as markdown in your response — the orchestrator persists it to <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md.
 
 Banned in output: any item not grounded in a cited source. Mark items with "no source — embed only" if they come from your own knowledge.
 ```
 
-Wait for completion. The researcher writes `web_research.md` directly.
+Wait for completion. `pipeline-web-researcher` is read-only and returns its report inline. When it returns `DONE` or `DONE_WITH_CONCERNS`, the **orchestrator** (not a sub-agent) writes the response to `<PROJECT_ROOT>/.mz/task/<task_name>/web_research.md` via the Write tool before 1.3 reads the file. Do the same after every retry below.
 
 ## 1.2 Handle failures
 

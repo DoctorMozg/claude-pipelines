@@ -175,7 +175,7 @@ ______________________________________________________________________
 
 ### 5.1 Detect tooling
 
-Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If absent, dispatch `pipeline-tooling-detector` (model: **haiku**) as a fallback, passing `project_root: <PROJECT_ROOT>`. Use `<test_command>` from the result.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If absent, dispatch `pipeline-tooling-detector` (model: **haiku**) as a fallback, passing `project_root: <PROJECT_ROOT>` and `output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`, then read that file. Use `<test_command>` from it.
 
 ### 5.2 Run the new tests
 
