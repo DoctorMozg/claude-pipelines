@@ -1,132 +1,89 @@
-# Phase 2: Rewriting + Phase 2.5: Optional File Update
+# Phase 1: Rewrite + Phase 2: Check and Apply
 
-## Phase 2: Rewriting (expert-naturalizer)
+## Phase 1: Rewrite (expert-naturalizer)
 
-### 2.1 Prepare dispatch context
-
-Compute the output path:
+### 1.1 Paths
 
 ```
-output_path = <PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_naturalize_<slug>.md
+output_path = <PROJECT_ROOT>/.mz/task/<task_name>/output.md
+report_path = <PROJECT_ROOT>/.mz/reports/<task_name>.md
 ```
 
-Use today's date with underscores. Slug from setup. On collision append `_v2`, `_v3`.
+`input.md` in the same task folder holds the verbatim input from Phase 0. For `@file:` input it is the kept original, so nothing writes to it after setup.
 
-### 2.2 Dispatch expert-naturalizer
+### 1.2 Optional web research (`research:yes` only)
 
-Compose a compact dispatch prompt. Do **not** repeat the agent's general instructions — the agent file is self-contained.
+Skip this step unless the user passed `research:yes`. Otherwise dispatch `pipeline-web-researcher` (mz-base) with this brief:
 
-Dispatch prompt template:
+```
+Topic: Current high-frequency AI-generated text patterns (single words, phrases, structural patterns, punctuation tells), 2025 to 2026 data
+Sources to prioritize: Wikipedia Signs_of_AI_writing, Pangram Labs blog, GPTZero news, peer-reviewed corpus studies (FSU, OpenAlex, arXiv), practitioner ban lists (jodiecook.com, contentbeta.com)
+Banned: AI-generated detection lists, undated blogs, social posts
+Output: only patterns missing from the embedded list below, focused on what is new since 2024
+Embedded list (do not repeat these): <the avoid lists from expert-naturalizer.md, abbreviated>
+Return the findings inline.
+```
+
+The researcher is read-only, so write its response verbatim to `<PROJECT_ROOT>/.mz/task/<task_name>/web_research.md` yourself and add that path to `FilesWritten`.
+
+### 1.3 Dispatch expert-naturalizer
+
+Compose a compact dispatch. Don't repeat the agent's general instructions: the agent file is self-contained and runs its own pattern detection.
 
 ```
 Mode: standalone rewrite
 Input file: <PROJECT_ROOT>/.mz/task/<task_name>/input.md
 Output file: <output_path>
-Severity: <Light|Medium|Heavy AI from analysis.md>
-Strategy: <copy the "Proposed rewriting strategy" section from analysis.md>
-Preserve list:
-  - All code blocks (fenced and inline)
-  - All tables
-  - Proper names: <comma-separated from analysis.md>
-  - File paths, URLs, version strings
-  - Domain-specific technical terms: <list from analysis.md>
-Word-count target: <copy "Estimated word-count delta" from analysis.md>
-Long-document handling: <chunk by H2 if word count > 2000, else single pass>
-Web research: <yes|no — pass through user's research: flag>
+Report file: <report_path>
+Preserve: <terms from preserve:, or "none beyond auto-preserve">
+Medium: <from the file's extension or path when obvious, else omit this line>
+Long-document handling: <chunk by H2 if the input exceeds CHUNK_THRESHOLD words, else single pass>
+Extra patterns: <only after step 1.2: read <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md and add its patterns to this rewrite's pass list; omit this line otherwise>
 ```
 
-Dispatch as a single Agent tool call. `subagent_type: expert-naturalizer`. Wait for completion.
+Dispatch it as a single Agent tool call with `subagent_type: expert-naturalizer` and wait for it. Update `state.md` before and after.
 
-### 2.3 Validate the rewrite
+### 1.4 Validate the rewrite
 
-After the agent returns:
+1. `output_path` and `report_path` both exist and are non-empty.
+1. The agent emitted `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS`.
+1. `output_path` holds only the rewritten text. If the agent appended a `## Naturalization report` section anyway, move that section and the `---` above it into `report_path`.
+1. Code blocks, tables and every `preserve:` term from the input still appear in the output.
 
-1. Verify the output file exists and is non-empty.
-1. Verify the agent emitted `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS`.
-1. Read the output file. Confirm:
-   - Original code blocks, tables, proper names preserved
-   - Naturalization report appended at the bottom
-   - Word count is in the expected range (±5% of target delta)
-1. On `BLOCKED` or `NEEDS_CONTEXT`, escalate via AskUserQuestion.
+On `BLOCKED`, leave the user's file untouched and escalate via AskUserQuestion. On `NEEDS_CONTEXT`, re-dispatch once with the missing context, usually a clearer preserve list.
 
-Update `state.md`: phase → `rewrite_complete`, append the output path, relative to the project root, to `FilesWritten`.
+Update `state.md`: `Phase: 1`, `phase_complete: true`, and add `output_path` and `report_path`, relative to the project root, to `FilesWritten`.
 
-## Phase 2.5: Optional In-Place File Update Gate
+## Phase 2: Check and Apply
 
-This phase runs **only** when the original input came from `@file:<path>` (not from inline text). The user may want the rewritten text to overwrite the original file in place.
+### 2.1 Punctuation check
 
-### 2.5.1 Decide whether to offer the gate
+Run `<PUNCTUATION_CHECK> <output_path>` as a command of its own, not chained with `;` or `&&`, because the skill's Bash grant matches only that command. It checks prose only; code, URLs and quotes are skipped, and the change report in `report_path` isn't checked at all.
 
-If `state.md` shows `InputSource: inline`, skip this phase entirely.
+- **Exit 0**: the rewrite is clean. Set `PunctuationCheck: clean`.
 
-If `state.md` shows `InputSource: file:<path>`, proceed to the gate.
+- **Exit 1**: each stdout line reads `file:line: <name> <char>`. Re-dispatch `expert-naturalizer` once:
 
-### 2.5.2 Variant gate — file update offer
+  ```
+  Mode: punctuation fix
+  Input file: <output_path>
+  Output file: <output_path>
+  Lines to fix:
+  <the check's stdout>
+  Restructure each flagged sentence so the banned character is gone: a period, a comma, parentheses or a conjunction, never a spaced hyphen, `--` or `...` in its place. Change nothing else and write no report.
+  ```
 
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+  Run the check again. Exit 0 sets `PunctuationCheck: clean`. A second exit 1 sets `PunctuationCheck: concerns`; keep its lines for the final block and carry on: the rewrite is still applied, and those lines tell the user exactly what is left to fix by hand.
 
-**Pre-read**: Read both the original file (the one referenced by `@file:`) and the rewritten output at `<output_path>`. Capture both word counts, the naturalization report, and a sample of changes (first 3 differing snippets) into context.
+- **Exit 2**: the check couldn't read the file. Set `PunctuationCheck: not run` with its stderr and carry on.
 
-**Surface 1 — emit the plan message.** Output the rewrite summary as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
+### 2.2 Apply
 
-```
-## File update ready for review — naturalize
+- **Inline input** (`InputSource: inline`): show the rewritten text from `output_path` in the chat. Set `FileUpdateApplied: n/a`.
+- **File input** (`InputSource: file:<path>`): read `output_path` and write its contents to `<path>` with the Write tool, not `cp`, so the user's file-edit permissions apply. Ask nothing, since the original stays in `input.md`. Then run `diff -u <PROJECT_ROOT>/.mz/task/<task_name>/input.md <path>` on its own; exit 1 only means the files differ. Show the diff in the chat, cut to its first 60 lines with a note giving the full command when it runs longer. Set `FileUpdateApplied: yes`.
 
-Rewriting complete. The original file is unchanged on disk; the rewritten text is at <output_path>.
-
-Original word count: <N>
-Rewritten word count: <N> (delta: <±N>%)
-Patterns broken: <count>
-Burstiness: <before> → <after>
-
-Original file: <path>
-Rewrite: <output_path>
-
-Sample of changes (first 3):
-- "<original snippet>" → "<rewritten snippet>"
-- ...
-
----
-**Apply** → overwrite the original file  ·  **Skip** → leave both files unchanged  ·  **Diff** → show fuller diff, then choose  ·  reply with feedback to revise
-```
-
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must not re-embed the summary — it lives in the plan message above.
-
-- question: `The rewrite above is ready. Choose an action.`
-- options:
-  - **Apply** — overwrite the original file with the rewritten text
-  - **Skip** — leave the original file unchanged; the report stays at .mz/reports/
-  - **Diff** — show a fuller diff first, then choose Apply or Skip
-
-### 2.5.4 Response handling
-
-- **Apply** → write the rewritten content to the original file path. Update `state.md`: `FileUpdateApplied: yes`. Confirm with a one-line message: `Original file updated: <path>`.
-- **Skip** → leave the original file untouched. Update `state.md`: `FileUpdateApplied: no`. Confirm: `Original file unchanged. Rewrite available at <output_path>`.
-- **Diff** → show a fuller diff (use `diff -u <original> <output>` if available, else fall back to a simple side-by-side preview of differing paragraphs), then re-present Surface 2 with only **Apply** and **Skip** options.
-- **Any other reply (feedback)** → apply the feedback, return to Surface 1, re-read and re-emit the updated plan message from scratch, re-present the selector.
-
-This gate has no Reject — the rewrite already exists; the question is only whether to apply it in place.
+If `<path>` can no longer be written, leave it alone, set `FileUpdateApplied: no`, and point the user at `output_path`.
 
 ## Final output
 
-Set `Phase: complete`, `Status: complete`, `phase_complete: true` and `what_remains: []` in `state.md`. Then emit the final verification block defined in SKILL.md → Verification:
-
-```
-Naturalization complete.
-Task dir:   .mz/task/<task_name>/
-Report:     .mz/reports/<YYYY_MM_DD>_naturalize_<slug>.md
-Input:      <source> (<words>)
-Output:     <words> (delta: <±N>%)
-Patterns:   <count broken>
-Burstiness: <before> → <after>
-File update: <yes|no|n/a>
-```
-
-`File update: n/a` for inline-text inputs. `yes`/`no` for `@file:` inputs based on Phase 2.5 outcome.
-
-## Error Handling within these phases
-
-- `expert-naturalizer` returns `BLOCKED` → preserve original input untouched, escalate via AskUserQuestion.
-- `expert-naturalizer` returns `NEEDS_CONTEXT` → re-dispatch once with the missing context (usually a clearer preserve list).
-- File path from `@file:` becomes unwritable between Phase 0 and Phase 2.5 → warn the user, keep the report as the canonical artifact.
-- Diff command unavailable → fall back to listing the first 5 differing paragraphs side-by-side.
+Set `Phase: complete`, `Status: complete`, `phase_complete: true` and `what_remains: []` in `state.md`. Then emit the final block defined in SKILL.md under Verification. When `PunctuationCheck` is `concerns` or `not run`, the block's `Punctuation` line says so and lists the lines or the reason.

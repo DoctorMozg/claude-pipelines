@@ -57,17 +57,18 @@ ______________________________________________________________________
 
 ### `/naturalize` — AI-Text Rewriter
 
-Detects AI patterns (vocabulary spikes, mechanical antithesis, em-dash overuse, low burstiness, fractal summaries, five-paragraph templates), shows you the analysis, gets approval, then rewrites via the expert-naturalizer agent. Optional in-place file update gate when input came from a file.
+Rewrites AI-sounding text in one pass with no approval questions. The expert-naturalizer agent finds the patterns (vocabulary spikes, mechanical antithesis, low burstiness, fractal summaries, five-paragraph templates) and rewrites them, and a script then checks that no banned punctuation (em dashes, semicolons, ellipsis characters, arrows) is left in the prose. Given a file, it overwrites the file in place, keeps the original under `.mz/task/`, and shows you a diff.
 
 ```
 /naturalize <paste your text here>
 /naturalize @file:docs/intro.md
 /naturalize research:yes @file:blog_draft.md
+/naturalize preserve:leverage,robust @file:docs/risk.md
 ```
 
-**Pipeline**: Pattern analysis (+ optional web research) → user approval → expert-naturalizer (opus) → optional in-place update gate
+**Pipeline**: optional web research (pipeline-web-researcher) → expert-naturalizer (opus) detects and rewrites → punctuation check (one fix-only retry) → in-place overwrite with a diff
 
-**Modifiers**: `@file:<path>` (lets you optionally overwrite the original after the rewrite), `research:yes` (refreshes the embedded vocabulary list against current 2025–2026 pattern data).
+**Modifiers**: `@file:<path>` (overwrites the file, keeping the original at `.mz/task/<task>/input.md`), `preserve:<terms>` (comma-separated terms kept verbatim), `research:yes` (refreshes the embedded vocabulary list against current 2025–2026 pattern data).
 
 ______________________________________________________________________
 
@@ -127,15 +128,15 @@ The three writing pipelines share a phase pattern. Every output goes through nat
         └─ expert-naturalizer rewrites in place, preserves CTAs/code/proper names
 ```
 
-`/naturalize` runs the same naturalizer agent in standalone mode, with an additional in-place file update gate when the input came from `@file:<path>`.
+`/naturalize` runs the same naturalizer agent in standalone mode, then checks the rewrite for banned punctuation and overwrites the file in place when the input came from `@file:<path>`.
 
 ## Output locations
 
 ```
 .mz/task/<YYYY_MM_DD>_<skill>_<slug>/
 ├── state.md
-├── research.md  | brief.md  | analysis.md
-└── input.md     (naturalize only)
+├── research.md  | brief.md
+└── input.md + output.md     (naturalize only)
 
 .mz/reports/<YYYY_MM_DD>_<skill>_<slug>.md
 ```
@@ -146,7 +147,7 @@ A few sensible chains across this plugin and the rest of the marketplace:
 
 - **Research → docs**: `/deep-research` (mz-research-pipe) → `/document type:reference` — survey the field, then write the reference doc grounded in research findings.
 - **Brainstorm → copy**: `/brainstorm <positioning angles>` → `/copywrite format:landing` — explore positioning ideas across lenses, then write the landing page from the winning angle.
-- **De-AI a draft**: `/naturalize @file:draft.md` — standalone clean-up of any AI-generated prose, with an optional in-place overwrite gate.
+- **De-AI a draft**: `/naturalize @file:draft.md` — standalone clean-up of any AI-generated prose, overwritten in place with a diff.
 - **Build a feature with documentation**: `/build` (mz-dev-pipe) → `/document type:reference` — ship the feature, then auto-document it.
 
 ## License
