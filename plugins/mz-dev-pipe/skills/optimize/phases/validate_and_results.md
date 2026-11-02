@@ -83,7 +83,7 @@ Rate confidence in the banked change from **measured signals only** — never fr
 
 ## 5.4 Validation sign-off gate
 
-**Approval gate.** Present the iteration's result for sign-off. See [`../../shared/approval-gate.md`](../../shared/approval-gate.md) for the two-surface pattern and the `MZ_DEV_PIPE_AUTO_APPROVE` bypass.
+**Approval gate.** Present the iteration's result for sign-off. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the two-surface pattern and the `MZ_DEV_PIPE_AUTO_APPROVE` bypass.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
@@ -120,7 +120,7 @@ Every number above traces to a measurement artifact under .mz/task/<task_name>/m
 - **Approve** → the change is banked. Record the new running-best value and proceed to Phase 6.
 - **Reject** → revert the promoted change, record it in the history buffer, and re-enter Phase 4 for the next backlog hypothesis (or Phase 6 if the backlog is exhausted).
 - **Any other reply (feedback)** → apply the requested adjustment, re-validate from §5.1, return to this gate, re-read the updated artifacts, and re-emit the entire plan message from scratch with the full new result. This is a loop — repeat until the user explicitly approves. Never bank the change without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → bypass per `../../shared/approval-gate.md`; log `auto-approved (unattended mode)`. The Phase 4.7 manual checkpoint is **not** covered by this bypass — if the contract is `manual`, that checkpoint already ran in Phase 4 with a real human.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → bypass per `<PLUGIN_ROOT>/shared/approval-gate.md`; log `auto-approved (unattended mode)`. The Phase 4.7 manual checkpoint is **not** covered by this bypass — if the contract is `manual`, that checkpoint already ran in Phase 4 with a real human.
 
 ## 5.5 Record and proceed
 

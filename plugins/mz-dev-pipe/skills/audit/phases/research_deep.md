@@ -202,14 +202,14 @@ git diff $(git merge-base HEAD origin/main)...HEAD
 
 ### Wave B Researcher Prompts
 
-The three blinded prompt blocks are the single source of truth at `references/blinded_lenses.md` (shared with `branch-reviewer` so the prompts stay synchronized across pipelines). Read that file once before dispatching Wave B:
+The three blinded prompt blocks are the single source of truth at `<PLUGIN_ROOT>/shared/blinded_lenses.md` (shared with `branch-reviewer` so the prompts stay synchronized across pipelines). Read that file once before dispatching Wave B:
 
-1. Read `<SKILL_DIR>/references/blinded_lenses.md`.
+1. Read `<PLUGIN_ROOT>/shared/blinded_lenses.md`.
 1. For each role (`blinded_production`, `blinded_security`, `blinded_ops`), extract the literal text inside the fenced ```` ``` ```` block under that role's `###` header.
 1. Replace the literal placeholder `<raw diff output>` with the unified diff captured above (still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template).
 1. Dispatch all three `pipeline-researcher` agents (model: **opus**) in a single message using parallel tool calls. Each role's prompt becomes that agent's full input — do NOT add scope.md, the Known Concerns Map, Wave A findings, or any prior consolidation table.
 
-The dispatch invariants in `references/blinded_lenses.md` (separate message after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
+The dispatch invariants in `<PLUGIN_ROOT>/shared/blinded_lenses.md` (separate message after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
 
 ### Wave B — Persist Responses
 

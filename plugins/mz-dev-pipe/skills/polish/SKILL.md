@@ -41,7 +41,7 @@ If empty, ask the user what needs to be polished.
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - **Default** (no `scope:`): all project files eligible for edits.
 - `scope:` controls **which files agents may edit**. Tests and linters always run on the full project. Criteria determine **what to verify**; scope determines **where fixes may be applied**.
@@ -51,6 +51,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **MAX_FIX_ITERATIONS**: 5 — max code-test-review cycles before escalating
 - **MAX_REVIEW_RETRIES**: 3 — max times a review can fail before escalating
 - **TASK_DIR**: `.mz/task/` in the project root
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -74,14 +75,14 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list and save to `.mz/task/<task_name>/scope_files.txt`. Otherwise all project files eligible.
 1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/").
 1. **Task name** — `<YYYY_MM_DD>_polish_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case of criteria (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate before proceeding. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key.
+1. **Task dir & state** — apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate before proceeding. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
 ### Phase 1.5: User Approval Gate
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
+See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Pre-read**: Read `.mz/task/<task_name>/assessment.md` with the Read tool and capture its full contents into context.
 
@@ -98,7 +99,7 @@ See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canon
 Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet+Opus
 ```
 
-Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop budget (`MAX_FIX_ITERATIONS × (1 fix + 1 test + 1 review)`). Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
+Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop budget (`MAX_FIX_ITERATIONS × (1 fix + 1 test + 1 review)`). Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula to convert to a dollar estimate.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the assessment in the question body, it lives in the plan message above:
 
@@ -110,7 +111,7 @@ Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop 
 - **Approve** → update state, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 2. The plan message (Surface 1) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 2. The plan message (Surface 1) is still emitted so the transcript records what would have been approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the bypass contract.
 
 ## Common Rationalizations
 

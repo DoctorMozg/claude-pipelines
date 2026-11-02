@@ -114,7 +114,7 @@ Verdict logic:
 
 ## Status Protocol
 
-In addition to the verdict line, emit one terminal `STATUS:` line per the canonical four-state protocol (see `skills/shared/agent-status-protocol.md`):
+In addition to the verdict line, emit one terminal `STATUS:` line per the canonical four-state protocol (see `${CLAUDE_PLUGIN_ROOT}/shared/agent-status-protocol.md`):
 
 - `DONE` — the review completed end-to-end and the verdict line is authoritative.
 - `DONE_WITH_CONCERNS` — the review completed but surfaced procedural concerns (incomplete diff, partially-readable artifacts) above the verdict.

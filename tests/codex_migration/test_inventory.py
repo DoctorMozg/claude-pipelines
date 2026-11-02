@@ -28,7 +28,7 @@ _PLAN_PATH = _REPOSITORY_ROOT / "data/codex_migration.toml"
 _EXPECTED_DEPENDENCIES = {
     "mz-dev-pipe": ("mz-base",),
     "mz-research-pipe": ("mz-base", "mz-dev-pipe"),
-    "mz-dev-git": ("mz-base", "mz-dev-pipe"),
+    "mz-dev-git": ("mz-base",),
     "mz-biz-outreach": ("mz-creative",),
     "mz-creative": ("mz-base",),
 }

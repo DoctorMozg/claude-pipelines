@@ -28,7 +28,7 @@ Takes a UI/UX design brief and produces a comprehensive design document with ASC
 
 `$ARGUMENTS` — The design brief. Supports inline modifiers:
 
-- `scope:branch|global|working` — codebase scope for design-researcher (default: `global`)
+- `scope:branch|global|working` — codebase scope for design-researcher (default: `global`). See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the scope modes and their git commands
 - `@image:<path>` — reference image path (acknowledged, not decoded)
 - `@doc:<path>` — existing requirement/brief document to ingest
 
@@ -42,6 +42,7 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 - **WCAG_AA_NORMAL**: 4.5
 - **WCAG_AA_LARGE**: 3.0
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

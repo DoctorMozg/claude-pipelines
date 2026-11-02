@@ -31,7 +31,7 @@ Invoke when the user asks to synthesize, consolidate, or pull together knowledge
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - The `scope:` parameter narrows **only the codebase lens file-list**, not the `.mz/` source harvest — prior research, reports, and task artifacts are always eligible regardless of scope.
 - **Default** (no `scope:`): codebase lens derived from task-text file-name hints via Grep/Glob.
@@ -50,6 +50,8 @@ Extract `sections:<comma-separated list>` from `$ARGUMENTS` if present. If provi
 
 Bounds: `MAX_LENSES = 6`, `MAX_GAP_FILL_WAVES = 1`, `MIN_TASK_QUERY_TOKENS = 5`.
 Paths/freshness: `TASK_DIR = .mz/task/`, `REPORT_DIR = .mz/reports/`, `RESEARCH_DIR = .mz/research/`, `TASK_ARTIFACT_STALE_DAYS = 30`, `REPORT_STALE_DAYS = 60`, `RESEARCH_STALE_DAYS = 90`.
+
+Plugin root: `PLUGIN_ROOT = ${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

@@ -1,8 +1,8 @@
 # State File Schema — v2
 
-Canonical schema for `.mz/task/<task_name>/state.md` across every mz-dev-pipe skill. The state file is the single load-bearing checkpoint that survives context compaction. Every skill MUST write it, every skill MUST be able to read it, and every skill MUST refuse to operate on a state file whose `schema_version` it does not recognize.
+Canonical schema for `.mz/task/<task_name>/state.md` across every mozg pipeline skill. The state file is the single load-bearing checkpoint that survives context compaction. Every skill MUST write it, every skill MUST be able to read it, and every skill MUST refuse to operate on a state file whose `schema_version` it does not recognize.
 
-This file is the **mz-dev-pipe runtime copy** of the repo-level authoring canonical at `guidelines/STATE_SCHEMA.md`. mz-dev-pipe skills reference *this* file via the relative path `skills/shared/state-schema.md`; they do not read `guidelines/`, which does not ship inside an installed plugin. When the canonical changes, mirror the change here.
+This file is the **runtime copy** of the repo-level authoring canonical at `guidelines/STATE_SCHEMA.md`. It lives in mz-base and reaches each consumer plugin through that plugin's `shared` link, so skills reference *this* file as `<PLUGIN_ROOT>/shared/state-schema.md`; they do not read `guidelines/`, which does not ship inside an installed plugin. When the canonical changes, mirror the change here.
 
 ## Required keys (schema v2)
 
@@ -86,7 +86,7 @@ Every skill that writes `state.md` for the first time during a task MUST include
 
 ## Why this exists
 
-Without `schema_version`, any future change to the state-file shape silently breaks resume. The plugin promises resumability via `state.md` (see `shared/resume-protocol.md`). That promise is only enforceable if the reader can detect "I do not understand this file" instead of guessing a parse and producing wrong behavior.
+Without `schema_version`, any future change to the state-file shape silently breaks resume. The plugin promises resumability via `state.md` (see `<PLUGIN_ROOT>/shared/resume-protocol.md`). That promise is only enforceable if the reader can detect "I do not understand this file" instead of guessing a parse and producing wrong behavior.
 
 The progress ledger (`phase_complete`, `what_remains`) extends that promise: a resumer learns not just which phase it stopped in but whether that phase finished and what work is still outstanding — the context that compaction destroys first.
 

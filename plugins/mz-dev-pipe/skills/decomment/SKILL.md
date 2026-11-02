@@ -24,6 +24,10 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 - Executable code rewriting — out of scope; the proposer tokenizes per-language and never edits non-comment regions.
 - String-literal cleanup — strings are preserved by the tokenizer.
 
+## Constants
+
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+
 ## Core Process
 
 ### Phase Overview
@@ -64,7 +68,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
+See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Pre-read**: Read `.mz/task/<task_name>/diff.md` with the Read tool and capture its full contents into context.
 
@@ -115,9 +119,9 @@ Maintain the progress ledger on every phase transition: set `phase_complete: fal
 
 ## References
 
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/scope-parameter.md` — scope modes + git commands
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/approval-gate.md` — two-surface gate pattern
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/state-schema.md` — state.md schema
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/resume-protocol.md` — resume entry contract
-- `${CLAUDE_PLUGIN_ROOT}/skills/shared/agent-status-protocol.md` — four-status STATUS vocabulary
+- `<PLUGIN_ROOT>/shared/scope-parameter.md` — scope modes + git commands
+- `<PLUGIN_ROOT>/shared/approval-gate.md` — two-surface gate pattern
+- `<PLUGIN_ROOT>/shared/state-schema.md` — state.md schema
+- `<PLUGIN_ROOT>/shared/resume-protocol.md` — resume entry contract
+- `<PLUGIN_ROOT>/shared/agent-status-protocol.md` — four-status STATUS vocabulary
 - `references/per-language-comment-syntax.md` — language-specific comment tokens + preserve markers (read by proposer)

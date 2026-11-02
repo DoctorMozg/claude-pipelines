@@ -27,7 +27,7 @@ Invoke when the user wants a critical, multi-lens analysis of a specific proposa
 
 `$ARGUMENTS` — The idea, proposal, or plan to review. Supports inline modifiers:
 
-- `scope:branch|global|working` — when set, `expert-researcher` scans the codebase first so experts can ground feedback in real code (default: pure idea analysis, no scan)
+- `scope:branch|global|working` — when set, `expert-researcher` scans the codebase first so experts can ground feedback in real code (default: pure idea analysis, no scan). See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the scope modes and their git commands
 - `@doc:<path>` — existing requirement/brief/RFC document to ingest
 
 If `$ARGUMENTS` is empty, ask the user via `AskUserQuestion`. Never guess.
@@ -40,6 +40,7 @@ If `$ARGUMENTS` is empty, ask the user via `AskUserQuestion`. Never guess.
 - **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reports/`
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Available Lenses
 

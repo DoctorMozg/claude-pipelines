@@ -12,7 +12,7 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdat
 
 Orchestrates a multi-lens codebase audit and produces a ranked findings report. Two depth modes:
 
-- **`depth:standard`** (default) — single-wave parallel researchers across correctness, security, performance, maintainability, and reliability lenses. Quick scan suitable for in-progress work or focused bug hunts. Cap mode: `quick` per `shared/severity-lattice.md`.
+- **`depth:standard`** (default) — single-wave parallel researchers across correctness, security, performance, maintainability, and reliability lenses. Quick scan suitable for in-progress work or focused bug hunts. Cap mode: `quick` per `<PLUGIN_ROOT>/shared/severity-lattice.md`.
 - **`depth:deep`** — pre-PR multi-wave audit with blast-radius tier gating, evidence-tiered severity caps, trust-boundary STRIDE delta, three blinded adversarial lenses, rollback rehearsal (BLOCKING for missing down-migrations), cognitive-load budget, and persistent ledger append. Cap mode: `pre-PR`.
 
 No code is modified in either mode. Hand the summary to `build`, `debug`, or `polish` to act on it.
@@ -37,26 +37,27 @@ No code is modified in either mode. Hand the summary to `build`, `debug`, or `po
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands.
 
 - `scope:` controls files, remaining argument text controls lenses (orthogonal).
 - **Default**: `depth:standard` → path-like tokens → scope, no path tokens → roam. `depth:deep` → default scope `branch`.
 - `global` mode additionally excludes test files in this skill.
-- Bounded scopes (`branch`, `working`, path-list) auto-invoke `shared/blast-radius.md` to expand the inspection set with downstream-impacted files. `global` skips the auto-invocation.
+- Bounded scopes (`branch`, `working`, path-list) auto-invoke `<PLUGIN_ROOT>/shared/blast-radius.md` to expand the inspection set with downstream-impacted files. `global` skips the auto-invocation.
 
 ## Core Principles
 
 1. **Research only.** This skill is read-only — it finds and reports, it does not fix.
 1. **Parallel lenses, consolidated output.** Diverse lenses find different bug classes; one merged report is the final artifact.
-1. **Severity lattice is shared.** Both depth modes produce findings on the same 6-level lattice (`shared/severity-lattice.md`) so reports compare cleanly.
+1. **Severity lattice is shared.** Both depth modes produce findings on the same 6-level lattice (`<PLUGIN_ROOT>/shared/severity-lattice.md`) so reports compare cleanly.
 
 ## Constants
 
 - **MAX_RESEARCHERS**: 5 (standard) | **MAX_RESEARCHERS_WAVE_A**: 6 (deep) | **MAX_RESEARCHERS_WAVE_B**: 3 (deep)
-- **Severity caps**: resolved per `shared/severity-lattice.md` — `quick` mode for standard, `pre-PR` mode for deep.
+- **Severity caps**: resolved per `<PLUGIN_ROOT>/shared/severity-lattice.md` — `quick` mode for standard, `pre-PR` mode for deep.
 - **TASK_DIR**: `.mz/task/` | **LEDGER_PATH**: `.mz/reports/audit_ledger.md` (deep mode only)
 - **HOTSPOT_LOOKBACK_DAYS**: 90 (deep mode only — git log lookback for hotspot table; falls back to all-history on shallow clones)
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -84,7 +85,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0: Setup
 
-Derive `<YYYY_MM_DD>_audit_<slug>` (or `<YYYY_MM_DD>_deep_audit_<slug>` when `depth:deep`). Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `Iteration` (review iterations), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys (`depth: standard|deep`). TaskCreate per phase.
+Derive `<YYYY_MM_DD>_audit_<slug>` (or `<YYYY_MM_DD>_deep_audit_<slug>` when `depth:deep`). Apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `Iteration` (review iterations), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys (`depth: standard|deep`). TaskCreate per phase.
 
 When `depth:deep`: additionally dispatch `pipeline-tooling-detector` to detect test/lint commands for informational purposes (no tests are run); write to `.mz/task/<task_name>/tooling.md`. Phase 1 also computes git hotspot scores (commit counts over the last `HOTSPOT_LOOKBACK_DAYS` days, bot commits filtered) and records them in `scope.md`.
 

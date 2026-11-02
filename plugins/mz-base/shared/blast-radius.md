@@ -75,7 +75,7 @@ Vendored, generated, lockfile, and build-output paths are excluded (same exclusi
 
 ## Bounds
 
-Resolved per `shared/iteration-limits.md`:
+Resolved per `<PLUGIN_ROOT>/shared/iteration-limits.md`:
 
 - `MAX_BLAST_DEPTH` — default 3. Stop walking transitive imports past this depth.
 - `MAX_BLAST_FILES` — default 200. Stop adding to the impacted list past this count.

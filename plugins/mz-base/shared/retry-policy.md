@@ -4,7 +4,7 @@ Canonical retry classes and budgets for any agent dispatch or external call insi
 
 ## Error classes
 
-When a dispatched agent returns a terminal STATUS or VERDICT line (per `shared/agent-status-protocol.md`), classify the failure into one of three classes before deciding what to do next.
+When a dispatched agent returns a terminal STATUS or VERDICT line (per `<PLUGIN_ROOT>/shared/agent-status-protocol.md`), classify the failure into one of three classes before deciding what to do next.
 
 | Class                | Examples                                                                                                    | Default retry budget                                         |
 | -------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -17,7 +17,7 @@ When a dispatched agent returns a terminal STATUS or VERDICT line (per `shared/a
 
 For every dispatched agent:
 
-1. **Read the agent's terminal line.** Use `shared/agent-status-protocol.md` to parse `STATUS:` / `VERDICT:`.
+1. **Read the agent's terminal line.** Use `<PLUGIN_ROOT>/shared/agent-status-protocol.md` to parse `STATUS:` / `VERDICT:`.
 1. **If terminal line is missing entirely** → classify as `contract-violation`. Do not re-prompt without the explicit "your previous output was missing the STATUS line" preamble.
 1. **Classify into one of the four error classes** above.
 1. **Apply the retry budget**. Increment a per-call retry counter (NOT the loop-level iteration counter).
@@ -43,7 +43,7 @@ Per-class budgets MAY be overridden at task start:
 
 ## Distinction from iteration limits
 
-This module governs **per-call retries** (agent A failed, do we re-dispatch agent A?). `shared/iteration-limits.md` governs **per-loop bounds** (the fix-test loop has run N times, do we exit?). They compose: a single loop iteration may include multiple retries against the same agent.
+This module governs **per-call retries** (agent A failed, do we re-dispatch agent A?). `<PLUGIN_ROOT>/shared/iteration-limits.md` governs **per-loop bounds** (the fix-test loop has run N times, do we exit?). They compose: a single loop iteration may include multiple retries against the same agent.
 
 Loop-counter values must be checkpointed to `state.md` after each iteration per the resume protocol. Per-call retry counters are ephemeral — they reset on every loop iteration and need not be persisted.
 

@@ -33,7 +33,7 @@ The pipeline enforces red-green-refactor: tests are written and verified failing
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - **Default**: `global`.
 - Scope constrains **edits only**; researchers and verification commands may read the full project.
@@ -41,6 +41,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 ## Constants
 
 - **MAX_REVIEW_ITERATIONS**: 3 | **MAX_RED_ITERATIONS**: 2 | **MAX_GREEN_ITERATIONS**: 3 | **TASK_DIR**: `.mz/task/`
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -65,13 +66,13 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the description; on same-day collision append `_v2`, `_v3`.
 
-**Resume check** (before creating the task directory): apply the entry contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md). Check for `.mz/task/<task_name>/state.md`:
+**Resume check** (before creating the task directory): apply the entry contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`. Check for `.mz/task/<task_name>/state.md`:
 
 - **No file** → fresh task. Proceed with directory creation and state write below.
 - **Status: complete or aborted_by_user** → auto-suffix `_v2` / `_v3`, log the bump to chat, proceed as fresh task.
-- **Status: running or failed** → present the Resume gate from `shared/resume-protocol.md`. On `Resume`, re-enter at the recorded `Phase` per the phase-idempotency rules. On `Restart`, archive the directory to `<task_name>_archived_<YYYY_MM_DD_HHMMSS>/` and start fresh. On `New`, suffix `_v2` and proceed fresh. Honor `MZ_DEV_PIPE_AUTO_APPROVE=1` per the protocol's auto-decision rules.
+- **Status: running or failed** → present the Resume gate from `<PLUGIN_ROOT>/shared/resume-protocol.md`. On `Resume`, re-enter at the recorded `Phase` per the phase-idempotency rules. On `Restart`, archive the directory to `<task_name>_archived_<YYYY_MM_DD_HHMMSS>/` and start fresh. On `New`, suffix `_v2` and proceed fresh. Honor `MZ_DEV_PIPE_AUTO_APPROVE=1` per the protocol's auto-decision rules.
 
-**Fresh-task setup**: create `.mz/task/<task_name>/`. Write `state.md` per the v2 schema in [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking.
+**Fresh-task setup**: create `.mz/task/<task_name>/`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking.
 
 Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Write to `.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
 
@@ -87,7 +88,7 @@ Generate detailed plan, run plan-review loop, get user approval. See `phases/res
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
+See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full plan body (work units, test strategy, risks, verification criteria) into context. The plan must already have passed automated review before this gate fires.
 
@@ -95,7 +96,7 @@ See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canon
 
 - Count `N` from the plan: `N = 1 (test-writer) + 3 (test-reviewers) + W (parallel coder waves from plan.md work units) + 1 (code-reviewer) + 1 (final-reviewer) + 1 (optimizer) + 1 (completeness-checker)` where `W` is the number of work units in `plan.md`.
 - Default per-agent budget: ~20k tokens (mixed Sonnet + Opus). For a typical 5-work-unit plan, `N ≈ 12`, total ≈ 240k tokens.
-- Use the formula in `shared/approval-gate.md` to convert to a dollar estimate at the active price.
+- Use the formula in `<PLUGIN_ROOT>/shared/approval-gate.md` to convert to a dollar estimate at the active price.
 
 **Surface 1 — emit the plan message.** Output the plan verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/plan.md` — do not substitute a path, summary, or placeholder. Structure:
 
@@ -120,7 +121,7 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet
 - **Approve** → proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → spawn `pipeline-planner` with feedback, overwrite `plan.md`. Do NOT re-run plan review — user's word is final. Return to Surface 1, re-read `.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. Surface 1 is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. Surface 1 is still emitted so the transcript records what would have been approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the bypass contract.
 
 ### Phase 3: Test Writing (RED)
 

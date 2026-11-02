@@ -24,7 +24,7 @@ Orchestrates a multi-agent cleanup pass over existing code. Builds import-graph-
 - Failing tests with a known root cause — use `debug` first, then `cleanup` on the fixed code.
 - Code that passes metrics but has UI/UX or test-quality issues — use `polish`.
 - Known bug investigation — use `debug`.
-- Bug and security hunt across lenses — use `audit`. Use `audit depth:deep` for pre-PR impact analysis on a bounded scope (it auto-invokes `shared/blast-radius.md`).
+- Bug and security hunt across lenses — use `audit`. Use `audit depth:deep` for pre-PR impact analysis on a bounded scope (it auto-invokes `<PLUGIN_ROOT>/shared/blast-radius.md`).
 
 ## Input
 
@@ -32,11 +32,11 @@ Orchestrates a multi-agent cleanup pass over existing code. Builds import-graph-
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - **Default** (no `scope:`): use existing detection (glob / directory / git range / free-text).
 - If `scope:` is given alongside an explicit argument, they **intersect**.
-- Cleanup is **always bounded** by definition, so Phase 1 unconditionally invokes [`shared/blast-radius.md`](../shared/blast-radius.md) to identify high-impact targets and gate the user-approval verdict.
+- Cleanup is **always bounded** by definition, so Phase 1 unconditionally invokes `<PLUGIN_ROOT>/shared/blast-radius.md` to identify high-impact targets and gate the user-approval verdict.
 
 ## Core Principles
 
@@ -47,6 +47,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 ## Constants
 
 - **MAX_OPTIMIZERS**: 6 | **MAX_REVIEWERS**: 6 | **MAX_REVIEW_ITERATIONS**: 3 | **MAX_FIX_ATTEMPTS**: 3 | **TASK_DIR**: `.mz/task/`
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -66,19 +67,19 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_cleanup_<slug>`. Apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
-- **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
+- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_cleanup_<slug>`. Apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
+- **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `<PLUGIN_ROOT>/shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
 - **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 
 ### Phase 2.5: User Approval Gate
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
+See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
 
-Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `shared/approval-gate.md` formula to convert to a dollar estimate.
+Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula to convert to a dollar estimate.
 
 **Surface 1 — emit the plan message.** Output the scan report verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/scan.md` — do not substitute a path, summary, or placeholder. Structure:
 
@@ -103,7 +104,7 @@ Approve cost (estimated): <N> agents × ~24k tokens ≈ ~$<Y.YY> on Sonnet
 - **Approve** → proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → apply changes, overwrite `scan.md`, return to Surface 1, re-read `.mz/task/<task_name>/scan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. Surface 1 is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. Surface 1 is still emitted so the transcript records what would have been approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the bypass contract.
 
 ### Phase 3: Parallel Optimization
 

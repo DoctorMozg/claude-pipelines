@@ -31,7 +31,7 @@ Orchestrates a plan-approve-translate-verify flow for translating documents, REA
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - **Default**: if `$ARGUMENTS` contains path tokens or globs, those paths define the scope; if no path tokens are present, default to `global` (all eligible files in the repo).
 - `scope:working` is an explicit opt-in for translating only uncommitted changes — useful for iterating on a draft, but rarely the right default for docs that are usually committed.
@@ -47,6 +47,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **MAX_MYMEMORY_QUERIES**: 9 (per-run cap, under MyMemory 5K-char/day free tier)
 - **TASK_DIR**: `.mz/task/`
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

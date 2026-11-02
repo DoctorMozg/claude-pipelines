@@ -35,7 +35,7 @@ If empty, verify the entire project (roam mode with standard exclusions).
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - **Default** (no `scope:`): path/glob detection from argument, or roam entire project if empty.
 - `scope:` determines **which source files** are under verification. Tests always run fully (not filtered) to catch regressions. Coverage and quality analysis focus on code within scope.
@@ -44,6 +44,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 - **TASK_DIR**: `.mz/task/` — working artifacts under `.mz/task/<task_name>/`
 - **MAX_RESEARCHERS**: 3 — for failure diagnosis and coverage/quality review
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -63,7 +64,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 
 1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
 1. **Task name** — `<YYYY_MM_DD>_verify_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — apply the resume-check contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md) — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
+1. **Task dir & state** — apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 ### Phase 1–6

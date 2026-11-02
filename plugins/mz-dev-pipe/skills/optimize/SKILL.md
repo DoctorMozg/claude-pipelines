@@ -57,7 +57,7 @@ If `$ARGUMENTS` is empty, or names no measurable metric, the Phase 0 Goal Declar
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands.
 
 - **Default** (no `scope:`): all project files / artifacts eligible for candidate changes.
 - `scope:` controls **which files / artifacts a candidate may edit**. Profiling and measurement are never scope-bound — the profiler reads whatever it needs and the harness runs the whole `measure_command`. The contract's `scope` field records the resolved value; a candidate change that would cross it triggers the Phase 4.5 boundary pause.
@@ -77,6 +77,8 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 | `TASK_DIR`                     | `.mz/task/` | task-state root                                                 |
 
 `MEASURE_REPS`, `MEASURE_WARMUP`, `CV_CEILING`, and `MAX_OPTIMIZE_ITERATIONS` seed the matching `contract.md` fields (`measure_reps`, `measure_warmup`, `noise_ceiling_cv`, `iteration_cap`). Once the contract is approved, the contract's values are authoritative for the run — the contract is the per-run source of truth.
+
+`PLUGIN_ROOT` is `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -103,10 +105,10 @@ The loop is Phase 2 → 3 → 3.5 → 4 → (4.5 / 4.7 as triggered) → 5 → 6
 **Hard gate** — the pipeline cannot proceed without a measurable goal.
 
 1. **Parse input** — extract `scope:`, `type:`, and the free-text target + metric + goal from `$ARGUMENTS`.
-1. **Resolve scope** — per [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md); save the resolved file list to `.mz/task/<task_name>/scope_files.txt`. No `scope:` → all project files / artifacts eligible.
+1. **Resolve scope** — per `<PLUGIN_ROOT>/shared/scope-parameter.md`; save the resolved file list to `.mz/task/<task_name>/scope_files.txt`. No `scope:` → all project files / artifacts eligible.
 1. **Task name** — `<YYYY_MM_DD>_optimize_<slug>`, where `<slug>` is a snake_case summary of the target (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Resume check** — apply the resume contract in [`skills/shared/resume-protocol.md`](../shared/resume-protocol.md): if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate. A pre-existing `state.md` **without** a `skill_variant: methodology` key belongs to the renamed `cleanup` skill's task history, not this skill — do not resume into it; pick a fresh `_vN` name.
-1. **Task dir & state** — create `.mz/task/<task_name>/`; write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md): first line MUST be `schema_version: 2`, then `Status`, `Phase`, `PhaseName`, `Started`, `Iteration` (0), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys `skill_variant: methodology`, `Target`, `Metric`, `Goal`, `TargetType`, and an empty `## History` section (the persistent record of every hypothesis tried and its measured outcome — it survives context compaction and stops a failed transform from being retried).
+1. **Resume check** — apply the resume contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate. A pre-existing `state.md` **without** a `skill_variant: methodology` key belongs to the renamed `cleanup` skill's task history, not this skill — do not resume into it; pick a fresh `_vN` name.
+1. **Task dir & state** — create `.mz/task/<task_name>/`; write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line MUST be `schema_version: 2`, then `Status`, `Phase`, `PhaseName`, `Started`, `Iteration` (0), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys `skill_variant: methodology`, `Target`, `Metric`, `Goal`, `TargetType`, and an empty `## History` section (the persistent record of every hypothesis tried and its measured outcome — it survives context compaction and stops a failed transform from being retried).
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 **Goal Declaration.** The pipeline cannot proceed without a *measurable* goal. A measurable goal has three parts: a **metric** (what is measured), a **unit**, and either a **target value** or an explicit **"best effort"** (optimize as far as the iteration cap allows).
@@ -118,7 +120,7 @@ The "budget" is the performance budget — the measurable goal the whole loop is
 
 ### Phase 0.5: Contract Approval
 
-**Approval gate.** No measurement runs before the contract is approved. See [`skills/shared/approval-gate.md`](../shared/approval-gate.md) for the two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format.
+**Approval gate.** No measurement runs before the contract is approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format.
 
 **Draft the contract.** Determine `target_type` (from `type:` or inferred from the target), then assemble `.mz/task/<task_name>/contract.md`:
 
@@ -166,7 +168,7 @@ Reminder: quiesce the measurement host before approving — background load infl
 Approve cost (estimated): baseline + profile ≈ 3 agents (test-runner, measure-runner, researcher) × ~18k tokens ≈ ~$<Y.YY> on mixed Sonnet + Haiku
 ```
 
-Use the `shared/approval-gate.md` formula for the dollar estimate.
+Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula for the dollar estimate.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the contract in the question body, it lives in the plan message above:
 
@@ -178,7 +180,7 @@ Use the `shared/approval-gate.md` formula for the dollar estimate.
 - **Approve** → permitted only if every field is concrete (no `<NEEDS USER INPUT>` remains). Update state, read `phases/baseline.md`, proceed to Phase 1.
 - **Reject** → set `Status: aborted_by_user` and stop.
 - **Any other reply (feedback)** → apply the changes / supplied values, overwrite `contract.md`, return to this gate, re-read `contract.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → per `shared/approval-gate.md`: skip the AskUserQuestion call, log `auto-approved (unattended mode)`, and proceed — but only if no `<NEEDS USER INPUT>` field remains; an incomplete contract can never be auto-approved.
+- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → per `<PLUGIN_ROOT>/shared/approval-gate.md`: skip the AskUserQuestion call, log `auto-approved (unattended mode)`, and proceed — but only if no `<NEEDS USER INPUT>` field remains; an incomplete contract can never be auto-approved.
 
 ### Phase 3.5: Backlog / Strategy Approval
 
@@ -208,7 +210,7 @@ Approve cost (estimated): per hypothesis ≈ 4 candidate agents (Opus) + 4 seria
 - question: `The hypothesis backlog above is ready for review.`
 - options: **Approve** — proceed to Phase 4 (candidate generation & verification) · **Reject** — mark task aborted
 
-**Response handling:** **Approve** → read `phases/candidate_loop.md`, proceed to Phase 4. **Reject** → `Status: aborted_by_user`, stop. **Any other reply (feedback)** → re-rank in Phase 3, overwrite `backlog.md`, return to this gate, re-read `backlog.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `shared/approval-gate.md`.
+**Response handling:** **Approve** → read `phases/candidate_loop.md`, proceed to Phase 4. **Reject** → `Status: aborted_by_user`, stop. **Any other reply (feedback)** → re-rank in Phase 3, overwrite `backlog.md`, return to this gate, re-read `backlog.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `<PLUGIN_ROOT>/shared/approval-gate.md`.
 
 ### Phase 4.5: Mid-loop Boundary Pause
 
@@ -222,7 +224,7 @@ Low-risk, in-scope, single-artifact changes inside `change_space` do **not** tri
 
 When triggered, pause the candidate loop and present, via the two-surface pattern, the specific boundary-crossing change: what it touches, which boundary it crosses, and why the candidate needs it. The user approves *that change* specifically.
 
-**Response handling:** Approve → the candidate proceeds with the boundary-crossing change. Reject → that candidate is discarded as a `DEAD END`; the loop continues with the rest. Feedback → revise and re-present. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `shared/approval-gate.md`.
+**Response handling:** Approve → the candidate proceeds with the boundary-crossing change. Reject → that candidate is discarded as a `DEAD END`; the loop continues with the rest. Feedback → revise and re-present. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `<PLUGIN_ROOT>/shared/approval-gate.md`.
 
 ### Phase 4.7: Manual Correctness Checkpoint
 

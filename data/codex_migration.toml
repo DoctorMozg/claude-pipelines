@@ -22,8 +22,7 @@ dependencies = ["mz-base", "mz-dev-pipe"]
 [[packages]]
 name = "mz-dev-git"
 disposition = "dependent"
-# branch-reviewer still reads blinded_lenses.md from the mz-dev-pipe audit skill.
-dependencies = ["mz-base", "mz-dev-pipe"]
+dependencies = ["mz-base"]
 
 [[packages]]
 name = "mz-biz-outreach"

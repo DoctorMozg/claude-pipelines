@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 **Goal**: Turn the user's scope argument into an ordered list of parallel-safe chunks ready for optimization.
 
-> **Simplification standard.** What cleanup treats as "too much code" is the shared minimalism ladder — see [`skills/shared/minimalism.md`](../../shared/minimalism.md). The Phase 4 over-engineering lens validates against the same definition, so what cleanup removes here and what the lens flags later stay aligned. Cleanup writes no new code, so the ladder's web-research step does not apply; the exemptions — validation, error handling, security, tests — still do. Never strip code health.
+> **Simplification standard.** What cleanup treats as "too much code" is the shared minimalism ladder — see `<PLUGIN_ROOT>/shared/minimalism.md`. The Phase 4 over-engineering lens validates against the same definition, so what cleanup removes here and what the lens flags later stay aligned. Cleanup writes no new code, so the ladder's web-research step does not apply; the exemptions — validation, error handling, security, tests — still do. Never strip code health.
 
 ### 1.1 Resolve scope
 
@@ -68,7 +68,7 @@ If the final list is empty, report to the user and exit.
 
 Cleanup is always bounded by definition (it operates on a specific scope, never the whole repo at once), so blast-radius **always runs** here — no scope check, no opt-out.
 
-Execute the algorithm in [`../../shared/blast-radius.md`](../../shared/blast-radius.md) **inline** using the orchestrator's Grep/Read/Bash tools. Pass the resolved file list from §1.1 as `input_files`.
+Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** using the orchestrator's Grep/Read/Bash tools. Pass the resolved file list from §1.1 as `input_files`.
 
 Persist the YAML output to `.mz/task/<task_name>/blast_radius.yml`.
 

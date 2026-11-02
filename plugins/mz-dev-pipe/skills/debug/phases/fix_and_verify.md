@@ -105,7 +105,7 @@ ______________________________________________________________________
 
 Regardless of fix complexity, dispatch a `pipeline-coder` agent with the diagnosis context and a minimal-fix constraint. Do not apply fixes directly in the orchestrator — orchestrators only route, they never write code.
 
-**Minimalism gate.** Before composing the dispatch, apply the minimalism ladder to the fix design: the smallest fix deletes code or leans on a standard-library / native / already-installed primitive rather than adding a new one, and never introduces a speculative abstraction the single bug doesn't require. Bug fixes that need validation, error handling, or a security guard are code health — keep them. See [`skills/shared/minimalism.md`](../../shared/minimalism.md).
+**Minimalism gate.** Before composing the dispatch, apply the minimalism ladder to the fix design: the smallest fix deletes code or leans on a standard-library / native / already-installed primitive rather than adding a new one, and never introduces a speculative abstraction the single bug doesn't require. Bug fixes that need validation, error handling, or a security guard are code health — keep them. See `<PLUGIN_ROOT>/shared/minimalism.md`.
 
 ### 4.2 Apply fix
 
@@ -268,7 +268,7 @@ ______________________________________________________________________
 
 ## Sub-agent status handling
 
-Follow `skills/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.
+Follow `<PLUGIN_ROOT>/shared/agent-status-protocol.md` for the standard 4-status protocol (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED). Skill-specific overrides are noted inline above where applicable.
 
 ______________________________________________________________________
 

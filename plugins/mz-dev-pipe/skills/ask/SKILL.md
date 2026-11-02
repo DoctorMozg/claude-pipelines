@@ -39,6 +39,7 @@ If empty or ambiguous, ask the user to state the question via AskUserQuestion. N
 - **MAX_WEB_AGENTS**: 2 — hard cap on parallel `pipeline-web-researcher` agents
 - **AGENT_RETRY_LIMIT**: 1 — re-dispatch a researcher once on an empty or errored result, then proceed with partial findings
 - **TASK_DIR**: `.mz/task/` — working artifacts under `.mz/task/<task_name>/`
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
@@ -61,7 +62,7 @@ Read the relevant phase file when you reach that phase. Do not read all phase fi
    - `external` — about a general concept, library, protocol, or best practice not tied to this repo. Phase 1 runs a minimal stack-detection pass only; Phase 2 carries the research.
    - `hybrid` — about a library/API used in this repo, or "the best way to do X here". Both Phase 1 and Phase 2 run.
 1. **Derive task name** — `<YYYY_MM_DD>_ask_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the question (max 20 chars); on same-day collision append `_v2`, `_v3`. Example: `2026_05_18_ask_token_refresh`.
-1. **Create task directory and state** — create `.mz/task/<task_name>/` and write `state.md` per [`skills/shared/state-schema.md`](../shared/state-schema.md): first line `schema_version: 2`, then `Status`, `Phase`, `Started`, `phase_complete: false`, `what_remains: []`, plus skill-specific keys `Question type` and `Researchers dispatched` (0).
+1. **Create task directory and state** — create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line `schema_version: 2`, then `Status`, `Phase`, `Started`, `phase_complete: false`, `what_remains: []`, plus skill-specific keys `Question type` and `Researchers dispatched` (0).
 1. **Task tracking** — use TaskCreate for each pipeline phase.
 
 After setup, read `phases/research.md` and proceed to Phase 1.

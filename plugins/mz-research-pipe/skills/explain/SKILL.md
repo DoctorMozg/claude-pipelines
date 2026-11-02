@@ -33,7 +33,7 @@ If empty or ambiguous, ask the user via AskUserQuestion. Never guess.
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.
 
 - **Default** (no `scope:`): use path/glob/free-text detection from the argument.
 - `global` mode in this skill **requires a focusing question** — if no question tokens are present, ask the user what aspect to explain.
@@ -52,6 +52,7 @@ Example: `2026_04_20_explain_src_auth_token_refresh.md`
 - **MAX_RESEARCHERS**: 3 — hard cap on parallel researcher agents
 - **LARGE_SCOPE_THRESHOLD**: 10 — file count above which structure and flow analysis split into separate researchers
 - **TASK_DIR**: `.mz/task/` — working artifacts under `.mz/task/<task_name>/`
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

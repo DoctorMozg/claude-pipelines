@@ -37,7 +37,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion`. Never guess.
 
 ## Scope Parameter
 
-See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the canonical scope modes (`branch`, `global`, `working`) and their git commands.
+See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands.
 
 - **Default**: `global`
 - Scope constrains **research only** — Phase 2 writing and Phase 3 naturalization read whatever the writer needs
@@ -47,6 +47,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **TASK_DIR**: `.mz/task/`
 - **REPORT_DIR**: `.mz/reports/`
 - **MAX_DOC_TYPES**: 4 (tutorial / how-to / reference / explanation per Diátaxis)
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 

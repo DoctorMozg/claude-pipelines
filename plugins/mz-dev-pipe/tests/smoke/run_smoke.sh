@@ -20,7 +20,8 @@ REPO_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 BUILD_SKILL="$REPO_ROOT/plugins/mz-dev-pipe/skills/build"
 # Agents resolve by name across plugins, so look in every plugin, as the contract matrix does.
 AGENTS_DIRS=("$REPO_ROOT"/plugins/*/agents)
-SHARED_DIR="$REPO_ROOT/plugins/mz-dev-pipe/skills/shared"
+# Read through the plugin-root link so a broken link fails the smoke test.
+SHARED_DIR="$REPO_ROOT/plugins/mz-dev-pipe/shared"
 FIXTURE_DIR="$REPO_ROOT/plugins/mz-dev-pipe/tests/smoke/fixture"
 METRICS_DIR="$REPO_ROOT/.mz/metrics/smoke"
 TODAY="$(date +%Y_%m_%d)"

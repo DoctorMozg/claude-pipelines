@@ -53,7 +53,7 @@ When a cap forces selection (e.g., HIGH cap-10), rank by:
 
 1. `confidence` (high > medium > low)
 1. `evidence_tier` (T0 reproducible > T1 grep-confirmed > T2 inferred)
-1. `blast_radius` (impacted-file count from `shared/blast-radius.md`)
+1. `blast_radius` (impacted-file count from `<PLUGIN_ROOT>/shared/blast-radius.md`)
 1. Alphabetical by file path (deterministic tiebreaker)
 
 Top-N after sort is the reported set. Items below the cap are summarized as `<count> additional <severity> findings (capped)` in the report header.

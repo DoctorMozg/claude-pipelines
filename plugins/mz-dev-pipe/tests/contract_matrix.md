@@ -4,7 +4,7 @@ Declarative table — for each pipeline agent dispatched by an orchestrator skil
 
 ## Token categories
 
-- **STATUS** tokens are emitted by every dispatched agent (per `skills/shared/agent-status-protocol.md`). The protocol defines four canonical values: `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`. An agent file documents support either by naming the token literally or by the canonical bar-separated form `STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED`.
+- **STATUS** tokens are emitted by every dispatched agent (per `plugins/mz-base/shared/agent-status-protocol.md`). The protocol defines four canonical values: `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`. An agent file documents support either by naming the token literally or by the canonical bar-separated form `STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED`.
 - **VERDICT** tokens (`PASS`, `FAIL`) are emitted only by review-style agents that branch the orchestrator on a binary judgment.
 
 ## Matrix
@@ -35,7 +35,7 @@ Cell count: 65 required cells across 15 agents (4 STATUS per agent, one fewer fo
 
 - **Researchers** (`pipeline-researcher`, `pipeline-web-researcher`) typically return either `DONE` (findings ready) or `NEEDS_CONTEXT` (missing source material). They rarely flag soft concerns; `DONE_WITH_CONCERNS` is intentionally not required.
 - **`pipeline-completeness-checker`** is the final quality gate. It can emit `VERDICT: PASS` to signal the task is complete, but it does not emit `VERDICT: FAIL` — instead it triggers a pipeline restart from a specific phase via `STATUS: NEEDS_CONTEXT` or `BLOCKED`. The cell for `VERDICT: FAIL` is therefore N/A.
-- **Skill-specific overrides** (per `skills/shared/agent-status-protocol.md` last section) do not relax the matrix — an agent that participates in a wave-merge override must still document the base tokens it could emit.
+- **Skill-specific overrides** (per `plugins/mz-base/shared/agent-status-protocol.md` last section) do not relax the matrix — an agent that participates in a wave-merge override must still document the base tokens it could emit.
 
 ## Maintenance
 

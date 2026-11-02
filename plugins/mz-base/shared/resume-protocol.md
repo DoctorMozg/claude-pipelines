@@ -15,11 +15,11 @@ Every mz-dev-pipe skill, in its Phase 0 setup, MUST:
 
 ## Resume gate
 
-This gate is a variant approval gate — it presents the existing task state and offers three named actions. It follows the two-surface plan pattern in `shared/approval-gate.md`.
+This gate is a variant approval gate — it presents the existing task state and offers three named actions. It follows the two-surface plan pattern in `<PLUGIN_ROOT>/shared/approval-gate.md`.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read the existing `.mz/task/<task_name>/state.md` in full and capture its contents into context. Validate `schema_version` per `shared/state-schema.md` mismatch policy first — if the schema is unrecognized, that error path takes precedence.
+**Pre-read**: Read the existing `.mz/task/<task_name>/state.md` in full and capture its contents into context. Validate `schema_version` per `<PLUGIN_ROOT>/shared/state-schema.md` mismatch policy first — if the schema is unrecognized, that error path takes precedence.
 
 **Surface 1 — emit the plan message.** Output the existing state verbatim as a normal markdown chat message. Emit the full verbatim contents of `state.md` — do not substitute a path, summary, or placeholder. Structure:
 
@@ -62,9 +62,9 @@ If a phase cannot meet these rules, the skill MUST mark it non-resumable in its 
 
 ## What lives where
 
-- **`shared/state-schema.md`** — defines what `state.md` must contain for any skill to read it.
-- **`shared/resume-protocol.md`** (this file) — defines what to do with an existing `state.md` at skill entry.
-- **`shared/approval-gate.md`** — defines the AskUserQuestion two-surface pattern that the resume gate uses.
+- **`<PLUGIN_ROOT>/shared/state-schema.md`** — defines what `state.md` must contain for any skill to read it.
+- **`<PLUGIN_ROOT>/shared/resume-protocol.md`** (this file) — defines what to do with an existing `state.md` at skill entry.
+- **`<PLUGIN_ROOT>/shared/approval-gate.md`** — defines the AskUserQuestion two-surface pattern that the resume gate uses.
 
 A skill that wires up resume MUST reference all three.
 

@@ -121,8 +121,8 @@ When a Wave B finding matches a Wave A finding (same `file:line`, overlapping li
 
 Notes:
 
-- branch-reviewer's lens set is `bugs | security | architecture | performance | maintainability` (no separate reliability/stride lens). `bugs` covers the correctness + reliability axes; `architecture` and `maintainability` are NEVER in any blinded role's corroborator list.
-- `audit depth:deep`'s lens set is `correctness | security | performance | maintainability | reliability | stride_delta`. The mapping above mirrors `references/evidence-tier-rules.md` lines 52-54 — if the two ever drift, this file is authoritative and the other must be reconciled.
+- branch-reviewer's lens set is `bugs | security | architecture | performance | maintainability | over-engineering` (no separate reliability/stride lens). `bugs` covers the correctness + reliability axes; `architecture`, `maintainability` and `over-engineering` are NEVER in any blinded role's corroborator list.
+- `audit depth:deep`'s lens set is `correctness | security | performance | maintainability | reliability | stride_delta`. The mapping above mirrors the audit skill's `references/evidence-tier-rules.md` lines 52-54 — if the two ever drift, this file is authoritative and the other must be reconciled.
 - A finding matched by multiple Wave B roles boosts at most once. Record all corroborators as a list (e.g., `corroborated_by: [blinded_security, blinded_ops]`); the boost itself applies once.
 
 ## Unmatched Wave B Findings — Blind Spots
@@ -138,5 +138,5 @@ Blind spots still must populate all five required fields (severity, file/expecte
 ## Maintenance
 
 - The prompt blocks above are the only acceptable copy. Inlining identical prompt text in any consumer file is a regression — replace with a directive to read this file.
-- The corroboration table is the single source of truth for which Wave A lenses corroborate which blinded role. Consumers that maintain their own evidence-tier rules (e.g. `references/evidence-tier-rules.md`) must stay in sync with this table; on conflict, this file wins.
+- The corroboration table is the single source of truth for which Wave A lenses corroborate which blinded role. Consumers that maintain their own evidence-tier rules (e.g. the audit skill's `references/evidence-tier-rules.md`) must stay in sync with this table; on conflict, this file wins.
 - The dispatch invariants (separate message, raw diff only, opus, `pipeline-researcher`) are non-negotiable. Any consumer that documents an exception is broken — fix the consumer rather than weakening this file.

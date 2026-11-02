@@ -45,7 +45,7 @@ Every loop using one of these caps MUST follow the same escalation pattern when 
    - **Accept current state** → mark the loop's outcome as partial in `state.md` and proceed.
    - **Abort task** → write `Status: failed` and stop.
 
-This pattern is referenced from `shared/retry-policy.md`. Loops MUST NOT silently exit at the cap — that defeats the resume contract.
+This pattern is referenced from `<PLUGIN_ROOT>/shared/retry-policy.md`. Loops MUST NOT silently exit at the cap — that defeats the resume contract.
 
 ## Why a single source of truth
 
