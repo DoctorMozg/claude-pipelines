@@ -58,14 +58,14 @@ REFERENCE_TOC_MIN_LINES = 100
 SKILL_MAX_CHARS = 20_000
 SKILL_MAX_LINES = 500
 PHASE_MAX_LINES = 400
-# Interpreters and exec wrappers run whatever follows them, so a grant on the bare program is bare Bash.
+# Interpreters and exec wrappers run whatever follows them: a bare-program grant is bare Bash.
 BASH_EQUIVALENT_GRANT = re.compile(
     r"^Bash\((?:\*|(?:bash|sh|zsh|python3?|node|perl|env|eval|exec|xargs|sudo|npx|uv run)"
     r"(?: \*|:\*)?)\)$"
 )
 # `Bash(ls*)` also matches `lsof`; ` *` and `:*` are the word-boundary forms.
 UNBOUNDED_TRAILING_STAR = re.compile(r"[^ :]\*\)$")
-# Orchestrators that run commands nobody can list in advance keep bare Bash (user decision, 2026-11-02).
+# Orchestrators running commands nobody can list in advance keep bare Bash (user, 2026-11-02).
 OPEN_ENDED_BASH_SKILLS = {
     "debug": "reproduces failures with the project's test command, trigger scripts and git bisect",
     "polish": "runs the user's criterion checks and the project's formatters itself",
@@ -134,7 +134,6 @@ class TestFrontmatter:
             and "AskUserQuestion" not in split_tool_list(item.frontmatter.get("allowed-tools"))
         ]
         assert_no_violations(violations)
-
 
     def test_bash_grants_are_scoped(self, skills: DocSet) -> None:
         violations: list[str] = []
