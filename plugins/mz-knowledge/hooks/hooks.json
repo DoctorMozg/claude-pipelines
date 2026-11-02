@@ -4,18 +4,18 @@
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/frontmatter-normalize.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/frontmatter-normalize.sh",
             "type": "command"
           }
         ],
-        "matcher": "Write|Edit|MultiEdit"
+        "matcher": "Write|Edit"
       }
     ],
     "SessionStart": [
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/vault-context.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/vault-context.sh",
             "type": "command"
           }
         ],

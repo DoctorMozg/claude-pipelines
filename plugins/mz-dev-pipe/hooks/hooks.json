@@ -4,7 +4,7 @@
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/detect-tooling.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/detect-tooling.sh",
             "type": "command"
           }
         ],

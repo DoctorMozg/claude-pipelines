@@ -257,23 +257,23 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
         for package_name, hooks in rendered_hooks.items()
     } == {
         "mz-dev-pipe": {
-            "SessionStart": ("${PLUGIN_ROOT}/scripts/detect-tooling.sh",),
+            "SessionStart": ('"${PLUGIN_ROOT}"/scripts/detect-tooling.sh',),
         },
         "mz-memory": {
-            "SessionStart": ("${PLUGIN_ROOT}/scripts/memory-inject.sh",),
+            "SessionStart": ('"${PLUGIN_ROOT}"/scripts/memory-inject.sh',),
             "UserPromptSubmit": (
-                "${PLUGIN_ROOT}/scripts/journal-capture.sh",
-                "${PLUGIN_ROOT}/scripts/memory-prompt-inject.sh",
+                '"${PLUGIN_ROOT}"/scripts/journal-capture.sh',
+                '"${PLUGIN_ROOT}"/scripts/memory-prompt-inject.sh',
             ),
-            "SessionEnd": ("${PLUGIN_ROOT}/scripts/memory-capture.sh",),
+            "SessionEnd": ('"${PLUGIN_ROOT}"/scripts/memory-capture.sh',),
         },
         "mz-knowledge": {
-            "PostToolUse": ("${PLUGIN_ROOT}/scripts/frontmatter-normalize.sh",),
-            "SessionStart": ("${PLUGIN_ROOT}/scripts/vault-context.sh",),
+            "PostToolUse": ('"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',),
+            "SessionStart": ('"${PLUGIN_ROOT}"/scripts/vault-context.sh',),
         },
     }
     assert rendered_hooks["mz-memory"]["SessionStart"][0]["matcher"] == "startup|clear|compact"
-    assert rendered_hooks["mz-knowledge"]["PostToolUse"][0]["matcher"] == "Write|Edit|MultiEdit"
+    assert rendered_hooks["mz-knowledge"]["PostToolUse"][0]["matcher"] == "Write|Edit"
     assert all(
         "once" not in handler
         for hooks in rendered_hooks.values()

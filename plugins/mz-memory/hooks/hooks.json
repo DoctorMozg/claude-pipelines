@@ -4,7 +4,7 @@
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/journal-capture.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/journal-capture.sh",
             "type": "command"
           }
         ],
@@ -15,7 +15,7 @@
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-capture.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/memory-capture.sh",
             "type": "command"
           }
         ]
@@ -25,7 +25,7 @@
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-inject.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/memory-inject.sh",
             "type": "command"
           }
         ],
@@ -36,7 +36,7 @@
       {
         "hooks": [
           {
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/memory-prompt-inject.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/memory-prompt-inject.sh",
             "type": "command"
           }
         ]
