@@ -453,7 +453,7 @@ Exceptions:
 
 Run this before merging a new or changed agent.
 
-**Mechanical checks.** Scripts run all but one. `tests/plugin_lint/test_agents.py`, which `make test` runs, covers every item except the `dependencies` item and the last one, which the `no-rule-citations` pre-commit hook covers. Check the `dependencies` item by hand until a test covers it. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
+**Mechanical checks.** Scripts run all of them. `make test` runs `tests/plugin_lint/test_agents.py`, which covers every item except two: `tests/plugin_lint/test_dependencies.py` covers the `dependencies` item, and the `no-rule-citations` pre-commit hook covers the last one. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
 
 - [ ] The frontmatter parses with a strict YAML parser and has no unknown keys (§1).
 - [ ] `name` is kebab-case, 3-50 characters and two to four words, is unique across the marketplace, and matches the filename (§20).
