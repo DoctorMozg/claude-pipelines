@@ -186,7 +186,7 @@ Issue each wave's `Agent` calls in one message. In interactive sessions, subagen
 
 ## 10. Agent Body Anatomy
 
-A new or substantially rewritten agent body uses these five sections, in this order. Existing agents can keep their own section names, and move toward this shape when the file is next edited.
+A new or substantially rewritten agent body uses these five sections, in this order. Existing agents can keep their own section names, and move toward this shape when the file is next edited. Every agent, old or new, has a `## Red Flags` heading outside any code fence: inside an output template it reads as text to emit.
 
 1. `## Role`: one opening line, `You are a [role] specializing in [domain].` Write the body in the second person throughout: no first person, and no third person ("This agent…").
 1. `## Core Principles`: three to eight behavioral rules, framed positively (§16). Prose can't make a rule hold every time. Where one has to, back it with `tools`/`disallowedTools` or a plugin hook matched on `agent_type` (§19). Frontmatter `hooks` and `permissionMode` don't work in plugin agents (§2).
@@ -469,7 +469,7 @@ Exceptions:
 
 Run this before merging a new or changed agent.
 
-**Mechanical checks.** Scripts run all of them. `make test` runs `tests/plugin_lint/test_agents.py`, which covers every item except two: `tests/plugin_lint/test_dependencies.py` covers the `dependencies` item, and the `no-rule-citations` pre-commit hook covers the last one. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
+**Mechanical checks.** Scripts run all of them. `make test` runs `tests/plugin_lint/test_agents.py`, which covers every item except three: `tests/plugin_lint/test_dependencies.py` covers the `dependencies` item, `tests/plugin_lint/test_cross_refs.py` covers closing fences, and the `no-rule-citations` pre-commit hook covers the last one. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
 
 - [ ] The frontmatter parses with a strict YAML parser and has no unknown keys (§1).
 - [ ] `name` is kebab-case, 3-50 characters and two to four words, is unique across the marketplace, and matches the filename (§20).
@@ -482,6 +482,8 @@ Run this before merging a new or changed agent.
 - [ ] Only orchestrators list `Agent` (§8).
 - [ ] The agent has no `Task(...)` references (§8).
 - [ ] `VERDICT:` appears as a bare line, never as a heading, and `STACK DETECTED:` is written with a space (§12, §13).
+- [ ] A `## Red Flags` heading sits outside code fences (§10).
+- [ ] Every code fence closes, on a bare run of its own character at least as long as the opener. An unclosed fence turns the rest of the file into code.
 - [ ] The agent cites no guideline rule or section numbers (§22).
 
 **Review checks**
