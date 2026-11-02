@@ -23,28 +23,26 @@ Read `.mz/task/<task_name>/review_queue.md` and iterate through each entry in or
 Maturity: <seedling|sapling|tree|ancient-tree> | last_reviewed: <date or never> | outlinks: <N> | inlinks: <N> | score: <X>
 
 ---
-**Done** → mark reviewed  ·  **Skip** → leave unchanged  ·  **Edit** → describe a change  ·  **Promote** → advance maturity  ·  **Archive** → flag for end-of-session archival  ·  **Abort** → stop the session
+**Done** → mark reviewed  ·  **Skip** → leave unchanged  ·  **Promote** → advance maturity  ·  **Archive** → flag for end-of-session archival  ·  type a change to apply it (Edit)  ·  type `abort` to stop the session
 ```
 
-1. **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the note content in the question body:
+1. **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the note content in the question body. AskUserQuestion takes at most four options, so Edit and Abort are typed replies, listed in the Surface 1 footer:
 
    - question: `Note <N>/<M> above is ready for your action.`
    - options:
      - **Done** — mark as reviewed and update last_reviewed to today
      - **Skip** — leave the note unchanged
-     - **Edit** — describe a change, apply it and re-prompt
      - **Promote** — advance maturity one stage (seedling→sapling→tree→ancient-tree)
      - **Archive** — flag for archiving at end of session
-     - **Abort** — stop the session now
 
 1. Handle the response:
 
 - **Done** → update the note's frontmatter: set `last_reviewed: <today ISO date>`. Preserve all other frontmatter keys and the body untouched. Continue to the next note.
 - **Skip** → append `- title: "<title>" action: skipped` to `.mz/task/<task_name>/session_log.md`. Do NOT touch the note file. Continue.
-- **Edit** → ask the user to describe the change. Apply it via `Edit` to the note body (never the frontmatter unless the change specifically targets it). Re-read the file. Re-emit the note review message (Surface 1) and re-present the selector (Surface 2) — the user then replies Done, Skip, or another Edit.
 - **Promote** → advance `maturity` one stage: `seedling → sapling → tree → ancient-tree`. If the note is already `ancient-tree`, report that and re-present with Done or Skip as the choices. Update `last_reviewed: <today>` alongside the maturity change. Continue.
 - **Archive** → do NOT move the file mid-session. Append `- title: "<title>" path: "<path>" action: archive_pending` to `.mz/task/<task_name>/session_log.md`. Continue. Archive moves are batched at the end.
-- **Abort** → update `state.md`: `Status: aborted_mid_session`, `Phase: 2`, `NotesReviewed: <count so far>`. Stop. Skip the summary step.
+- **Typed reply `abort`** (any case) → update `state.md`: `Status: aborted_mid_session`, `Phase: 2`, `NotesReviewed: <count so far>`. Stop. Skip the summary step.
+- **Any other typed reply (Edit)** → treat the text as the change to make. Apply it via `Edit` to the note body (never the frontmatter unless the change specifically targets it). Re-read the file. Re-emit the note review message (Surface 1) and re-present the selector (Surface 2) — the user then replies Done, Skip, or another change.
 
 All frontmatter writes must preserve YAML key order and existing keys. If the note has no frontmatter block, create one at the top with only `last_reviewed:` (and `maturity:` for `promote`).
 
@@ -116,4 +114,4 @@ vault-review complete:
 
 - **Note file moved or deleted since scan** → skip the entry, log `action: missing` in `session_log.md`, continue without interrupting the session.
 - **Frontmatter malformed** (unparseable YAML) → report the exact parse error to the user via AskUserQuestion before writing; offer to skip or have the user fix the block manually.
-- **Edit response yields no change** (empty input) → re-prompt once; if still empty, treat as `skip`.
+- **Typed change yields no edit** (empty or unclear text) → re-prompt once; if still empty, treat as `skip`.

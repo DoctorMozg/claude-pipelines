@@ -63,7 +63,7 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 ### Phase 0: Setup
 
 1. Parse `$ARGUMENTS`. Extract: topic, `format:`, `scope:`, `@brief:` references.
-1. If `format:` is missing → `AskUserQuestion` with the six supported formats as variant options. Never guess.
+1. If `format:` is missing → `AskUserQuestion` with `landing`, `email`, `announcement` and `social` as options, and a question text that names `changelog` and `pitch` as typed replies (AskUserQuestion takes at most four options). Never guess.
 1. If topic/brief is empty → `AskUserQuestion` for what to promote and to whom. Never guess.
 1. If `@brief:<path>` is referenced, read the file and verify it exists and is readable text.
 1. `task_name` = `<YYYY_MM_DD>_copywrite_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary derived from the topic + format (max 20 chars). On same-day collision append `_v2`, `_v3`.
@@ -140,7 +140,7 @@ If any phase is incomplete, print the blocker explicitly.
 ## Error Handling
 
 - Empty topic → `AskUserQuestion`. Never guess.
-- Missing `format:` → `AskUserQuestion` with the six supported formats. Never guess.
+- Missing `format:` → the Phase 0 format question: four options, with `changelog` and `pitch` as typed replies. Never guess.
 - `@brief:` path does not exist → ask the user whether to proceed without it; warn that copy quality drops sharply without a grounded brief.
 - `scope:` resolves to zero files → continue with empty codebase tone-match; warn the user that voice-matching is unavailable.
 - `expert-copywriter` returns `BLOCKED` or `NEEDS_CONTEXT` → re-dispatch once with the missing context filled; if still blocked, escalate via AskUserQuestion.
