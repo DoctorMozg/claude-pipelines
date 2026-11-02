@@ -69,14 +69,15 @@ atomic_write() {
 # Seed MEMORY.md with the v2 layout if missing. Migrate v1 (flat list) → v2
 # (Pinned + Activity Log sections with marker comments). Re-seed the header
 # if the marker was hand-removed so prepend operations stay safe.
+# Every write is checked: hooks call this under `||`, where errexit is off.
 ensure_memory_file() {
   local memory_file="$1"
   local memory_dir
   memory_dir=$(dirname "$memory_file")
-  mkdir -p "$memory_dir"
+  mkdir -p "$memory_dir" || return 1
 
   if [[ ! -f "$memory_file" ]]; then
-    _write_fresh_memory "$memory_file"
+    _write_fresh_memory "$memory_file" || return 1
     return 0
   fi
 
@@ -105,7 +106,7 @@ ensure_memory_file() {
     {
       _emit_memory_header
       printf '%s\n' "$body_no_header"
-    } | atomic_write "$memory_file"
+    } | atomic_write "$memory_file" || return 1
     return 0
   fi
 
@@ -133,7 +134,7 @@ ensure_memory_file() {
     printf '%s\n' "$MZ_LOG_START"
     [[ -n "$log_existing" ]] && printf '%s\n' "$log_existing"
     printf '%s\n' "$MZ_LOG_END"
-  } | atomic_write "$memory_file"
+  } | atomic_write "$memory_file" || return 1
 }
 
 _write_fresh_memory() {

@@ -3,10 +3,13 @@ import os
 import re
 import shutil
 import subprocess
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
+
+import pytest
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts"
 BASH = shutil.which("bash") or "/bin/bash"
@@ -190,6 +193,19 @@ def line_field(line: str, name: str) -> str:
 def ok(result: subprocess.CompletedProcess[str]) -> subprocess.CompletedProcess[str]:
     assert result.returncode == 0, result.stderr
     return result
+
+
+needs_non_root = pytest.mark.skipif(os.geteuid() == 0, reason="root writes whatever the mode")
+
+
+@contextmanager
+def read_only(directory: Path) -> Iterator[None]:
+    """Make `directory` unwritable for the block, then writable again even if the block fails."""
+    directory.chmod(0o555)
+    try:
+        yield
+    finally:
+        directory.chmod(0o755)
 
 
 def section_lines(context: str, heading: str) -> list[str]:

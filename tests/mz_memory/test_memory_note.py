@@ -25,7 +25,9 @@ from .memory_helpers import (
     line_texts,
     memory_dir,
     memory_file,
+    needs_non_root,
     ok,
+    read_only,
     region,
 )
 
@@ -135,6 +137,31 @@ class TestNote:
         ok(run_note("the key is <private>abc123</private> in the vault"))
 
         assert _pinned(project) == [f"- [{TODAY}] the key is in the vault"]
+
+    # The hooks treat an unwritable root as "nothing to do"; an explicit note must still fail.
+    @needs_non_root
+    def test_note_fails_when_memory_dir_cannot_be_created(
+        self, project: Path, run_note: NoteRunner
+    ) -> None:
+        with read_only(project / ".mz"):
+            failed = run_note("always run migrations forward-compatible")
+
+        assert failed.returncode != 0
+        assert "Wrote to" not in failed.stdout
+        assert not memory_file(project).exists()
+
+    @needs_non_root
+    def test_note_fails_when_memory_dir_is_read_only(
+        self, project: Path, run_note: NoteRunner
+    ) -> None:
+        ok(run_note("first note"))
+        before = memory_file(project).read_text(encoding="utf-8")
+        with read_only(memory_dir(project)):
+            failed = run_note("second note")
+
+        assert failed.returncode != 0
+        assert "Wrote to" not in failed.stdout
+        assert memory_file(project).read_text(encoding="utf-8") == before
 
 
 class TestLesson:
@@ -264,17 +291,13 @@ class TestLesson:
         assert "<private>" in result.stderr
         assert not lessons_file(project).exists()
 
-    @pytest.mark.skipif(os.geteuid() == 0, reason="root writes whatever the mode")
+    @needs_non_root
     def test_failed_write_is_reported_and_retried(
         self, project: Path, run_note: NoteRunner
     ) -> None:
         ok(run_note("--lesson", "WHEN a → b — WHY c"))
-        directory = memory_dir(project)
-        directory.chmod(0o555)
-        try:
+        with read_only(memory_dir(project)):
             failed = run_note("--lesson", "WHEN d → e — WHY f")
-        finally:
-            directory.chmod(0o755)
 
         assert failed.returncode != 0
         assert failed.stdout == ""

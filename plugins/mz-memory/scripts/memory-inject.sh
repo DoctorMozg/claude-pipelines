@@ -77,12 +77,17 @@ emit_context() {
     '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $payload}}'
 }
 
-ensure_memory_file "$MEMORY_FILE"
+# An unwritable project still gets whatever memory it has; a hook error would only nag the user.
+writable=1
+if ! ensure_memory_file "$MEMORY_FILE"; then
+  writable=0
+  echo "memory-inject.sh: can't write ${MEMORY_DIR}, injecting it as it is" >&2
+fi
 
 if body=$(build_payload); then
   emit_context "Project memory (.mz/memory/MEMORY.md):
 ${body}"
-else
+elif [[ "$writable" == 1 ]]; then
   emit_context "Project memory initialized at .mz/memory/MEMORY.md (empty). Memory accumulates as tasks complete."
 fi
 exit 0

@@ -20,7 +20,10 @@ from .memory_helpers import (
     clean_env,
     lessons_file,
     log_entries,
+    memory_dir,
     memory_file,
+    needs_non_root,
+    read_only,
     section_lines,
 )
 
@@ -37,6 +40,7 @@ MAX_CHARS = 8000
 LESSONS_CHARS = 3000
 DIGEST_CHARS = 3000
 LESSONS_TOP = 12
+type RunRaw = Callable[..., subprocess.CompletedProcess[str]]
 type RunHook = Callable[..., str]
 type Inject = Callable[[], str]
 type PathWithoutJq = Callable[[Iterable[str]], str]
@@ -71,12 +75,12 @@ def _items(context: str, heading: str) -> list[str]:
 
 
 @pytest.fixture
-def run_hook(project: Path) -> RunHook:
+def run_raw(project: Path) -> RunRaw:
     base_env = clean_env()
     base_env["MZ_MEMORY_ROOT"] = str(project)
 
-    def run(path: str = "") -> str:
-        result = subprocess.run(
+    def run(path: str = "") -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
             [BASH, str(INJECT_SCRIPT)],
             input=COMPACT_INPUT,
             env={**base_env, **({"PATH": path} if path else {})},
@@ -85,6 +89,14 @@ def run_hook(project: Path) -> RunHook:
             timeout=30,
             check=False,
         )
+
+    return run
+
+
+@pytest.fixture
+def run_hook(run_raw: RunRaw) -> RunHook:
+    def run(path: str = "") -> str:
+        result = run_raw(path)
         assert result.returncode == 0, result.stderr
         assert result.stderr == ""
         return result.stdout
@@ -153,6 +165,45 @@ class TestSilentExits:
         seed_memory(["- [2026-11-01] migrate forward only"], ["- [2026-11-01] build_auth"])
 
         assert run_hook(path_without_jq(TOOLS_WITHOUT_JQ)) == ""
+
+
+@needs_non_root
+class TestUnwritableProject:
+    def test_uncreatable_memory_dir_exits_zero_and_injects_nothing(
+        self, project: Path, run_raw: RunRaw
+    ) -> None:
+        with read_only(project / ".mz"):
+            result = run_raw()
+
+        assert result.returncode == 0, result.stderr
+        assert result.stdout == ""
+        assert "can't write" in result.stderr
+        assert not memory_file(project).exists()
+
+    def test_read_only_memory_dir_still_injects_intact_memory(
+        self, project: Path, inject: Inject, seed_memory: SeedMemory
+    ) -> None:
+        seed_memory(["- [2026-11-01] migrate forward only"], [])
+
+        with read_only(memory_dir(project)):
+            context = inject()
+
+        assert section_lines(context, "## Pinned") == ["- [2026-11-01] migrate forward only"]
+
+    def test_read_only_memory_dir_leaves_an_outdated_file_untouched(
+        self, project: Path, run_raw: RunRaw
+    ) -> None:
+        memory = memory_file(project)
+        memory.parent.mkdir(parents=True)
+        memory.write_text("# Project Memory\n\n- [2026-10-01] flat v1 entry\n", encoding="utf-8")
+
+        with read_only(memory.parent):
+            result = run_raw()
+
+        assert result.returncode == 0, result.stderr
+        assert memory.read_text(encoding="utf-8") == (
+            "# Project Memory\n\n- [2026-10-01] flat v1 entry\n"
+        )
 
 
 class TestPayload:
