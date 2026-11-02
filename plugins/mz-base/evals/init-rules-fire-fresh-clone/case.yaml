@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: init-rules-fire-fresh-clone
+description: Getting Claude's conventions in place for one named repo on a known stack is a project-scoped rules install, so it belongs to init-rules.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+execution:
+  prompt: >-
+    Just cloned git@github.com:acme-robotics/fleet-api.git into ~/work/fleet-api and
+    I'll be in it daily from now on. It's Python 3.12 with pytest, ruff and a GitHub
+    Actions pipeline. Before I start, get Claude's working conventions for that repo
+    in place, matched to the stack: typing, testing, commit style, the usual. Leave
+    my other projects alone.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: init-rules-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?init-rules"'

@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: using-mozg-pipelines-near-miss-guest-checkout-bug
+description: A stack-traced bug with a request to find the cause and fix it plainly fits debug, so it should go straight there.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+execution:
+  prompt: >-
+    Guest checkout has been throwing KeyError: 'user_id' in process_payment
+    (payments/processor.py, line 88) since Tuesday's deploy. Logged-in users are
+    fine. Find out why and fix it, and add a test that would have caught it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: using-mozg-pipelines-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?using-mozg-pipelines"'
+    min: 0
+    max: 0
+    arm: both

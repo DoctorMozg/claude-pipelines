@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: init-rules-near-miss-claudemd-one-line
+description: Swapping one command line in an existing CLAUDE.md is a trivial edit that needs no skill, not a rules install.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+execution:
+  prompt: >-
+    Quick one. The CLAUDE.md in the repo root has a Build section, and the first
+    command under it is still npm run build from before we moved to pnpm. Swap that
+    one line to pnpm build and leave everything else in the file alone.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: init-rules-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?init-rules"'
+    min: 0
+    max: 0
+    arm: both

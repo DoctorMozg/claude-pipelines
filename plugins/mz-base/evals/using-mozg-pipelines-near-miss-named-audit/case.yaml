@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: using-mozg-pipelines-near-miss-named-audit
+description: The user names audit and its depth, so audit runs directly with no routing step.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+execution:
+  prompt: >-
+    Run audit with depth:deep on src/auth/ please. PR goes up tomorrow morning and I
+    want the thorough pass, not the quick scan.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: using-mozg-pipelines-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?using-mozg-pipelines"'
+    min: 0
+    max: 0
+    arm: both

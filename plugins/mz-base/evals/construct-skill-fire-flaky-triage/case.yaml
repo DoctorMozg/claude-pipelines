@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: construct-skill-fire-flaky-triage
+description: Turning a routine the team keeps re-explaining into a procedure Claude loads on demand and ships through this marketplace repo is authoring a new skill.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+execution:
+  prompt: >-
+    Every time a test flakes in CI someone re-explains the same routine to Claude.
+    Rerun it twenty times, bisect the history if it fails, quarantine it with our
+    team marker. I'd like that written down once as a procedure Claude picks up on
+    its own whenever someone hits a flaky test, and shipped to everyone through this
+    repo's marketplace. Draft it to our authoring standards and show me the whole
+    thing before it's final.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: construct-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?construct-skill"'

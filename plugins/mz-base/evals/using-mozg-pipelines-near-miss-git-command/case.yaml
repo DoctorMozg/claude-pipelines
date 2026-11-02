@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: using-mozg-pipelines-near-miss-git-command
+description: A one-line git question is answered inline and needs no skill or routing.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+execution:
+  prompt: >-
+    Which git command shows just the file names changed in the last commit? I always
+    forget it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: using-mozg-pipelines-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?using-mozg-pipelines"'
+    min: 0
+    max: 0
+    arm: both

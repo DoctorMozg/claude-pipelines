@@ -1,6 +1,6 @@
 ---
 name: design-document
-description: 'ALWAYS invoke when the user wants a UI/UX design document or interface spec. Triggers: "design a UI for X", "create a design document", "design spec", "UX spec". Provide a brief as the argument.'
+description: 'Writes a UI/UX design document with wireframes and a WCAG contrast report. Use when the user wants an interface designed as a spec ("design a UI for X", "create a design document", "design spec", "UX spec"). Not for building it in code (use build).'
 model: sonnet
 allowed-tools: Agent(design-researcher), Agent(design-document-writer), Agent(ui-designer), Agent(ux-designer), Agent(art-designer), Agent(accessibility-specialist), Agent(design-critique-synthesizer), Agent(design-revision-writer), AskUserQuestion, Read, Write, Grep, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(test *), Bash(perl -0777 -pe *), WebSearch
 ---
@@ -13,9 +13,7 @@ Takes a UI/UX design brief and produces a comprehensive design document with ASC
 
 ## When to Use
 
-- User asks to create a UI/UX design document, interface specification, or UX spec.
-- Triggers: "design a X page/screen/flow", "create a design document for X", "design spec for X", "UX spec for X".
-- Work produces a spec document (not implementation) for software UI/UX.
+A UI/UX design document or interface spec for a page, screen or flow of a software product. It produces a spec document, not an implementation.
 
 ### When NOT to use
 

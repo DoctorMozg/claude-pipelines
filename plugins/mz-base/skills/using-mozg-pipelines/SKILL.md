@@ -1,6 +1,6 @@
 ---
 name: using-mozg-pipelines
-description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-job-outreach, mz-creative, mz-gov.
+description: 'Separates look-alike mozg skills and chains several per task. Use when the user is unsure which of their tools fits or what they have ("which pipeline fits", "what plugins do I have", "route this"). Not when the user named a skill (invoke it).'
 argument-hint: '[task description]'
 model: haiku
 allowed-tools: Read, AskUserQuestion
@@ -12,12 +12,7 @@ This is a routing map, not a discipline skill. It loads on demand, when the user
 
 ## When to Use
 
-Invoke when the user:
-
-- asks "which skill/plugin/pipeline do I use for X"
-- says "what plugins do I have" or "what can mozg do"
-- asks to "route this task" or "pick the right pipeline"
-- describes a task without naming a skill and you need to dispatch
+Choosing which installed mozg skill or plugin fits a task, or seeing what is installed, when the user has not named a skill.
 
 ### When NOT to use
 

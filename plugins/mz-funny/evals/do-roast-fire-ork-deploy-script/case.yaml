@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: do-roast-fire-ork-deploy-script
+description: A terse request for a character-voice roast of a script, grounded in real issues, is the core do-roast job.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-dev-git", "../../../mz-dev-pipe", "../../../mz-research-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    roast scripts/deploy.sh as a wh40k ork. real issues only, no inventing stuff
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: do-roast-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?do-roast"'

@@ -1,6 +1,6 @@
 ---
 name: construct-skill
-description: "Drafts a new skill for a plugin in this marketplace repo, to its guidelines. Use when asked to write or add a skill or SKILL.md to one of its plugins, or to package a recurring workflow. Not for .claude/skills or skill reviews (use review-branch)."
+description: 'Drafts a new skill for a plugin in a marketplace repo, to its guidelines. Use when the user wants a skill written or a workflow made into one ("write a skill", "create a SKILL.md", "add a skill to the plugin"). Not for .claude/skills project skills.'
 argument-hint: <skill name or intent>
 allowed-tools: Read, Write, Edit, AskUserQuestion, Bash(claude plugin validate:*)
 model: sonnet

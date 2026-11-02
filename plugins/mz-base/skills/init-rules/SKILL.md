@@ -1,6 +1,6 @@
 ---
 name: init-rules
-description: ALWAYS invoke when the user wants to install development rules for a project or globally. Triggers:"init rules","set up rules","install rules","configure coding rules","onboard project".
+description: 'Installs coding rules per project or globally. Use when the user wants Claude to follow the same habits or conventions in a project or every session ("init rules", "install rules", "onboard project"). Not for an Obsidian vault (use obsidian-init).'
 argument-hint: '[project|global] [--target=rules|claudemd] [--force] [--uninstall]'
 model: sonnet
 allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(command -v *), Bash(jq *), Bash(dirname *), Bash(printf *), Bash(mv *), Bash(rm *), Glob, Grep, AskUserQuestion
@@ -19,10 +19,11 @@ Personal preference groups install only when the user picks them. Every install 
 
 ## When to Use
 
-Triggers: "init rules", "set up rules", "install rules", "configure coding rules", "onboard project".
+Installing, refreshing or uninstalling curated development rules for one project or globally, as rule files or CLAUDE.md blocks.
 
 ### When NOT to use
 
+- Setting up an Obsidian vault rather than a code repo's rules — use `obsidian-init` (mz-knowledge).
 - The user wants to edit rule content itself — open the rule file directly.
 - The user wants per-file rule scoping — use `--target=rules`; claudemd mode cannot path-scope.
 - The target directory or CLAUDE.md is managed by another tool and should not be touched.

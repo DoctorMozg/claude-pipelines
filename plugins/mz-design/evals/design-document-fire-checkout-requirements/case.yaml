@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: design-document-fire-checkout-requirements
+description: Turning a requirements file into a written plan of screens, flows and readable colors, before any code, is a UI/UX design document even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-creative", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    We've got the product requirements for the new checkout in
+    docs/requirements/checkout-v2.md. Before the team writes any code, I want a
+    written plan for what each screen looks like (rough text sketches of the
+    layouts are fine), how a shopper moves from cart to confirmation, what shows
+    up when a card gets declined, and a check that the colors are readable for
+    people with low vision.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: design-document-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?design-document"'
