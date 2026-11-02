@@ -201,34 +201,33 @@ This is **complementary** to the global memory system this plugin provides:
 
 ## File Reference
 
-| File                                     | Purpose                                                                                                 |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `.mz/memory/MEMORY.md`                   | Project memory store: Pinned, Digest and Activity Log                                                   |
-| `.mz/memory/activity.archive.md`         | Activity Log entries the Digest replaced, verbatim                                                      |
-| `.mz/memory/activity.ops.jsonl`          | Operations each compression run applied or rejected                                                     |
-| `.mz/memory/lessons.md`                  | Curated lessons and the Inbox, at most 500 lines                                                        |
-| `.mz/memory/lessons.archive.md`          | Merged, superseded, dropped, evicted and promoted lessons, verbatim                                     |
-| `.mz/memory/lessons.ops.jsonl`           | Curator operations, promotions and declines (newest 1,000)                                              |
-| `.mz/memory/.lessons-seen`               | Keys of lessons already collected per task (newest 2,000)                                               |
-| `.mz/memory/.lessons-curated`            | Highest Inbox id the last curation saw                                                                  |
-| `.mz/memory/.promote-declined`           | Lessons declined for promotion, with their count at the time                                            |
-| `.mz/memory/.compress-failed`            | Date of a failed compression, which waits for the next day                                              |
-| `.mz/memory/.compress.lock`              | Lock directory held by a running compression                                                            |
-| `.mz/memory/.curate.lock`                | Lock directory held by a running curation                                                               |
-| `.mz/memory/*.bak`                       | Copy of `MEMORY.md` or `lessons.md` taken before a background run rewrites it                           |
-| `.mz/memory/.last-capture`               | Marker whose mtime records the previous SessionEnd capture                                              |
-| `.mz/journal.md`                         | Append-only interaction journal (AskUserQuestion calls and skill entries)                               |
-| `.claude/agent-memory/<agent>/MEMORY.md` | Per-agent native memory (managed by Claude Code, bridged on capture)                                    |
-| `scripts/lib/common.sh`                  | Shared helpers: `find_project_root`, `strip_private`, `atomic_write`, the MEMORY.md regions, …          |
-| `scripts/lib/lessons.sh`                 | The lessons store: Inbox writes, ranking, matching, promotion candidates                                |
-| `scripts/lib/curator.sh`                 | The shared curator: `claude -p` call, operations, guards, eviction                                      |
-| `scripts/memory-{inject,capture}.sh`     | Core SessionStart / SessionEnd hooks                                                                    |
-| `scripts/memory-prompt-inject.sh`        | UserPromptSubmit selective injection and correction reminder                                            |
-| `scripts/memory-compress.sh`             | Background Activity Log compression into the Digest                                                     |
-| `scripts/lessons-curate.sh`              | Background lessons curation                                                                             |
-| `scripts/journal-capture.sh`             | PostToolUse(AskUserQuestion) hook — records completed calls to `.mz/journal.md`                         |
-| `scripts/journal-append.sh`              | Internal helper used by journal-capture.sh (flock-guarded, `<private>`-redacting); skills don't call it |
-| `scripts/memory-note.sh`                 | CLI helper invoked by the `/memory-note` skill                                                          |
-| `scripts/lessons-promote.sh`             | CLI helper invoked by the `/lessons-promote` skill: list, archive, decline                              |
-| `skills/memory-note/SKILL.md`            | Notes with an approval gate; lessons straight to the Inbox                                              |
-| `skills/lessons-promote/SKILL.md`        | Promotes lessons into CLAUDE.md or `.claude/rules/`, one gate per lesson                                |
+| File                                     | Purpose                                                                                        |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `.mz/memory/MEMORY.md`                   | Project memory store: Pinned, Digest and Activity Log                                          |
+| `.mz/memory/activity.archive.md`         | Activity Log entries the Digest replaced, verbatim                                             |
+| `.mz/memory/activity.ops.jsonl`          | Operations each compression run applied or rejected                                            |
+| `.mz/memory/lessons.md`                  | Curated lessons and the Inbox, at most 500 lines                                               |
+| `.mz/memory/lessons.archive.md`          | Merged, superseded, dropped, evicted and promoted lessons, verbatim                            |
+| `.mz/memory/lessons.ops.jsonl`           | Curator operations, promotions and declines (newest 1,000)                                     |
+| `.mz/memory/.lessons-seen`               | Keys of lessons already collected per task (newest 2,000)                                      |
+| `.mz/memory/.lessons-curated`            | Highest Inbox id the last curation saw                                                         |
+| `.mz/memory/.promote-declined`           | Lessons declined for promotion, with their count at the time                                   |
+| `.mz/memory/.compress-failed`            | Date of a failed compression, which waits for the next day                                     |
+| `.mz/memory/.compress.lock`              | Lock directory held by a running compression                                                   |
+| `.mz/memory/.curate.lock`                | Lock directory held by a running curation                                                      |
+| `.mz/memory/*.bak`                       | Copy of `MEMORY.md` or `lessons.md` taken before a background run rewrites it                  |
+| `.mz/memory/.last-capture`               | Marker whose mtime records the previous SessionEnd capture                                     |
+| `.mz/journal.md`                         | Append-only interaction journal (AskUserQuestion calls and skill entries)                      |
+| `.claude/agent-memory/<agent>/MEMORY.md` | Per-agent native memory (managed by Claude Code, bridged on capture)                           |
+| `scripts/lib/common.sh`                  | Shared helpers: `find_project_root`, `strip_private`, `atomic_write`, the MEMORY.md regions, … |
+| `scripts/lib/lessons.sh`                 | The lessons store: Inbox writes, ranking, matching, promotion candidates                       |
+| `scripts/lib/curator.sh`                 | The shared curator: `claude -p` call, operations, guards, eviction                             |
+| `scripts/memory-{inject,capture}.sh`     | Core SessionStart / SessionEnd hooks                                                           |
+| `scripts/memory-prompt-inject.sh`        | UserPromptSubmit selective injection and correction reminder                                   |
+| `scripts/memory-compress.sh`             | Background Activity Log compression into the Digest                                            |
+| `scripts/lessons-curate.sh`              | Background lessons curation                                                                    |
+| `scripts/journal-capture.sh`             | PostToolUse(AskUserQuestion) hook — records completed calls to `.mz/journal.md`                |
+| `scripts/memory-note.sh`                 | CLI helper invoked by the `/memory-note` skill                                                 |
+| `scripts/lessons-promote.sh`             | CLI helper invoked by the `/lessons-promote` skill: list, archive, decline                     |
+| `skills/memory-note/SKILL.md`            | Notes with an approval gate; lessons straight to the Inbox                                     |
+| `skills/lessons-promote/SKILL.md`        | Promotes lessons into CLAUDE.md or `.claude/rules/`, one gate per lesson                       |

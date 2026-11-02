@@ -201,6 +201,8 @@ class TestUnwritableProject:
             result = run_raw()
 
         assert result.returncode == 0, result.stderr
+        # A v1 file has no Pinned or Log markers: nothing to inject until it can be migrated.
+        assert result.stdout == ""
         assert memory.read_text(encoding="utf-8") == (
             "# Project Memory\n\n- [2026-10-01] flat v1 entry\n"
         )

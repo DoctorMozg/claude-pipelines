@@ -18,6 +18,8 @@ from .memory_helpers import (
     TaskWriter,
     memory_dir,
     memory_file,
+    needs_non_root,
+    read_only,
     region,
 )
 
@@ -311,6 +313,38 @@ class TestMalformedState:
         memory_text = memory_file(project).read_text(encoding="utf-8")
         assert "decision number 9\n" in memory_text
         assert "decision number 10\n" not in memory_text
+
+
+@needs_non_root
+class TestUnwritableMemory:
+    def test_uncreatable_memory_dir_skips_capture(
+        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+    ) -> None:
+        write_task("2026_11_01_build_auth", "complete")
+
+        with read_only(project / ".mz"):
+            run_capture()
+
+        assert not memory_dir(project).exists()
+
+    def test_read_only_memory_dir_skips_capture_and_retries_later(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+        mark_changed_since_capture: MarkChanged,
+    ) -> None:
+        run_capture()
+        before = sorted(path.name for path in memory_dir(project).iterdir())
+        mark_changed_since_capture(write_task("2026_11_01_build_auth", "complete"))
+
+        with read_only(memory_dir(project)):
+            run_capture()
+
+        assert sorted(path.name for path in memory_dir(project).iterdir()) == before
+        assert _logged_tasks(project) == []
+        run_capture()
+        assert _logged_tasks(project) == ["2026_11_01_build_auth"]
 
 
 class TestPrivacy:

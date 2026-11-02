@@ -27,7 +27,12 @@ LESSONS_PER_TASK=10
 
 [[ -d "$TASK_DIR" ]] || exit 0
 
-ensure_memory_file "$MEMORY_FILE"
+# An intact MEMORY.md needs no write, so the dir check catches a read-only dir the helper lets through.
+# The marker stays put, so the skipped tasks are captured once the dir is writable again.
+if ! ensure_memory_file "$MEMORY_FILE" || [[ ! -w "$MEMORY_DIR" ]]; then
+  echo "memory-capture.sh: can't write ${MEMORY_DIR}, skipping capture" >&2
+  exit 0
+fi
 
 TODAY=$(date +%Y-%m-%d)
 GIT_BRANCH=$(git -C "$PROJECT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
