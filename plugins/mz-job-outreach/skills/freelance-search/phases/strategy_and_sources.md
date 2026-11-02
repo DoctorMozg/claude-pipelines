@@ -95,7 +95,7 @@ Sources are assembled in two steps: canonical freelance defaults (split into `sc
 
 ### Step 2.1 — Canonical freelance defaults
 
-Canonical freelance sources are stored at `<SKILL_DIR>/sources/freelance_canonical.json`. The file has two arrays: `scrape_sources` (12 entries — Arc.dev, Gun.io, Braintrust, Lemon.io, Toptal, Malt, YunoJuno, Worksome, freelance.de, Contra, Codementor, Dribbble Jobs) and `guidance_sources` (6 entries — MarketerHire, South Park Commons, On Deck, Lenny's, Reforge, Working Not Working).
+Canonical freelance sources are stored at `<SKILL_DIR>/sources/freelance_canonical.json`. The file has two arrays: `scrape_sources`, the boards the scouts query, and `guidance_sources`, referral-only networks that the report renders as guidance cards. Every canonical entry is kept; the scrape cap in Step 2.2 limits only the boards the researcher adds.
 
 Copy both arrays into `<RUN_DIR>/sources.json` as a single flat array:
 
@@ -149,19 +149,31 @@ the matching code when listings are predominantly non-English) and
 `scrape_allowed` (true or false). Annotate canonical entries with missing
 `scrape_allowed` on read-back if needed; do not modify other canonical fields.
 
-Total combined scrape entries (canonical + augmented) must not exceed 10.
+Do not duplicate or drop any canonical entry. The scrape-board limit above
+counts only the boards you add.
 Total guidance entries (canonical + augmented) must not exceed 9.
 ```
 
-After the researcher completes, validate `sources.json`:
+After the researcher completes, count the canonical scrape boards from the skill's own file, so the check follows the file when boards are added or removed:
 
-- Scrape entries (`scrape_allowed: true`): 5–10 (canonical + augmented).
+```bash
+canonical_scrape=$(jq '.scrape_sources | length' "<SKILL_DIR>/sources/freelance_canonical.json")
+```
+
+Then validate `sources.json`:
+
+- Scrape entries (`scrape_allowed: true`): from `canonical_scrape + 2` to `canonical_scrape + 6`. Only augmented entries count against the cap.
 - Guidance entries (`scrape_allowed: false`): 0–9.
 - Every entry has `name`, `url`, `type`, `tier`, `language_hint`, `scrape_allowed`.
 - Researcher-added entries have `tier: "augmented"` and `yield_history_verdict ∈ {"neutral", "boost"}` (never `"demote"`).
 - No entry's URL matches the banned domain list (`upwork.com`, `fiverr.com`, `peopleperhour.com`, `freelancer.com`, `guru.com`).
 
-If the researcher returns fewer than 2 augmentations and the user CV signals a strong niche, log a `DONE_WITH_CONCERNS` note in `state.md` Errors but continue — canonical defaults alone are usable.
+If the check fails, repair `sources.json` instead of stopping:
+
+1. Drop every augmented entry that fails a per-entry check above.
+1. If the scrape or guidance total is still above its cap, drop the augmented entries of that kind with the lowest `relevance_score` until it fits. Never drop or edit a canonical entry.
+1. Write `sources.json` back and check again.
+1. If the scrape total is below `canonical_scrape + 2`, the researcher found fewer than 2 scrape boards, which its status protocol reports as `STATUS: DONE_WITH_CONCERNS`. Continue with what it found and append an `Errors:` bullet to `state.md` naming the shortfall — canonical defaults alone are usable.
 
 Update `state.md` `Phase` to `sources_complete`.
 

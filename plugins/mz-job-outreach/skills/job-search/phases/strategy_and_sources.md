@@ -97,7 +97,7 @@ Canonical job-board defaults are stored in the skill's own data file at `<SKILL_
 cp "<SKILL_DIR>/sources/job_canonical.json" "<RUN_DIR>/sources.json"
 ```
 
-Each entry already carries `tier: "canonical"`, `scrape_allowed: true`, and `language_hint: "en"`. The file currently lists 10 boards: LinkedIn Jobs, Indeed, Wellfound, RemoteOK, WeWorkRemotely, Hacker News Who-Is-Hiring, Otta, Lever ATS (via Google), Greenhouse ATS, and Ashby ATS.
+Each entry already carries `tier: "canonical"`, `scrape_allowed: true`, and `language_hint: "en"`. Every canonical entry is kept; the source cap in Step 2.2 limits only the boards the researcher adds.
 
 If the copy fails (file missing, unreadable), set `state.md` `Status: failed` with the cause in `what_remains` and stop — the canonical list is required.
 
@@ -138,17 +138,28 @@ the matching code when the source's listings are predominantly non-English).
 Annotate canonical entries with `language_hint: "en"` on read-back; do not
 modify their other fields.
 
-Do not duplicate any canonical entry. Total combined entries must not
-exceed 10.
+Do not duplicate or drop any canonical entry. The limit above counts only
+the boards you add.
 ```
 
-After the researcher completes, validate `sources.json`:
+After the researcher completes, count the canonical boards from the skill's own file, so the check follows the file when boards are added or removed:
 
-- Total entries: 5–10 (canonical + augmented).
+```bash
+canonical_count=$(jq length "<SKILL_DIR>/sources/job_canonical.json")
+```
+
+Then validate `sources.json`:
+
+- Total entries: from `canonical_count + 2` to `canonical_count + 6`. Only augmented entries count against the cap.
 - Every entry has `name`, `url`, `type`, `tier`, `relevance_score`, `scrape_hints`, `access_notes`, `language_hint`.
 - Researcher-added entries have `tier: "augmented"` and `yield_history_verdict ∈ {"neutral", "boost"}` (never `"demote"`).
 
-If the researcher returns fewer than 2 augmentations and the user CV signals a strong niche (specific country language, specialty stack), log a `DONE_WITH_CONCERNS` note in `state.md` Errors but continue — canonical defaults alone are still usable.
+If the check fails, repair `sources.json` instead of stopping:
+
+1. Drop every augmented entry that fails a per-entry check above.
+1. If the total is still above `canonical_count + 6`, drop the augmented entries with the lowest `relevance_score` until it fits. Never drop or edit a canonical entry.
+1. Write `sources.json` back and check again.
+1. If the total is below `canonical_count + 2`, the researcher found fewer than 2 boards, which its status protocol reports as `STATUS: DONE_WITH_CONCERNS`. Continue with what it found and append an `Errors:` bullet to `state.md` naming the shortfall — canonical defaults alone are still usable.
 
 Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` `Phase` field to `sources_complete`.
 

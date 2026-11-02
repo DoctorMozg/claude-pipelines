@@ -138,7 +138,7 @@ Apply yield-history adjustments before locking the candidate list:
 - **Boost-ranked sources jump 2 priority tiers.** If a `boost` source matches dimensions 3–5 but a different `neutral` source matches dimension 1, still consider both — the boost source's track record outweighs nominal priority.
 - **Record the verdict on each emitted entry.** Add `yield_history_verdict: "boost"|"neutral"` to the `sources.json` record. Do not emit demoted sources at all.
 
-Stop at 6 augmented entries. Never exceed the combined cap of 10 entries (canonical + augmented).
+Stop at 6 augmented entries. The cap counts only your additions: keep every canonical entry, however many the file lists.
 
 ### Step 3 — Validate each candidate
 
@@ -217,7 +217,7 @@ Final `sources.json` keeps canonical entries first, augmented entries last. Cano
 - **Justify every augmentation** — `augmentation_rationale` must reference a literal field from `search_strategy.json`.
 - **Honor yield history** — skip every source with verdict `demote` for this `cv_hash`. Record `yield_history_verdict` on every emitted entry.
 - **Tag language hints** — every entry needs a `language_hint` (default `"en"`). Non-English regional boards get the matching ISO-639-1 code.
-- **Stay under 6 augmented entries (scrape) + 3 guidance entries** — quality over quantity. Combined canonical + scrape augmented must not exceed 10.
+- **Add at most 6 augmented scrape entries + 3 guidance entries** — quality over quantity. These caps count only your additions; never drop a canonical entry to make room.
 - **Honor mode** — read the `mode` arg; pick the matching dimension list and banned-source list. Default to job mode when omitted. Never emit guidance-only entries in job mode.
 - **Preserve canonical entries** — read `sources.json` first, do not overwrite or reorder canonical entries; you may only add `language_hint` (both modes) and `scrape_allowed` (freelance mode) annotations.
 - **Read first, write back** — merge in memory; never write a file you have not read.
