@@ -416,6 +416,7 @@ Test every new or changed agent in proportion to the change.
 - An eval run doesn't install a plugin's `dependencies`. A plugin with a missing dependency fails to load with `dependency-unsatisfied` in `plugin_errors`, and every grader scores 0, so each case lists its dependencies in `plugins:`, such as `plugins: ["../..", "../../../mz-base"]`.
 - Every `plugins:` entry has to sit under the containment root, which is the eval target, or the plugin when the target is a plugin. `make eval PLUGIN=<name>` runs `claude plugin eval . --eval-dir plugins/<name>/evals` from the repo root, so a case can load a sibling plugin.
 - Hitting `max_turns` records a run error, but the grader score and the exit code stand. Routing is decided on the first turn on Sonnet and Opus, so a routing case sets `max_turns: 2`. The docs' advice to set it generously applies to cases that grade finished work (plugin-evals.md).
+- `make eval` passes `--ablation none`, so only the with-plugin arm runs. A routing case loses nothing by it: without the plugin its skills and agents don't exist, so a should-fire grader can only fail and a near-miss grader can only pass. A behavior case, where the plugin changes the result rather than what gets invoked, needs both arms.
 
 For a pipeline-only agent, check that the dispatching skill uses the right agent name and passes the expected artifact paths.
 
