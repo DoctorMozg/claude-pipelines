@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -20,6 +23,9 @@ from mozg_pipelines.rendering import (
     render_codex_package,
 )
 from mozg_pipelines.validation import validate_package
+
+if TYPE_CHECKING:
+    from tests.codex_migration.conftest import SourceTree
 
 
 def test_renderer_builds_portable_plugin_and_embedded_role_resources(
@@ -372,3 +378,60 @@ Use provider-neutral execution.
             '---\nname: "ask"\ndescription: "Research a question. Triggers: \\"ask\\"."\n---\n'
         )
     )
+
+
+class TestSymlinkedSources:
+    @pytest.fixture
+    def spec(
+        self,
+        tmp_path: Path,
+        source_tree: SourceTree,
+        package_spec_factory: Callable[[Path, str], CodexPackageSpec],
+    ) -> CodexPackageSpec:
+        return package_spec_factory(tmp_path, "0.49.0")
+
+    def test_linked_file_is_copied_as_adapted_content(
+        self, spec: CodexPackageSpec, source_tree: SourceTree
+    ) -> None:
+        source_tree.link("references/scope.md", source_tree.shared / "scope.md")
+
+        render_codex_package(spec)
+
+        rendered = spec.package_root / "skills/ask/references/scope.md"
+        assert not rendered.is_symlink()
+        assert rendered.read_text(encoding="utf-8") == "Scope from ${PLUGIN_ROOT}.\n"
+
+    def test_linked_directory_is_copied_as_a_real_tree(
+        self, spec: CodexPackageSpec, source_tree: SourceTree
+    ) -> None:
+        source_tree.link("shared", source_tree.shared)
+
+        render_codex_package(spec)
+
+        rendered = spec.package_root / "skills/ask/shared"
+        assert not rendered.is_symlink()
+        assert (rendered / "nested/deep.md").read_text(encoding="utf-8") == "Deep reference.\n"
+
+    def test_link_outside_the_marketplace_blocks_rendering(
+        self, spec: CodexPackageSpec, source_tree: SourceTree, tmp_path: Path
+    ) -> None:
+        outside = tmp_path / "outside.md"
+        outside.write_text("Outside.\n", encoding="utf-8")
+        source_tree.link("references/outside.md", outside)
+
+        with pytest.raises(RenderError, match="outside the source root") as caught:
+            render_codex_package(spec)
+
+        assert caught.value.kind is RenderFailure.INVALID_SOURCE
+        assert not spec.package_root.exists()
+
+    def test_link_to_missing_target_blocks_rendering(
+        self, spec: CodexPackageSpec, source_tree: SourceTree
+    ) -> None:
+        source_tree.link("references/gone.md", source_tree.shared / "gone.md")
+
+        with pytest.raises(RenderError, match="target does not exist") as caught:
+            render_codex_package(spec)
+
+        assert caught.value.kind is RenderFailure.INVALID_SOURCE
+        assert not spec.package_root.exists()

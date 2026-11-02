@@ -514,32 +514,33 @@ def _required_frontmatter_fields(frontmatter_text: str) -> dict[str, str]:
 
 
 def _copy_source_tree(spec: CodexPackageSpec, source_root: Path, target_root: Path) -> None:
+    """Copy a skill tree, writing each symlink's content in its place like Claude Code's cache."""
+    # validate_catalog has already rejected links that escape the marketplace, dangle or loop.
     target_root.mkdir(parents=True, exist_ok=True)
-    for source_path in sorted(source_root.rglob("*")):
+    for source_path in sorted(source_root.iterdir()):
+        target_path = target_root / source_path.name
         if source_path.is_symlink():
-            raise RenderError(
-                source_path,
-                RenderFailure.INVALID_SOURCE,
-                "symbolic links are not copied into rendered packages",
-            )
-        relative_path = source_path.relative_to(source_root)
-        target_path = target_root / relative_path
+            logger.debug("Dereferencing %s -> %s", source_path, source_path.resolve())
         if source_path.is_dir():
-            target_path.mkdir(parents=True, exist_ok=True)
+            _copy_source_tree(spec, source_path, target_path)
         elif source_path.is_file():
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            if source_path.suffix.lower() in _TEXT_SUFFIXES:
-                try:
-                    contents = source_path.read_text(encoding="utf-8")
-                    target_path.write_text(
-                        _adapt_contents(spec, source_path, contents),
-                        encoding="utf-8",
-                    )
-                except (OSError, UnicodeError) as error:
-                    logger.error("Cannot adapt provider source %s: %s", source_path, error)
-                    raise RenderError(source_path, RenderFailure.IO_ERROR, str(error)) from error
-            else:
-                shutil.copy2(source_path, target_path)
+            _copy_source_file(spec, source_path, target_path)
+        else:
+            raise RenderError(
+                source_path, RenderFailure.INVALID_SOURCE, "source is not a file or directory"
+            )
+
+
+def _copy_source_file(spec: CodexPackageSpec, source_path: Path, target_path: Path) -> None:
+    if source_path.suffix.lower() not in _TEXT_SUFFIXES:
+        shutil.copy2(source_path, target_path)
+        return
+    try:
+        contents = source_path.read_text(encoding="utf-8")
+        target_path.write_text(_adapt_contents(spec, source_path, contents), encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        logger.error("Cannot adapt provider source %s: %s", source_path, error)
+        raise RenderError(source_path, RenderFailure.IO_ERROR, str(error)) from error
 
 
 def _render_skill_markdown(

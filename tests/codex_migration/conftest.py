@@ -1,4 +1,6 @@
+import os
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -106,3 +108,35 @@ def package_spec_factory(
         )
 
     return create
+
+
+@dataclass(frozen=True)
+class SourceTree:
+    root: Path
+    skill: Path
+    shared: Path
+
+    def link(self, name: str, target: Path) -> Path:
+        """Create a relative symlink at skill/<name>, the way a marketplace would commit it."""
+        link = self.skill / name
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(os.path.relpath(target, link.parent))
+        return link
+
+
+@pytest.fixture
+def source_tree(
+    tmp_path: Path,
+    valid_catalog: Catalog,
+    write_skill: Callable[[Path, str], None],
+    write_role: Callable[[Path], None],
+) -> SourceTree:
+    root = tmp_path / "source"
+    skill = root / valid_catalog.skills[0].source
+    write_skill(skill / "SKILL.md", "Read references/scope.md.\n")
+    write_role(root / valid_catalog.roles[0].source)
+    shared = root / "plugins/mz-base/skills/shared"
+    (shared / "nested").mkdir(parents=True)
+    (shared / "scope.md").write_text("Scope from ${CLAUDE_PLUGIN_ROOT}.\n", encoding="utf-8")
+    (shared / "nested/deep.md").write_text("Deep reference.\n", encoding="utf-8")
+    return SourceTree(root=root, skill=skill, shared=shared)

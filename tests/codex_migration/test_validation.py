@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from mozg_pipelines.models import (
     Catalog,
@@ -13,6 +16,9 @@ from mozg_pipelines.models import (
     SkillSpec,
 )
 from mozg_pipelines.validation import validate_catalog, validate_package
+
+if TYPE_CHECKING:
+    from tests.codex_migration.conftest import SourceTree
 
 _DEFAULT_SKILL_BODY = "Provider-neutral instructions.\n"
 
@@ -95,6 +101,75 @@ def test_catalog_validation_rejects_symlink_escape(
     assert tuple((issue.code, issue.subject) for issue in report.issues) == (
         ("path-escape", "pipeline-researcher"),
     )
+
+
+class TestSymlinkedSources:
+    def test_links_inside_the_marketplace_are_accepted(
+        self, source_tree: SourceTree, valid_catalog: Catalog
+    ) -> None:
+        source_tree.link("references/scope.md", source_tree.shared / "scope.md")
+        source_tree.link("shared", source_tree.shared)
+
+        report = validate_catalog(valid_catalog, source_tree.root)
+
+        assert report.issues == ()
+
+    def test_link_to_missing_target_is_reported(
+        self, source_tree: SourceTree, valid_catalog: Catalog
+    ) -> None:
+        source_tree.link("references/gone.md", source_tree.shared / "gone.md")
+
+        report = validate_catalog(valid_catalog, source_tree.root)
+
+        assert tuple((issue.code, issue.subject) for issue in report.issues) == (
+            ("missing-symlink-target", "ask"),
+        )
+
+    def test_escape_inside_a_linked_directory_is_reported(
+        self, source_tree: SourceTree, valid_catalog: Catalog, tmp_path: Path
+    ) -> None:
+        outside = tmp_path / "outside.md"
+        outside.write_text("Outside.\n", encoding="utf-8")
+        (source_tree.shared / "escape.md").symlink_to(outside)
+        source_tree.link("shared", source_tree.shared)
+
+        report = validate_catalog(valid_catalog, source_tree.root)
+
+        assert tuple((issue.code, issue.subject) for issue in report.issues) == (
+            ("path-escape", "ask"),
+        )
+
+    def test_link_back_to_an_ancestor_is_reported_as_a_cycle(
+        self, source_tree: SourceTree, valid_catalog: Catalog
+    ) -> None:
+        source_tree.link("loop", source_tree.skill)
+
+        report = validate_catalog(valid_catalog, source_tree.root)
+
+        assert tuple((issue.code, issue.subject) for issue in report.issues) == (
+            ("symlink-cycle", "ask"),
+        )
+
+    def test_link_chain_that_loops_is_reported_as_a_cycle(
+        self, source_tree: SourceTree, valid_catalog: Catalog
+    ) -> None:
+        source_tree.link("a.md", source_tree.skill / "b.md")
+        source_tree.link("b.md", source_tree.skill / "a.md")
+
+        report = validate_catalog(valid_catalog, source_tree.root)
+
+        assert tuple((issue.code, issue.subject) for issue in report.issues) == (
+            ("symlink-cycle", "ask"),
+            ("symlink-cycle", "ask"),
+        )
+
+    def test_two_links_to_one_directory_are_not_a_cycle(
+        self, source_tree: SourceTree, valid_catalog: Catalog
+    ) -> None:
+        source_tree.link("shared", source_tree.shared)
+        source_tree.link("references/shared", source_tree.shared)
+
+        assert validate_catalog(valid_catalog, source_tree.root).issues == ()
 
 
 def test_package_validation_reports_each_forbidden_token(

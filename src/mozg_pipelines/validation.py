@@ -116,7 +116,7 @@ def validate_catalog(catalog: Catalog, source_root: Path) -> ValidationReport:
                 )
             )
         else:
-            issues.extend(_escaped_descendant_issues(root, skill_root, skill.name))
+            issues.extend(_symlink_issues(root, skill_root, skill.name))
             issue = _unreadable_source_issue(root, skill_root / "SKILL.md", skill.name)
             if issue is not None:
                 issues.append(issue)
@@ -293,23 +293,65 @@ def _is_contained(root: Path, candidate: Path) -> bool:
     return True
 
 
-def _escaped_descendant_issues(
+def _symlink_issues(
     source_root: Path,
     directory: Path,
     subject: str,
+    ancestors: frozenset[Path] = frozenset(),
 ) -> tuple[ValidationIssue, ...]:
+    """Walk a source tree through its symlinks, as Claude Code's cache copy does."""
+    ancestors = ancestors | {directory.resolve()}
     issues: list[ValidationIssue] = []
-    for path in sorted(directory.rglob("*")):
-        if path.is_symlink() and not _is_contained(source_root, path):
+    for path in sorted(directory.iterdir()):
+        relative = path.relative_to(source_root).as_posix()
+        if path.is_symlink():
+            issue = _symlink_target_issue(source_root, path, relative, subject)
+            if issue is not None:
+                issues.append(issue)
+                continue
+        if not path.is_dir():
+            continue
+        if path.resolve() in ancestors:
             issues.append(
                 _error(
-                    "path-escape",
-                    f"Source symlink resolves outside the source root: {path}",
-                    path.relative_to(source_root).as_posix(),
+                    "symlink-cycle",
+                    f"Source symlink points back to an ancestor directory: {relative}",
+                    relative,
                     subject,
                 )
             )
+            continue
+        issues.extend(_symlink_issues(source_root, path, subject, ancestors))
     return tuple(issues)
+
+
+def _symlink_target_issue(
+    source_root: Path,
+    path: Path,
+    relative: str,
+    subject: str,
+) -> ValidationIssue | None:
+    try:
+        target = path.resolve(strict=True)
+    except FileNotFoundError:
+        return _error(
+            "missing-symlink-target",
+            f"Source symlink target does not exist: {relative}",
+            relative,
+            subject,
+        )
+    except (OSError, RuntimeError):
+        # A link chain that loops on itself: RuntimeError on Python 3.12, OSError on 3.13+.
+        return _error("symlink-cycle", f"Source symlink chain loops: {relative}", relative, subject)
+    if not target.is_relative_to(source_root):
+        logger.warning("Source symlink %s resolves outside %s", path, source_root)
+        return _error(
+            "path-escape",
+            f"Source symlink resolves outside the source root: {relative}",
+            relative,
+            subject,
+        )
+    return None
 
 
 def _unreadable_source_issue(
