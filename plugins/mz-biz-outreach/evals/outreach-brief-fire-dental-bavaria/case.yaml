@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: outreach-brief-fire-dental-bavaria
+description: Pinning down the pitch and the exact buyer through questions, then researching current conditions for the target sector and region, is the scoping outreach-brief does.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-creative", "../../../mz-base", "../../../mz-job-outreach"]
+execution:
+  prompt: >-
+    Thinking of reaching out to dental clinics in Bavaria about my
+    patient-reminder software, but I haven't pinned down the pitch or the exact
+    buyer. Quiz me until it's all clear, then find out what is happening to
+    those clinics right now: new rules, consolidation, money trouble.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-brief-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-brief"'

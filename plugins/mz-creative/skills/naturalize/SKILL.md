@@ -1,6 +1,6 @@
 ---
 name: naturalize
-description: 'ALWAYS invoke when the user wants to rewrite AI-generated text to sound human. Triggers: "humanize this text", "make this sound less like AI", "rewrite to be more natural", "remove AI patterns from", "naturalize this prose", "de-AI this draft". Detects AI patterns first, gets user approval, then rewrites via the expert-naturalizer agent.'
+description: 'Rewrites machine-sounding or overly polished text so a real person seems to have written it. Use when the user wants existing text to sound human ("humanize this text", "make this sound less like AI"). Not for new promotional copy (use copywrite).'
 argument-hint: <text or @file:path to rewrite>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet
@@ -14,14 +14,12 @@ Rewrites AI-generated text to read as if a human wrote it. Detects AI patterns f
 
 ## When to Use
 
-- User has AI-generated prose and wants it rewritten to sound human
-- User wants to detect AI patterns in a document before rewriting
-- Triggers: "humanize this", "make this sound less like AI", "remove AI patterns from", "rewrite to be natural"
+Rewrites existing AI-generated prose so it reads as human-written, and can first detect the AI patterns in a document before rewriting.
 
 ### When NOT to use
 
 - User wants original technical documentation written from scratch — use `document` (which already runs naturalize as Phase 3)
-- User wants promotional copy — use `copywrite` (which also naturalizes)
+- User wants new promotional copy written rather than existing text rewritten — use `copywrite` (which also naturalizes)
 - User wants to fix grammar in human-written text — this skill assumes AI patterns are present and may damage natural prose
 - User wants to translate text — use `translate`
 

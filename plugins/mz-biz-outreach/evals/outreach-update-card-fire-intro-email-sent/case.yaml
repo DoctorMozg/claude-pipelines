@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: outreach-update-card-fire-intro-email-sent
+description: Asking to add a just-sent intro email to a named company card is the direct logging request the skill exists for.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-creative", "../../../mz-base", "../../../mz-job-outreach"]
+execution:
+  prompt: >-
+    I just emailed Priya Nair at Brightline Logistics, intro note about the fleet
+    telemetry pilot. Add it to the card at
+    .mz/outreach/active/2026-10-28_brightline-logistics.md as "sent intro email re: fleet telemetry pilot".
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-update-card-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-update-card"'

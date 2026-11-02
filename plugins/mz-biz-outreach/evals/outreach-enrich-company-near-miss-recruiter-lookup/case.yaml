@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: outreach-enrich-company-near-miss-recruiter-lookup
+description: Finding the recruiter or careers contact for a job application belongs to job-recruiter-info, not to company-card enrichment.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-creative", "../../../mz-base", "../../../mz-job-outreach"]
+execution:
+  prompt: >-
+    Applying for the Senior Platform Engineer role at Meridian Health,
+    https://boards.greenhouse.io/meridianhealth/jobs/4821937. Who's the recruiter or
+    hiring manager, and is there a careers email I can use?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-enrich-company-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-enrich-company"'
+    min: 0
+    max: 0
+    arm: both

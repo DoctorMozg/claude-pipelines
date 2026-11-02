@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: outreach-enrich-company-near-miss-domain-only
+description: A user with only a company domain and no saved card needs outreach-research to create the card first, not outreach-enrich-company.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-creative", "../../../mz-base", "../../../mz-job-outreach"]
+execution:
+  prompt: >-
+    I want to get in touch with orbitalweave.io about our fleet-telematics product, but
+    all I have is the domain. I don't have any notes or files on them yet. Can you find
+    out what they do, how big they are, whether they'd be a fit, and who I should be
+    writing to?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-enrich-company-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-enrich-company"'
+    min: 0
+    max: 0
+    arm: both

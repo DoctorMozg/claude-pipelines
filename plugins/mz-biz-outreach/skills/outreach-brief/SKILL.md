@@ -1,6 +1,6 @@
 ---
 name: outreach-brief
-description: ALWAYS invoke when the user wants to scope outreach — capture what they sell and who they target, then research the local business climate. Triggers - "draft an outreach brief", "prep outreach", "research local market for outreach".
+description: 'Captures an outreach brief (offer, targets) and researches the local business climate. Use when the user wants to scope outreach ("draft an outreach brief", "prep outreach", "research local market"). Not for finding companies (use outreach-research).'
 argument-hint: '[<seed description of the outreach>]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -14,7 +14,7 @@ You are an orchestrator that prepares the front of an outreach campaign in two s
 
 ## When to Use
 
-Invoke when the user wants to prepare or scope an outreach effort before discovery — to pin down the offer and target profile and to ground later proposals in local market conditions, not only per-company facts.
+Scopes an outreach effort before discovery: pins down the offer and target profile and grounds later proposals in local market conditions, not only per-company facts.
 
 ### When NOT to use
 

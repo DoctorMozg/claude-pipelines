@@ -1,6 +1,6 @@
 ---
 name: outreach-research
-description: 'ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients", "research targets".'
+description: 'Ranks target companies for what the user sells, as a lead list. Use when the user wants to know who to target ("find companies", "find potential clients", "lead generation"). Not for deepening a card or writing letters (use outreach-enrich-company).'
 argument-hint: <target description> [sector:filter] [limit:N]
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Read, Write, Glob, Grep, WebFetch, WebSearch, AskUserQuestion
@@ -14,13 +14,13 @@ You are an orchestrator that drives a full business outreach intelligence pipeli
 
 ## When to Use
 
-Invoke when the user wants to find prospective companies, build a lead list, or prepare outreach research. Trigger phrases: "find companies", "lead generation", "outreach", "prospect", "find potential clients".
+Discovers prospective companies for an outreach goal and produces a scored lead list with a dossier card per company.
 
 ### When NOT to use
 
-- The user wants to draft outreach copy or messages — this skill researches targets, not content.
+- The user wants to draft outreach letters or messages, or deepen an existing company card — use `outreach-enrich-company`; this skill researches targets, not content.
 - The user wants competitive analysis of a single named company — use `explain` or `debug certainty:low` on public sources instead.
-- The user has not defined an outreach goal or target profile — ask before invoking.
+- The user has not defined an outreach goal or target profile — ask before invoking, or scope it first with `outreach-brief`.
 
 ## Input
 

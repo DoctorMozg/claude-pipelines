@@ -1,6 +1,6 @@
 ---
 name: outreach-update-card
-description: ALWAYS invoke when the user wants to log an outreach action against a company card .md (created by outreach-research). Appends a dated one-line entry to the card's Interaction History section, then relocates the card to the active folder with today's date prefix. Triggers - "log action on a card", "update card with an action", "record interaction on a card", "I just emailed them, add it to the card".
+description: 'Logs a dated outreach action in a company card''s Interaction History. Use when the user wants to record an interaction ("log action on a card", "I just emailed them, add it to the card"). Not for drafting the letter (use outreach-enrich-company).'
 argument-hint: '"<path/to/card.md>" "<action description>"'
 model: haiku
 allowed-tools: Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), AskUserQuestion
@@ -16,12 +16,7 @@ The skill is atomic — one entry, one write, one cleanup, no agents, no follow-
 
 ## When to Use
 
-Invoke when the user has taken an outreach action against a company they hold a card for, and wants the action recorded on the card. Trigger phrases include:
-
-- "log my call with Acme — they're interested, here's the card path"
-- "update <card path> — sent intro email to John"
-- "record on the Acme card: replied to John's question about pricing"
-- "I just left a voicemail at <card path>, add it"
+Records one outreach action the user has already taken against a company they hold a card for, as a dated entry on that card.
 
 ### When NOT to use
 

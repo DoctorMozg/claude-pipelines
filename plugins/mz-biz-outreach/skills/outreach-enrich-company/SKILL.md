@@ -1,6 +1,6 @@
 ---
 name: outreach-enrich-company
-description: ALWAYS invoke when the user wants to deepen the dossier on a company card AND/OR generate LinkedIn/email outreach letters from it. Fans out 5 enrichment subagents (news, tech, growth, reputation, contacts) to fill gaps left by the base research, then drafts and naturalizes one letter per Key Contact. Triggers - "enrich a card", "go deeper on a card", "deepen research on a company", "write outreach letters for a card", "draft messages from a card", "generate letters for this card".
+description: 'Adds fresh detail to a thin saved company profile and drafts messages to its people. Use when the user wants it filled out or messages written ("enrich a card", "draft messages from a card"). Not for companies with no card (use outreach-research).'
 argument-hint: '"<path/to/company_card.md>" [channels:email|linkedin|both] [sender:<voice text or path>] [enrich:only|skip] [personality:off]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(cp *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -19,18 +19,13 @@ The whole pipeline is fully automatic — no approval gates, no mid-run prompts.
 
 ## When to Use
 
-Invoke when the user has a company card (produced by `/outreach-research`, lives at `.mz/outreach/<run>/companies/<slug>.md`) and wants either richer company intelligence, outreach letters, or both. Trigger phrases:
-
-- "enrich `.mz/outreach/.../companies/<slug>.md` and write letters"
-- "deepen the research on this card"
-- "go deeper on `<company>` and draft outreach"
-- "write outreach letters for `<card>`"
-- "generate letters from this card"
+Works on an existing company card (produced by `/outreach-research`, lives at `.mz/outreach/<run>/companies/<slug>.md`) to add richer company intelligence, outreach letters for its key contacts, or both.
 
 ### When NOT to use
 
 - The user has only a company name or domain and no card — run `/outreach-research` first (single-company mode if they want only one).
 - The user wants to discover companies first — use `/outreach-research`.
+- The user only wants to record an action already taken on a card (an email sent, a call made) — use `/outreach-update-card`.
 - The user wants recruiter contacts for a job application — use `/job-recruiter-info` in mz-job-outreach.
 - The user wants general marketing copy (landing pages, announcements, social) — use `/copywrite` from mz-creative.
 - The user wants letters written to a separate location than the card — this skill only writes back into the card.

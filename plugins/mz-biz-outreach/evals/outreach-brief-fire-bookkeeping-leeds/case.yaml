@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: outreach-brief-fire-bookkeeping-leeds
+description: Asking for an outreach brief, with the offer and audience captured and the local market researched first, belongs to outreach-brief.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-creative", "../../../mz-base", "../../../mz-job-outreach"]
+execution:
+  prompt: >-
+    I'm about to start prospecting for my bookkeeping automation tool. Before
+    anything else, can you help me draft an outreach brief? Ask me whatever you
+    need about the offer and the audience, then research the local market for
+    small accountancies around Leeds.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-brief-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-brief"'
