@@ -191,11 +191,22 @@ session_lessons() {
     | grep -E '^- \[I-[0-9]+\] ' | head -n "$newest" || true
 }
 
+# declined_file <lessons_file> — where /lessons-promote records each declined lesson as "<id> <n>".
+declined_file() {
+  printf '%s/.promote-declined\n' "${1%/*}"
+}
+
 # promotion_candidates <lessons_file> <min_n> — ids of curated lessons seen at least <min_n> times.
+# A declined lesson is left out until it recurs, so the SessionStart hint does not repeat itself.
 promotion_candidates() {
   local lessons_file="$1" min_n="$2"
   [[ -f "$lessons_file" ]] || return 0
-  _ranked_curated "$lessons_file" | awk -v min="$min_n" '$1 >= min { print substr($4, 2, length($4) - 2) }'
+  _ranked_curated "$lessons_file" | awk -v min="$min_n" -v declined="$(declined_file "$lessons_file")" '
+    BEGIN { while ((getline line < declined) > 0) { split(line, field, " "); held[field[1]] = field[2] + 0 } }
+    {
+      id = substr($4, 2, length($4) - 2)
+      if ($1 >= min && !(id in held && $1 <= held[id])) print id
+    }'
 }
 
 # match_lessons <lessons_file> <keywords> <max> — the <max> lessons whose text or tags hold the

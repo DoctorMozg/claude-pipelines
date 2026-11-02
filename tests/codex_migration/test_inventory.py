@@ -59,7 +59,7 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-knowledge",
         "mz-gov",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 52
+    assert sum(len(package.skill_sources) for package in packages) == 53
     assert sum(len(package.role_sources) for package in packages) == 116
     assert not any(package.plan.disposition is PackageDisposition.BLOCKED for package in packages)
     assert {
