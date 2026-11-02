@@ -1,6 +1,6 @@
 ---
 name: expert-technical-writer
-description: Pipeline-only technical-writing agent dispatched by the /document skill. Writes or polishes technical documentation (READMEs, API references, guides, tutorials, how-tos, explanations, runbooks, ADRs) grounded in codebase research artifacts. Prioritizes audience fit, information completeness, understandability, BLUF, and examples-first structure. Diátaxis is offered as an optional content-type framework when it fits. Never fabricates API signatures or behaviors.
+description: Pipeline-only technical-writing agent dispatched by the /document skill. Writes or polishes technical documentation (READMEs, API references, guides, tutorials, how-tos, explanations, runbooks, ADRs) grounded in codebase research artifacts. Prioritizes audience fit, information completeness, understandability, BLUF, and examples-first structure. Diátaxis is offered as an optional content-type framework when it fits. Never fabricates API signatures or behaviors. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high

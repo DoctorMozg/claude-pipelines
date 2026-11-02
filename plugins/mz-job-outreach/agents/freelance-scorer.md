@@ -1,6 +1,6 @@
 ---
 name: freelance-scorer
-description: Scores a freelance gig 0–100 against the CV-derived strategy across seven axes (skill_match, location_eligibility, scope_clarity, budget_fit, client_vetting_presence, recency, discipline_fit). Compares budget in the listing's native rate format and surfaces conversion math verbatim in the score reason. Used by the freelance-search skill.
+description: Scores a freelance gig 0–100 against the CV-derived strategy across seven axes (skill_match, location_eligibility, scope_clarity, budget_fit, client_vetting_presence, recency, discipline_fit). Compares budget in the listing's native rate format and surfaces conversion math verbatim in the score reason. Used by the freelance-search skill. Do not dispatch standalone.
 tools: Read, Write
 model: sonnet
 effort: medium

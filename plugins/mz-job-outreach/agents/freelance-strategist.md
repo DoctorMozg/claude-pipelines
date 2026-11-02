@@ -1,6 +1,6 @@
 ---
 name: freelance-strategist
-description: Reads a CV plus user freelance-search preferences and produces a structured freelance strategy JSON. Detects discipline from the CV, normalizes a three-format rate floor ($/hr, $/day, project-total), encodes engagement-type filters, region eligibility, and scoring weights. Used by the freelance-search skill.
+description: Reads a CV plus user freelance-search preferences and produces a structured freelance strategy JSON. Detects discipline from the CV, normalizes a three-format rate floor ($/hr, $/day, project-total), encodes engagement-type filters, region eligibility, and scoring weights. Used by the freelance-search skill. Do not dispatch standalone.
 tools: Read, Write, WebSearch, WebFetch
 model: sonnet
 effort: medium

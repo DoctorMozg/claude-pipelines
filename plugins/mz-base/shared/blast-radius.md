@@ -2,6 +2,17 @@
 
 Callable module that computes the downstream impact set of a target file or directory using import-graph walking, git-age overlay, and risk scoring. Auto-invoked by `audit` whenever scope is bounded (`scope:branch`, `scope:working`, or path-list) and by `cleanup` on every run. Not auto-invoked when scope is `global` (everything is in scope already).
 
+## Contents
+
+- Status
+- Invocation contract
+- Scope of analysis
+- Bounds
+- Algorithm
+- Auto-invocation rules
+- Report Template (optional human-readable rendering)
+- Why auto-invoke instead of a flag
+
 ## Status
 
 Active. The standalone `/blast-radius` skill was demoted in v0.33.x; this module is the only source of truth for impact analysis. Calling skills execute the import-graph walk inline using code searches, `Read` and `Bash` per the Algorithm below — no subagent fan-out, no token cost beyond the calling agent's window.

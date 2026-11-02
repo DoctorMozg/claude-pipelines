@@ -1,6 +1,6 @@
 ---
 name: job-prescorer
-description: Cheap two-stage pre-scorer. Rates a batch of listings 0/1/2 against the CV's must-have skills and synonym clusters. Drops obvious misses before expensive full scoring. Used by the job-search skill.
+description: Cheap two-stage pre-scorer. Rates a batch of listings 0/1/2 against the CV's must-have skills and synonym clusters. Drops obvious misses before expensive full scoring. Used by the job-search skill. Do not dispatch standalone.
 tools: Read, Write
 model: sonnet
 effort: low

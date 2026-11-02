@@ -2,6 +2,22 @@
 
 Search this file by extension or language name. Each section gives the proposer the comment tokens and the language-specific preserve markers it must respect.
 
+## Contents
+
+- .py / .pyi (Python)
+- .sh / .bash / .zsh (Shell)
+- .ts / .tsx / .js / .jsx / .mjs / .cjs (TypeScript / JavaScript)
+- .rs (Rust)
+- .cpp / .cc / .cxx / .c / .h / .hpp / .hxx / .hh (C / C++)
+- .go (Go)
+- .java / .kt (Java / Kotlin)
+- .swift (Swift)
+- .cs (C#)
+- .rb (Ruby)
+- .php (PHP)
+- Common WHY tokens (every language)
+- Common license markers (top 30 lines of file)
+
 ## .py / .pyi (Python)
 
 Line comment: `#`

@@ -113,10 +113,6 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on Opus
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: detection gate`, stop. A missing answer is never approval.
 
-## Techniques
-
-Reference: grep `references/artifact-catalog.md` for category-specific patterns; do not load the entire file.
-
 ## Common Rationalizations
 
 | Rationalization                             | Rebuttal                                                                         |
@@ -138,6 +134,10 @@ Reference: grep `references/artifact-catalog.md` for category-specific patterns;
 ## Verification
 
 Output the verification block defined in `phases/verification.md`: task dir, report path, scope, per-category artifact counts, iterations, linter status, residuals. Any non-empty residual list with `Iterations: MAX_FIX_ITERATIONS` blocks completion — escalate via AskUserQuestion.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/artifact-catalog.md`: patterns for the five leftover categories (AI signatures, phase markers, planning comments, WHAT-not-WHY candidates, dead code). Grep it per category (`# Category A:` to `# Category E:`) in Phase 2 and while cleaning; do not read it whole.
 
 ## Error Handling
 

@@ -4,6 +4,31 @@ Reference for i18n / format-string placeholders that the translator agent must p
 
 Each section has a one-line description, example inputs, PCRE2-compatible regex (ripgrep-usable), framework origin, nesting note, and substitution guidance. The **Combined ripgrep recipe** section is the one-shot command for enumerating every placeholder.
 
+## Contents
+
+- i18next double brace
+- ICU single brace
+- ICU plural block
+- ICU select block
+- ICU skeleton
+- vue-i18n linked messages
+- i18next nested reference
+- react-i18next Trans numbered
+- react-i18next Trans named
+- printf basic
+- printf positional
+- iOS / Objective-C
+- Python str.format
+- Ruby / Rails
+- Python %-format (named)
+- Symfony
+- .NET composite format
+- Combined ripgrep recipe
+- Substitution strategy
+- Nested-placeholder handling
+- Known gotchas
+- Grep access hints
+
 ## i18next double brace
 
 **Example**: `{{var}}`, `{{- unescaped}}`, `{{user.name}}`, `{{count}}`

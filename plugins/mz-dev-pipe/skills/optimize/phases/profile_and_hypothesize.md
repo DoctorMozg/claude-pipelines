@@ -4,7 +4,7 @@
 
 These two phases share a file because they are one analytical pass — Phase 2 produces the profile, Phase 3 consumes it. **No code or artifact changes happen in either phase.** This is observation and reasoning; the first change to the target is a Phase 4 candidate.
 
-The optimization toolkit is the shared vocabulary for both phases. Search `references/optimization-toolkit.md` per section — never load the whole file:
+The optimization toolkit is the shared vocabulary for both phases. Search `<SKILL_DIR>/references/optimization-toolkit.md` per section — never load the whole file:
 
 - Phase 2 reads **Bottleneck taxonomy** (to classify) and **Profiling principles** (to read the profile correctly).
 - Phase 3 reads **Transformation catalog** (to generate hypotheses) and **Prioritization** (to rank them).

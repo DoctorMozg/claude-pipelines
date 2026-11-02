@@ -1,6 +1,6 @@
 ---
 name: pipeline-plan-reviewer
-description: Pipeline-only. Critically reviews implementation plans. Catches missing integration points, incorrect parallelism, incomplete test strategies, and architectural issues.
+description: Pipeline-only. Dispatched by /build. Critically reviews implementation plans. Catches missing integration points, incorrect parallelism, incomplete test strategies, and architectural issues. Do not dispatch standalone.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: medium

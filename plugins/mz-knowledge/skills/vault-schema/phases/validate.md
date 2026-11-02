@@ -12,7 +12,7 @@ Phase 0 has already resolved:
 - `schema_path` — absolute path to `.mz/vault-schema.yml` (the `SCHEMA_PATH` constant).
 - `task_name` — the orchestrator task identifier.
 
-If `schema_path` does not exist at this point, Phase 0 must have presented the bootstrap template from `references/schema-dsl-syntax.md` via AskUserQuestion and either written the template or aborted. Do not enter Phase 1 without a readable schema file.
+If `schema_path` does not exist at this point, Phase 0 must have presented the bootstrap template from `<SKILL_DIR>/references/schema-dsl-syntax.md` via AskUserQuestion and either written the template or aborted. Do not enter Phase 1 without a readable schema file.
 
 ## Actions
 
@@ -65,7 +65,7 @@ Hand control back to `SKILL.md` Phase 1.5. The gate is responsible for the Read 
 
 ## Error handling
 
-- **Schema file missing or corrupt** — halt with a pointer to the bootstrap template in `references/schema-dsl-syntax.md` and escalate via AskUserQuestion. Never fabricate a schema.
+- **Schema file missing or corrupt** — halt with a pointer to the bootstrap template in `<SKILL_DIR>/references/schema-dsl-syntax.md` and escalate via AskUserQuestion. Never fabricate a schema.
 - **Validator returns `STATUS: NEEDS_CONTEXT`** — re-dispatch once with the missing field explicitly named in the prompt. If the second attempt still returns `NEEDS_CONTEXT`, escalate via AskUserQuestion.
 - **Validator returns `STATUS: BLOCKED`** — read the reason, set `what_remains: [awaiting answer: <the validator's blocker>]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop. Never auto-retry a blocked dispatch.
 - **Validator returns `STATUS: DONE_WITH_CONCERNS` with `schema_missing: true` or `schema_empty: true`** — surface the absence to the user via AskUserQuestion: "The schema at `<schema_path>` was \<missing|empty>. Every note was treated as pass-through. Provide the schema and re-run validate, or confirm pass-through is acceptable." Do not silently proceed to migration.

@@ -1,6 +1,6 @@
 ---
 name: accessibility-specialist
-description: WCAG 2.2 accessibility critic and hard-gate validator. Reviews UI design documents for contrast ratios, keyboard navigation, screen-reader semantics, focus management, motion sensitivity, and target sizes.
+description: Pipeline-only. Dispatched by /design-document as one of four parallel critics. WCAG 2.2 accessibility critic and hard-gate validator. Reviews UI design documents for contrast ratios, keyboard navigation, screen-reader semantics, focus management, motion sensitivity, and target sizes. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, Bash
 model: opus
 effort: high

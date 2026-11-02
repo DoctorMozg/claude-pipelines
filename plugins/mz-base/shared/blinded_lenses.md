@@ -2,6 +2,17 @@
 
 Single source of truth for the three blinded adversarial researcher prompts dispatched in Wave B of any multi-lens review pipeline. Edits to the prompt blocks below propagate automatically to every consumer that reads this file at dispatch time.
 
+## Contents
+
+- Why this file exists
+- Blinded Dispatch Invariants
+- Roles
+- Role Prompts
+- Role-to-Lens Corroboration Mapping
+- Unmatched Wave B Findings — Blind Spots
+- Partial completion
+- Maintenance
+
 ## Why this file exists
 
 Multiple pipelines run a blinded adversarial wave to break confirmation bias from their context-aware Wave A:

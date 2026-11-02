@@ -1,6 +1,6 @@
 ---
 name: job-source-researcher
-description: Augments a canonical board list with niche or regional sources matched to the candidate's region, language, or specialty. Used by the job-search and freelance-search skills via a `mode` dispatch arg.
+description: Augments a canonical board list with niche or regional sources matched to the candidate's region, language, or specialty. Used by the job-search and freelance-search skills via a `mode` dispatch arg. Do not dispatch standalone.
 tools: Read, Write, WebSearch, WebFetch
 model: sonnet
 effort: medium

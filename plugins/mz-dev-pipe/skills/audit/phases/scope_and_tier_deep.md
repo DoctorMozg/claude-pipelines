@@ -51,7 +51,7 @@ Surface `verdict`, `cap_reached`, and the count of expanded files in `scope.md` 
 
 ## 1.3 Classify files by blast-radius tier
 
-Read `references/blast-radius-tier-rules.md` for the full tier definitions.
+Read `<SKILL_DIR>/references/blast-radius-tier-rules.md` for the full tier definitions.
 
 For each file in the list:
 
@@ -68,7 +68,7 @@ overall_tier = max(tier(f) for f in file_list)
 
 ## 1.4 Identify trust boundary delta (T2+ only)
 
-If `overall_tier >= T2`, read `references/trust-boundary-patterns.md` and scan each T2+ file for matching patterns.
+If `overall_tier >= T2`, read `<SKILL_DIR>/references/trust-boundary-patterns.md` and scan each T2+ file for matching patterns.
 
 For each matching pattern:
 

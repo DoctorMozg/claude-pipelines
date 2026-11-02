@@ -100,10 +100,6 @@ When `depth:deep`: additionally dispatch `pipeline-tooling-detector` to detect t
 
 Route by `depth:` to the phase files in the table above. Both depth modes stop at the report — neither modifies code. The blinded invariant in `depth:deep` Phase 2 (Wave B dispatched as typed `pipeline-researcher` agents, in its own wave after Wave A completes) has no exceptions.
 
-## Techniques
-
-Reference files: grep `references/owasp-top-10-checklist.md` for specific OWASP categories — do not load the entire file.
-
 ## Common Rationalizations
 
 | Rationalization                       | Rebuttal                                                               |
@@ -121,6 +117,13 @@ Reference files: grep `references/owasp-top-10-checklist.md` for specific OWASP 
 ## Verification
 
 Output the final `summary.md` block: finding counts by severity, files touched (scanned, not modified), lenses run, path to `findings.md` for the full detail.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/owasp-top-10-checklist.md`: OWASP Top 10 (2021) checks by category, with detection patterns. Grep it for the category a finding touches.
+- `${CLAUDE_SKILL_DIR}/references/blast-radius-tier-rules.md`: T0-T3 blast-radius tier definitions and the overall-tier computation. Read it in full at Phase 1 of `depth:deep`.
+- `${CLAUDE_SKILL_DIR}/references/trust-boundary-patterns.md`: code patterns that mark a trust boundary, by language and layer. Read it at Phase 1 of `depth:deep` when `overall_tier` is T2 or higher.
+- `${CLAUDE_SKILL_DIR}/references/evidence-tier-rules.md`: evidence tiers and severity caps. Read it in full at Phase 3 of `depth:deep`.
 
 ## Error Handling
 

@@ -12,6 +12,14 @@ Sources (official docs):
 
 Use via grep — locate the section, copy the command sequence, adapt arguments. Do not load the whole file.
 
+## Contents
+
+- git bisect
+- test pollution bisection
+- flaky test heuristics
+- stack trace parsing
+- memory leak hunting
+
 ## git bisect
 
 **When to use**: a bug that exists at `HEAD` but did not exist at a known-good revision. You want to find the first bad commit in logarithmic time.

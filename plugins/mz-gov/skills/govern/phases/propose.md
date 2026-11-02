@@ -10,7 +10,7 @@ Decide which governance artifact (if any) this decision needs, then draft a popu
 
 ## Step 1.1 — Dispatch the router
 
-Dispatch `gov-router` (sonnet; it writes only `routing.md`). It reads `references/artifact-router.md` and runs the two-gate algorithm itself — your prompt carries only the decision and the overrides, not the algorithm. Dispatch prompt:
+Dispatch `gov-router` (sonnet; it writes only `routing.md`). It reads `<SKILL_DIR>/references/artifact-router.md` and runs the two-gate algorithm itself — your prompt carries only the decision and the overrides, not the algorithm. Dispatch prompt:
 
 ```
 Route the governance artifact for this change.
@@ -61,12 +61,12 @@ This is the cheap, correct outcome for routine work. Routing `none` is a real re
 
 Reached only when `ARTIFACT` is `adr`, `rfd`, or `design`. Read the template the router selected, in full, with the Read tool:
 
-| Router `ARTIFACT` | Template to read                    | Target dir later  | Default status  |
-| ----------------- | ----------------------------------- | ----------------- | --------------- |
-| `adr-nygard`      | `references/adr-nygard-template.md` | `docs/decisions/` | `proposed`      |
-| `adr-madr`        | `references/adr-madr-template.md`   | `docs/decisions/` | `proposed`      |
-| `rfd`             | `references/rfd-template.md`        | `docs/rfcs/`      | `prediscussion` |
-| `design`          | `references/design-doc-template.md` | `docs/design/`    | `draft`         |
+| Router `ARTIFACT` | Template to read                                | Target dir later  | Default status  |
+| ----------------- | ----------------------------------------------- | ----------------- | --------------- |
+| `adr-nygard`      | `<SKILL_DIR>/references/adr-nygard-template.md` | `docs/decisions/` | `proposed`      |
+| `adr-madr`        | `<SKILL_DIR>/references/adr-madr-template.md`   | `docs/decisions/` | `proposed`      |
+| `rfd`             | `<SKILL_DIR>/references/rfd-template.md`        | `docs/rfcs/`      | `prediscussion` |
+| `design`          | `<SKILL_DIR>/references/design-doc-template.md` | `docs/design/`    | `draft`         |
 
 If the router reported a bare `adr` without the variant, pick Nygard by default and MADR when `rich` was set or the decision weighs three or more options (the same rule the router applies).
 

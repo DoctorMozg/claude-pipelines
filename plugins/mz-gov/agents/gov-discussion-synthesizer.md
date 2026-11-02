@@ -1,6 +1,6 @@
 ---
 name: gov-discussion-synthesizer
-description: Pipeline-only, dispatched by the mz-gov govern skill after the heavy critic panel runs. Merges the four governance critics (reversibility, alternatives, blast-radius, assumptions) from one discuss iteration into discussion_<N>.md with a single aggregate verdict, resolving conflicts by lane ownership.
+description: Pipeline-only, dispatched by the mz-gov govern skill after the heavy critic panel runs. Merges the four governance critics (reversibility, alternatives, blast-radius, assumptions) from one discuss iteration into discussion_<N>.md with a single aggregate verdict, resolving conflicts by lane ownership. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: sonnet
 effort: medium

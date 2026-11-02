@@ -1,6 +1,6 @@
 ---
 name: outreach-card-writer
-description: Reads a single company's enriched JSON and writes a comprehensive markdown dossier card covering all intelligence data, scoring, contacts, and outreach recommendations. Used by the outreach-research skill.
+description: Reads a single company's enriched JSON and writes a comprehensive markdown dossier card covering all intelligence data, scoring, contacts, and outreach recommendations. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Glob
 model: sonnet
 effort: high

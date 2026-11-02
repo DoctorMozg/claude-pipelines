@@ -1,6 +1,6 @@
 ---
 name: job-scout
-description: Extracts job listings from a single board or ATS source. Constructs query variants per top job title, paginates through results, extracts structured metadata, and writes a JSON array of vacancies. Used by the job-search skill.
+description: Extracts job listings from a single board or ATS source. Constructs query variants per top job title, paginates through results, extracts structured metadata, and writes a JSON array of vacancies. Used by the job-search skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

@@ -4,6 +4,45 @@ Pattern catalog for the five leftover-artifact categories. The detection phase g
 
 Patterns are written as ECMAScript-compatible regex (works with `grep -E`). When a pattern is language-specific, the language is noted; the detection phase applies it only to matching file extensions.
 
+## Contents
+
+- Category A: AI signatures & watermarks
+  - Claude Code
+  - GitHub Copilot
+  - Cursor
+  - Aider
+  - Codex / Codex CLI
+  - ChatGPT / OpenAI
+  - Gemini / Bard
+  - Continue.dev / Codeium / Tabnine
+  - Generic AI identity claims (in docstrings / comments)
+  - Removal rules
+- Category B: Pipeline phase markers
+  - Phase notation
+  - Task / state placeholders
+  - Status breadcrumbs
+  - Dispatch / orchestration leftovers
+  - Removal rules
+- Category C: Planning / generation-process comments
+  - Per-language comment styles
+  - Plan-reference patterns
+  - Research-reference patterns
+  - Phase / implementation-reference patterns
+  - AI-self-reference patterns
+  - Approval-flow leftovers
+  - Removal rules
+- Category D: WHAT-not-WHY candidates (conservative)
+  - Candidate types
+  - Tokenization (for similarity scoring)
+  - WHY content markers (when present, KEEP the comment)
+  - Removal rules
+- Category E: Dead code & half-implementations
+  - Commented-out code blocks
+  - Stub functions
+  - TODO / FIXME stubs with no implementation
+  - Stale removed/deleted markers
+  - Removal rules
+
 ______________________________________________________________________
 
 # Category A: AI signatures & watermarks

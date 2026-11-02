@@ -1,6 +1,18 @@
 # Governance Artifact Review Rubric — 6 Axes
 
-The `gov-audit-reviewer` agent scores one governance artifact (ADR, RFD, or design doc) against the six axes below. Search this file for the axis under examination; do not load it whole.
+The `gov-audit-reviewer` agent scores one governance artifact (ADR, RFD, or design doc) against the six axes below. Read it in full before scoring: every axis applies to every artifact.
+
+## Contents
+
+- How to score
+- Axis 1 — Missing alternatives
+- Axis 2 — Unstated assumptions
+- Axis 3 — Reversibility / one-way-door classification
+- Axis 4 — Blast radius stated
+- Axis 5 — Considered-options completeness
+- Axis 6 — Status hygiene and provenance
+- Output format
+- Common false positives — do NOT flag
 
 > **In-house heuristic, not an industry standard.** This rubric was synthesized from first principles for `mz-gov`. The research behind the plugin found **no external governance-review rubric that survived verification** — there is no Nygard/Oxide/Google "score your ADR" checklist to defer to. These axes encode what a careful reviewer looks for; treat them as a working heuristic, not a certified standard, and revise them as the team learns what actually catches problems.
 

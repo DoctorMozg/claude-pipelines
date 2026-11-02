@@ -16,6 +16,14 @@ Sources (official docs):
 
 Use via grep — locate the pattern, run the command, read the confidence level. Do not load the whole file.
 
+## Contents
+
+- unused imports
+- unreachable branches
+- dead exports
+- orphan files
+- duplicated logic heuristics
+
 ## unused imports
 
 Per-language detection commands and false-positive behavior.

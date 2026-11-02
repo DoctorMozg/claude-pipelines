@@ -10,7 +10,7 @@ allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, Tas
 
 ## Overview
 
-You orchestrate a local-first synthesis that harvests prior pipeline output — `.mz/research/`, `.mz/task/*/`, `.mz/reports/`, `.mz/reviews/`, codebase files, and git history — and folds it into a unified report with task-adaptive sections (or user-supplied sections). Counterpart to `/deep-research`: that skill is web-first and starts from zero; this one assumes prior output exists and only consults the web to fill residual gaps behind an explicit approval gate.
+You orchestrate a local-first synthesis that harvests prior pipeline output — `.mz/research/`, `.mz/task/*/`, `.mz/reports/`, `.mz/reviews/`, codebase files, and git history — and folds it into a unified report with task-adaptive sections (or user-supplied sections). Counterpart to `/deep-research`: that skill is web-first and starts from zero; this one assumes prior output exists and only consults the web to fill residual gaps, in one bounded wave.
 
 ## When to Use
 
@@ -66,7 +66,6 @@ Plugin root: `PLUGIN_ROOT = ${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write 
 | 1.5 | Decomposition Approval Gate             | inline stub + body in `phases/inventory.md §Phase 1.5 Gate`    | yes   |
 | 2   | Parallel Lens Dispatch                  | `phases/lens_dispatch.md`                                      | —     |
 | 3   | Cross-Reference Synthesis               | `phases/synthesis.md`                                          | —     |
-| 3.5 | Gap-Fill Approval Gate (conditional)    | inline stub + body in `phases/synthesis.md §Phase 3.5 Gate`    | yes   |
 | 4   | Web Gap-Fill (conditional)              | `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)` | —     |
 | 5   | Task-Adaptive Report Generation         | `phases/synthesis.md`                                          | —     |
 
@@ -74,7 +73,6 @@ Plugin root: `PLUGIN_ROOT = ${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write 
 
 - Inline `.mz/` reads from the orchestrator — only filenames and mtimes are allowed inline; file bodies belong in lens agents.
 - More than `MAX_LENSES` lenses dispatched in a single wave.
-- Web `pipeline-web-researcher` agent dispatched before Phase 3.5 approval.
 - Fixed-template report produced when `sections:` was not explicitly supplied by the user.
 
 ## Verification
@@ -122,40 +120,6 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 - **Reject** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-read `inventory.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: decomposition gate`, stop. A missing answer is never approval.
-
-## Phase 3.5: Gap-Fill Approval Gate (conditional)
-
-If `state.md` contains `gap_fill: skipped_empty` (written by synthesis.md Phase 3.4 when no residual gaps were found), skip this gate and proceed to Phase 5.
-
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
-
-**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md` with the Read tool. This file was written by `phases/synthesis.md §Phase 3.4`. Capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
-
-**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: gap-fill gate]`; `Status` stays `running`.
-
-**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
-
-```
-## Residual gaps ready for review — combine
-
-<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/gaps.md>
-
----
-**Approve** → proceed to Phase 4 (web gap-fill dispatch)  ·  **Reject** → skip web research, proceed to Phase 5 with gaps unresolved  ·  reply with feedback to revise
-```
-
-**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the gaps in the question body:
-
-- question: `The residual gaps above are ready for review.`
-- header: `Gap-fill`
-- options: **Approve** — proceed to Phase 4 (web gap-fill dispatch) · **Reject** — skip web research, proceed to Phase 5 with gaps unresolved
-
-**Response handling**:
-
-- **Approve** → add `- gap-fill approved: .mz/task/<task_name>/gaps.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: gapfill_approved`, and proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
-- **Reject** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
-- **Any other reply (feedback)** → incorporate (drop/merge/rewrite gaps), overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
-- **No answer** → set `Status: blocked`, keep `awaiting approval: gap-fill gate`, stop. A missing answer is never approval.
 
 ## Error Handling
 

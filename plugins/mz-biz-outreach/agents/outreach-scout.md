@@ -1,6 +1,6 @@
 ---
 name: outreach-scout
-description: Discovers companies from a specific business directory or data source. Searches the source, extracts company metadata, and outputs a structured company list. Used by the outreach-research skill.
+description: Discovers companies from a specific business directory or data source. Searches the source, extracts company metadata, and outputs a structured company list. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

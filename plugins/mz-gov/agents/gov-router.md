@@ -1,6 +1,6 @@
 ---
 name: gov-router
-description: Pipeline-only, dispatched by the mz-gov govern skill. Decides whether a proposed change needs a governance artifact and which one, by running the two-gate artifact-selection algorithm and emitting a routing decision (none | adr | rfd | design) plus a light/heavy weight label.
+description: Pipeline-only, dispatched by the mz-gov govern skill. Decides whether a proposed change needs a governance artifact and which one, by running the two-gate artifact-selection algorithm and emitting a routing decision (none | adr | rfd | design) plus a light/heavy weight label. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: sonnet
 effort: medium

@@ -2,6 +2,17 @@
 
 Lazy-loaded reference for the YAML schema DSL consumed by `vault-schema`. Search this file for the specific construct you need — do not load the whole file into context.
 
+## Contents
+
+- File location
+- Top-level shape
+- v1 DSL template
+- Semantics
+- Interaction with the migrator
+- Common patterns
+- What v1 does NOT support
+- Bootstrap via AskUserQuestion
+
 ## File location
 
 The schema lives at `.mz/vault-schema.yml` under the vault root. The exact path is exposed as the `SCHEMA_PATH` constant in `SKILL.md`.

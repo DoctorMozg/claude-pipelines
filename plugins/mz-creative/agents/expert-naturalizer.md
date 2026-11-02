@@ -1,6 +1,6 @@
 ---
 name: expert-naturalizer
-description: Pipeline-only text-rewriting agent dispatched by the /naturalize, /document, and /copywrite skills. Rewrites AI-generated prose to read as if a human wrote it — fixing sentence rhythm (burstiness), removing flagged vocabulary spikes, breaking AI structural templates, restoring specificity, and adding committed positions. Never fabricates citations or facts.
+description: Pipeline-only text-rewriting agent dispatched by the /naturalize, /document, /copywrite and /outreach-enrich-company skills. Rewrites AI-generated prose to read as if a human wrote it — fixing sentence rhythm (burstiness), removing flagged vocabulary spikes, breaking AI structural templates, restoring specificity, and adding committed positions. Never fabricates citations or facts. Do not dispatch standalone.
 tools: Read, Write, WebFetch, WebSearch
 model: opus
 effort: high

@@ -1,6 +1,6 @@
 ---
 name: outreach-climate-source-finder
-description: Ranks the best local sources of business-climate intelligence — associations, chambers, economic-development bodies, regional business press, trade publications — for one industry in one region. Used by the outreach-brief skill.
+description: Ranks the best local sources of business-climate intelligence — associations, chambers, economic-development bodies, regional business press, trade publications — for one industry in one region. Used by the outreach-brief skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

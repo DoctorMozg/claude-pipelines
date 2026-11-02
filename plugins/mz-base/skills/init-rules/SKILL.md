@@ -68,6 +68,10 @@ Every run, in both modes and for uninstall, passes the single approval gate in P
 
 Read `phases/run.md` and proceed to Phase 1.
 
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/retired.md`: the retired rule ids and the renamed or rewritten CLAUDE.md sections that the stale scan looks for. Read it in full in Phase 1 Step 5 on install, and again in Step 7c on uninstall before deleting rule files.
+
 ## Error Handling
 
 - **Empty / ambiguous argument** → AskUserQuestion; never guess.

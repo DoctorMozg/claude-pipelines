@@ -44,7 +44,7 @@ If `ExistingCLAUDE` is true, do NOT overwrite. Instead:
 1. If all sections present, skip this step and record `CLAUDEAction: skipped_existing`.
 1. If sections are missing, append only the missing sections at the end. Record `CLAUDEAction: appended_missing_sections`.
 
-If `ExistingCLAUDE` is false, write a new CLAUDE.md. Read the template from `references/claude-md-template.md` and customize:
+If `ExistingCLAUDE` is false, write a new CLAUDE.md. Read the template from `<SKILL_DIR>/references/claude-md-template.md` and customize:
 
 - Replace `{{VAULT_PURPOSE}}` with `VaultPurpose` from state.md.
 - Replace `{{VAULT_ROOT}}` with the absolute vault path.

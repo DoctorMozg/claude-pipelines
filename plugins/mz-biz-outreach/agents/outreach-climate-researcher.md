@@ -1,6 +1,6 @@
 ---
 name: outreach-climate-researcher
-description: Researches the local business climate for one industry × region — economic trends, regulatory shifts, deals, and pain points — writing dated signals plus ready-to-use outreach angles. Used by the outreach-brief skill.
+description: Researches the local business climate for one industry × region — economic trends, regulatory shifts, deals, and pain points — writing dated signals plus ready-to-use outreach angles. Used by the outreach-brief skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

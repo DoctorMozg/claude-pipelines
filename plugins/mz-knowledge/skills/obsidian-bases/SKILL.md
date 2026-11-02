@@ -101,8 +101,6 @@ formulas:
   label: 'if(status == "done", "done", "open")'
 ```
 
-Reference: grep `references/functions-reference.md` for formula function signatures by return type (Date, Duration, String, Number, Boolean, List, File). Do not load the full file — grep for the function name or category you need.
-
 ## Red Flags
 
 - Using `(date.now() - file.mtime)` directly as a number — must access `.days` / `.hours` / etc. Duration is not a Number.
@@ -114,3 +112,7 @@ Reference: grep `references/functions-reference.md` for formula function signatu
 ## Verification
 
 To confirm the skill was applied correctly, output a sample `.base` snippet that lists all notes with tag `project`, sorted by `file.mtime` descending, showing name and status columns. The snippet should parse as valid YAML and use only the namespaces and functions documented above.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/functions-reference.md`: formula function signatures by return type (Date, Duration, String, Number, Boolean, List, File). Grep it for the function name or category you need while writing a formula.

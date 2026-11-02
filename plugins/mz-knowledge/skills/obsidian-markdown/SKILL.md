@@ -38,7 +38,7 @@ Invoke when working inside an Obsidian vault or writing content destined for one
 - `[[#Same-note heading]]` — link to a heading within the current note.
 - Block IDs: place `^block-id` at the END of the paragraph being identified. For lists and blockquotes, place the `^block-id` on a separate line immediately after the item.
 
-### Embeds (full list in `references/embeds.md`)
+### Embeds (full list in `${CLAUDE_SKILL_DIR}/references/embeds.md`)
 
 - `![[Note]]` — embed a note.
 - `![[image.png]]` — embed an image.
@@ -51,13 +51,13 @@ Invoke when working inside an Obsidian vault or writing content destined for one
 - Frontmatter: `tags: [tag1, tag2]` — list format. Singular `tag:` is deprecated since Obsidian 1.9.
 - Nested: `#parent/child` — creates a tag hierarchy.
 
-### Frontmatter (full property types in `references/properties.md`)
+### Frontmatter (full property types in `${CLAUDE_SKILL_DIR}/references/properties.md`)
 
 - Default built-in properties (plural since 1.9): `tags`, `aliases`, `cssclasses`.
 - Property types: Text, Number, Checkbox, Date, Date & Time, List, Links.
 - Date format: `YYYY-MM-DD`. Date & Time format: `YYYY-MM-DDTHH:mm`.
 
-### Callouts (full type list with aliases in `references/callouts.md`)
+### Callouts (full type list with aliases in `${CLAUDE_SKILL_DIR}/references/callouts.md`)
 
 - Syntax:
   ```
@@ -79,10 +79,6 @@ Invoke when working inside an Obsidian vault or writing content destined for one
   ```
 - Mermaid: use a standard ```` ```mermaid ```` code fence. To link graph nodes to vault notes, add `class NodeName internal-link;` — Obsidian then resolves the node label as a wikilink.
 
-Reference: grep `references/callouts.md` for callout type aliases.
-Reference: grep `references/properties.md` for property type details.
-Reference: grep `references/embeds.md` for all embed variants.
-
 ## Red Flags
 
 - Using Markdown links `[text](path)` for internal vault notes — use `[[wikilinks]]` instead so Obsidian's graph and backlinks work.
@@ -93,3 +89,9 @@ Reference: grep `references/embeds.md` for all embed variants.
 ## Verification
 
 To confirm: can you write a note that includes (a) a wikilink to another note, (b) a callout with a title, and (c) frontmatter with `tags` and `aliases`? Check that tags use YAML list syntax (`tags: [a, b]` or multi-line `- tag`) and every internal link uses `[[]]`, not `[]()`.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/callouts.md`: callout syntax, every callout type and its aliases. Grep it for the type or alias you need.
+- `${CLAUDE_SKILL_DIR}/references/embeds.md`: embed variants for notes, images, audio, video, PDFs, blocks and search queries. Grep it for the variant you need.
+- `${CLAUDE_SKILL_DIR}/references/properties.md`: default properties, property types, tag rules and multi-line list syntax. Grep it for the property type you need.

@@ -213,7 +213,7 @@ For each rule in the approved plan:
 
 ### 7c. Uninstall — `--uninstall`
 
-**Target=rules:** delete each file in the approved plan and record `Removed`. Never delete files in the rules directory whose names are neither bundled nor listed as retired in `references/retired.md`.
+**Target=rules:** delete each file in the approved plan and record `Removed`. Never delete files in the rules directory whose names are neither bundled nor listed as retired in `<SKILL_DIR>/references/retired.md`.
 
 **Target=claudemd:** remove each approved sentinel pair plus one adjacent blank line, so gaps don't accumulate, and record `Removed`. Never delete CLAUDE.md itself, even if it ends up containing only the managed header.
 

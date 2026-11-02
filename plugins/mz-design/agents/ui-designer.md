@@ -1,6 +1,6 @@
 ---
 name: ui-designer
-description: Visual layout and composition critic. Reviews UI design documents for grid systems, alignment, whitespace, visual hierarchy, density, scannability, and composition quality.
+description: Pipeline-only. Dispatched by /design-document as one of four parallel critics. Visual layout and composition critic. Reviews UI design documents for grid systems, alignment, whitespace, visual hierarchy, density, scannability, and composition quality. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: opus
 effort: high

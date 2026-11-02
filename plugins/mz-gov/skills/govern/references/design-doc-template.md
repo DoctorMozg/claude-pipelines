@@ -6,6 +6,11 @@ This follows the Google informal design-doc model. It is deliberately **not a st
 
 > **The quality test:** the whole point of a design doc is capturing the key decisions and the **trade-offs and alternatives** considered. If this doc basically says "this is how we're going to implement it" with no trade-offs and no alternatives, you should have just written the code — skip the doc and ship the program.
 
+## Contents
+
+- Template (the copy block): Context and scope, Goals and non-goals, The actual design, Alternatives considered, Cross-cutting concerns
+- Filled-skeleton example (abbreviated)
+
 Copy the block below and fill the placeholders. Drop or merge sections that genuinely don't apply; don't invent content to fill a heading.
 
 ______________________________________________________________________

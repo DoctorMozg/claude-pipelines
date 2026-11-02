@@ -1,6 +1,6 @@
 ---
 name: expert-round-synthesizer
-description: Neutral round synthesizer for the /expert skill. Reads all 5 panelist outputs from one round and produces a lens-agnostic consensus/divergence/tension summary.
+description: Neutral round synthesizer for the /expert skill. Reads all 5 panelist outputs from one round and produces a lens-agnostic consensus/divergence/tension summary. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: sonnet
 effort: high

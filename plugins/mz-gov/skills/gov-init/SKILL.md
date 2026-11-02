@@ -60,7 +60,7 @@ Read `phases/run.md` and proceed to Phase 1.
 
 ## Verification
 
-Verification: delegated to phase file — after install, grep `CLAUDE.md` for exactly one `mz-gov:governance-policy` start sentinel (zero after uninstall). See `phases/run.md`.
+After install, grep `CLAUDE.md` for exactly one `mz-gov:governance-policy` start sentinel (zero after uninstall). See `phases/run.md`.
 
 ## Error Handling
 

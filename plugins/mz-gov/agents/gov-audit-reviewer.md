@@ -1,6 +1,6 @@
 ---
 name: gov-audit-reviewer
-description: Pipeline-only, dispatched by the mz-gov gov-review skill. Scores one existing governance artifact (ADR, RFD, or design doc) against the six-axis review rubric — missing alternatives, unstated assumptions, reversibility, blast radius, considered-options completeness, and status/provenance hygiene — and emits severity-labeled findings with a binary verdict.
+description: Pipeline-only, dispatched by the mz-gov gov-review skill. Scores one existing governance artifact (ADR, RFD, or design doc) against the six-axis review rubric — missing alternatives, unstated assumptions, reversibility, blast radius, considered-options completeness, and status/provenance hygiene — and emits severity-labeled findings with a binary verdict. Do not dispatch standalone.
 tools: Read, Grep, Glob
 model: opus
 effort: high

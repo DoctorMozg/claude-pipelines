@@ -1,6 +1,6 @@
 ---
 name: outreach-news-finder
-description: Finds recent news, press releases, funding rounds, partnerships, and public announcements for companies. Surfaces timing signals for outreach. Used by the outreach-research skill.
+description: Finds recent news, press releases, funding rounds, partnerships, and public announcements for companies. Surfaces timing signals for outreach. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

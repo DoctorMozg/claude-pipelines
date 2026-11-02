@@ -124,9 +124,9 @@ Maintain the progress ledger on every phase transition: set `phase_complete: fal
 
 ## References
 
-- `<PLUGIN_ROOT>/shared/scope-parameter.md` — scope modes + git commands
-- `<PLUGIN_ROOT>/shared/approval-gate.md` — two-surface gate pattern
-- `<PLUGIN_ROOT>/shared/state-schema.md` — state.md schema
-- `<PLUGIN_ROOT>/shared/resume-protocol.md` — resume entry contract
-- `<PLUGIN_ROOT>/shared/agent-status-protocol.md` — four-status STATUS vocabulary
-- `references/per-language-comment-syntax.md` — language-specific comment tokens + preserve markers (read by proposer)
+- `<PLUGIN_ROOT>/shared/scope-parameter.md`: scope modes and their git commands. Read it when resolving the scope in Phase 0.
+- `<PLUGIN_ROOT>/shared/approval-gate.md`: the two-surface gate pattern and the unattended bypass. Read it at the Phase 3.5 gate.
+- `<PLUGIN_ROOT>/shared/state-schema.md`: the `state.md` schema. Read it when writing or upgrading `state.md`.
+- `<PLUGIN_ROOT>/shared/resume-protocol.md`: the resume entry contract. Read it at the Phase 0 resume check.
+- `<PLUGIN_ROOT>/shared/agent-status-protocol.md`: the four-status STATUS vocabulary. Read it when checking proposer reports in Phase 2.
+- `${CLAUDE_SKILL_DIR}/references/per-language-comment-syntax.md`: comment tokens, string-literal rules and preserve markers per language. Grep it for the file's extension header; each proposer reads the matching section.

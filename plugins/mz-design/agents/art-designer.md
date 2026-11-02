@@ -1,6 +1,6 @@
 ---
 name: art-designer
-description: Visual aesthetics and color theory critic. Reviews UI design documents for color harmony, palette relationships, type pairing, type scale, mood coherence, and aesthetic consistency.
+description: Pipeline-only. Dispatched by /design-document as one of four parallel critics. Visual aesthetics and color theory critic. Reviews UI design documents for color harmony, palette relationships, type pairing, type scale, mood coherence, and aesthetic consistency. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: opus
 effort: high

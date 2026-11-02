@@ -1,6 +1,6 @@
 ---
 name: translate
-description: ALWAYS invoke when the user wants to translate files, docs, or i18n resources. Triggers - "translate X to Y", "localize", "i18n to <lang>". When NOT to use - single-sentence phrase translation (answer inline).
+description: ALWAYS invoke when the user wants to translate files, docs, or i18n resources. Triggers - "translate X to Y", "localize", "i18n to a language". When NOT to use - single-sentence phrase translation (answer inline).
 argument-hint: <natural language request — e.g. "translate README.md to Russian" or "translate locales/en.json to fr mode:i18n">
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch
@@ -129,10 +129,6 @@ Read `phases/translation_and_verification.md` on entry to Phase 2 and keep it lo
 - Set `Status: complete`, `Phase: complete`, `phase_complete: true` and `what_remains: []` in `state.md`, and record `ended_at`, `final_outputs`, `escalations`, `phase_history`, `tier3_ledger_path`.
 - Print the summary block to the user as the terminal orchestrator message.
 
-## Techniques
-
-Reference material: grep `references/placeholder-patterns.md`, `references/markdown-preservation-rules.md`, `references/language-codes.md`.
-
 ## Common Rationalizations
 
 | Rationalization                               | Rebuttal                                                                                                                                    |
@@ -152,6 +148,12 @@ Reference material: grep `references/placeholder-patterns.md`, `references/markd
 ## Verification
 
 On completion, print the summary block from `<task_dir>/summary.md` covering files translated, Tier-1 pass/fail, Tier-2 verdicts and finding counts, Tier-3 lookup counts (`<used> / MAX_*`), glossary seeded/added/conflict counts, Phase 6 re-translation count, and every `DONE_WITH_CONCERNS` chunk surfaced for human review.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/language-codes.md`: ISO 639-1 normalization table, regional-variant collapse, script-based language detection and the anti-injection allow-list. Grep it in Phase 1 for the row or section a target or source token needs.
+- `${CLAUDE_SKILL_DIR}/references/markdown-preservation-rules.md`: what a translator may and may not rewrite in Markdown (NEVER and ALWAYS translate tables, frontmatter, code fences) and the Tier-1 structural parity checks. Grep it for the element type a chunk contains.
+- `${CLAUDE_SKILL_DIR}/references/placeholder-patterns.md`: regexes for i18n and format-string placeholders by framework, plus the combined ripgrep recipe and substitution strategy. Grep it for the framework section a chunk uses; translators do this in Phase 2.
 
 ## State Management
 

@@ -29,6 +29,7 @@ Invoke when declaring a vault schema, checking notes against an existing schema,
 
 ## Constants
 
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **SCHEMA_PATH**: `.mz/vault-schema.yml` — relative to vault root.
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
@@ -56,7 +57,7 @@ Phases 2, 2.5, and 3 run only when `<mode>` is `migrate`. In `validate` mode the
 1. Parse `$ARGUMENTS` for `<mode>` (default `validate`) and `[vault path]`.
 1. Resolve vault path via the ladder in the Arguments section. Escalate via AskUserQuestion if nothing resolves.
 1. Compute `SCHEMA_PATH` as `<vault>/.mz/vault-schema.yml`.
-1. If `SCHEMA_PATH` does not exist, present the bootstrap template from `references/schema-dsl-syntax.md` via AskUserQuestion with options **Accept** — write the template to `SCHEMA_PATH` and continue · **Edit** — provide your own schema text · **Abort** — stop. On **Accept**, write the template. On **Edit**, accept the user's pasted YAML. On **Abort**, halt cleanly. Never fabricate a schema.
+1. If `SCHEMA_PATH` does not exist, present the bootstrap template from `${CLAUDE_SKILL_DIR}/references/schema-dsl-syntax.md` via AskUserQuestion with options **Accept** — write the template to `SCHEMA_PATH` and continue · **Edit** — provide your own schema text · **Abort** — stop. On **Accept**, write the template. On **Edit**, accept the user's pasted YAML. On **Abort**, halt cleanly. Never fabricate a schema.
 1. Derive `task_name = <YYYY_MM_DD>_vault-schema_<mode>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `phase_complete: false`, `what_remains: []`, `Mode: <validate|migrate>`, `Vault: <path>`, `SchemaPath: <path>`.
 1. Print a visible setup block showing `task_name`, resolved vault path, mode, and schema path.
@@ -150,10 +151,10 @@ See `phases/migrate.md` (Step 4).
 | "Auto-pick values for `allowed_values` violations — the user will accept the obvious one." | "Enum picks are irreversible without rollback and 'obvious' is a guess. The skill surfaces `<PICK: ...>` placeholders precisely so the user owns the value, not the orchestrator. Silent auto-pick is how 'helpful' becomes data loss."      |
 | "The batch exceeds MAX_MIGRATION_BATCH — just raise the cap inline."                       | "The cap exists so approval-gate review stays human-sized. Raising it inline silently moves the review from 'readable' to 'rubber-stamped'. Split the batch and run again — the gate is load-bearing, not decoration."                       |
 
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/schema-dsl-syntax.md`: DSL v1 syntax, semantics, migrator interaction, common patterns and v2 candidates. Grep it for the construct you need; read its v1 template in Phase 0 when `SCHEMA_PATH` is missing.
+
 ## State Management
 
 State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
-
-## References
-
-Reference: grep `references/schema-dsl-syntax.md` for DSL template, semantics, and v2 candidates.

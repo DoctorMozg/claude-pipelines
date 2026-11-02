@@ -30,9 +30,9 @@ You are producing the initial UI/UX design document.
 ## Inputs
 - Read <PROJECT_ROOT>/.mz/design/<task_name>/intake.md in full
 - Read <PROJECT_ROOT>/.mz/design/<task_name>/research.md in full
-- Search references/design-spec-template.md for each section as you draft it
-- Search references/wcag-contrast-thresholds.md for the contrast formula when computing the report
-- Search references/nielsen-heuristics.md to self-check the interaction design
+- Search <SKILL_DIR>/references/design-spec-template.md for each section as you draft it
+- Search <SKILL_DIR>/references/wcag-contrast-thresholds.md for the contrast formula when computing the report
+- Search <SKILL_DIR>/references/nielsen-heuristics.md to self-check the interaction design
 
 ## Your Job
 Follow the canonical 14-section template exactly. Produce three files in one dispatch:

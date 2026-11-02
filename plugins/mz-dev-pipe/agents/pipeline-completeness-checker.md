@@ -1,6 +1,6 @@
 ---
 name: pipeline-completeness-checker
-description: Pipeline-only. Final quality gate. Verifies the task is 100% complete by checking implementation against requirements, plan, and all review feedback. Can trigger pipeline restart from any phase.
+description: Pipeline-only. Dispatched by /build. Final quality gate. Verifies the task is 100% complete by checking implementation against requirements, plan, and all review feedback. Can trigger pipeline restart from any phase. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, Bash
 model: opus
 effort: high

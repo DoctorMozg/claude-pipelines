@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-description: User flow and interaction critic. Reviews UI design documents for information architecture, user flows, interaction patterns, microcopy, and Nielsen usability heuristics compliance.
+description: Pipeline-only. Dispatched by /design-document as one of four parallel critics. User flow and interaction critic. Reviews UI design documents for information architecture, user flows, interaction patterns, microcopy, and Nielsen usability heuristics compliance. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: opus
 effort: high

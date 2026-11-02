@@ -55,7 +55,7 @@ If on main/master, inform the user there is nothing to review and set `state.md`
 
 ### 2. Launch the branch-reviewer agent
 
-Dispatch `Agent(branch-reviewer)` in the foreground with the following prompt:
+Dispatch `Agent(branch-reviewer)` with the following prompt and wait for its report:
 
 ```
 Review the current branch against <base-branch>.
@@ -65,7 +65,7 @@ Use researcher agents for domain research if the implementation topic is complex
 Save the report to <PROJECT_ROOT>/.mz/reviews/ using the naming convention: <YYYY_MM_DD>_review_branch_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```
 
-Update `state.md` to `Phase: 2` before dispatch, and to `Phase: 3` with `Status: complete` after the agent returns.
+Update `state.md` to `Phase: 2` before dispatch. When the agent returns, check that the report file exists on disk and isn't empty, then set `Phase: 3` and `Status: complete`.
 
 ### 3. Report to user
 

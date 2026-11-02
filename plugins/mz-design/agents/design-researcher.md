@@ -1,6 +1,6 @@
 ---
 name: design-researcher
-description: Gathers context for a UI/UX design task by scanning the codebase for existing components, design tokens, and style files, and researching domain patterns and accessibility requirements via web search.
+description: Pipeline-only. Dispatched by /design-document. Gathers context for a UI/UX design task by scanning the codebase for existing components, design tokens, and style files, and researching domain patterns and accessibility requirements via web search. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, Bash, WebFetch, WebSearch
 model: sonnet
 effort: high

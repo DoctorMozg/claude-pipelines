@@ -1,12 +1,12 @@
 # Phase 2: Detection
 
-The orchestrator scans the in-scope files (per `scope_files.txt` from Phase 0) for the five artifact categories below, using the embedded catalog at `references/artifact-catalog.md` plus the Phase 1 web research findings. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/detection.md`.
+The orchestrator scans the in-scope files (per `scope_files.txt` from Phase 0) for the five artifact categories below, using the embedded catalog at `<SKILL_DIR>/references/artifact-catalog.md` plus the Phase 1 web research findings. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/detection.md`.
 
 This phase runs in the orchestrator itself — no subagent dispatch — because detection is regex/grep work and the user must see the consolidated hit list at the approval gate. Subagent latency adds nothing.
 
 ## 2.1 Load the catalog
 
-Search `references/artifact-catalog.md` for the per-category pattern blocks. Do not read the entire file. The catalog uses these grep anchors:
+Search `<SKILL_DIR>/references/artifact-catalog.md` for the per-category pattern blocks. Do not read the entire file. The catalog uses these grep anchors:
 
 - `# Category A:` — AI signatures & watermarks
 - `# Category B:` — Pipeline phase markers

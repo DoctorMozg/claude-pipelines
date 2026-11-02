@@ -1,6 +1,6 @@
 ---
 name: expert-leftover-cleaner
-description: Pipeline-only code-cleanup agent dispatched by the /clean-leftovers skill. Removes AI signatures, pipeline phase markers, planning/generation comments, WHAT-not-WHY comments, and dead code or half-implementations from source files. Conservative on borderline cases — preserves WHY content, license headers, and load-bearing protocol tokens.
+description: Pipeline-only code-cleanup agent dispatched by the /clean-leftovers skill. Removes AI signatures, pipeline phase markers, planning/generation comments, WHAT-not-WHY comments, and dead code or half-implementations from source files. Conservative on borderline cases — preserves WHY content, license headers, and load-bearing protocol tokens. Do not dispatch standalone.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 effort: high

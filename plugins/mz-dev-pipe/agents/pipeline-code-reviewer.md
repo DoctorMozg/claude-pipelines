@@ -1,6 +1,6 @@
 ---
 name: pipeline-code-reviewer
-description: Pipeline-only. Reviews implementation code for bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly.
+description: Pipeline-only. Dispatched by /build, /cleanup, /debug, /optimize, /polish and /translate. Reviews implementation code for bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly. Do not dispatch standalone.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high

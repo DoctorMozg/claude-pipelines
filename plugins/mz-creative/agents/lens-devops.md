@@ -1,6 +1,6 @@
 ---
 name: lens-devops
-description: DevOps lens — reliability-focused thinker who approaches problems through SLOs, observability, deploy safety, capacity, cost, and operational burden. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill.
+description: DevOps lens — reliability-focused thinker who approaches problems through SLOs, observability, deploy safety, capacity, cost, and operational burden. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high

@@ -155,10 +155,6 @@ Phase 3+ runs `pipeline-test-writer + pipeline-coder + pipeline-code-reviewer + 
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: diagnosis gate`, stop. A missing answer is never approval.
 
-## Techniques
-
-Reference files: grep `references/debugging-patterns.md` for bisection, flaky test, stack trace, or memory leak patterns — do not load the entire file.
-
 ## Common Rationalizations
 
 | Rationalization                            | Rebuttal                                                                                                                 |
@@ -178,6 +174,10 @@ Reference files: grep `references/debugging-patterns.md` for bisection, flaky te
 **`certainty:high`**: output the final report block — reproducer command, root cause with file:line, regression test name, fix diff summary, and green test run confirmation.
 
 **`certainty:low`**: output the final verdict block — hypothesis verbatim, verdict (confirmed / disproved / inconclusive / partially confirmed), confidence, top 2-3 evidence items, exploratory tests added with disposition (kept / xfail / removed), recommended next action (suggest `/debug` with `certainty:high` if confirmed), and the report file path under `.mz/reports/`.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/debugging-patterns.md`: command sequences for git bisect, test pollution bisection, flaky test heuristics, stack trace parsing and memory leak hunting. Grep it for the technique the bug calls for while investigating; do not read it whole.
 
 ## Error Handling
 

@@ -4,6 +4,11 @@ MADR is a strict superset of the minimal Nygard ADR. Reach for it when the decis
 
 MADR keeps the metadata in YAML frontmatter and adds the sections that make a multi-option decision legible: the drivers, the options compared, and the pros/cons of each. The AI-provenance fence sits directly under the frontmatter, above the body.
 
+## Contents
+
+- Template (the copy block): Context and Problem Statement, Decision Drivers, Considered Options, Decision Outcome, Pros and Cons of the Options, More Information (optional)
+- Filled example
+
 Copy the block below and fill the placeholders. Sections marked *optional* can be dropped when they'd be empty — don't pad.
 
 ______________________________________________________________________

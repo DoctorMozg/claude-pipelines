@@ -1,6 +1,6 @@
 ---
 name: gov-artifact-writer
-description: Pipeline-only, dispatched by the mz-gov govern skill during its record phase, after human sign-off. Writes the approved decision as a durable, sequentially-numbered artifact under docs/decisions, docs/rfcs, or docs/design, embeds the AI-provenance fence in the header, and initializes its status from the configured vocabulary.
+description: Pipeline-only, dispatched by the mz-gov govern skill during its record phase, after human sign-off. Writes the approved decision as a durable, sequentially-numbered artifact under docs/decisions, docs/rfcs, or docs/design, embeds the AI-provenance fence in the header, and initializes its status from the configured vocabulary. Do not dispatch standalone.
 tools: Read, Write, Bash, Glob, Grep
 model: sonnet
 effort: medium

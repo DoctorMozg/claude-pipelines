@@ -1,6 +1,6 @@
 ---
 name: expert-copywriter
-description: Pipeline-only copywriting agent dispatched by the /copywrite skill. Writes promotional, marketing, announcement, landing page, email, social, changelog, and pitch copy. Carries dramaturgy, marketing-framework (PAS, AIDA, FAB, BAB, PASTOR, 4Us, Rule of One), and psychology-of-persuasion (Cialdini's 7, loss aversion, framing, anchoring, peak-end) toolkits. Applies BLUF, dual-reader architecture, active voice, second-person direct address, sentence rhythm variation, and layer-cake scan compatibility. Adapts framework to the format brief.
+description: Pipeline-only copywriting agent dispatched by the /copywrite and /outreach-enrich-company skills. Writes promotional, marketing, announcement, landing page, email, social, changelog, and pitch copy. Carries dramaturgy, marketing-framework (PAS, AIDA, FAB, BAB, PASTOR, 4Us, Rule of One), and psychology-of-persuasion (Cialdini's 7, loss aversion, framing, anchoring, peak-end) toolkits. Applies BLUF, dual-reader architecture, active voice, second-person direct address, sentence rhythm variation, and layer-cake scan compatibility. Adapts framework to the format brief. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high

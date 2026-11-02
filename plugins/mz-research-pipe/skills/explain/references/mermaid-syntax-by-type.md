@@ -4,6 +4,18 @@ Source: https://mermaid.js.org/intro/ (official Mermaid docs, versioned). Use th
 
 Each section has: syntax skeleton, key tokens, minimal working example.
 
+## Contents
+
+- flowchart
+- sequenceDiagram
+- classDiagram
+- stateDiagram-v2
+- erDiagram
+- mindmap
+- gitGraph
+- timeline
+- C4
+
 ## flowchart
 
 Skeleton:

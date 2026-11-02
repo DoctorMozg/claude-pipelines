@@ -1,6 +1,6 @@
 ---
 name: pipeline-coder
-description: Pipeline-only. Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes.
+description: Pipeline-only. Dispatched by /build, /cleanup, /debug and /polish. Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes. Do not dispatch standalone.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 memory: project

@@ -1,6 +1,6 @@
 ---
 name: gov-critic-quick
-description: Light-path consolidated governance critic for simple ADRs. Reviews a draft decision artifact across all four governance lenses — alternatives, reversibility, blast radius, and assumptions — in a single pass, and its output is the final verdict with no separate synthesizer.
+description: Pipeline-only. Dispatched by /govern. Light-path consolidated governance critic for simple ADRs. Reviews a draft decision artifact across all four governance lenses — alternatives, reversibility, blast radius, and assumptions — in a single pass, and its output is the final verdict with no separate synthesizer. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: sonnet
 effort: high

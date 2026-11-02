@@ -43,7 +43,7 @@ Empty or ambiguous arguments are never guessed. On any of the following, escalat
 
 - No target language supplied.
 - No file tokens supplied.
-- Target language token fails the anti-injection allow-list in `references/language-codes.md`.
+- Target language token fails the anti-injection allow-list in `<SKILL_DIR>/references/language-codes.md`.
 - Two or more candidate output modes named in the same argument.
 
 No verification opt-in flag exists in the grammar — verification is always on (Tier-1 structural, Tier-2 judge, Tier-3 uncertainty-driven). The approval gate in 1.5 presents its fixed cost; do not offer an opt-out.
@@ -91,11 +91,11 @@ If the researcher reports zero matching files, or every matching file is skipped
 Run only when 1.1 did not supply an explicit source. The tier order is fall-through with a 5-second budget per tier and a global minimum-input guard.
 
 1. **LibreTranslate `/detect`** — `WebFetch` the configured mirror with the first 500 characters of the largest discovered file. 5-second timeout. Accept if the response confidence is ≥ 0.6 and the detected code is in the canonical set.
-1. **Unicode script heuristic** — grep `references/language-codes.md` for the `## Script → Language Fallback Heuristic` table, count code points in the first 500 characters of the sample per range, and pick the majority. Reference: grep `references/language-codes.md` for `## Script → Language Fallback Heuristic`.
+1. **Unicode script heuristic** — grep `<SKILL_DIR>/references/language-codes.md` for the `## Script → Language Fallback Heuristic` table, count code points in the first 500 characters of the sample per range, and pick the majority. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `## Script → Language Fallback Heuristic`.
 1. **One-shot haiku agent** — dispatch a single haiku-model `pipeline-researcher` with the 500-char sample and the prompt "What ISO 639-1 language code is this? Reply with a single two-letter code only." Accept if the reply is in the canonical set.
 1. **AskUserQuestion** — escalate with the first line of the sample and the list of discovered files; never guess past this point.
 
-**Minimum input guard**: if the concatenated sample across discovered files is fewer than 20 characters, skip all four tiers and escalate immediately via `AskUserQuestion` — short strings carry too little signal for any heuristic to be reliable. Reference: grep `references/language-codes.md` for `Minimum input length`.
+**Minimum input guard**: if the concatenated sample across discovered files is fewer than 20 characters, skip all four tiers and escalate immediately via `AskUserQuestion` — short strings carry too little signal for any heuristic to be reliable. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `Minimum input length`.
 
 Persist to `state.md`: `source_lang` and `source_lang_method` (`libretranslate` / `script_heuristic` / `haiku_agent` / `user`). The method is audit-only; the approval gate echoes it so the user can see how detection landed.
 
@@ -108,11 +108,11 @@ tier 3 haiku agent: "en"                                 → accept
 state.md source_lang: en, source_lang_method: haiku_agent
 ```
 
-Early stop: if tier 1 returns ≥ 0.9 confidence and the detected code is in the canonical set, skip tiers 2–4. Reference: grep `references/language-codes.md` for `Early stop on high confidence`.
+Early stop: if tier 1 returns ≥ 0.9 confidence and the detected code is in the canonical set, skip tiers 2–4. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `Early stop on high confidence`.
 
 ### 1.4 Target Language Normalization
 
-Normalize the raw target token from 1.1 into the canonical ISO 639-1 two-letter form. Reference: grep `references/language-codes.md` for `## Normalization Table`. The grep should return one to five rows; if it returns zero, the token is unmapped.
+Normalize the raw target token from 1.1 into the canonical ISO 639-1 two-letter form. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `## Normalization Table`. The grep should return one to five rows; if it returns zero, the token is unmapped.
 
 Validation sequence (fail closed on the first failure):
 
@@ -216,7 +216,7 @@ Persist the chunk table to `state.md` under `chunks[]` with fields `chunk_id`, `
 
 Write `<task_dir>/translation_plan.md` with the fields below. This is the single document the approval gate in 1.5 shows to the user; it must be readable top-to-bottom without opening any other file.
 
-- **Source language** — canonical ISO 639-1 code plus native name (Reference: grep `references/language-codes.md` for `Native-Name Reference`).
+- **Source language** — canonical ISO 639-1 code plus native name (Reference: grep `<SKILL_DIR>/references/language-codes.md` for `Native-Name Reference`).
 - **Target language** — canonical ISO 639-1 code plus native name plus `target_variant` if the user supplied one.
 - **Output mode** — `sidecar` / `inplace` / `i18n`. When the mode is `inplace`, append the `INPLACE_DESTRUCTIVE` warning in bold on its own line.
 - **File list table** — one row per file: `path → output_path → format → translatable lines → chunk count`. Append per-row flags (`FILE_EXISTS`, `FALLBACK_SIDECAR`, `INPLACE_DESTRUCTIVE`) in the rightmost column.

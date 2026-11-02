@@ -7,6 +7,13 @@ The `gov-router` agent reads this file to answer two questions in order:
 
 Work the gates top-to-bottom. Stop at the first definite answer. The router modifies nothing — its only output is the routing file described at the end.
 
+## Contents
+
+- Gate A — Is an artifact required?
+- Gate B — Which artifact?
+- Weight label
+- Output contract
+
 ______________________________________________________________________
 
 ## Gate A — Is an artifact required?

@@ -95,7 +95,17 @@ Detect git context (commit, branch, optional open PR — read-only), append a `#
 
 ## Verification
 
-Verification: delegated to phase files. Each phase emits a visible block; the final enforce block lists the artifact path, status, sign-off signature, git links, and the recommended next step, with `state.md` marked `complete` and `what_remains: []`.
+Each phase emits a visible block; the final enforce block lists the artifact path, status, sign-off signature, git links, and the recommended next step, with `state.md` marked `complete` and `what_remains: []`.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/artifact-router.md`: Gate A (is an artifact needed) and Gate B (which one) selection logic, the weight label and the routing output contract. `gov-router` reads it in full at Phase 1.
+- `${CLAUDE_SKILL_DIR}/references/adr-nygard-template.md`: minimal four-section ADR template with a filled example. Read it in full at Phase 1 when the router picks `adr-nygard`; `gov-artifact-writer` reads it again at Phase 4.
+- `${CLAUDE_SKILL_DIR}/references/adr-madr-template.md`: rich MADR template for decisions with three or more options, with a filled example. Read it in full at Phase 1 when the router picks `adr-madr`; `gov-artifact-writer` reads it again at Phase 4.
+- `${CLAUDE_SKILL_DIR}/references/rfd-template.md`: RFD template with the fixed six-state lifecycle and practice notes. Read it in full at Phase 1 when the router picks `rfd`; `gov-artifact-writer` reads it again at Phase 4.
+- `${CLAUDE_SKILL_DIR}/references/design-doc-template.md`: informal design doc template with a filled skeleton. Read it in full at Phase 1 when the router picks `design`; `gov-artifact-writer` reads it again at Phase 4.
+- `${CLAUDE_SKILL_DIR}/references/status-vocabularies.md`: status sets per artifact type and why they are configurable. Grep it for the artifact type's set; `gov-artifact-writer` reads it at Phase 4 to initialize the status, and `gov-review` reads it for status validity.
+- `${CLAUDE_SKILL_DIR}/references/agdr-provenance-block.md`: canonical provenance fence with its fields, delimiters and `trigger` values. Only the `gov-provenance-recorder` agent reads it, in full, when it writes `provenance.md` in Phase 0; no phase file opens it.
 
 ## Error Handling
 

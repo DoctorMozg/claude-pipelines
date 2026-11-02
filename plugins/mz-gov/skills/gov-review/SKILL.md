@@ -63,17 +63,17 @@ None. This skill is read-only — it scores artifacts and writes a report under 
 
 List the files in the artifact source, dispatch `gov-audit-reviewer` per artifact (parallel up to **MAX_REVIEWERS**, sequential overflow waves, each wave with a pre-dispatch manifest and a post-wave rollup), collect every `VERDICT:`, and write the review report to **REPORT_DIR**. See `phases/audit.md`. If zero artifacts are found, report that clearly and stop — do not fabricate findings.
 
-## Techniques
-
-Techniques: delegated to `phases/audit.md` (glob resolution, wave batching, manifest/rollup, report shape) and `references/review-rubric.md` (the six-axis scoring rubric the reviewer applies).
-
 ## Red Flags
 
-Red Flags: delegated to `phases/audit.md` and the `gov-audit-reviewer` agent. The orchestrator-level red flag: dumping the full report inline instead of reporting its path, or claiming a verdict for an artifact whose reviewer returned no `VERDICT:` line.
+- You dumped the full report inline instead of reporting its path, or claimed a verdict for an artifact whose reviewer returned no `VERDICT:` line.
 
 ## Verification
 
 Output a final block: the report path under **REPORT_DIR**, the aggregate roll-up (N artifacts reviewed, M failing), and the per-artifact verdict list. Confirm the report file exists. If any reviewer returned no `VERDICT:`, name that artifact as unscored rather than counting it as a pass.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/review-rubric.md`: the six scoring axes, severity labels, output format and the false-positive list. `gov-audit-reviewer` reads it in full before scoring each artifact; `phases/audit.md` passes its path in every dispatch.
 
 ## Error Handling
 

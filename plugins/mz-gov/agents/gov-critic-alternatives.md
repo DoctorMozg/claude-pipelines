@@ -1,6 +1,6 @@
 ---
 name: gov-critic-alternatives
-description: Considered-options critic for the governance discuss phase. Reviews a draft ADR/RFD/design-doc for whether the option space is complete, whether at least two real alternatives carry honest trade-offs, and whether the chosen option is actually best rather than merely first-found.
+description: Pipeline-only. Dispatched by /govern. Considered-options critic for the governance discuss phase. Reviews a draft ADR/RFD/design-doc for whether the option space is complete, whether at least two real alternatives carry honest trade-offs, and whether the chosen option is actually best rather than merely first-found. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: opus
 effort: high

@@ -35,7 +35,7 @@ All unmatched Wave B findings are promoted to a dedicated "Blind Spots" section 
 
 ## 3.3 Evidence-Tiered Severity Cap
 
-Read `references/evidence-tier-rules.md` for the full tier definitions and capping rules.
+Read `<SKILL_DIR>/references/evidence-tier-rules.md` for the full tier definitions and capping rules.
 
 For each finding, read its `evidence_tier` field:
 

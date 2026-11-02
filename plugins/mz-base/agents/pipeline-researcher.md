@@ -1,6 +1,6 @@
 ---
 name: pipeline-researcher
-description: Pipeline-only. Explores codebases and researches domains. Gathers context about project structure, patterns, conventions, and external domain knowledge needed for implementation planning.
+description: Pipeline-only. Dispatched by /ask, /audit, /build, /cleanup, /combine, /debug, /explain, /optimize, /polish, /translate and /verify, and by branch-reviewer. Explores codebases and researches domains. Gathers context about project structure, patterns, conventions, and external domain knowledge needed for implementation planning. Do not dispatch standalone.
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: high

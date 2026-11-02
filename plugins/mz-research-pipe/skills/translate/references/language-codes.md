@@ -2,6 +2,16 @@
 
 Grep-first reference. Agents never load this file whole. The pipeline's internal canonical form for every language code is **ISO 639-1 two-letter lowercase** (`en`, `ru`, `ja`, `zh`, `fr`, `de`, ...). All three external services the translate skill can reach — MyMemory, LibreTranslate, Wiktionary — accept ISO 639-1 directly without transformation, so canonicalizing at the skill boundary removes every downstream code-shape branch. Use this file to (1) normalize user input into the canonical form, (2) recognize preservable regional variants, (3) run the script-based detection fallback when network detection fails, and (4) validate incoming language tokens against prompt-injection.
 
+## Contents
+
+- Canonical Form
+- Normalization Table
+- Regional Variant Collapse — Explicit Losses
+- Script → Language Fallback Heuristic
+- Auto-Detection Tier Pipeline
+- Validation Rules
+- Grep Access Examples
+
 ## Canonical Form
 
 The canonical set is the ISO 639-1 two-letter lowercase codes listed below. Any value outside this set must be rejected with `unsupported target language: <input>. Canonical form is ISO 639-1 lowercase. See references/language-codes.md for supported values.`

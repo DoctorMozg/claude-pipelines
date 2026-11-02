@@ -1,6 +1,6 @@
 ---
 name: job-reporter
-description: Synthesizes scored jobs, excluded listings, cover letters, and the search strategy into the master markdown job-search report. Used by the job-search skill.
+description: Synthesizes scored jobs, excluded listings, cover letters, and the search strategy into the master markdown job-search report. Used by the job-search skill. Do not dispatch standalone.
 tools: Read, Write, Glob
 model: opus
 effort: high

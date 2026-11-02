@@ -45,7 +45,7 @@ Synthesizes prior pipeline output — `.mz/research/` reports, `.mz/task/*/` art
 /combine output:docs/caching_summary.md pull together everything about cache invalidation
 ```
 
-**Pipeline**: Inventory → Lens Decomposition → User Approval → Parallel Lens Dispatch → Synthesis → (optional) Gap-Fill Approval → Web Gap-Fill → Task-Adaptive Report
+**Pipeline**: Inventory → Lens Decomposition → User Approval → Parallel Lens Dispatch → Synthesis → (optional) Web Gap-Fill → Task-Adaptive Report
 
 ______________________________________________________________________
 

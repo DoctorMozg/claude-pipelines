@@ -1,6 +1,6 @@
 ---
 name: outreach-personality-profiler
-description: Reads one contact's public professional footprint and returns a communication-style read (Social Styles - Driver/Analytical/Amiable/Expressive) plus a subtle letter-calibration directive. Asserts a style only with citable evidence; falls back to role-based priorities otherwise. Used by the outreach-enrich-company skill.
+description: Reads one contact's public professional footprint and returns a communication-style read (Social Styles - Driver/Analytical/Amiable/Expressive) plus a subtle letter-calibration directive. Asserts a style only with citable evidence; falls back to role-based priorities otherwise. Used by the outreach-enrich-company skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: medium

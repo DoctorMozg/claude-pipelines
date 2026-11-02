@@ -1,6 +1,6 @@
 ---
 name: design-critique-synthesizer
-description: Merges the outputs of four parallel design critics (ui-designer, ux-designer, art-designer, accessibility-specialist) into a single prioritized action-item list with a definitive aggregate verdict.
+description: Pipeline-only. Dispatched by /design-document. Merges the outputs of four parallel design critics (ui-designer, ux-designer, art-designer, accessibility-specialist) into a single prioritized action-item list with a definitive aggregate verdict. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: sonnet
 effort: medium

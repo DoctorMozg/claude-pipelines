@@ -24,6 +24,7 @@ Discipline skill that bootstraps a new Obsidian vault (or retrofits an existing 
 
 ## Constants
 
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/` | **SCHEMA_PATH**: `<vault>/.mz/vault-schema.yml` | **CLAUDE_MD_PATH**: `CLAUDE.md` (vault root)
 
@@ -131,10 +132,6 @@ Create folders, write CLAUDE.md, schema, and templates. See `phases/scaffold_vau
 
 Update `state.md` to terminal: `Status: complete`, `Phase: 2`, `Completed: <ISO>`.
 
-## Techniques
-
-Techniques: delegated to `phases/scaffold_vault.md` — template content lives in `references/claude-md-template.md` (lazy-loaded).
-
 ## Common Rationalizations
 
 | Rationalization                                                | Rebuttal                                                                                                                                                                                       |
@@ -166,6 +163,10 @@ obsidian-init verification:
 ```
 
 If any box is unchecked, report the failure explicitly.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/claude-md-template.md`: the CLAUDE.md template with `{{PLACEHOLDER}}` markers and a placeholder table. Read it in full in Phase 1, Step 2, when `ExistingCLAUDE` is false.
 
 ## State Management
 

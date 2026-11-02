@@ -19,7 +19,7 @@ Constants in use from `SKILL.md`:
 
 ### 1.1 Read the validation report
 
-Use the Read tool on `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md`. Parse the YAML. Filter the `findings:` list to entries where `severity: Critical` — `Nit` findings are advisory and never migrated in v1 (see `references/schema-dsl-syntax.md`).
+Use the Read tool on `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md`. Parse the YAML. Filter the `findings:` list to entries where `severity: Critical` — `Nit` findings are advisory and never migrated in v1 (see `<SKILL_DIR>/references/schema-dsl-syntax.md`).
 
 ### 1.2 Group findings by note path
 

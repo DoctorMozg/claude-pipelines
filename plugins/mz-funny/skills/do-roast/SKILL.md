@@ -60,7 +60,7 @@ Invoke when the user wants funny pushback, team levity, a character-voice review
 | #   | Phase                      | Details             |
 | --- | -------------------------- | ------------------- |
 | 0   | Setup + arg parse          | Inline below        |
-| 0.5 | Target resolution gate     | Inline below        |
+| 0.5 | Target resolution          | Inline below        |
 | 1   | Structural/smell analysis  | `phases/analyze.md` |
 | 2   | Docs coherence analysis    | `phases/analyze.md` |
 | 3   | Web best-practice research | `phases/analyze.md` |
@@ -82,7 +82,7 @@ Invoke when the user wants funny pushback, team levity, a character-voice review
 - Roast mentions a file path that does not appear in the dossier — fabrication.
 - Persona agent was dispatched without the dossier inlined in the prompt.
 - Any author name, git blame output, or real-person reference in the dossier or report.
-- Approval gate at Phase 0.5 was skipped.
+- A natural-language target with several candidates was roasted without asking which ones.
 
 ## Verification
 
@@ -92,41 +92,15 @@ Output a visible block showing: task name, resolved target, persona chosen, find
 
 Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below. Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA_ALLOWLIST` (lowercase compare). Unknown → AskUserQuestion listing allowed personas. Empty remainder → AskUserQuestion asking what to roast. Skill name `do-roast` → task dir prefix `do_roast` (snake_case). Derive task name: `<YYYY_MM_DD>_do_roast_<slug>` where slug is a snake_case summary (max 20 chars) of the resolved target or first 3 words of the remainder, and `<YYYY_MM_DD>` is today's date with underscores. Create `TASK_DIR<task_name>/`. Write `state.md` with `schema_version: 2` as the first line, then `Status: running`, `Phase: setup`, `Started: <ISO8601>`, `phase_complete: false`, `what_remains: []`, `Persona: <chosen>`, `Target_raw: <remainder>`.
 
-## Phase 0.5: Target Resolution Gate
+## Phase 0.5: Target Resolution
 
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+Read `phases/analyze.md` ("Phase 1 preamble — target resolution detail"), run its ladder on `Target_raw`, and record the result in `state.md` as that section describes. Explicit paths, a branch diff and raw text name their target directly, so the roast goes on to Phase 1 without asking.
 
-**Pre-read**: Capture the resolved target candidates produced by the target resolution ladder in `phases/analyze.md` — file list, directory list, branch diff command, or raw-text blob (truncated to 1000 chars) — into context.
+Only a natural-language target (rung 4) that leaves more than one candidate needs the user. Ask with an input collector, not an approval gate: no plan message and no Approve/Reject.
 
-**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: target gate]`; `Status` stays `running`.
-
-**Surface 1 — emit the plan message.** Output the resolved target as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
-
-```
-## Target resolution ready for review — do-roast
-
-Resolved "<target_raw>" to the following target as <persona>:
-
-<verbatim resolved target list or blob (truncated to 1000 chars if raw text)>
-
----
-**Approve** → proceed to Phase 1 (structural/smell analysis)  ·  **Reject** → abort the roast, no analysis performed  ·  reply with feedback to adjust the target scope
-```
-
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the resolved target — it lives in the plan message above.
-
-- question: `The resolved target above is ready for review.`
-- header: `Target`
-- options:
-  - **Approve** — proceed to Phase 1 (structural/smell analysis)
-  - **Reject** — abort the roast, no analysis performed
-
-**Response handling**:
-
-- **Approve** → add `- target approved: <resolved target>` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: target_approved`, and proceed to Phase 1.
-- **Reject** → update state `Status: aborted_by_user` and stop. Do not proceed.
-- **Any other reply (feedback)** → re-resolve per feedback, update state, return to Surface 1, re-read and re-emit the full updated plan message from scratch, re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
-- **No answer** → set `Status: blocked`, keep `awaiting approval: target gate`, stop. A missing answer is never approval.
+- Set `what_remains: [awaiting answer: target]`, keep `Status: running`, and call AskUserQuestion once: question `Which files should the <persona> roast for "<Target_raw>"?`, header `Target`, `multiSelect: true`, one option per candidate with the path as the label and why it matched as the description.
+- Record the chosen paths as `resolved_target_list`, set `what_remains: []`, and go on to Phase 1. Run a typed `Other` answer through the ladder again.
+- If nobody can answer, set `Status: blocked` and stop.
 
 ## Error Handling
 

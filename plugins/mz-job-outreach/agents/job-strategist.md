@@ -1,6 +1,6 @@
 ---
 name: job-strategist
-description: Parses a candidate CV and a free-text preferences prompt, then emits a structured job-search strategy with derived titles, must-have/nice-to-have skills, synonym clusters, title aliases, region, location-eligibility rule, query templates (including bilingual variants), and scoring weights. Used by the job-search skill as the first phase.
+description: Parses a candidate CV and a free-text preferences prompt, then emits a structured job-search strategy with derived titles, must-have/nice-to-have skills, synonym clusters, title aliases, region, location-eligibility rule, query templates (including bilingual variants), and scoring weights. Used by the job-search skill as the first phase. Do not dispatch standalone.
 tools: Read, Write, WebSearch, WebFetch
 model: opus
 effort: high

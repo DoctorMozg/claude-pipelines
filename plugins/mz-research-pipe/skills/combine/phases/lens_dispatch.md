@@ -1,6 +1,6 @@
 # Phase 2: Parallel Lens Dispatch (and Phase 4: Web Gap-Fill)
 
-**Goal**: Fan out the approved lenses as parallel local-only researchers, collect their extracts, and — only after Phase 3.5 approval — dispatch a single wave of web researchers to fill residual gaps.
+**Goal**: Fan out the approved lenses as parallel local-only researchers, collect their extracts, and — when Phase 3 leaves residual gaps — dispatch a single wave of web researchers to fill residual gaps.
 
 ## Contents
 
@@ -109,16 +109,16 @@ ______________________________________________________________________
 
 ## Phase 4: Web Gap-Fill (conditional)
 
-**Goal**: Fill residual gaps from Phase 3 with a single, bounded wave of web researchers — but only if Phase 3.5 was explicitly approved.
+**Goal**: Fill residual gaps from Phase 3 with a single, bounded wave of web researchers.
 
-**Entry condition**: Phase 3 produced a non-empty residual gap list AND the Phase 3.5 gate returned approval from the user. If either condition fails, skip this entire section and return control to `phases/synthesis.md §Phase 5` so the synthesis can finish with any remaining gaps marked unresolved.
+**Entry condition**: Phase 3 produced a non-empty residual gap list. If it didn't, skip this entire section and return control to `phases/synthesis.md §Phase 5` so the synthesis can finish with any remaining gaps marked unresolved.
 
 **Wave cap**: `MAX_GAP_FILL_WAVES = 1`. Exactly one parallel wave. Do not iterate. If the single wave leaves some gaps unresolved, report them as unresolved in the final report — do not dispatch a second wave under any circumstances. The cap exists because web research surfaces new sub-gaps, and without a hard cap the pipeline loops forever.
 
 ### 4.1 Dispatch per-gap researchers
 
-1. **Gap intake**. Read the residual gap list that `phases/synthesis.md §Phase 3.4` wrote to `<PROJECT_ROOT>/.mz/task/<task_name>/synthesis.md`. Only gaps the user explicitly approved in Phase 3.5 are eligible — any that were dropped or merged by user feedback take effect here, not in the synthesis file.
-1. **Cap to MAX_LENSES**. If more than `MAX_LENSES = 6` gaps remain after Phase 3.5, merge the two smallest-scope gaps (shortest gap text, narrowest subject) into one combined gap until the total is ≤6. Record each merge in `state.md` under `gapfill_merges` so the final report can credit the correct source.
+1. **Gap intake**. Read the residual gap list from `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md`, written by `phases/synthesis.md §Phase 3.4`. Each entry carries its `GAP_ID`, description, contributing lenses and proposed `Web_query`.
+1. **Cap to MAX_LENSES**. If more than `MAX_LENSES = 6` gaps remain, merge the two smallest-scope gaps (shortest gap text, narrowest subject) into one combined gap until the total is ≤6. Record each merge in `state.md` under `gapfill_merges` so the final report can credit the correct source.
 1. **Dispatch in a single message**. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per gap researcher with its gap — so the wave is visible to the user. Skip the manifest when only one gap remains. One `Agent` call per gap, all parallel in a single message. Each dispatch targets the `pipeline-web-researcher` agent (not `pipeline-researcher`) at **model: opus**. Opus is the right choice because web gap-fill is an unbounded synthesis task: the agent must hunt primary sources, weigh conflicting documentation, and detect vendor-spec drift — all work that rewards the stronger model.
 
 ### 4.2 Per-gap dispatch prompt template
@@ -178,4 +178,4 @@ ______________________________________________________________________
 - **All lens agents return `BLOCKED`** — If every dispatched lens comes back `BLOCKED`, do not attempt Phase 4 gap-fill. There is nothing to fill against. Set `Status: failed` with `what_remains: [all lenses blocked]`, escalate to the user with the individual block reasons, and stop. Writing a final report over zero extracts would be misleading.
 - **Web `pipeline-web-researcher` agent unavailable (no network)** — If the Phase 4 dispatches fail because WebSearch/WebFetch return network errors for every gap, do not retry. Mark all approved gaps as `gaps_unresolved` in `state.md` with the reason `no_network`, still proceed to `phases/synthesis.md §Phase 5`, and let the final report's `## Gaps` section list them under "Unresolved". The /combine output is still useful — the user explicitly approved gap-fill knowing it might fail.
 - **Second `NEEDS_CONTEXT` on the same lens** — Per Phase 2.3, do not auto-retry beyond the first re-dispatch. Escalate via `AskUserQuestion` with both context requests attached so the user can decide whether the Phase 1.3 decomposition was wrong (add the missing files, re-run Phase 1) or the lens is unworkable (drop it).
-- **Gap list shrinks to zero between Phase 3.5 approval and Phase 4 dispatch** — If the residual gap list is somehow empty by the time Phase 4 starts (e.g., re-classification during state update dropped them all), skip Phase 4 entirely, record `gapfill_wave: skipped_empty` in `state.md`, and return to `phases/synthesis.md §Phase 5`. Do not dispatch zero agents.
+- **No gaps at Phase 4 entry** — If `gaps.md` is missing or lists no gaps when Phase 4 starts, skip Phase 4 entirely, record `gapfill_wave: skipped_empty` in `state.md`, and return to `phases/synthesis.md §Phase 5`. Do not dispatch zero agents.

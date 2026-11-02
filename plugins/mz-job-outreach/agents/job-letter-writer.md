@@ -1,6 +1,6 @@
 ---
 name: job-letter-writer
-description: Writes a personalized cover letter under 200 words for a single job listing, grounded in the candidate's actual CV achievements. Used by the job-search skill.
+description: Writes a personalized cover letter under 200 words for a single job listing, grounded in the candidate's actual CV achievements. Used by the job-search skill. Do not dispatch standalone.
 tools: Read, Write
 model: sonnet
 effort: high

@@ -2,6 +2,16 @@
 
 This file is the authoritative rule set for what a translator agent may and may not rewrite inside a Markdown (or MDX / frontmatter-wrapped) source document. It covers two tables (NEVER translate, ALWAYS translate), frontmatter handling policy, code-fence boundary discipline, the exact Tier-1 structural parity checks the verifier runs, known gotchas that break naive line-based parsers, and grep hints for locating any one section fast. Agents grep this file for the specific element they need (e.g., `rg -A5 'fenced code'`), not read it in full.
 
+## Contents
+
+- Table A — NEVER Translate
+- Table B — ALWAYS Translate
+- Frontmatter Handling
+- Code-Block Boundary Preservation
+- Structural Parity Checks (Tier-1 Verifier)
+- Known Gotchas
+- Grep Access Hints
+
 ## Table A — NEVER Translate
 
 Elements whose content must be preserved byte-identical across source and output. A single altered character here breaks runtime, routing, or the document's machine-readable contract.

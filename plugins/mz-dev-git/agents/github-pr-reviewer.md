@@ -1,7 +1,6 @@
 ---
 name: github-pr-reviewer
-description: |
-  Use this agent when the user asks to review a specific GitHub pull request by URL or `owner/repo#number`, wants a second-pair-of-eyes read on a PR, or needs existing PR feedback cross-referenced with a fresh review. Triggers include "review this PR", "take a look at <github PR URL>", or "what do you think about <owner/repo>#<n>".
+description: 'Reviews one GitHub pull request in a temporary worktree and writes a report that also weighs existing review comments. Use when the user gives a PR URL or owner/repo#number and asks for a review or a second opinion ("review this PR", "what do you think about this PR"), or wants earlier feedback on a PR checked against a fresh read. Do not use for a local branch that isn''t pushed (use branch-reviewer) or for triaging many PRs (use github-pr-scanner).'
 tools: Read, Write, Bash, Glob, Grep, Agent(pipeline-web-researcher, branch-reviewer), SendMessage, WebFetch, WebSearch, mcp__github__*, mcp__plugin_github_github__*
 model: opus
 effort: high

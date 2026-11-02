@@ -1,12 +1,11 @@
 # Phase 3: Cross-Reference Synthesis (and Phase 5: Report)
 
-This phase file covers three orchestrator responsibilities: cross-reference synthesis of the parallel lens extracts (Phase 3), the conditional gap-fill approval gate body (Phase 3.5), and task-adaptive final report generation (Phase 5). Read the section that matches your current phase — do not read the whole file upfront.
+This phase file covers three orchestrator responsibilities: cross-reference synthesis of the parallel lens extracts (Phase 3), the hand-off to the web gap-fill (Phase 4), and task-adaptive final report generation (Phase 5). Read the section that matches your current phase — do not read the whole file upfront.
 
 ## Contents
 
 - Phase 3: Cross-Reference Synthesis — 3.1 read extracts, 3.2 cross-reference, 3.3 emergent patterns, 3.4 gap consolidation.
-- Phase 3 → 3.5 Handoff — short-circuit when residual gaps are empty.
-- Phase 3.5 Gate — full gate body (presentation, prompt, handling, loop language, orchestrator-only notice).
+- Phase 3 → 4 Handoff — skip to Phase 5 when residual gaps are empty, otherwise run the web gap-fill.
 - Phase 5: Task-Adaptive Report Generation — 5.1 section derivation, 5.2 meta-sections, 5.3 report template, 5.4 collision handling, 5.5 state update.
 - Phase 5 → User — 5-line summary.
 
@@ -49,9 +48,9 @@ Record each emergent pattern as: pattern name, contributing lenses, one-sentence
 1. Collect every `GAP:` token from every extract's `## Gaps` section into a flat list, preserving each entry's originating lens.
 1. Normalize each gap text by trimming outer whitespace, collapsing internal whitespace runs, and lowercasing.
 1. Deduplicate on the normalized text. When the same gap surfaces from multiple lenses, keep one entry and record all contributing lenses.
-1. The deduplicated list is the **residual gap list**. This list feeds Phase 3.5.
-1. Write the consolidated residual gap list to `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md`. Format: one gap per section with fields GAP_ID, Description, Lenses, Web_query. Assign `GAP_ID` as `G1`, `G2`, … in list order. `Description` is the normalized gap text from step 2. `Lenses` is a comma-separated list of the contributing lens names recorded in step 3. `Web_query` is a proposed web search query derived from the gap text (a short phrase a `pipeline-web-researcher` would use to resolve it). If the residual gap list is empty, skip this write — the Phase 3 → 3.5 Handoff below will short-circuit and no `gaps.md` is needed.
-1. If the deduplicated residual gap list is empty (no gaps found), update `state.md` to add `gap_fill: skipped_empty`, then proceed directly to Phase 5 (skipping Phase 3.5).
+1. The deduplicated list is the **residual gap list**. This list feeds Phase 4.
+1. Write the consolidated residual gap list to `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md`. Format: one gap per section with fields GAP_ID, Description, Lenses, Web_query. Assign `GAP_ID` as `G1`, `G2`, … in list order. `Description` is the normalized gap text from step 2. `Lenses` is a comma-separated list of the contributing lens names recorded in step 3. `Web_query` is a proposed web search query derived from the gap text (a short phrase a `pipeline-web-researcher` would use to resolve it). If the residual gap list is empty, skip this write — the Phase 3 → 4 Handoff below will short-circuit and no `gaps.md` is needed.
+1. If the deduplicated residual gap list is empty (no gaps found), update `state.md` to add `gap_fill: skipped_empty`, then proceed directly to Phase 5 (skipping Phase 4).
 
 ### Phase 3 artifact write
 
@@ -68,58 +67,18 @@ After writing, update `state.md` phase to `synthesized` and record synthesis art
 
 ______________________________________________________________________
 
-## Phase 3 → 3.5 Handoff
+## Phase 3 → 4 Handoff
 
 Inspect the residual gap list produced by Phase 3.4:
 
-- **If the residual gap list is empty** → skip Phase 3.5 entirely and proceed directly to Phase 5 (continue reading this file at `## Phase 5: Task-Adaptive Report Generation`). Record `gap_fill: skipped_empty` in `state.md`.
-- **Otherwise** → return control to `SKILL.md §Phase 3.5: Gap-Fill Approval Gate (conditional)`. That stub will read `§Phase 3.5 Gate` below for the full presentation content, prompt body, handling, and loop language, then issue the `AskUserQuestion` call itself. Do not issue the `AskUserQuestion` call from this file — the orchestrator handles it at the SKILL.md stub.
-
-______________________________________________________________________
-
-## Phase 3.5 Gate
-
-**Skip-if-empty reminder**: If the residual gap list produced by Phase 3 is empty, skip this gate entirely and proceed directly to Phase 5. (The SKILL.md stub already short-circuits this case, but repeat here in case this file is opened directly.)
-
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
-
-**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md` with the Read tool. Capture the full contents (deduplicated residual gap list with GAP_IDs, descriptions, contributing lenses, and proposed web queries) into context.
-
-**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: gap-fill gate]`; `Status` stays `running`.
-
-**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
-
-```
-## Residual gaps ready for review — combine
-
-<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/gaps.md>
-
----
-**Approve** → proceed to Phase 4 (web gap-fill dispatch, up to MAX_LENSES pipeline-web-researcher agents)  ·  **Reject** → skip web research, proceed to Phase 5 with gaps unresolved  ·  reply with feedback to revise
-```
-
-**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the gaps in the question body:
-
-- question: `The residual gaps above are ready for review.`
-- header: `Gap-fill`
-- options: **Approve** — proceed to Phase 4 (web gap-fill dispatch) · **Reject** — skip web research, proceed to Phase 5 with gaps unresolved
-
-### Response handling
-
-- **Approve** → add `- gap-fill approved: .mz/task/<task_name>/gaps.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: gapfill_approved`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. Record the approved gap list in `state.md` verbatim so Phase 4 can dispatch against it.
-- **Reject** → update `state.md` phase to `gapfill_declined`, skip Phase 4 entirely, and proceed directly to Phase 5 with the residual gaps marked unresolved in the final report's `## Gaps ### Unresolved` section.
-- **Any other reply (feedback)** → incorporate the feedback without re-running Phases 1–3. Feedback may: drop gaps from the list, merge two gaps into one (update the normalized text), rewrite a gap's text for clarity, or add a reason the user knows but the synthesis missed. Overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
-- **No answer** → set `Status: blocked`, keep `awaiting approval: gap-fill gate`, stop. A missing answer is never approval.
-
-### Orchestrator-only notice
-
-This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the gate itself from SKILL.md §Phase 3.5.
+- **If the residual gap list is empty** → skip Phase 4 and proceed directly to Phase 5 (continue reading this file at `## Phase 5: Task-Adaptive Report Generation`). Record `gap_fill: skipped_empty` in `state.md`.
+- **Otherwise** → record `gap_fill: dispatched` and the gap IDs from `gaps.md` in `state.md`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. No approval gate sits here: Phase 4 is one bounded wave of read-only web researchers, and its results land only in the report.
 
 ______________________________________________________________________
 
 ## Phase 5: Task-Adaptive Report Generation
 
-Entry: either Phase 3 produced an empty residual gap list (skipped 3.5 and 4), or Phase 3.5 was rejected (skipped 4), or Phase 4 completed and wrote its `gapfill_<id>.md` files under `<PROJECT_ROOT>/.mz/task/<task_name>/`.
+Entry: either Phase 3 produced an empty residual gap list (skipped Phase 4), or Phase 4 completed and wrote its `gapfill_<id>.md` files under `<PROJECT_ROOT>/.mz/task/<task_name>/`.
 
 Read `state.md` to recover: task text, task slug, output path override (if any), `sections:` parameter (if any), lens list, lens coverage table from `synthesis.md`, residual gap list, gap-fill resolution outcomes.
 
@@ -156,9 +115,9 @@ Regardless of whether 5.1 took the user-supplied or task-derived branch, append 
 - `## Conflicts` — include always. Body: every `CONFLICT DETECTED` entry from `synthesis.md §Conflicts`, with both sides cited by source file. If there are no conflicts, the body is the literal string `None.`
 - `## Gaps` — include always, with two sub-sections:
   - `### Resolved via web gap-fill` — one bullet per gap that was filled in Phase 4 (reference `.mz/task/<task_name>/gapfill_<id>.md` by path; cite the answer with its source URL and confidence from the gap-fill agent's output). If Phase 4 did not run, this sub-section body is the literal string `None.`
-  - `### Unresolved` — one bullet per gap from the residual gap list that was not resolved (either because Phase 3.5 was rejected, or because Phase 4 returned `UNVERIFIED` for that gap). Include the reason. If none, body is the literal string `None.`
+  - `### Unresolved` — one bullet per gap from the residual gap list that was not resolved (Phase 4 returned `UNVERIFIED` for it, or Phase 4 could not run, for example without network access). Include the reason. If none, body is the literal string `None.`
 - `## Sources` — deduplicated list of every local file and every web URL cited in the report. Split into `### Local files` (with age in days and owning lens) and `### Web (from gap-fills, if any)` (with publication date and confidence). If no web gap-fills ran, the web sub-section body is `None.`
-- `## Methodology` — five bullets: lenses dispatched (names), gap-fill wave (yes/no, count), approval gates passed (Phase 1.5 timestamp, Phase 3.5 timestamp or `n/a`), sections source (`task-derived` or `user-supplied`), synthesis artifact path.
+- `## Methodology` — five bullets: lenses dispatched (names), gap-fill wave (yes/no, count), approval gate passed (Phase 1.5 timestamp), sections source (`task-derived` or `user-supplied`), synthesis artifact path.
 
 ### Phase 5.3: Write the report
 
@@ -222,7 +181,7 @@ Every CONFLICT DETECTED token from the lens extracts, with both sides cited.
 ## Methodology
 - Lenses dispatched: <list>
 - Gap-fill wave: <yes/no, gap count>
-- Approval gates passed: Phase 1.5 <timestamp>, Phase 3.5 <timestamp or n/a>
+- Approval gate passed: Phase 1.5 <timestamp>
 - Sections source: <task-derived | user-supplied>
 - Synthesis artifact: `.mz/task/<task_name>/synthesis.md`
 ```

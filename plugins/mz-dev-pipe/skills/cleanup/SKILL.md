@@ -131,10 +131,6 @@ Re-dispatch rejected chunks only. Approved chunks frozen. See `phases/review_and
 
 Final verification, then write `summary.md` listing chunks, files, iterations, deferred observations. See `phases/review_and_finalize.md` → Phase 7. Set `Status: complete`, `phase_complete: true`, `what_remains: []`.
 
-## Techniques
-
-Reference files: grep `references/dead-code-detection-patterns.md` for per-language detection patterns — do not load the entire file.
-
 ## Common Rationalizations
 
 | Rationalization                                  | Rebuttal                                                                 |
@@ -152,6 +148,10 @@ Reference files: grep `references/dead-code-detection-patterns.md` for per-langu
 ## Verification
 
 Output the final `summary.md` block: chunks touched, files modified, baseline vs post-optimization test/lint status, review iterations, and deferred observations.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/dead-code-detection-patterns.md`: per-language commands and false-positive notes for unused imports, unreachable branches, dead exports, orphan files and duplicated logic. Grep it for the pattern you need when scanning for dead code; do not read it whole.
 
 ## Error Handling
 

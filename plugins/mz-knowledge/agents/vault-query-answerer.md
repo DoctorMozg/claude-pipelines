@@ -1,6 +1,6 @@
 ---
 name: vault-query-answerer
-description: Pipeline-only. Answers user questions using only vault content, cites every factual claim with inline [[wikilinks]], and explicitly surfaces claims the vault does not support.
+description: Pipeline-only. Dispatched by /vault-answer. Answers user questions using only vault content, cites every factual claim with inline [[wikilinks]], and explicitly surfaces claims the vault does not support. Do not dispatch standalone.
 tools: Read, Grep, Glob, Write
 model: sonnet
 effort: medium

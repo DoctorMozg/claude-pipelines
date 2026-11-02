@@ -1,6 +1,6 @@
 ---
 name: gov-provenance-recorder
-description: Pipeline-only, dispatched by the mz-gov govern skill. Formats the AI-decision provenance (AgDR) block for the current run and writes it to the task's provenance.md, recording the authoring agent, model, timestamp, and trigger, with the human sign-off left pending until a human approves.
+description: Pipeline-only, dispatched by the mz-gov govern skill. Formats the AI-decision provenance (AgDR) block for the current run and writes it to the task's provenance.md, recording the authoring agent, model, timestamp, and trigger, with the human sign-off left pending until a human approves. Do not dispatch standalone.
 tools: Read, Write, Grep
 model: haiku
 effort: low

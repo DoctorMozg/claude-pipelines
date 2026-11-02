@@ -1,6 +1,6 @@
 ---
 name: pipeline-test-reviewer
-description: Pipeline-only. Reviews tests for both coverage gaps and quality defects in a single pass. Identifies untested functions and missing code paths (Coverage section), and evaluates whether existing tests are meaningful, independent, well-structured, and would catch real regressions (Quality section). Replaces the legacy pipeline-test-coverage-reviewer + pipeline-test-quality-reviewer pair.
+description: Pipeline-only. Dispatched by /build, /debug and /verify. Reviews tests for both coverage gaps and quality defects in a single pass. Identifies untested functions and missing code paths (Coverage section), and evaluates whether existing tests are meaningful, independent, well-structured, and would catch real regressions (Quality section). Do not dispatch standalone.
 tools: Read, Grep, Glob
 model: sonnet
 effort: medium

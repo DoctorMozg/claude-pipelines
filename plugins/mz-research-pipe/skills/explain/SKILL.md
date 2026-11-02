@@ -66,10 +66,6 @@ Example: `2026_04_20_explain_src_auth_token_refresh.md`
 | 2   | Research Dispatch | `phases/research.md` | —     |
 | 3   | Report Generation | `phases/report.md`   | —     |
 
-## Techniques
-
-Reference files: grep `references/mermaid-syntax-by-type.md` for specific diagram type syntax — do not load the entire file.
-
 ## Red Flags
 
 - You explained without reading the target code end-to-end.
@@ -79,6 +75,10 @@ Reference files: grep `references/mermaid-syntax-by-type.md` for specific diagra
 ## Verification
 
 Before completing, output a visible block showing: resolved scope file count, researchers dispatched, and the absolute path of the written report. Confirm the report file exists on disk and contains the required mermaid diagrams.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/mermaid-syntax-by-type.md`: syntax skeleton, key tokens and a minimal example for each Mermaid diagram type (flowchart, sequenceDiagram, classDiagram, stateDiagram-v2, erDiagram, mindmap, gitGraph, timeline, C4). Grep it for the diagram type you are writing in Phase 3.
 
 ## Phase 0: Setup
 

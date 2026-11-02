@@ -1,6 +1,6 @@
 ---
 name: pipeline-planner
-description: Pipeline-only. Creates detailed, parallelizable implementation plans. Breaks tasks into independent work units with clear file paths, changes, and dependencies.
+description: Pipeline-only. Dispatched by /build. Creates detailed, parallelizable implementation plans. Breaks tasks into independent work units with clear file paths, changes, and dependencies. Do not dispatch standalone.
 tools: Read, Grep, Glob, Bash
 model: opus
 memory: project

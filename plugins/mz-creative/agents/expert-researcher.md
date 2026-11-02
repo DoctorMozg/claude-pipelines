@@ -1,6 +1,6 @@
 ---
 name: expert-researcher
-description: Codebase researcher for the /expert skill. When a scope modifier (scope:working, scope:branch, scope:global) is set, scans the repo within that scope and produces research.md to ground expert panel critiques in real code.
+description: Codebase researcher for the /expert skill. When a scope modifier (scope:working, scope:branch, scope:global) is set, scans the repo within that scope and produces research.md to ground expert panel critiques in real code. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: high

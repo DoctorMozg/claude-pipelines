@@ -110,6 +110,12 @@ Files:
 
 If any phase is incomplete, print the blocker explicitly. The verification block is mandatory — do not skip it.
 
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/design-spec-template.md`: the 14-section skeleton every design document follows. Grep it for the section being drafted in Phase 2 or revised in Phase 3.
+- `${CLAUDE_SKILL_DIR}/references/nielsen-heuristics.md`: Nielsen's 10 usability heuristics with probing questions. Grep it for the heuristic being applied, in the Phase 2 self-check and the Phase 3 UX critique.
+- `${CLAUDE_SKILL_DIR}/references/wcag-contrast-thresholds.md`: WCAG 2.2 contrast thresholds, the luminance and ratio formulas, and the `wcag-report.md` table format. Grep it for the value needed when computing the Phase 2 report and re-validating it in Phase 3.
+
 ## Error Handling
 
 - An agent returns nothing usable → `<PLUGIN_ROOT>/shared/retry-policy.md`.

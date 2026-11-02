@@ -1,6 +1,6 @@
 ---
 name: pipeline-test-writer
-description: Pipeline-only. Writes comprehensive tests for implementations. Creates unit tests, edge case tests, and integration tests following project conventions.
+description: Pipeline-only. Dispatched by /build, /debug and /polish. Writes comprehensive tests for implementations. Creates unit tests, edge case tests, and integration tests following project conventions. Do not dispatch standalone.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: high

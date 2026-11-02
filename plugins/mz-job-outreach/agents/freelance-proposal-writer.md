@@ -1,6 +1,6 @@
 ---
 name: freelance-proposal-writer
-description: Writes a grounded freelance proposal (≤350 words) for a single gig — scope summary, 2–3 milestones citing verbatim scope phrases, pricing brackets citing the gig's budget or the strategist's rate floor, payment-cadence hint, and a short closing. Refuses to fabricate numbers or scope. Used by the freelance-pitch skill.
+description: Writes a grounded freelance proposal (≤350 words) for a single gig — scope summary, 2–3 milestones citing verbatim scope phrases, pricing brackets citing the gig's budget or the strategist's rate floor, payment-cadence hint, and a short closing. Refuses to fabricate numbers or scope. Used by the freelance-pitch skill. Do not dispatch standalone.
 tools: Read, Write
 model: sonnet
 effort: medium

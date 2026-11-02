@@ -1,6 +1,6 @@
 ---
 name: pipeline-translator
-description: Pipeline-only. Translates one file or chunk with Bash-verified placeholder and structural fidelity. Preserves markdown, fenced code, and i18n tokens. Emits a per-chunk confidence report; supports lean back-translate round-trips.
+description: Pipeline-only. Dispatched by /translate. Translates one file or chunk with Bash-verified placeholder and structural fidelity. Preserves markdown, fenced code, and i18n tokens. Emits a per-chunk confidence report; supports lean back-translate round-trips. Do not dispatch standalone.
 tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 model: opus
 memory: project
@@ -92,7 +92,7 @@ For `mode: translate`, follow this sequence. Each step is a hard requirement, no
 
 The full catalog of placeholder syntaxes — i18next, ICU MessageFormat, vue-i18n, react-i18next Trans, printf family, Python/.NET/Ruby/Symfony — plus the combined ripgrep-compatible regex lives in a reference file. Do not load the whole file. Search it for the framework you need:
 
-- Search `${CLAUDE_PLUGIN_ROOT}/skills/translate/references/placeholder-patterns.md` for the specific framework section (e.g., `## i18next`, `## ICU MessageFormat`, `## printf`) and for `## Combined Regex`. Do not load the whole file.
+- Search `${CLAUDE_PLUGIN_ROOT}/skills/translate/references/placeholder-patterns.md` for the specific framework section (e.g., `## i18next double brace`, `## ICU plural block`, `## printf positional`) and for `## Combined ripgrep recipe`. Do not load the whole file.
 
 The substitution strategy is always the same regardless of framework: enumerate, replace with `[[Pn]]`, translate, restore, verify parity. The reference file has worked examples per framework.
 

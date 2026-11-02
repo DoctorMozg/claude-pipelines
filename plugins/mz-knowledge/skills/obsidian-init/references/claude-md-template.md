@@ -2,6 +2,20 @@
 
 Lazy-loaded reference for `obsidian-init`. Read this file and substitute `{{PLACEHOLDERS}}` with values from `state.md` interview answers. Do not load into context unless Phase 1 Step 2 needs it.
 
+## Contents
+
+- Template
+- Vault Context
+- Obsidian Syntax — Never "Fix" These
+- Folder Layout (PARA + Zettelkasten hybrid)
+- Note Conventions
+- Compounding Wiki Principle
+- Vault-Specific Don'ts
+- Rename Safety Checklist
+- Ad-Hoc Vault Health Checks
+- Mozg Skill Routing in This Vault
+- Placeholder Reference
+
 ## Template
 
 The full CLAUDE.md content follows. Copy everything between the `<!-- BEGIN TEMPLATE -->` and `<!-- END TEMPLATE -->` markers, substitute placeholders, and write to `<vault>/CLAUDE.md`.

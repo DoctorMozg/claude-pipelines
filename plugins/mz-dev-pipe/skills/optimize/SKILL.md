@@ -65,6 +65,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 ## Constants
 
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 | Constant                       | Value                      | Bounds                                                          |
 | ------------------------------ | -------------------------- | --------------------------------------------------------------- |
@@ -256,10 +257,6 @@ This is lighter than an approval gate — a focused yes / no on correctness, not
 
 This checkpoint is **exempt from `MZ_DEV_PIPE_AUTO_APPROVE`** — a human must actually observe the behavior. Auto-approve never satisfies it. Nobody will come when the run is unattended, so it takes the No-answer path (`<PLUGIN_ROOT>/shared/approval-gate.md`): set `Status: blocked`, record `awaiting answer: manual correctness check` in `what_remains`, and stop.
 
-## Techniques
-
-Reference file: [`references/optimization-toolkit.md`](references/optimization-toolkit.md) — the domain-agnostic bottleneck taxonomy, transformation catalog, profiling principles, prioritization rules, and anti-patterns. Phases 2 and 3 grep it per section; do not load the whole file.
-
 ## Common Rationalizations
 
 | Rationalization                                        | Rebuttal                                                                                       |
@@ -284,6 +281,10 @@ Reference file: [`references/optimization-toolkit.md`](references/optimization-t
 ## Verification
 
 Output the final results block: the contract's metric and goal, the **measured** baseline and final values (each tagged harness-sourced, with its measurement-artifact path), the per-iteration measured gains, the cumulative speedup (geometric mean across iterations), the correctness status of every banked change, the iteration count, and the termination reason. Every number must trace to a `pipeline-measure-runner` artifact under `.mz/task/<task_name>/measurements/`. A results block carrying a number with no artifact path is invalid — do not emit it.
+
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/optimization-toolkit.md`: the bottleneck taxonomy, transformation catalog, profiling principles, prioritization rules and anti-patterns. Grep it per section: Phase 2 reads the taxonomy and the profiling principles, Phase 3 reads the catalog and the prioritization rules. Do not load the whole file.
 
 ## Error Handling
 

@@ -1,6 +1,6 @@
 ---
 name: triage-scorer
-description: Pipeline-only. Applies heuristic scoring rules to fleeting inbox notes and proposes promote/merge/discard/defer decisions with one-sentence rationales.
+description: Pipeline-only. Dispatched by /vault-triage. Applies heuristic scoring rules to fleeting inbox notes and proposes promote/merge/discard/defer decisions with one-sentence rationales. Do not dispatch standalone.
 tools: Read, Glob, Write
 model: haiku
 effort: low

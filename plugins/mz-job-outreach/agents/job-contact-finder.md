@@ -1,6 +1,6 @@
 ---
 name: job-contact-finder
-description: Finds recruiter and hiring-manager contacts for a single job listing — named individuals on the posting, careers-page emails, LinkedIn handles, and generic pattern guesses. Used by the job-search skill.
+description: Finds recruiter and hiring-manager contacts for a single job listing — named individuals on the posting, careers-page emails, LinkedIn handles, and generic pattern guesses. Used by the job-search skill. Do not dispatch standalone.
 tools: Read, Write, WebSearch, WebFetch
 model: sonnet
 effort: medium

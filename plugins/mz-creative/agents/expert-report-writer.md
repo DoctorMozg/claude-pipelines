@@ -1,6 +1,6 @@
 ---
 name: expert-report-writer
-description: Final report writer for the /expert skill. Reads all 3 rounds of panelist outputs and synthesizers, produces a structured executive report with citation tags traceable to specific agents and rounds.
+description: Final report writer for the /expert skill. Reads all 3 rounds of panelist outputs and synthesizers, produces a structured executive report with citation tags traceable to specific agents and rounds. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob
 model: sonnet
 effort: high

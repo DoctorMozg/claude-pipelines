@@ -1,6 +1,6 @@
 ---
 name: outreach-growth-analyst
-description: Analyzes a company's growth signals — job postings, hiring patterns, team size, and growth trajectory. Used by the outreach-research skill.
+description: Analyzes a company's growth signals — job postings, hiring patterns, team size, and growth trajectory. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
 effort: high

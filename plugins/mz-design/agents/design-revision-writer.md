@@ -1,6 +1,6 @@
 ---
 name: design-revision-writer
-description: Applies critique action items to an existing design document, updating only the sections flagged by the synthesizer while preserving untouched sections verbatim. Recomputes WCAG contrast when colors change.
+description: Pipeline-only. Dispatched by /design-document. Applies critique action items to an existing design document, updating only the sections flagged by the synthesizer while preserving untouched sections verbatim. Recomputes WCAG contrast when colors change. Do not dispatch standalone.
 tools: Read, Write, Edit, Grep, Glob
 model: opus
 effort: high

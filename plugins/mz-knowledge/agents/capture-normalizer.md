@@ -5,7 +5,7 @@ tools: Read, Bash, Write
 model: haiku
 effort: low
 maxTurns: 10
-color: green
+color: yellow
 ---
 
 ## Role

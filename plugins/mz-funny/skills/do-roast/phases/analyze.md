@@ -1,12 +1,11 @@
 # Phase 1-4: Analysis Backbone
 
 Detail for the four sub-phases that produce the evidence dossier the persona
-agent will read. This file is loaded via progressive disclosure from SKILL.md
-at the start of Phase 1 (`Read phases/analyze.md`). Do not pre-load.
+agent will read. SKILL.md reads it at Phase 0.5 for the target ladder, and
+its analysis sections run from Phase 1 on.
 
-All four sub-phases run sequentially in the orchestrator. No approval gate
-fires between them — the user already approved the resolved target at Phase
-0.5 in SKILL.md. Re-gating would burn user patience without value.
+All four sub-phases run sequentially in the orchestrator, with no approval
+gate: the skill writes only a report, so nothing here needs one.
 
 Referenced constants (defined in SKILL.md `## Constants`): `TASK_DIR`,
 `RESEARCH_CACHE_DIR`, `MAX_FINDINGS`, `DOSSIER_SEVERITY_LABELS`.
@@ -15,11 +14,9 @@ ______________________________________________________________________
 
 ## Phase 1 preamble — target resolution detail
 
-This is a continuation of the Phase 0.5 target-resolution gate in SKILL.md,
-not a new gate. The orchestrator reached this file because the user already
-approved a resolved target. This preamble documents the exact resolution
-ladder used to produce that target list, so the ladder is reproducible if
-the user rejects a resolution and asks for a re-run with feedback.
+SKILL.md Phase 0.5 runs this ladder before any analysis. It is written out
+here so a re-run, such as a typed `Other` answer to the target question,
+resolves the same way.
 
 Apply the ladder in order. Stop at the first branch that produces a non-empty
 result. Emit both `resolved_target_kind` and `resolved_target_list` into
@@ -42,12 +39,14 @@ result. Emit both `resolved_target_kind` and `resolved_target_list` into
    strip English stopwords (a, an, the, of, in, on, at, to, for, with, and,
    or). For each remaining content word, list files whose stem
    matches, then search for symbol references matching the same word inside
-   files. Rank candidates by combined match frequency. Keep the top 5. Set
-   `resolved_target_kind = candidates` and use that list.
+   files. Rank candidates by combined match frequency. Keep the top 4, the most
+   AskUserQuestion can offer as options. Set `resolved_target_kind = candidates`
+   and use that list; with more than one candidate, SKILL.md Phase 0.5 asks
+   which ones to roast.
 1. **State emission**. Append to `TASK_DIR<task_name>/state.md`:
    - `resolved_target_kind: <one of: files, dirs, diff, raw_text, candidates>`
    - `resolved_target_list: <newline-indented list of paths or single blob>`
-   - `target_ladder_branch: <1-5>` — which rung of the ladder produced the hit
+   - `target_ladder_branch: <1-4>` — which rung of the ladder produced the hit
 
 If every rung returns empty and there is no raw text to fall back on, the
 orchestrator must emit `STATUS: BLOCKED` and surface the failure to the user

@@ -3,7 +3,7 @@ name: code-lens-over-engineering
 description: |
   Pipeline-only lens agent dispatched by branch-reviewer and by the build, polish, cleanup and optimize skills. Scans a PR/branch diff exclusively for over-engineering: code that should not exist or should be radically smaller — stdlib/native primitives reimplemented by hand, one-implementation abstractions, speculative generality (YAGNI), dead flexibility, and premature/wrong abstractions that are cheaper inlined. Never user-triggered.
 
-  When NOT to use: do not dispatch standalone, do not dispatch from github-pr-reviewer, do not dispatch for correctness, security, architecture, performance, or maintainability concerns — those belong to other code-lens-* agents. In particular, naming/dead-code/duplication cleanup belongs to code-lens-maintainability and SOLID/coupling/layering belongs to code-lens-architecture; this lens asks only one question: "should this exist at all, or exist as something smaller?"
+  When NOT to use: do not dispatch standalone, do not dispatch from github-pr-reviewer, do not dispatch for correctness, security, architecture, performance, or maintainability concerns — those belong to other code-lens-* agents.
 tools: Read, Write, Grep, Glob, Bash
 model: sonnet
 effort: medium

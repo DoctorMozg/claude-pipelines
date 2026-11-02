@@ -1,6 +1,6 @@
 ---
 name: provenance-tracer
-description: Pipeline-only. Classifies every factual claim in a single vault note against a five-value provenance vocabulary and proposes source attributions.
+description: Pipeline-only. Dispatched by /vault-provenance. Classifies every factual claim in a single vault note against a five-value provenance vocabulary and proposes source attributions. Do not dispatch standalone.
 tools: Read, Grep, Glob, Write
 model: sonnet
 effort: medium

@@ -4,6 +4,23 @@ This is the section skeleton the `design-document-writer` agent must follow. Eve
 
 Grep-first reference: writers can pull just the section they are currently drafting.
 
+**Contents:**
+
+- 1. Overview
+- 2. User Flows
+- 3. Information Architecture
+- 4. Layout & Grid
+- 5. Components
+- 6. Color System
+- 7. Typography
+- 8. Spacing & Sizing
+- 9. Motion & Interaction
+- 10. Responsive Strategy
+- 11. States
+- 12. Accessibility
+- 13. Design Rationale
+- 14. Open Questions
+
 ## 1. Overview
 
 - **Problem statement** — what user pain or business need this design addresses

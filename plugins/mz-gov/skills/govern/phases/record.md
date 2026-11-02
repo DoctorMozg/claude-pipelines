@@ -26,7 +26,7 @@ These are the user's project `docs/` paths — a deliberate departure from the `
 
 ## Step 4.2 — Dispatch the artifact writer
 
-Dispatch `gov-artifact-writer` (sonnet). It computes the next `NNNN` by globbing the target dir, re-checks the exact path at write time to survive a concurrent run, embeds the provenance fence from `provenance.md` verbatim, and initializes status from `references/status-vocabularies.md`. Single-agent dispatch. Your prompt carries the pointers and the resolved dir — not the writer's own numbering or status logic:
+Dispatch `gov-artifact-writer` (sonnet). It computes the next `NNNN` by globbing the target dir, re-checks the exact path at write time to survive a concurrent run, embeds the provenance fence from `provenance.md` verbatim, and initializes status from `<SKILL_DIR>/references/status-vocabularies.md`. Single-agent dispatch. Your prompt carries the pointers and the resolved dir — not the writer's own numbering or status logic:
 
 ```
 Write the approved decision as a durable, numbered artifact.
