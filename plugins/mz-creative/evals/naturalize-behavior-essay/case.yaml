@@ -21,7 +21,7 @@ graders:
   - name: naturalizer-dispatched
     type: tool_used
     tool: Agent
-    input_match: 'expert-naturalizer'
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?expert-naturalizer"'
   # The fixture keeps banned characters out of code and quotes, so any hit is prose; digit ranges such as 3–5 are allowed.
   - name: no-banned-punctuation
     type: regex
@@ -36,6 +36,12 @@ graders:
   - name: facts-kept
     type: regex
     pattern: '^(?=[\s\S]*2019)(?=[\s\S]*Alfama)(?=[\s\S]*uma bica, por favor)(?=[\s\S]*Dona Fátima)'
+    target: { source: file, path: lisbon.md }
+  # The rewrite replaces the user's file, so vague claims belong in the report, not as placeholders in the text.
+  - name: no-specificity-marker
+    type: regex
+    pattern: '\[SPECIFICITY NEEDED'
+    match: not_contains
     target: { source: file, path: lisbon.md }
   # AskUserQuestion isn't available in eval sessions, so a gate would show up as a request in chat.
   - name: approval-not-requested
