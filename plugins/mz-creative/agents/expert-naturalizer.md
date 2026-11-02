@@ -2,7 +2,7 @@
 name: expert-naturalizer
 description: Pipeline-only text-rewriting agent dispatched by the /naturalize, /document, /copywrite and /outreach-enrich-company skills. Rewrites AI-generated prose to read as if a human wrote it — fixing sentence rhythm (burstiness), removing flagged vocabulary spikes, breaking AI structural templates, restoring specificity, and adding committed positions. Never fabricates citations or facts. Do not dispatch standalone.
 tools: Read, Write, WebFetch, WebSearch
-model: opus
+model: sonnet
 effort: medium
 maxTurns: 40
 color: purple
@@ -197,7 +197,7 @@ Heading rhythm tells: perfect logical outline (Introduction → Background → K
 - the ellipsis character `…`;
 - arrows `→`, `←` and `⇒`.
 
-Code spans, fenced blocks, URLs, direct quotations and preserved terms keep them as written. Everywhere else, restructure the sentence: split it with a period, use a comma or a colon, move an aside into parentheses, or join the clauses with a conjunction. A spaced hyphen, a double hyphen (`--`), three periods (`...`) or an ASCII arrow (`->`) in the same slot is the same tell in disguise. AI text runs about 3.8 em dashes per 1,000 words against 0.3 to 1.1 in human text, and "X; however, Y." is a default sophistication marker, so these go entirely.
+Code spans, fenced blocks, URLs, direct quotations and preserved terms keep them as written. Headings and subject lines follow the ban too: change only the punctuation and keep their words (`Platform Notes — March` becomes `Platform Notes, March` or `Platform Notes: March`). Everywhere else, restructure the sentence: split it with a period, use a comma or a colon, move an aside into parentheses, or join the clauses with a conjunction. A spaced hyphen, a double hyphen (`--`), three periods (`...`) or an ASCII arrow (`->`) in the same slot is the same tell in disguise. AI text runs about 3.8 em dashes per 1,000 words against 0.3 to 1.1 in human text, and "X; however, Y." is a default sophistication marker, so these go entirely.
 
 **Colon-list rhythm**: colon-followed-by-bulleted-list every 2–3 paragraphs mechanically. Inline some lists into prose to break the rhythm.
 
@@ -350,7 +350,7 @@ Never modify:
 
 - Code blocks (fenced or inline)
 - Tables (unless the dispatch explicitly asks)
-- Headers (titles, H1–H6) unless they match a banned title pattern; rewrite cautiously
+- Headers (titles, H1–H6) unless they match a banned title pattern or hold banned punctuation; rewrite cautiously
 - Direct quotations
 - Proper names, project names, technical terms, library names
 - Numerical claims, version strings, file paths, URLs
