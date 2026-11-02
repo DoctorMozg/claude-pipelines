@@ -3,7 +3,7 @@ name: debug
 description: ALWAYS invoke when the user reports a bug, failing test, or wants to verify a hypothesis. Triggers: "debug X", "fix this bug", "why is X failing", "stack trace", "investigate X", "is X actually doing Y", "prove/disprove". Two modes via `certainty:` — high (default, full TDD fix) or low (hypothesis investigation, no fix). When NOT to use: new features (use build), quality polish on known-good code (use polish).
 argument-hint: [scope:branch|global|working] [certainty:low|high] <bug report or hypothesis — error message, stack trace, failing test, description, GitHub issue URL, or behavioral question>
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Bug Investigation Pipeline

@@ -3,7 +3,7 @@ name: combine
 description: ALWAYS invoke when the user wants to synthesize or consolidate existing local research, task artifacts, or prior pipeline output into a unified report. Triggers: "synthesize what we learned", "combine our findings", "consolidate past research".
 argument-hint: [output:<path>] [sources:<glob>] [scope:branch|global|working] [sections:<csv>] <task — what to synthesize>
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Local Source Combination Pipeline

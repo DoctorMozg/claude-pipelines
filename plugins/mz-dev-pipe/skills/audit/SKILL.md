@@ -3,7 +3,7 @@ name: audit
 description: ALWAYS invoke when the user wants to audit, find bugs, or review the codebase for issues. Triggers - audit, find bugs, security review, code quality scan, pre-PR audit, ship audit. Produces a report-only findings file and does not modify code. Supports depth:standard (default, quick lens scan) and depth:deep (pre-PR multi-wave with rollback rehearsal + blinded adversarial lenses). When NOT to use - single-file fix (use debug), new feature (use build).
 argument-hint: '[depth:standard|deep] [scope:branch|global|working] [optional focus]'
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Autonomous Problem-Locator Pipeline (report-only)

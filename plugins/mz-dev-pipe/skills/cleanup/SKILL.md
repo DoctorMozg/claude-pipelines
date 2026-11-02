@@ -3,7 +3,7 @@ name: cleanup
 description: ALWAYS invoke when the user wants to clean up, refactor, or reduce complexity in existing code. Triggers: "clean up", "refactor", "remove dead code", "remove unused imports", "reduce complexity". When NOT to use: making code faster / smaller / profiling a hotspot (use optimize), fixing failing tests (use polish), bug or security hunt (use debug or audit).
 argument-hint: [scope:branch|global|working] <scope: glob, directory, git range, or free-text description>
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, TaskOutput, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Autonomous Code Cleanup Pipeline
