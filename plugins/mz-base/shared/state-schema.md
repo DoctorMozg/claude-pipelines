@@ -86,7 +86,7 @@ work_units_remaining: 3
 ## Body sections
 
 - `## Decisions`: one line per decision worth remembering, most important first, such as an approved artifact and where it landed.
-- `## Lessons`: one line per thing a later run should do differently.
+- `## Lessons`: one line per thing a later run should do differently. Write one whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, as `- (<trigger>) WHEN <situation> → <what to do> — WHY <cause>` with `<trigger>` one of `review`, `failure`, `correction` or `change`. Keep it concrete and under about 40 words, and record a review finding only once it was accepted and fixed.
 - `## Notes`: other short facts worth keeping.
 - `## Auto-approvals`: one line per gate skipped in unattended mode, with the gate label, the phase and the time. It isn't harvested; the final report lists it.
 
@@ -94,19 +94,20 @@ Other sections, such as `## Concerns` from `agent-status-protocol.md` or an erro
 
 When mz-memory is installed, its SessionEnd hook reads each `state.md` changed since its last run, or the 50 most recently changed ones on its first run:
 
-1. It takes the first `Status:` value and continues only for `complete` or the legacy `completed`.
+1. Whatever the `Status`, it copies up to 10 bullet lines of `## Lessons` into the Inbox of `.mz/memory/lessons.md`, tagged with the trigger, the task, the commit and the status.
+1. It takes the first `Status:` value and goes on to the Activity Log only for `complete` or the legacy `completed`.
 1. It logs the task name, the first `Phase:` value, and the branch and commit.
-1. It copies the first 10 non-blank lines of `## Decisions`, `## Lessons` and `## Notes`, counted together in file order, into `.mz/memory/MEMORY.md`.
+1. It copies the first 10 non-blank lines of `## Decisions` and `## Notes`, counted together in file order, into `.mz/memory/MEMORY.md`.
 
 Write for it this way:
 
 - Write each heading exactly: level two, the same case, nothing after the word. `## Decisions (2026-11-02)`, `## decisions` and `### Decisions` are skipped.
-- Put `## Decisions` first of the three, so a long `## Notes` doesn't use up the 10 lines.
-- A `##` heading ends a section. A `###` line doesn't, and it counts toward the 10.
-- `<private>…</private>` spans are removed after the 10 lines are chosen, so a private line still uses one of them.
-- Editing a finished `state.md` logs the task again at the next SessionEnd.
-- A task that never reaches `complete` is never harvested. If a decision from a `failed`, `blocked` or `aborted_by_user` task matters, pin it with `/memory-note`.
-- A file without a plain `Status:` line is skipped, so its task is never logged, even when it finished: `**Status:** complete`, `status: complete`, `Status:complete` and a missing `Status` key all miss. A `complete` file without a `Phase:` line is logged without its phase. Neither stops the capture of other files.
+- Put `## Decisions` before `## Notes`, so a long `## Notes` doesn't use up the 10 lines.
+- A `##` heading ends a section. A `###` line doesn't, and under `## Decisions` and `## Notes` it counts toward the 10. Under `## Lessons` only bullet lines (`-`, `*` or `1.`) are read.
+- `<private>…</private>` spans are removed before anything is stored. Under `## Decisions` and `## Notes` that happens after the 10 lines are chosen, so a private line still uses one of them.
+- Editing a finished `state.md` logs the task again at the next SessionEnd. A lesson already harvested from the same task is skipped, so an edit adds only the new lessons; the same lesson from another task is kept as a recurrence.
+- Decisions and Notes from a task that never reaches `complete` are never logged. If a decision from a `failed`, `blocked` or `aborted_by_user` task matters, pin it with `/memory-note`. Its `## Lessons` are harvested all the same.
+- A file without a plain `Status:` line is never logged, even when it finished: `**Status:** complete`, `status: complete`, `Status:complete` and a missing `Status` key all miss. Its lessons are still harvested, with `status=unknown`. A `complete` file without a `Phase:` line is logged without its phase. Neither stops the capture of other files.
 
 ## Compaction
 
@@ -150,8 +151,8 @@ Skills that don't read this file put one of these blocks, verbatim, in their Sta
 
 Multi-phase skills:
 
-> State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
+> State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Notes`; mz-memory harvests them only once `Status` is `complete`. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 Single-dispatch skills:
 
-> State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase` and `Started`. This skill runs setup, one dispatch and its report in a single turn with no approval gate, so it leaves out `phase_complete` and `what_remains`. On reading an older file, put `schema_version: 2` on line 1 and `Status` on line 2, add no other keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
+> State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase` and `Started`. This skill runs setup, one dispatch and its report in a single turn with no approval gate, so it leaves out `phase_complete` and `what_remains`. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed or a step fails, in the form `- (review|failure) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`. On reading an older file, put `schema_version: 2` on line 1 and `Status` on line 2, add no other keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.

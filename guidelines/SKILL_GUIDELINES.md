@@ -51,7 +51,7 @@ Every approval gate uses the two-surface pattern. It borrows plan mode's loop, i
 
    - **Approve**: record the approved artifact path in `state.md` as a `## Decisions` line and remove the `awaiting approval` entry, then proceed. The journal hook sees only the one-line selector, so `state.md` is the record of what was approved.
    - **Reject**: set `Status: aborted_by_user` and stop.
-   - **Any other answer is feedback.** That includes typed text, a "Chat about this" reply, and an Approve whose note asks for a change. Apply the feedback, running the upstream phase or agent again when the change needs it. Then overwrite the artifact, re-read it, and re-emit the whole plan message from scratch before presenting the selector again. Don't send a diff or a summary: the user approves the artifact as it now stands, earlier versions may no longer be on screen, and after compaction Claude holds only a summary of them. The gate loops until the user explicitly approves.
+   - **Any other answer is feedback.** That includes typed text, a "Chat about this" reply, and an Approve whose note asks for a change. Apply the feedback, running the upstream phase or agent again when the change needs it. Then overwrite the artifact, re-read it, and re-emit the whole plan message from scratch before presenting the selector again. Don't send a diff or a summary: the user approves the artifact as it now stands, earlier versions may no longer be on screen, and after compaction Claude holds only a summary of them. When the feedback points out a mistake the run shouldn't repeat, rather than a change of preference, also add a `- (correction) WHEN … → … — WHY …` line under `## Lessons` in `state.md`. The gate loops until the user explicitly approves.
    - **No answer**: AskUserQuestion is denied or unavailable in `dontAsk` mode, in `claude -p` without a permission host, with `--permission-prompts none`, and in `claude -p --channels`. With the opt-in `askUserQuestionTimeout`, a result can also carry the away signal while naming whichever option was preselected (tools-reference.md; settings-reference.md; permission-modes.md; headless.md; channels.md; changelog 2.1.200). Neither case is approval, whatever option the result names. Set `Status: blocked`, keep `awaiting approval: <gate>` in `what_remains`, leave the plan message in place, and stop.
 
    A missing answer is never approval.
@@ -91,7 +91,7 @@ options: **Approve** — <next phase> · **Reject** — <abort outcome>.
 **Response handling**:
 - **Approve** → record the approved artifact path as a `## Decisions` line in `state.md`, clear `awaiting approval`, proceed to <next phase>.
 - **Reject** → set `Status: aborted_by_user`, stop.
-- **Any other answer** → apply the feedback (re-run the upstream phase if needed), overwrite `<artifact_path>`, return to Surface 1, re-emit the full updated plan message, re-present. Loop until explicit Approve.
+- **Any other answer** → apply the feedback (re-run the upstream phase if needed), add a `(correction)` line under `## Lessons` when it corrects a mistake, overwrite `<artifact_path>`, return to Surface 1, re-emit the full updated plan message, re-present. Loop until explicit Approve.
 - **No answer** → set `Status: blocked` with `awaiting approval: <gate>`, stop. A missing answer is never approval.
 ```
 
@@ -212,6 +212,7 @@ A multi-phase skill keeps its cross-phase state in `.mz/task/<task_name>/state.m
 - **When to write**: after every phase transition, and before every approval gate. A compaction summary can drop specific paths and decisions. A main conversation over 200K tokens can also compact after sitting idle for about an hour, which can happen while a gate waits (settings-reference.md, `idleCompaction`; changelog 2.1.299). Read cross-phase facts back from `state.md`, not from conversation memory.
 - **Size**: keep `state.md` under about 5,000 tokens, and put a one-line resume pointer near the top of SKILL.md (`guidelines/STATE_SCHEMA.md`, "Compaction").
 - **Decisions**: a decision worth remembering across sessions goes under `## Decisions`, where mz-memory harvests it once the task is `complete` (`guidelines/STATE_SCHEMA.md`, "Body Sections").
+- **Lessons**: something a later run should do differently goes under `## Lessons` as `- (<trigger>) WHEN <situation> → <what to do> — WHY <cause>`, written when a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed. mz-memory harvests it whatever the `Status` (`guidelines/STATE_SCHEMA.md`, "Body Sections").
 
 ## 8. Error Handling and Escalation
 
