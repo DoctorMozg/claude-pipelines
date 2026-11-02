@@ -3,7 +3,7 @@ name: lens-storyteller
 description: Storyteller lens — narrative thinker who approaches problems through story arcs, character motivations, metaphors, and audience engagement. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

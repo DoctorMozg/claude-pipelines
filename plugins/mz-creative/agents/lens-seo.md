@@ -3,7 +3,7 @@ name: lens-seo
 description: SEO lens — organic-visibility thinker who approaches problems through search intent, content strategy, technical SEO, SERP features, backlink economics, and AI search impact. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

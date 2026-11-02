@@ -26,6 +26,24 @@ IGNORED_PLUGIN_KEYS = frozenset({"hooks", "mcpServers", "permissionMode", "initi
 REQUIRED_KEYS = ("tools", "model", "effort", "maxTurns")
 MODEL_TIERS = frozenset({"haiku", "sonnet", "opus"})
 EFFORT_LEVELS = frozenset({"low", "medium", "high", "xhigh", "max"})
+ABOVE_MEDIUM = frozenset({"high", "xhigh", "max"})
+# medium is the 5.5 default; high is for work where verification matters (user, 2026-11-02).
+HIGH_EFFORT_AGENTS = {
+    "branch-reviewer": "deep branch review",
+    "github-pr-reviewer": "pull request review",
+    "pipeline-code-reviewer": "code review in build, polish and debug",
+    "pipeline-completeness-checker": "final verification gate",
+    "gov-audit-reviewer": "rubric review of decision records",
+    "gov-critic-alternatives": "adversarial decision critique",
+    "gov-critic-assumptions": "adversarial decision critique",
+    "gov-critic-blast-radius": "adversarial decision critique",
+    "gov-critic-reversibility": "adversarial decision critique",
+    "pipeline-planner": "implementation planning",
+    "accessibility-specialist": "WCAG hard-gate validation",
+    "pipeline-coder": "bug fixes in polish and debug, where edge cases are likely",
+    "pipeline-test-writer": "edge-case tests written before the code",
+    "pipeline-perf-candidate": "optimizations that must keep the correctness command green",
+}
 COLORS = frozenset({"red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"})
 KNOWN_TOOLS = frozenset(
     {
@@ -129,6 +147,24 @@ class TestModelAndLimits:
             if "effort" in item.frontmatter and item.frontmatter["effort"] not in EFFORT_LEVELS
         ]
         assert_no_violations(violations)
+
+    def test_effort_above_medium_is_allowlisted(self, agents: DocSet) -> None:
+        violations = [
+            f"{item.doc.relative}: effort {item.frontmatter['effort']!r} is not allowlisted"
+            for item in agents.parsed
+            if item.frontmatter.get("effort") in ABOVE_MEDIUM
+            and item.frontmatter.get("name") not in HIGH_EFFORT_AGENTS
+        ]
+        assert_no_violations(violations)
+
+    def test_high_effort_allowlist_is_current(self, agents: DocSet) -> None:
+        above_medium = {
+            item.frontmatter.get("name")
+            for item in agents.parsed
+            if item.frontmatter.get("effort") in ABOVE_MEDIUM
+        }
+        stale = sorted(set(HIGH_EFFORT_AGENTS) - above_medium)
+        assert not stale, f"allowlisted agents no longer above medium: {stale}"
 
     def test_max_turns_is_a_positive_integer(self, agents: DocSet) -> None:
         violations: list[str] = []

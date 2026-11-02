@@ -173,7 +173,7 @@ Set `plan_iteration = 0`.
 
 **Loop start:**
 
-Spawn a `pipeline-plan-reviewer` agent (model: **sonnet**) with:
+Spawn a `pipeline-plan-reviewer` agent (model: **opus**) with:
 
 ```
 Review this TDD implementation plan for the task: <task description>

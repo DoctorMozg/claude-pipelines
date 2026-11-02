@@ -3,7 +3,7 @@ name: lens-data
 description: Data lens — analytics and growth thinker who approaches problems through measurement validity, experiment design, instrumentation, and growth loops. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

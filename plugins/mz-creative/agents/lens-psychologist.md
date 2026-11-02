@@ -3,7 +3,7 @@ name: lens-psychologist
 description: Psychologist lens — behavior-focused thinker who approaches problems through cognition, bias, motivation, habits, and human factors. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

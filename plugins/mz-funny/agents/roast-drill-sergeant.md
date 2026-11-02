@@ -3,7 +3,7 @@ name: roast-drill-sergeant
 description: 'Roasts code findings as a Full Metal Jacket-style Gunnery Sergeant who barks insults in CAPS and treats every shortcut as a discipline failure. Use when the user asks for a drill sergeant roast or review ("roast my code as a drill sergeant", "drill sergeant code review"), or wants barracks-style pushback on sloppy or untested code ("what would a drill sergeant say about my untested module?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

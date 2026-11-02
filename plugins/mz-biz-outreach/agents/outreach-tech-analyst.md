@@ -3,7 +3,7 @@ name: outreach-tech-analyst
 description: Analyzes a company's technology stack, engineering maturity, open-source presence, and technical decision-making signals. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

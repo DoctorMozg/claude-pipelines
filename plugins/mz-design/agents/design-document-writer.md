@@ -3,7 +3,7 @@ name: design-document-writer
 description: Pipeline-only. Dispatched by /design-document. Produces the initial UI/UX design document, ASCII wireframes with Mermaid flows, and WCAG contrast report from intake and research inputs. Follows the canonical design-spec template. Do not dispatch standalone.
 tools: Read, Write, Edit, Grep, Glob
 model: opus
-effort: high
+effort: medium
 maxTurns: 50
 ---
 

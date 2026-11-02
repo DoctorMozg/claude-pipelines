@@ -3,7 +3,7 @@ name: outreach-contact-finder
 description: Finds contact information for companies — email addresses, phone numbers, key decision-makers with LinkedIn profiles, and social media presence. Used by the outreach-research skill (enrichment phase) and the outreach-enrich-company skill (deep-enrichment phase). Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

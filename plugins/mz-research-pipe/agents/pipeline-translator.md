@@ -4,7 +4,7 @@ description: Pipeline-only. Dispatched by /translate. Translates one file or chu
 tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 model: opus
 memory: project
-effort: high
+effort: medium
 maxTurns: 60
 color: green
 ---

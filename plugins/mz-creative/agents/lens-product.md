@@ -3,7 +3,7 @@ name: lens-product
 description: Product lens — PMF-focused thinker who approaches problems through user value, jobs-to-be-done, roadmap tradeoffs, kill criteria, and prioritization discipline. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

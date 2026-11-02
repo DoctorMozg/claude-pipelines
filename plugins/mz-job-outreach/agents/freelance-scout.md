@@ -3,7 +3,7 @@ name: freelance-scout
 description: Extracts freelance gig listings from a single board (vetted network, regional, or niche). Constructs query variants per top title, paginates, extracts structured metadata including scope and budget, and adds candidate engagement-type tags via lexical signals. Used by the freelance-search skill. Do not dispatch standalone.
 tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

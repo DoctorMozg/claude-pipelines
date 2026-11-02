@@ -3,7 +3,7 @@ name: roast-dwarf
 description: 'Roasts code findings as a grumbling master-craftsman dwarf in a Scottish brogue who enters every flaw in the Dammaz Kron grudge book. Use when the user asks for a dwarf roast or review ("roast my code as a dwarf", "dwarf code review"), or wants a craftsman''s verdict on rushed or shoddy work ("what would a dwarf say about my rushed refactor?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

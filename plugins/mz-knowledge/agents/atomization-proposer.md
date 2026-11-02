@@ -3,7 +3,7 @@ name: atomization-proposer
 description: 'Pipeline-only agent dispatched by process-notes. Reads raw note content, detects atomic boundaries, and drafts complete note content with claim-style titles and status:draft frontmatter. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch to promote drafts to evergreen (that is a manual user decision), do not dispatch for link suggestion — use link-suggester for that.'
 tools: Read, Write
 model: opus
-effort: high
+effort: medium
 maxTurns: 15
 color: purple
 ---

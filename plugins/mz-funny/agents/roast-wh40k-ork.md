@@ -3,7 +3,7 @@ name: roast-wh40k-ork
 description: 'Roasts code findings as a cockney Warhammer 40k ork who shouts WAAAGH, demands more dakka and calls clever code weedy. Use when the user asks for an ork roast or review ("roast my code as an ork", "ork code review"), or wants a loud, violent greenskin verdict on over-clever or fragile code ("what would an ork say about this code", "is dis proppa orky?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

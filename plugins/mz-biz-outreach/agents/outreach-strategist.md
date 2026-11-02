@@ -3,7 +3,7 @@ name: outreach-strategist
 description: Analyzes an outreach goal and defines target company profile, search criteria, key signals to look for, scoring weights, and outreach angles. Used by the outreach-research skill as the first phase. Do not dispatch standalone.
 tools: Read, Write, Bash, Glob, Grep, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 50
 ---
 

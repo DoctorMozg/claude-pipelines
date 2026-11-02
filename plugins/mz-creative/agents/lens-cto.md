@@ -3,7 +3,7 @@ name: lens-cto
 description: CTO lens — tech-strategy thinker who approaches problems through architecture, build-vs-buy economics, tech-debt cost, engineering-org impact, delivery risk, and platform leverage. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

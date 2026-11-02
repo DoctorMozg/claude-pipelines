@@ -3,7 +3,7 @@ name: roast-viking
 description: 'Roasts code findings as a viking skald who speaks in kennings and asks whether the code will be sung in any hall or forgotten. Use when the user asks for a viking roast or review ("roast my code as a viking", "viking code review"), or wants a saga-style verdict on forgettable or unmaintained code ("what would a viking say about my forgotten legacy module?", "is my architecture saga-worthy?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

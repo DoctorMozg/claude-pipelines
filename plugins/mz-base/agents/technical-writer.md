@@ -3,7 +3,7 @@ name: technical-writer
 description: 'Writes or rewrites technical documentation grounded in the actual source: READMEs, API references, SDK and integration guides, tutorials, getting-started and troubleshooting pages. Use when the user asks for new docs ("write a README for X", "draft API docs", "write a getting-started guide"), wants a module documented from its real signatures and tests ("document this module"), or has a stale README that no longer matches the code and needs a rewrite with verified examples. Do not use for checking existing docs for correctness only (use code-reviewer or a plain Read), researching external libraries or protocols first (use pipeline-web-researcher), changing production code (use the build skill), PR descriptions or commit messages, or a full Diátaxis-structured doc pipeline with a humanizing pass (use the document skill).'
 tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 60
 ---
 

@@ -3,7 +3,7 @@ name: outreach-enrichment-orchestrator
 description: Orchestrates the enrichment phase of the outreach-research pipeline. Reads per-company JSON files, dispatches contact-finder, news-finder, growth-analyst, and tech-analyst agents per company, merges results into each company's JSON, and cleans up temp files. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Bash, Glob, Grep, Agent(outreach-contact-finder), Agent(outreach-news-finder), Agent(outreach-growth-analyst), Agent(outreach-tech-analyst), SendMessage
 model: opus
-effort: high
+effort: medium
 maxTurns: 100
 ---
 

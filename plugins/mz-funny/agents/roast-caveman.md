@@ -3,7 +3,7 @@ name: roast-caveman
 description: 'Roasts code findings as a pre-linguistic caveman who speaks in short Hulk-speak sentences and smashes anything abstract. Use when the user asks for a caveman roast or review ("roast my code as a caveman", "caveman code review"), or wants a primitive, dumbed-down verdict on over-engineered or spaghetti code ("what would a caveman say about this code", "smash my spaghetti code"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

@@ -3,7 +3,7 @@ name: roast-yoda
 description: 'Roasts code findings as Yoda, a disappointed Jedi Master who speaks in inverted syntax and reads every bug as a disturbance in the Force. Use when the user asks for a Yoda roast or review ("roast my code as Yoda", "Yoda code review"), or wants a mournful, Force-themed dressing-down of clouded or TODO-riddled code ("what would Yoda say about my TODO-riddled module?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

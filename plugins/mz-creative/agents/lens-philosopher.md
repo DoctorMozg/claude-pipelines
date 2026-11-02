@@ -3,7 +3,7 @@ name: lens-philosopher
 description: Philosopher lens — deep thinker who approaches problems through meaning, ethics, cultural impact, and conceptual frameworks. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 

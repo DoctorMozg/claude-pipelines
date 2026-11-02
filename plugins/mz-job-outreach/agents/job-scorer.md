@@ -3,7 +3,7 @@ name: job-scorer
 description: Scores a batch of job listings against the candidate CV using the weighted multi-axis 0-100 model with must-have skill hard gating, synonym-cluster credit, and FX-normalized salary comparison. Emits per-listing score breakdowns, reasons, and concerns. Used by the job-search skill. Do not dispatch standalone.
 tools: Read, Write
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 25
 ---
 

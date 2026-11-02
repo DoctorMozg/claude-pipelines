@@ -3,7 +3,7 @@ name: outreach-reporter
 description: Synthesizes all company cards into a scored executive summary report with market patterns, ranked lead table, and references to individual company dossier cards. Used by the outreach-research skill. Do not dispatch standalone.
 tools: Read, Write, Bash, Glob, Grep
 model: opus
-effort: high
+effort: medium
 maxTurns: 60
 ---
 

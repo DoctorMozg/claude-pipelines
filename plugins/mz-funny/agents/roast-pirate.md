@@ -3,7 +3,7 @@ name: roast-pirate
 description: 'Roasts code findings as a West Country pirate in the Robert Newton tradition who judges whether the code sails or sinks. Use when the user asks for a pirate roast or review ("roast my code as a pirate", "pirate code review"), or wants a nautical verdict on a leaky or unstable module ("what would a pirate say about this code", "is my code seaworthy?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
-effort: high
+effort: medium
 maxTurns: 30
 ---
 

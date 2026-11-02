@@ -3,7 +3,7 @@ name: lens-economist
 description: Economist lens — strategic thinker who approaches problems through incentives, markets, game theory, externalities, and opportunity cost. Dual-mode panelist for /brainstorm and /expert; behavior is injected by the dispatching skill. Do not dispatch standalone.
 tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
-effort: high
+effort: medium
 maxTurns: 40
 ---
 
