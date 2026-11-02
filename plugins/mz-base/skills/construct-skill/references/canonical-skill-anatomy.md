@@ -145,7 +145,7 @@ Single-dispatch skills, which run setup, one dispatch and its report in a single
 
 ## Gate skeleton
 
-Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repo. A read-only skill may put one gate before its main agent wave when that wave is large or costly; a single search or lookup runs without a gate, and other read-only skills need none. Every gate follows this skeleton:
+Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repo. A read-only skill may put one gate before its main agent wave when that wave is large or costly; a single search or lookup runs without a gate, and other read-only skills need none. A rewrite skill may overwrite the user's file without a gate when it first copies the original into `.mz/task/<task_name>/` and ends by showing a diff. Every gate follows this skeleton:
 
 ```
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
