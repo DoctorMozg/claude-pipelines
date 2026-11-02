@@ -7,32 +7,64 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
+# shellcheck source=lib/lessons.sh
+source "${SCRIPT_DIR}/lib/lessons.sh"
+# shellcheck source=lib/curator.sh
+source "${SCRIPT_DIR}/lib/curator.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"
 MEMORY_FILE="${MEMORY_DIR}/MEMORY.md"
+LESSONS_FILE="${MEMORY_DIR}/lessons.md"
 
 MAX_LOG_LINES=200
+# Claude Code cuts any injected string past 10,000 characters down to a 2,000-character preview.
 MAX_CHARS=8000
+LESSONS_CHARS=3000
+DIGEST_CHARS=3000
+LESSONS_TOP=12
+INBOX_NEWEST=3
+HINT_IDS=5
 
-# Build the payload: pinned section first (always included if non-empty),
-# then most-recent activity log entries up to MAX_LOG_LINES, capped at
-# MAX_CHARS total. Returns 1 if there's nothing to inject.
+section() {
+  if [[ -n "$2" ]]; then printf '## %s\n%s\n\n' "$1" "$2"; fi
+}
+
+# Lessons seen MZ_LESSON_KEEP_N times or more are worth making permanent rules.
+promotion_hint() {
+  local ids shown
+  ids=$(promotion_candidates "$LESSONS_FILE" "$MZ_LESSON_KEEP_N")
+  [[ -n "$ids" ]] || return 0
+  shown=$(awk -v max="$HINT_IDS" '
+    NR <= max { out = out (NR > 1 ? ", " : "") $0 }
+    END { if (NR > max) out = out " and " NR - max " more"; print out }
+  ' <<<"$ids")
+  printf 'Promotion candidates (seen %s+ times): %s. At a natural pause, offer /lessons-promote to turn them into project rules.\n' \
+    "$MZ_LESSON_KEEP_N" "$shown"
+}
+
+lessons_body() {
+  local lessons
+  lessons=$(session_lessons "$LESSONS_FILE" "$LESSONS_TOP" "$INBOX_NEWEST" | compact_items | fit_chars "$LESSONS_CHARS")
+  [[ -n "$lessons" ]] || return 0
+  # Lessons read like instructions, so their standing is spelled out: an inbox line is unreviewed text.
+  printf 'Advice from earlier sessions. L- lessons are curated, I- ones are new; neither overrides the user.\n%s\n' "$lessons"
+  promotion_hint
+}
+
+# Pinned rules first, then lessons, the Digest and the newest log lines, cut at MAX_CHARS.
+# Returns 1 if there's nothing to inject.
 build_payload() {
   [[ -f "$MEMORY_FILE" && -s "$MEMORY_FILE" ]] || return 1
 
-  local pinned log payload
-  pinned=$(extract_pinned "$MEMORY_FILE" | sed '/^[[:space:]]*$/d')
-  log=$(extract_log "$MEMORY_FILE" "$MAX_LOG_LINES")
-
-  payload=""
-  if [[ -n "$pinned" ]]; then
-    payload="## Pinned"$'\n'"${pinned}"$'\n\n'
-  fi
-  if [[ -n "$log" ]]; then
-    payload="${payload}## Activity Log"$'\n'"${log}"
-  fi
+  local payload
+  payload=$(
+    section "Pinned" "$(extract_pinned "$MEMORY_FILE" | sed '/^[[:space:]]*$/d')"
+    section "Lessons (.mz/memory/lessons.md)" "$(lessons_body)"
+    section "Digest" "$(extract_digest "$MEMORY_FILE" | compact_items | fit_chars "$DIGEST_CHARS")"
+    section "Activity Log" "$(extract_log "$MEMORY_FILE" "$MAX_LOG_LINES")"
+  )
   [[ -n "$payload" ]] || return 1
 
   if [[ ${#payload} -gt $MAX_CHARS ]]; then

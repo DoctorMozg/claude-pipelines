@@ -173,3 +173,63 @@ _trim_seen() {
     tail -n "$MZ_LESSONS_SEEN_MAX" "$seen_file" | atomic_write "$seen_file"
   fi
 }
+
+# compact_items — drop the metadata from lesson, inbox and Digest item lines, keeping "- [ID] text".
+compact_items() {
+  sed -E 's/^- \[([A-Z]-[0-9]+)\] [^:]* :: /- [\1] /'
+}
+
+# fit_chars <max_chars> — print stdin's lines in order until the next one would pass the budget.
+# It reads all of stdin, so the writer never gets SIGPIPE.
+fit_chars() {
+  awk -v max="$1" '!full { used += length($0) + 1; if (used > max) full = 1; else print }'
+}
+
+# Curated lessons as "<n> TAB <last> TAB <line>", for ranking by count, then recency.
+_ranked_curated() {
+  _memory_region "$1" "$MZ_LESSONS_START" "$MZ_LESSONS_END" 2>/dev/null \
+    | awk '$2 ~ /^\[L-[0-9]+\]$/ && $3 ~ /^n=[0-9]+$/ && $4 ~ /^last=/ {
+        printf "%d\t%s\t%s\n", substr($3, 3), substr($4, 6), $0
+      }' \
+    | sort -t "$(printf '\t')" -k1,1nr -k2,2r || true
+}
+
+# session_lessons <lessons_file> <top> <newest> — the <top> curated lessons seen most often, then
+# most recently, followed by the <newest> inbox items.
+session_lessons() {
+  local lessons_file="$1" top="$2" newest="$3"
+  [[ -f "$lessons_file" ]] || return 0
+  _ranked_curated "$lessons_file" | cut -f3- | head -n "$top" || true
+  _memory_region "$lessons_file" "$MZ_INBOX_START" "$MZ_INBOX_END" 2>/dev/null \
+    | grep -E '^- \[I-[0-9]+\] ' | head -n "$newest" || true
+}
+
+# promotion_candidates <lessons_file> <min_n> — ids of curated lessons seen at least <min_n> times.
+promotion_candidates() {
+  local lessons_file="$1" min_n="$2"
+  [[ -f "$lessons_file" ]] || return 0
+  _ranked_curated "$lessons_file" | awk -v min="$min_n" '$1 >= min { print substr($4, 2, length($4) - 2) }'
+}
+
+# match_lessons <lessons_file> <keywords> <max> — the <max> lessons whose text or tags hold the
+# most distinct keywords (lowercase, one per line). Ties go to the higher count, then file order.
+match_lessons() {
+  local lessons_file="$1" keywords="$2" max="$3"
+  [[ -f "$lessons_file" && -n "$keywords" ]] || return 0
+  {
+    _memory_region "$lessons_file" "$MZ_LESSONS_START" "$MZ_LESSONS_END"
+    _memory_region "$lessons_file" "$MZ_INBOX_START" "$MZ_INBOX_END"
+  } 2>/dev/null | MZ_KEYWORDS="$keywords" awk '
+    BEGIN { words = split(ENVIRON["MZ_KEYWORDS"], word, "\n") }
+    /^- \[[LI]-[0-9]+\] / && (cut = index($0, " :: ")) {
+      n = ($3 ~ /^n=[0-9]+$/) ? substr($3, 3) + 0 : 0
+      tags = ""
+      for (i = 3; i <= NF && $i != "::"; i++) if ($i ~ /^tags=/) tags = substr($i, 6)
+      # Metadata stays out of the match, so a task name in src= never pulls a lesson in.
+      text = tolower(substr($0, cut + 4) " " tags)
+      hits = 0
+      for (w = 1; w <= words; w++) if (word[w] != "" && index(text, word[w])) hits++
+      if (hits) printf "%d\t%d\t%d\t%s\n", hits, n, NR, $0
+    }' \
+    | sort -t "$(printf '\t')" -k1,1nr -k2,2nr -k3,3n | cut -f4- | head -n "$max" || true
+}
