@@ -1,7 +1,7 @@
 ---
 name: job-search
-description: ALWAYS invoke when the user wants to find vacancies, match jobs against a CV, or build a job-hunt shortlist with cover letters. Triggers: "find me a job", "search jobs", "match vacancies to my CV", "job hunt", "find openings".
-argument-hint: "<free-text preferences>" [limit:N] [recency:Nd] [contacts:topN] [letters:topN]
+description: 'ALWAYS invoke when the user wants to find vacancies, match jobs against a CV, or build a job-hunt shortlist with cover letters. Triggers: "find me a job", "search jobs", "match vacancies to my CV", "job hunt", "find openings".'
+argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [contacts:topN] [letters:topN]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---

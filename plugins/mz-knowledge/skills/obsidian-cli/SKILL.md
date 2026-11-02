@@ -1,6 +1,6 @@
 ---
 name: obsidian-cli
-description: ALWAYS invoke when using the obsidian CLI tool to interact with a vault from the terminal. Triggers: obsidian CLI, vault command line, obsidian read/create/search from shell.
+description: 'ALWAYS invoke when using the obsidian CLI tool to interact with a vault from the terminal. Triggers: obsidian CLI, vault command line, obsidian read/create/search from shell.'
 argument-hint: '[vault operation: read|create|append|search|tags|backlinks|property]'
 model: haiku
 allowed-tools: Bash, Read

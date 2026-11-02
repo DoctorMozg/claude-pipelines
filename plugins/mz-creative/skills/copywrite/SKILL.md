@@ -1,6 +1,6 @@
 ---
 name: copywrite
-description: ALWAYS invoke when the user wants promotional, marketing, or persuasive copy. Triggers: "write a landing page for", "draft a launch email", "write release notes", "social post for", "pitch one-pager", "marketing copy for", "announcement copy". Researches positioning + product context, dispatches expert-copywriter, then runs an automatic naturalize pass.
+description: 'ALWAYS invoke when the user wants promotional, marketing, or persuasive copy. Triggers: "write a landing page for", "draft a launch email", "write release notes", "social post for", "pitch one-pager", "marketing copy for", "announcement copy". Researches positioning + product context, dispatches expert-copywriter, then runs an automatic naturalize pass.'
 argument-hint: <what to promote, plus format:landing|email|announcement|social|changelog|pitch>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet

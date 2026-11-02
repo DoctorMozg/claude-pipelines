@@ -1,6 +1,6 @@
 ---
 name: outreach-research
-description: ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients", "research targets".
+description: 'ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients", "research targets".'
 argument-hint: <target description> [sector:filter] [limit:N]
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, WebFetch, WebSearch

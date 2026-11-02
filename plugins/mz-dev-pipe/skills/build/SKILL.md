@@ -1,6 +1,6 @@
 ---
 name: build
-description: ALWAYS invoke when the user wants to build, implement, or create a new feature, module, or component from scratch. Triggers: "build X", "implement Y", "add feature". When NOT to use: bug fixes (use debug), polishing existing code (use polish).
+description: 'ALWAYS invoke when the user wants to build, implement, or create a new feature, module, or component from scratch. Triggers: "build X", "implement Y", "add feature". When NOT to use: bug fixes (use debug), polishing existing code (use polish).'
 argument-hint: <task description>
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch

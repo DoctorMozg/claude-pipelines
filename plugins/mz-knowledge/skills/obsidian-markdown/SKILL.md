@@ -1,6 +1,6 @@
 ---
 name: obsidian-markdown
-description: ALWAYS invoke when working with Obsidian vault .md files. Triggers: wikilinks, callouts, embeds, frontmatter properties, Obsidian Flavored Markdown, OFM syntax.
+description: 'ALWAYS invoke when working with Obsidian vault .md files. Triggers: wikilinks, callouts, embeds, frontmatter properties, Obsidian Flavored Markdown, OFM syntax.'
 argument-hint: '[optional: specific OFM feature or note to work on]'
 model: haiku
 allowed-tools: Read

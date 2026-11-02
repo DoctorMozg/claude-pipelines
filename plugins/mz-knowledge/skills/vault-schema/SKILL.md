@@ -1,6 +1,6 @@
 ---
 name: vault-schema
-description: ALWAYS invoke when validating vault frontmatter schema, migrating vault notes to a new schema, or checking note-type frontmatter compliance. Triggers: vault schema, frontmatter validation, schema migration.
+description: 'ALWAYS invoke when validating vault frontmatter schema, migrating vault notes to a new schema, or checking note-type frontmatter compliance. Triggers: vault schema, frontmatter validation, schema migration.'
 argument-hint: '<validate|migrate> [vault path]'
 model: sonnet
 allowed-tools: Agent, Read, Write, Grep, Glob, Bash, AskUserQuestion

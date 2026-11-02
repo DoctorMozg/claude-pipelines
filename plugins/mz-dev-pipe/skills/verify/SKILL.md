@@ -1,7 +1,7 @@
 ---
 name: verify
-description: ALWAYS invoke when the user wants to verify code quality, run tests, lint, or check type safety. Triggers: "verify", "run tests", "lint the code", "validate". When NOT to use: fixing failures (use polish or debug).
-argument-hint: [scope:branch|global|working] [optional focus — e.g. "src/auth/", "test_payments.py", "check examples work"]
+description: 'ALWAYS invoke when the user wants to verify code quality, run tests, lint, or check type safety. Triggers: "verify", "run tests", "lint the code", "validate". When NOT to use: fixing failures (use polish or debug).'
+argument-hint: '[scope:branch|global|working] [optional focus — e.g. "src/auth/", "test_payments.py", "check examples work"]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---

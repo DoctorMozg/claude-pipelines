@@ -1,6 +1,6 @@
 ---
 name: document
-description: ALWAYS invoke when the user wants to create or polish technical documentation for a project. Triggers: "write docs for", "document this", "polish the README", "create API reference", "write a tutorial for", "draft a how-to". Produces Diátaxis-aligned documentation grounded in codebase research, then runs an automatic naturalize pass.
+description: 'ALWAYS invoke when the user wants to create or polish technical documentation for a project. Triggers: "write docs for", "document this", "polish the README", "create API reference", "write a tutorial for", "draft a how-to". Produces Diátaxis-aligned documentation grounded in codebase research, then runs an automatic naturalize pass.'
 argument-hint: <what to document or polish>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet

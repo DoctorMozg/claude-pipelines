@@ -1,6 +1,6 @@
 ---
 name: obsidian-bases
-description: ALWAYS invoke when working with Obsidian Bases (.base files), database views, filters, formulas, or the Bases query language. Triggers: .base file, Bases view, filter formula, vault database.
+description: 'ALWAYS invoke when working with Obsidian Bases (.base files), database views, filters, formulas, or the Bases query language. Triggers: .base file, Bases view, filter formula, vault database.'
 argument-hint: '[optional: base file name or query to build]'
 model: haiku
 allowed-tools: Read

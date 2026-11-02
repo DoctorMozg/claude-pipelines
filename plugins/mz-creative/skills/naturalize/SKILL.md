@@ -1,6 +1,6 @@
 ---
 name: naturalize
-description: ALWAYS invoke when the user wants to rewrite AI-generated text to sound human. Triggers: "humanize this text", "make this sound less like AI", "rewrite to be more natural", "remove AI patterns from", "naturalize this prose", "de-AI this draft". Detects AI patterns first, gets user approval, then rewrites via the expert-naturalizer agent.
+description: 'ALWAYS invoke when the user wants to rewrite AI-generated text to sound human. Triggers: "humanize this text", "make this sound less like AI", "rewrite to be more natural", "remove AI patterns from", "naturalize this prose", "de-AI this draft". Detects AI patterns first, gets user approval, then rewrites via the expert-naturalizer agent.'
 argument-hint: <text or @file:path to rewrite>
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet

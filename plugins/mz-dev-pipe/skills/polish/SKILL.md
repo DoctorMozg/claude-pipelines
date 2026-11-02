@@ -1,7 +1,7 @@
 ---
 name: polish
-description: ALWAYS invoke when the user wants to polish code against criteria — fix failing tests, meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests". When NOT to use: new feature (use build), single bug (use debug).
-argument-hint: [scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>
+description: 'ALWAYS invoke when the user wants to polish code against criteria — fix failing tests, meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests". When NOT to use: new feature (use build), single bug (use debug).'
+argument-hint: '[scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---

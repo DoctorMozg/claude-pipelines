@@ -1,7 +1,7 @@
 ---
 name: outreach-enrich-company
 description: ALWAYS invoke when the user wants to deepen the dossier on a company card AND/OR generate LinkedIn/email outreach letters from it. Fans out 5 enrichment subagents (news, tech, growth, reputation, contacts) to fill gaps left by the base research, then drafts and naturalizes one letter per Key Contact. Triggers - "enrich <card>", "go deeper on <card>", "deepen research on <company>", "write outreach letters for <card>", "draft messages from <card>", "generate letters for this card".
-argument-hint: "<path/to/company_card.md>" [channels:email|linkedin|both] [sender:<voice text or path>] [enrich:only|skip] [personality:off]
+argument-hint: '"<path/to/company_card.md>" [channels:email|linkedin|both] [sender:<voice text or path>] [enrich:only|skip] [personality:off]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
