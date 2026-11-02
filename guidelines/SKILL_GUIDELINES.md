@@ -311,7 +311,7 @@ Document the accepted input formats in SKILL.md.
 
 - `$ARGUMENTS` is the full argument string. `$N` and `$ARGUMENTS[N]` are 0-based, and an indexed placeholder with no matching argument stays literal.
 - Write `\$` before a digit for a literal dollar sign.
-- When Claude invokes a skill on its own, Claude writes the arguments and may condense what the user typed. A check on the user's exact input, such as a length limit or a verbatim quote, reads the user's message rather than `$ARGUMENTS`, and the skill says never to shorten the input itself. memory-note's 500-character gate passed 0 of 2 Sonnet runs until it said so (observed on 2.1.316).
+- When Claude invokes a skill on its own, Claude writes the arguments and may condense what the user typed. A check on the user's exact input, such as a length limit or a verbatim quote, reads the user's message rather than `$ARGUMENTS`, and the skill says never to shorten the input itself. The condensing happens when Claude writes the Skill call, so only the body, with the user's message still in context, can catch it; an `argument-hint` asking for the input verbatim didn't stop it. memory-note's 500-character gate passed 0 of 2 Sonnet runs until its body said so (observed on 2.1.316).
 - Quote an `argument-hint` that starts with `[`. Claude Code turns the list form into a string (changelog 2.1.47), but a strict parser reads `[issue]` as a list and rejects `[file] [format]`.
 - `argument-hint`, `arguments` and `when_to_use` are Claude Code fields; an upload outside Claude Code that includes them fails (§6).
 
