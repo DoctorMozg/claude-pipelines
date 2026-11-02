@@ -136,6 +136,8 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 
 **Pre-read**: Read `.mz/task/<task_name>/panel.md` and capture the full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: panel gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/panel.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -150,6 +152,7 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 **Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the panel — it lives in the plan message above.
 
 - question: `The panel above is ready for review.`
+- header: `Panel`
 - options: **Approve** — begin 3 rounds of expert critique · **Reject** — cancel task, no rounds will run
 
 ### Response handling
@@ -157,6 +160,7 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 - **Approve** → update state to `panel_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user`. Stop. Do not run rounds.
 - **Any other reply (feedback)** → apply the swap to `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: panel gate`, stop. A missing answer is never approval.
 
 ### Swap rules
 

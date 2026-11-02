@@ -58,6 +58,8 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 
 **Pre-read**: Read `.mz/task/<task_name>/link_proposals.md` and capture the full contents into context. The proposals are grouped by direction (outbound / inbound), each labelled with a letter for skip-list responses.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: link gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the link proposals verbatim as a normal markdown chat message:
 
 ```
@@ -74,6 +76,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/link_proposals.md` — 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the proposals in the question body, they live in the plan message above:
 
 - question: `The proposed links above are ready for review.`
+- header: `Links`
 - options:
   - **Approve** — proceed to Phase 2, write all approved links
   - **Reject** — abort task, no links written
@@ -84,6 +87,7 @@ Response handling:
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Letter list** (e.g. `a,c`) → mark those proposals as skipped, proceed to Phase 2 with the remaining set.
 - **Any other reply (feedback)** → pass feedback to `link-suggester`, re-run Phase 1, return to this gate, re-read `.mz/task/<task_name>/link_proposals.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: link gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

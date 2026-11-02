@@ -56,6 +56,8 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 **Pre-read**: Read `.mz/task/<task_name>/triage_batch.md` in full and capture its contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: triage gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message — each note's title, preview, proposed decision, and rationale:
 
 ```
@@ -72,6 +74,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/triage_batch.md` — do
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The triage batch above is ready for review.`
+- header: `Triage`
 - options: **Approve** — proceed to Phase 2 and execute all proposed decisions · **Reject** — abort the triage session, no vault changes
 
 The user may also reply with an override list such as `1=discard, 3=merge::Target Note Name`. Each override binds to the note's index in the batch.
@@ -81,6 +84,7 @@ The user may also reply with an override list such as `1=discard, 3=merge::Targe
 - **Approve** → update state to `decisions_approved`, proceed to Phase 2 with the default decision map from `triage_batch.md`.
 - **Reject** → update state to `aborted_by_user` and stop.
 - **Any other reply (feedback or override list)** → apply overrides to the decision map and return to Surface 1, re-read `triage_batch.md`, and re-emit the entire plan message from scratch; OR proceed with the user-supplied override map if the user's reply is an explicit and unambiguous override list. For any `merge` decision in the override list, require `merge::<target note name>` syntax; if the user writes just `merge` without a target, re-ask for the missing target via AskUserQuestion. This is a loop — repeat until explicit approval. Never proceed to Phase 2 without the user's explicit approval or an unambiguous override map.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: triage gate`, stop. A missing answer is never approval.
 
 ## Decision Vocabulary
 

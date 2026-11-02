@@ -32,6 +32,10 @@ Triggers: "scan PRs", "check PRs", "what PRs need attention", "PR inbox", "daily
 
 If no argument is provided, detect the current repository from `gh repo view --json nameWithOwner -q .nameWithOwner` and use that.
 
+## Constants
+
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+
 ## Core Process
 
 ### Phase 0: Setup
@@ -67,7 +71,7 @@ Output the triage report path (`.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_n
 - **Empty scanner result** (zero PRs returned or no priority-ranked list) → check the scanner's `pr_data.md` / report for `ZERO RESULTS` disclosure tokens before trusting:
   - `ZERO RESULTS VERIFIED` (per-repo smoke test passed) → report "no PRs need attention" and exit cleanly.
   - `ZERO RESULTS UNVERIFIED` or `ZERO RESULTS GLOBAL` → do NOT treat as a clean inbox; surface the warning in the final output and prompt the user to verify the GitHub username and repo list via AskUserQuestion before a silent "all clear" masks a real misconfiguration.
-  - No `ZERO RESULTS` token present with an empty list → retry the scan once with the same repo list; if still empty, escalate via AskUserQuestion. Malformed agent responses also retry once then escalate.
+  - An agent returns nothing usable (no `ZERO RESULTS` token with an empty list, or a malformed response) → `<PLUGIN_ROOT>/shared/retry-policy.md`: re-dispatch once with a clarified prompt, and don't retry API errors or usage limits.
 - Never guess — on any ambiguity (unresolvable repo, invalid URL, missing auth) escalate via AskUserQuestion rather than proceed silently.
 
 ## State Management

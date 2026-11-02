@@ -59,9 +59,9 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 
 1. Parse `$ARGUMENTS` for a `scope:` token (case-insensitive: `branch` | `global` | `working`). Default is `branch`. Treat every remaining token as a path or glob override and record it for Phase 1.
 1. Compute `task_name = <YYYY_MM_DD>_decomment_<slug>`. Slug rules: `branch_diff` for the default branch scope, `global` for global scope, `working` for working-tree scope, or the first 20 chars of the explicit path token when a path override is supplied. Same-day collisions append `_v2`, `_v3`.
+1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
 1. Create `.mz/task/<task_name>/` and `.mz/task/<task_name>/proposals/`.
-1. Write `state.md` with frontmatter: `schema_version: 2`, `Status: in_progress`, `Phase: 0`, `PhaseName: setup`, `Started: <ISO timestamp>`, `Iteration: 1`, `FilesWritten: []`, `phase_complete: false`, `what_remains: []`, `scope_mode: <mode>`, `scope_files: []`, `proposals_done: 0`, `proposals_skipped: 0`, `files_with_edits: 0`, `total_edits: 0`, `edits_applied: 0`, `edits_failed: 0`.
-1. Resume check — if `state.md` already exists at the computed path, Read it and present a resume gate via AskUserQuestion with three options: **Resume** from `Phase: <N>`, **Restart** fresh (overwrite state and rebuild artifacts), or **Abort** (no changes). Honor the user's choice before proceeding.
+1. Write `state.md` with frontmatter: `schema_version: 2`, `Status: in_progress`, `Phase: 0`, `PhaseName: setup`, `Started: <ISO timestamp>`, `Iteration: 1`, `FilesWritten: []`, `phase_complete: false`, `what_remains: []`, `scope_mode: <mode>`, `scope_files: []`, `proposals_done: 0`, `proposals_skipped: 0`, `files_with_edits: 0`, `total_edits: 0`, `edits_applied: 0`, `edits_failed: 0`. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
 1. Proceed to Phase 1 (Read `phases/scan.md` and execute).
 
 ### Phase 3.5 — Approval gate
@@ -71,6 +71,8 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
 See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Pre-read**: Read `.mz/task/<task_name>/diff.md` with the Read tool and capture its full contents into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: diff gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the diff verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/diff.md` — do not substitute a path, summary, or placeholder. Structure:
 
@@ -90,6 +92,7 @@ Approve cost (estimated): <M> Edit calls × ~0 agents ≈ ~$0.00 (apply phase ru
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the diff in the question body, it lives in the plan message above:
 
 - question: `The proposed edits above are ready for review.`
+- header: `Diff`
 - options: **Approve** — apply every edit in edits.json (Phase 4) · **Reject** — mark task aborted, no file is touched
 
 Response handling:
@@ -97,8 +100,8 @@ Response handling:
 - **Approve** → update `state.md` to `diff_approved`, proceed to Phase 4.
 - **Reject** → update `state.md` to `aborted_by_user` and stop. No file is touched.
 - **Any other reply (feedback)** → parse skip directives into an exclusion list (edit ids and/or file paths), regenerate `diff.md` and `edits.json` without the excluded edits or files, and if the feedback narrows the file set re-run Phase 1. Then return to this gate, re-read `diff.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
-
-Unattended-mode bypass: when env `MZ_DEV_PIPE_AUTO_APPROVE=1`, skip AskUserQuestion, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, then proceed to Phase 4. The plan message (Surface 1) is still emitted to chat.
+- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: diff gate`, stop. A missing answer is never approval.
 
 Single gate, two paths only — no Apply/Skip/Diff submenu inside the AskUserQuestion call.
 

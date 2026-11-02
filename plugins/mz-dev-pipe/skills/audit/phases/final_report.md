@@ -33,7 +33,7 @@ Read `.mz/task/<task_name>/findings.md` and write `.mz/task/<task_name>/summary.
 ### High (top 10 of <total>) / Medium (top 5 of <total>)
 (same format as Critical above)
 
-## Deferred (below cap)
+## Deferred (listed in findings_capped.md)
 - <count> high below the cap
 - <count> medium below the cap
 - <count> low/advisory findings

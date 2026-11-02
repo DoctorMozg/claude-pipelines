@@ -107,8 +107,9 @@ The loop is Phase 2 → 3 → 3.5 → 4 → (4.5 / 4.7 as triggered) → 5 → 6
 1. **Parse input** — extract `scope:`, `type:`, and the free-text target + metric + goal from `$ARGUMENTS`.
 1. **Resolve scope** — per `<PLUGIN_ROOT>/shared/scope-parameter.md`; save the resolved file list to `.mz/task/<task_name>/scope_files.txt`. No `scope:` → all project files / artifacts eligible.
 1. **Task name** — `<YYYY_MM_DD>_optimize_<slug>`, where `<slug>` is a snake_case summary of the target (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Resume check** — apply the resume contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate. A pre-existing `state.md` **without** a `skill_variant: methodology` key belongs to the renamed `cleanup` skill's task history, not this skill — do not resume into it; pick a fresh `_vN` name.
-1. **Task dir & state** — create `.mz/task/<task_name>/`; write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line MUST be `schema_version: 2`, then `Status`, `Phase`, `PhaseName`, `Started`, `Iteration` (0), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys `skill_variant: methodology`, `Target`, `Metric`, `Goal`, `TargetType`, and an empty `## History` section (the persistent record of every hypothesis tried and its measured outcome — it survives context compaction and stops a failed transform from being retried).
+1. **Unattended check** — run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once. The resume check below uses the result, and the state write records it as `unattended: true` or `unattended: false`.
+1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. A pre-existing `state.md` **without** a `skill_variant: methodology` key belongs to the renamed `cleanup` skill's task history, not this skill — do not resume into it; pick a fresh `_vN` name.
+1. **Task dir & state** — create `.mz/task/<task_name>/`; write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line MUST be `schema_version: 2`, then `Status`, `Phase`, `PhaseName`, `Started`, `Iteration` (0), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys `skill_variant: methodology`, `unattended`, `Target`, `Metric`, `Goal`, `TargetType`, and an empty `## History` section (the persistent record of every hypothesis tried and its measured outcome — it survives context compaction and stops a failed transform from being retried).
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 **Goal Declaration.** The pipeline cannot proceed without a *measurable* goal. A measurable goal has three parts: a **metric** (what is measured), a **unit**, and either a **target value** or an explicit **"best effort"** (optimize as far as the iteration cap allows).
@@ -152,6 +153,8 @@ iteration_cap:       6
 
 **Pre-read**: Read `.mz/task/<task_name>/contract.md` with the Read tool and capture its full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: contract]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the contract verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/contract.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -173,6 +176,7 @@ Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula for the dollar estimate.
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the contract in the question body, it lives in the plan message above:
 
 - question: `The contract above is ready for review.`
+- header: `Contract`
 - options: **Approve** — proceed to Phase 1 (Baseline) · **Reject** — mark task aborted, no measurement runs
 
 **Response handling:**
@@ -180,7 +184,8 @@ Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula for the dollar estimate.
 - **Approve** → permitted only if every field is concrete (no `<NEEDS USER INPUT>` remains). Update state, read `phases/baseline.md`, proceed to Phase 1.
 - **Reject** → set `Status: aborted_by_user` and stop.
 - **Any other reply (feedback)** → apply the changes / supplied values, overwrite `contract.md`, return to this gate, re-read `contract.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → per `<PLUGIN_ROOT>/shared/approval-gate.md`: skip the AskUserQuestion call, log `auto-approved (unattended mode)`, and proceed — but only if no `<NEEDS USER INPUT>` field remains; an incomplete contract can never be auto-approved.
+- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report. An incomplete contract takes the No-answer path instead, with `awaiting answer: fill the <NEEDS USER INPUT> fields` in `what_remains`.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: contract`, stop. A missing answer is never approval.
 
 ### Phase 3.5: Backlog / Strategy Approval
 
@@ -189,6 +194,8 @@ Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula for the dollar estimate.
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `.mz/task/<task_name>/backlog.md` with the Read tool and capture its full contents into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: backlog]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the backlog verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/backlog.md` — do not substitute a path, summary, or placeholder. Structure:
 
@@ -208,9 +215,16 @@ Approve cost (estimated): per hypothesis ≈ 4 candidate agents (Opus) + 4 seria
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the backlog in the question body, it lives in the plan message above:
 
 - question: `The hypothesis backlog above is ready for review.`
+- header: `Backlog`
 - options: **Approve** — proceed to Phase 4 (candidate generation & verification) · **Reject** — mark task aborted
 
-**Response handling:** **Approve** → read `phases/candidate_loop.md`, proceed to Phase 4. **Reject** → `Status: aborted_by_user`, stop. **Any other reply (feedback)** → re-rank in Phase 3, overwrite `backlog.md`, return to this gate, re-read `backlog.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `<PLUGIN_ROOT>/shared/approval-gate.md`.
+**Response handling:**
+
+- **Approve** → read `phases/candidate_loop.md`, proceed to Phase 4.
+- **Reject** → `Status: aborted_by_user`, stop.
+- **Any other reply (feedback)** → re-rank in Phase 3, overwrite `backlog.md`, return to this gate, re-read `backlog.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
+- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: backlog`, stop. A missing answer is never approval.
 
 ### Phase 4.5: Mid-loop Boundary Pause
 
@@ -237,7 +251,7 @@ This is lighter than an approval gate — a focused yes / no on correctness, not
 - **Behavior unchanged** → the candidate is banked; continue to Phase 5.
 - **Behavior changed** → the candidate is reverted and recorded as a `DEAD END` in the history buffer; the loop continues.
 
-This checkpoint is **exempt from `MZ_DEV_PIPE_AUTO_APPROVE`** — a human must actually observe the behavior. Auto-approve never satisfies it; running unattended, the loop pauses here and waits.
+This checkpoint is **exempt from `MZ_DEV_PIPE_AUTO_APPROVE`** — a human must actually observe the behavior. Auto-approve never satisfies it. Nobody will come when the run is unattended, so it takes the No-answer path (`<PLUGIN_ROOT>/shared/approval-gate.md`): set `Status: blocked`, record `awaiting answer: manual correctness check` in `what_remains`, and stop.
 
 ## Techniques
 

@@ -94,6 +94,8 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 **Pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full file contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context. See `phases/inventory.md §Phase 1.5 Gate` for the inventory.md content schema.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: decomposition gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/inventory.md` — do not substitute a path, summary, or placeholder:
 
 ```
@@ -108,6 +110,7 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the inventory in the question body:
 
 - question: `The inventory and decomposition above is ready for review.`
+- header: `Inventory`
 - options: **Approve** — proceed to Phase 2 (parallel lens dispatch) · **Reject** — abort synthesis, task marked aborted
 
 **Response handling**:
@@ -115,6 +118,7 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 - **Approve** → update `state.md` phase to `decomposition_approved`, proceed to Phase 2 (`phases/lens_dispatch.md`).
 - **Reject** → update `state.md` to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate, re-run Phase 1.2/1.3 as needed, overwrite `inventory.md`, return to this gate, re-read `inventory.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: decomposition gate`, stop. A missing answer is never approval.
 
 ## Phase 3.5: Gap-Fill Approval Gate (conditional)
 
@@ -123,6 +127,8 @@ If `state.md` contains `gap_fill: skipped_empty` (written by synthesis.md Phase 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. This file was written by `phases/synthesis.md §Phase 3.4`. Capture the full contents into context. See `phases/synthesis.md §Phase 3.5 Gate` for the gaps.md content schema and merge rules.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: gap-fill gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
 
@@ -138,6 +144,7 @@ If `state.md` contains `gap_fill: skipped_empty` (written by synthesis.md Phase 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the gaps in the question body:
 
 - question: `The residual gaps above are ready for review.`
+- header: `Gap-fill`
 - options: **Approve** — proceed to Phase 4 (web gap-fill dispatch) · **Reject** — skip web research, proceed to Phase 5 with gaps unresolved
 
 **Response handling**:
@@ -145,6 +152,7 @@ If `state.md` contains `gap_fill: skipped_empty` (written by synthesis.md Phase 
 - **Approve** → update `state.md` phase to `gapfill_approved`, proceed to Phase 4 (`phases/lens_dispatch.md §Phase 4`).
 - **Reject** → update `state.md` phase to `gapfill_declined`, skip to Phase 5 with gaps marked unresolved. Do not proceed to Phase 4.
 - **Any other reply (feedback)** → incorporate (drop/merge/rewrite gaps), overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: gap-fill gate`, stop. A missing answer is never approval.
 
 ## Error Handling
 

@@ -4,7 +4,7 @@ Full detail for the intake-and-research phase of the `design-document` skill. Co
 
 ## Goal
 
-Produce `intake.md` and `research.md` in `.mz/design/<task_name>/` that give the writer everything it needs to draft a complete, codebase-aware, domain-grounded design document in one shot.
+Produce `intake.md` and `research.md` in `<PROJECT_ROOT>/.mz/design/<task_name>/` that give the writer everything it needs to draft a complete, codebase-aware, domain-grounded design document in one shot.
 
 ## Inputs
 
@@ -12,7 +12,7 @@ From Phase 0:
 
 - The design brief text
 - Optional modifiers: `scope:branch|global|working`, `@image:<path>`, `@doc:<path>`
-- The task name and working directory
+- The task name and `PROJECT_ROOT`
 
 ## Step 1.1 — Dispatch the researcher
 
@@ -30,7 +30,7 @@ You are researching context for a new UI/UX design task.
 - doc refs: <list of @doc: paths, or "none">
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Your Job
 1. Parse the brief and modifiers. Record them into intake.md.
@@ -67,7 +67,7 @@ Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKE
 After the researcher returns, verify both files exist and are non-empty:
 
 ```bash
-test -s .mz/design/<task_name>/intake.md && test -s .mz/design/<task_name>/research.md
+test -s "<PROJECT_ROOT>/.mz/design/<task_name>/intake.md" && test -s "<PROJECT_ROOT>/.mz/design/<task_name>/research.md"
 ```
 
 Output a visible block showing:
@@ -81,7 +81,7 @@ If either file is missing or empty, retry the researcher once with the explicit 
 
 ## Step 1.4 — Update state
 
-Update `.mz/design/<task_name>/state.md`:
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 ```
 schema_version: 2
@@ -101,7 +101,7 @@ Proceed to Phase 2.
 
 ## Notes
 
-- Phase 1 is not gated. The user already approved the intent by invoking the skill; research writes only `intake.md` and `research.md` under `.mz/design/` and is low-risk.
+- Phase 1 is not gated. The user already approved the intent by invoking the skill; research writes only `intake.md` and `research.md` under `<PROJECT_ROOT>/.mz/design/` and is low-risk.
 - The researcher uses WebSearch but never WebFetch on authenticated URLs (docs sites only).
 - Image references are intentionally not decoded. The pipeline's ceiling is text; the writer leaves TODO markers for visual references in the final doc.
 - Keep the researcher focused on the domain of the brief. Do not expand scope to the whole product.

@@ -71,6 +71,8 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 
 **Pre-read**: Read `.mz/task/<task_name>/analysis.md` and capture the full contents (detected patterns, severity, sentence-rhythm metrics, proposed rewriting strategy) into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: analysis gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/analysis.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -85,6 +87,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 **Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the analysis — it lives in the plan message above.
 
 - question: `The analysis above is ready for review.`
+- header: `Analysis`
 - options: **Approve** — proceed to Phase 2 (rewriting) · **Reject** — abort task, no rewrite performed
 
 **Response handling**:
@@ -92,6 +95,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 - **Approve** → update state to `analysis_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust the rewriting strategy per feedback, overwrite `analysis.md`, return to Surface 1, re-read `analysis.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: analysis gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

@@ -1,82 +1,108 @@
-# Approval Gate — Shared Conventions
+# Approval Gates
 
-Canonical pattern for every user approval gate across mz-dev-pipe skills. Gates are the most expensive UX surface in the pipeline — they cost user attention. This file defines the two-surface plan pattern, the cost-preview line, and the unattended-mode bypass so every gate looks the same and behaves predictably.
+Canonical source: SKILL_GUIDELINES.md, "Approval Gates" (repository guidelines, not shipped with the plugin).
 
-## Two-surface plan pattern
+Every approval gate shows the artifact as an ordinary markdown chat message (Surface 1) and asks for the decision with a short AskUserQuestion selector (Surface 2). The user approves, rejects, or keeps sending feedback until satisfied.
 
-Gates are modeled on Claude Code's plan mode: the artifact is rendered as an ordinary markdown chat message — the way a plan appears in plan mode — and `AskUserQuestion` is only the short selector beneath it.
+## Where gates go
 
-1. **Surface 1 — the plan message**: a normal markdown chat message, emitted by the orchestrator BEFORE the `AskUserQuestion` call, carrying the **full verbatim artifact** (plan.md, panel.md, findings.md, …). It opens with a `## Plan for review — <skill>` heading, contains the verbatim artifact, and closes with a `---` rule and a one-line footer.
-1. **Surface 2 — the AskUserQuestion selector**: a short call. `question` is one orientation line pointing at the plan message above; `options` are exactly **Approve** and **Reject**. No verbatim artifact in the question body — it lives in Surface 1. No "Feedback" option — `AskUserQuestion`'s always-present free-text reply field carries feedback.
+Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repository. Web research runs without a gate, and read-only skills such as `explain` need none.
 
-Never collapse the two surfaces. Surface 1 is the artifact the user reads; Surface 2 is the decision. The artifact is never buried inside the `AskUserQuestion` body — that body truncates in chat history and renders cramped.
+## Elements, in order
+
+1. **Delegation guard.** `**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.` Custom subagents don't get AskUserQuestion, and the answer has to reach the orchestrator that acts on it.
+1. **Pre-read.** Read the artifact by its exact path and capture its full contents, for example `Read <PROJECT_ROOT>/.mz/task/<task_name>/plan.md and capture the full contents`.
+1. **State first.** Write `state.md` before presenting the gate: the phase, the artifact path, and a `what_remains` entry `awaiting approval: <gate>`. `Status` stays `running` while the gate waits. The conversation can compact while it waits, and `state.md` is what survives.
+1. **Surface 1, the plan message.** A normal chat message, not a tool call, holding the artifact verbatim (template below). Don't replace the body with a path, a line count, a status summary or a placeholder.
+1. **Surface 2, the selector.** Call AskUserQuestion right after the plan message. `question` is one line pointing at the message above, such as `The plan above is ready for review.`, and doesn't repeat the artifact. `header` is at most 12 characters. The options are exactly **Approve** and **Reject**. There's no Feedback option, because the user can always type an answer.
+1. **Response handling**, below.
+1. **Journal entry**, recommended, below.
 
 ## Plan message template
 
 ```text
-## Plan for review — <skill>
+## Plan for review: <skill name>
 
 <verbatim artifact contents>
 
 ---
-**Approve** → <next-phase outcome>  ·  **Reject** → <abort outcome>  ·  reply with feedback to revise
+**Approve** → <what happens next>  ·  **Reject** → <abort outcome>  ·  reply with feedback to revise
+```
 
+A gate may add one cost line under the footer:
+
+```text
 Approve cost (estimated): <N> agents × ~<X>k tokens ≈ ~$<Y.YY> on <model tier>
 ```
 
-Emit the full verbatim artifact — never a path, a summary, or a `<contents of artifact>` placeholder. The user must read the actual bytes in the message; if context compaction destroys their memory of an earlier iteration, this message is the only place they re-orient.
+`<N>` counts the dispatches between this gate and the next one. `<X>k` is a rough per-agent budget for the dominant agent type. `<Y.YY>` is `<N> × <X> × <price per million tokens> / 1000`, using the dominant tier's price, and `<model tier>` names that tier, or `mixed`. The estimate is order-of-magnitude: its job is to make a 30-agent fan-out look different from a 3-agent one. For a variant gate, estimate the most likely option and add `Cost varies by selection; estimate shown for <option>`.
 
-## Cost-preview line
-
-Format: `Approve cost (estimated): <N> agents × ~<X>k tokens ≈ ~$<Y.YY> on <model tier>`
-
-The cost-preview line sits in the footer of the plan message (Surface 1).
-
-How to compute the estimate at the gate site:
-
-- **`<N>` (agent count)** — sum the dispatches that will fire between this gate and the next user gate. For build Phase 2 → Phase 3-11, count: 1 test-writer + 3 test-reviewers + N coders (one per parallel wave from plan.md) + 1 code-reviewer + 1 final reviewer + 1 optimizer + 1 completeness-checker. If a count depends on plan parsing, read the plan's work-unit count and use it as N.
-- **`<X>k tokens`** — rough per-agent budget. Default assumptions: research/review agents ~12k input + 4k output ≈ 16k; coder agents ~20k input + 8k output ≈ 28k; planner agents ~10k input + 6k output ≈ 16k. Use the dominant agent type for the phase.
-- **`<Y.YY>`** — `<N> × <X>k × price_per_1k_tokens / 1000`. Use the active model's published price.
-- **`<model tier>`** — name the dominant tier ("Sonnet", "Opus", "mixed"). If tiers vary across the dispatched agents, use "mixed".
-
-The estimate is order-of-magnitude — never claim it is precise. The point is to make a 30-coder fan-out feel different from a 3-coder fan-out at the moment of approval. Off-by-2× is fine; off-by-10× is the bug this preview prevents.
-
-## AskUserQuestion selector convention
+## Selector
 
 ```text
-question: "The plan above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise."
+question: "The plan above is ready for review."
+header: "<12 chars max>"
 options:
-  - Approve — proceed to <next phase>
-  - Reject  — abort, nothing written
+  - Approve — <what happens next>
+  - Reject — <abort outcome>
 ```
-
-Never embed the verbatim artifact in the question body — Surface 1 already carries it. Never add a third "Feedback" option: a reply that is neither Approve nor Reject is feedback.
 
 ## Response handling
 
-- **Approve** → update state to the next-phase token, proceed.
-- **Reject** → update state to `aborted_by_user`, stop. Do not re-dispatch any agent.
-- **Any other reply** → treat as feedback. Apply the requested changes, overwrite the artifact, return to Surface 1, re-emit the full updated plan message from scratch (full verbatim — never a diff, never a summary), re-present the selector. **Loop until explicit Approve.** Never proceed without explicit approval.
+- **Approve**: record the approved artifact path in `state.md` as a `## Decisions` line, such as `- plan approved: .mz/task/<task_name>/plan.md`. Remove the `awaiting approval` entry and proceed. The journal hook sees only the one-line selector, so `state.md` is the record of what was approved. A milestone such as `plan_approved` goes in `Phase`, not in `Status`.
+- **Reject**: set `Status: aborted_by_user` and stop. Don't dispatch another agent.
+- **Any other answer is feedback.** That includes typed text, a "Chat about this" reply, and an Approve whose note asks for a change. Apply the feedback, and run the upstream phase or agent again when the change needs it. Overwrite the artifact, re-read it, and re-emit the whole plan message from scratch before presenting the selector again. Don't send a diff or a summary. The user approves the artifact as it now stands, and after compaction earlier versions survive only as a summary. The gate loops until the user explicitly approves.
+- **No answer.** AskUserQuestion is denied or unavailable in `dontAsk` mode, in `claude -p` without a permission host, with `--permission-prompts none`, and in `claude -p --channels`. With the opt-in `askUserQuestionTimeout`, a result can also carry the away signal while naming the preselected option. Neither case is approval, whatever option the result names. Set `Status: blocked`, keep `awaiting approval: <gate>` in `what_remains`, leave the plan message in place, and stop.
 
-## Journal logging
+A missing answer is never approval.
 
-Every gate is recorded in the interaction journal (`.mz/journal.md`). In attended mode the `mz-memory` `PostToolUse` hook captures the `AskUserQuestion` question and answer verbatim automatically — nothing is required for the audit baseline. You MAY append an enrichment entry (skill, task, phase, the verbatim artifact) for a record that outlives the chat transcript; wrap any sensitive span in `<private>…</private>` so it is redacted before write.
+## Variant gates
 
-In **unattended mode there is no `AskUserQuestion` call, so the hook never fires** — the orchestrator MUST append the gate entry itself or the auto-approved decision leaves no audit trace (see below). See `guidelines/JOURNAL_GUIDELINES.md` for the entry format and redaction convention.
+A variant gate offers more actions than Approve and Reject. AskUserQuestion takes 2-4 options per question. Each option's `label` is the action name and comes back as the answer, and its `description` is one sentence. Present each action as `**<Name>** — <one-sentence summary>`, both in the options and in the Surface 1 footer. With more than four actions, keep the four most common as options and list the rest in the footer as typed replies. Or ask in two calls: first the category, then the action. Feedback still rides the typed answer.
 
-## Unattended mode (`MZ_DEV_PIPE_AUTO_APPROVE`)
+The resume gate, a cap-reached menu and any other gate that asks for a choice rather than a sign-off count as variant gates.
 
-When the environment variable `MZ_DEV_PIPE_AUTO_APPROVE=1` is set, the orchestrator skips the `AskUserQuestion` call and logs `auto-approved (unattended mode)` to chat and to `.mz/task/<task_name>/state.md` under `## Auto-approvals`. The plan message (Surface 1) is still emitted so the chat transcript shows what would have been approved.
+## Unattended mode
 
-Because the journaling hook fires on `AskUserQuestion` — which is skipped here — the orchestrator also appends the auto-approval to `.mz/journal.md` (gate label, `auto-approved`, task, phase) so unattended runs keep a complete audit trail. Append it with a single Bash redirect, wrapping any sensitive span in `<private>`:
+A user opts in to unattended runs, for CI or scheduled jobs, by setting `MZ_DEV_PIPE_AUTO_APPROVE=1`. Skills don't turn it on themselves.
+
+- During setup, check the variable once with a Bash call, such as `printenv MZ_DEV_PIPE_AUTO_APPROVE`, and record the result in `state.md` as `unattended: true` or `unattended: false`.
+- At an Approve/Reject gate, still write state first and emit Surface 1. Then skip Surface 2 and continue as on Approve.
+- Log every skipped gate in four places:
+  - a chat line, `auto-approved (unattended): <gate>`;
+  - a line under `## Auto-approvals` in `state.md`, with the gate label, the phase and the UTC time;
+  - a journal entry (below);
+  - the final report, which lists every `## Auto-approvals` entry.
+- Variant gates don't auto-approve, because they need an explicit choice. In an unattended run they take the No-answer path.
+
+## Journal entry
+
+After the gate resolves, append an entry to `<PROJECT_ROOT>/.mz/journal.md`. `<PROJECT_ROOT>` is the absolute project root the skill resolved during setup, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`. Don't append to a path relative to the Bash working directory. When mz-memory is installed, its hook records the selector's question and answer but never the artifact. Journaling never delays the gate.
+
+The entry is a header line, a blank line, then `- key: value` bullets, one key per bullet:
+
+- The header is `### <UTC time> · <skill> · <task_name> · gate`, with the time from `date -u +%Y-%m-%dT%H:%M:%SZ`.
+- `phase`, `gate` (the label) and `outcome`. The outcome is `approve`, `reject`, `feedback`, `no answer` or `auto-approved (unattended)`.
+- `artifact`: the path relative to the project root, followed by the artifact verbatim. In unattended mode the entry carries the path only and adds `authority: MZ_DEV_PIPE_AUTO_APPROVE=1`.
+
+A direct `>>` append bypasses the journal's redactor. The first recipe streams the artifact through perl, which replaces each `<private>…</private>` span with `[redacted]`. Anywhere else, write a sensitive value as `[redacted]` yourself. Placeholders go into the `printf` format, which turns `%` and `\` sequences into other text, so pass a free-text value as a `%s` argument instead.
+
+Gate with the artifact:
 
 ```bash
-printf '### %s · <skill> · <task> · gate\n- outcome: auto-approved (unattended)\n- phase: <n> (<name>)\n\n' \
-  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>.mz/journal.md
+mkdir -p "<PROJECT_ROOT>/.mz" && {
+  printf '### %s · <skill> · <task_name> · gate\n\n- phase: <n> (<name>)\n- gate: <label>\n- outcome: <outcome>\n- artifact: <relative path>, verbatim:\n\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  perl -0777 -pe 's|<private>.*?</private>|[redacted]|gs; s/^(?=.)/  /gm' "<PROJECT_ROOT>/<relative path>"
+  printf '\n'
+} >>"<PROJECT_ROOT>/.mz/journal.md"
 ```
 
-This bypass exists for CI and scheduled runs. It is opt-in only — never default-on. Variant gates with menu actions (more than `Approve / Reject`) MUST NOT auto-approve; they require an explicit value choice.
+Gate skipped in unattended mode:
 
-## Variant: menu gates
+```bash
+mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · <skill> · <task_name> · gate\n\n- phase: <n> (<name>)\n- gate: <label>\n- outcome: auto-approved (unattended)\n- authority: MZ_DEV_PIPE_AUTO_APPROVE=1\n- artifact: <relative path>\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"<PROJECT_ROOT>/.mz/journal.md"
+```
 
-Some gates present extra named actions beyond Approve/Reject (panel-composition gates with optional swaps, scope-selection gates with branch/global/working modes). For these, each named action becomes an `AskUserQuestion` `options` entry formatted as `**<Name>** — <one-sentence summary>`, and the plan message footer lists the same actions. Feedback still rides the free-text reply field — never add a "Feedback" option. The cost-preview line still applies and should be computed for the most-likely chosen option, with a note: `Cost varies by selection — estimate shown for <default option>`.
+Each feedback pass is its own entry. Also record a substantial decision under `## Decisions` in `state.md`, so it reaches recall memory once the task is `complete`. The skill writes these entries itself and doesn't call mz-memory's scripts.

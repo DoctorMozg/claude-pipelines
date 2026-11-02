@@ -27,6 +27,8 @@ Before emitting the gate, Read these with the Read tool and capture their full c
 
 The discuss phase must have converged (`AGGREGATE: PASS` / `VERDICT: PASS`) or reached an explicit accept-with-unresolved before this gate fires. Read the actual bytes — do not present from memory; context compaction may have destroyed the draft you revised three iterations ago.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: sign-off gate]`; `Status` stays `running`.
+
 ## Step 3.3 — Surface 1: emit the plan message
 
 Emit the artifact, verdict, and provenance as an **ordinary markdown chat message** (not inside a tool call), so the markdown renders fully and survives in scrollback. Emit the **full verbatim contents** you read in Step 3.2 — never substitute a path, a line count, a `<contents of draft.md>` placeholder, or a summary. Structure (each `<verbatim ...>` marker replaced by the bytes you read):
@@ -59,6 +61,7 @@ The door class comes from the reversibility critic (heavy) or the quick critic's
 Immediately after the plan message, call AskUserQuestion as a short selector. Do **not** re-embed the draft, verdict, or provenance — they live in the plan message above.
 
 - question: `The decision above is ready for your sign-off.`
+- header: `Sign-off`
 - options: **Approve** — stamp the sign-off and write the durable artifact · **Reject** — abort, write nothing to `docs/`
 
 Two named options only. Do not add a "Feedback" option — any reply that is not Approve or Reject is feedback, and it rides AskUserQuestion's always-present free-text field.
@@ -68,6 +71,7 @@ Two named options only. Do not add a "Feedback" option — any reply that is not
 - **Approve** → the human has signed. In `provenance.md`, set `human_signoff: <user>@<ISO-8601>` (the approver id and the moment of approval, e.g. `drmozg@2026-05-31T15:10:00Z`) — overwrite the `pending` value. Advance the artifact's own `status` field by type: **ADR** `proposed → accepted`, **RFD** `prediscussion → discussion`, **design** `draft → reviewed`. Update `state.md` (`phase_complete: true` for Phase 3, record the signature), then proceed to Phase 4. Read `phases/record.md`.
 - **Reject** → update `state.md` to `Status: aborted_by_user` and stop. **Write nothing to `docs/`.** Leave `provenance.md` at `human_signoff: pending` and leave all scratch files on disk — the user can resume or discard manually. Do not dispatch `gov-artifact-writer`.
 - **Any other reply (feedback)** → incorporate it. If the change is **structural** (alters the decision, the options, or the design — anything a critic lens would re-examine), revise `draft.md` and re-run the discuss phase (`phases/discuss.md`) before returning here. If it is a **wording or scoping polish**, just revise `draft.md` directly. Either way, return to Step 3.2, re-read the updated `draft.md`, and **re-emit the entire plan message from scratch** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: sign-off gate`, stop. A missing answer is never approval.
 
 ## Step 3.6 — Never proceed without explicit approval
 

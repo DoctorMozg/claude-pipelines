@@ -37,7 +37,8 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 ## Constants
 
 - **MAX_DESIGN_ITERATIONS**: 5
-- **DESIGN_DIR**: `.mz/design/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **DESIGN_DIR**: `<PROJECT_ROOT>/.mz/design/`
 - **TASK_NAME_FORMAT**: `<YYYY_MM_DD>_design_<slug>`
 - **WCAG_AA_NORMAL**: 4.5
 - **WCAG_AA_LARGE**: 3.0
@@ -48,62 +49,29 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 
 ### Phase Overview
 
-| #   | Phase             | File                                                       | Loop?                           |
-| --- | ----------------- | ---------------------------------------------------------- | ------------------------------- |
-| 0   | Setup             | inline below                                               | —                               |
-| 1   | Intake & Research | `phases/intake_and_research.md`                            | —                               |
-| 2   | Initial Draft     | `phases/initial_draft.md`                                  | —                               |
-| 3   | Critique Loop     | `phases/critique_loop.md`                                  | max `MAX_DESIGN_ITERATIONS` (5) |
-| 4   | Finalization      | Inline gate below (+ `phases/finalization.md` for details) | user-approval sub-loop          |
+| #   | Phase             | File                            | Loop?                           |
+| --- | ----------------- | ------------------------------- | ------------------------------- |
+| 0   | Setup             | inline below                    | —                               |
+| 1   | Intake & Research | `phases/intake_and_research.md` | —                               |
+| 2   | Initial Draft     | `phases/initial_draft.md`       | —                               |
+| 3   | Critique Loop     | `phases/critique_loop.md`       | max `MAX_DESIGN_ITERATIONS` (5) |
+| 4   | Finalization      | `phases/finalization.md`        | user-approval sub-loop          |
 
 ### Phase 0: Setup
 
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. Parse `$ARGUMENTS`. Extract brief, `scope:`, `@image:` refs, `@doc:` refs.
 1. If brief is empty → `AskUserQuestion` asking for the brief. Do not guess.
 1. Derive task name as `<YYYY_MM_DD>_design_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the brief (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. Create `.mz/design/<task_name>/`.
-1. Write `state.md` with `schema_version: 2` as the first line, then `Status`, `Phase`, `Started`, `phase_complete: false`, `what_remains: []`, `Iteration: 0`, `FilesWritten: []`.
+1. Create `<PROJECT_ROOT>/.mz/task/<task_name>/` for `state.md` and `<PROJECT_ROOT>/.mz/design/<task_name>/` for the design artifacts.
+1. Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with `schema_version: 2` as the first line, then `Status`, `Phase`, `Started`, `phase_complete: false`, `what_remains: []`, `Iteration: 0`, `FilesWritten: []`.
 1. Output a visible setup block showing: `task_name`, `DESIGN_DIR` path, detected modifiers.
 
 ### Phase 4: User Approval Gate
 
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+Read `<SKILL_DIR>/phases/finalization.md` and follow Steps 4.1-4.5. **This orchestrator** (not a subagent) presents the gate; it must not be delegated.
 
-**Pre-read**: Read `.mz/design/<task_name>/design.md`, `.mz/design/<task_name>/wireframes.md`, and `.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires. See `phases/finalization.md` Step 4.1 for extended presentation rules and the revision-writer sub-loop.
-
-**Surface 1 — emit the plan message.** Output the three artifacts verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/design/<task_name>/design.md`, `wireframes.md`, and `wcag-report.md` — do not substitute a path, summary, or placeholder. Structure:
-
-```
-## Design ready for review — design-document
-
-Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: PASS). All four specialist critics approved the design and the WCAG contrast report shows zero violations.
-
-### Design Document (design.md)
-
-<verbatim design.md contents>
-
-### Wireframes (wireframes.md)
-
-<verbatim wireframes.md contents>
-
-### WCAG Contrast Report (wcag-report.md)
-
-<verbatim wcag-report.md contents>
-
----
-**Approve** → write `final-summary.md` and mark the task complete  ·  **Reject** → mark the task aborted, nothing more written  ·  reply with feedback to revise
-```
-
-**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the design artifacts in the question body, they live in the plan message above:
-
-- question: `The finalized design above is ready for review.`
-- options: **Approve** — write `final-summary.md` and complete the task · **Reject** — abort the task, write nothing further
-
-**Response handling**:
-
-- **Approve** → update `state.md` to `complete`, proceed to write `final-summary.md`.
-- **Reject** → update `state.md` to `aborted_by_user` and stop. Do not write `final-summary.md`.
-- **Any other reply (feedback)** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to this gate, re-read the updated artifact(s), and re-emit the entire plan message from scratch with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
+This skill has no unattended mode, so an unattended run stops `blocked` at the gate.
 
 ## Common Rationalizations
 
@@ -129,7 +97,7 @@ At the end of Phase 4, output:
 
 ```
 Design document finalized.
-Task dir:   .mz/design/<task_name>/
+Task dir:   <PROJECT_ROOT>/.mz/design/<task_name>/
 Iterations: <N>/5
 Aggregate:  <PASS | ACCEPTED_WITH_UNRESOLVED>
 WCAG gate:  <PASS | FAIL>
@@ -144,7 +112,7 @@ If any phase is incomplete, print the blocker explicitly. The verification block
 
 ## Error Handling
 
-- Agent failure → retry once, then escalate via `AskUserQuestion`.
+- An agent returns nothing usable → `<PLUGIN_ROOT>/shared/retry-policy.md`.
 - Brief is empty → ask the user; never guess.
 - `@image:` path does not exist → note in `intake.md`, continue with placeholder.
 - `@doc:` path does not exist → ask the user whether to proceed without it.
@@ -154,15 +122,16 @@ If any phase is incomplete, print the blocker explicitly. The verification block
 
 ## State Management
 
-After each phase, update `.mz/design/<task_name>/state.md` with:
+After each phase, update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:
 
-- `Status:` `pending` | `running` | `complete` | `complete_with_unresolved` | `aborted_by_user` | `failed`
-- `Phase:` `0` | `1` | `2` | `3` | `4`
+- `Status:` `pending` | `running` | `blocked` | `complete` | `aborted_by_user` | `failed`
+- `Phase:` `0` | `1` | `2` | `3` | `critique_passed` | `critique_accepted` | `4`
 - `PhaseName:` short label (`setup`, `intake_and_research_complete`, etc.)
 - `Iteration:` `0..MAX_DESIGN_ITERATIONS`
 - `LastVerdict:` (Phase 3 only) the 6-line verdict block from `critique_<N>.md`
+- `unresolved:` `<count>` of findings the user accepted at the iteration cap; absent or `0` when Phase 3 passed
 - `FilesWritten:` cumulative list of paths
 
 Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions. The state file is the source of truth.
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.

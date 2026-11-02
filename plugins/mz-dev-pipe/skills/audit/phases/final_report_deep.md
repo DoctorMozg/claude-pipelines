@@ -33,7 +33,7 @@ Read `.mz/task/<task_name>/findings.md` and `.mz/task/<task_name>/rollback_plan.
 - Description: <one line>
 
 ## Findings
-### Critical / High (top 10) / Medium (top 10)
+### Critical / High / Medium (top 10)
 #### F<id> — <file:line>
 - Lens: <lens>
 - Confidence: <level>
@@ -54,8 +54,7 @@ Read `.mz/task/<task_name>/findings.md` and `.mz/task/<task_name>/rollback_plan.
 ## Split Recommendation (if score > 40)
 <cut-point suggestions from findings.md>
 
-## Deferred (below cap)
-- <count> high below the cap
+## Deferred (listed in findings_capped.md)
 - <count> medium below the cap
 - <count> low/advisory findings
 

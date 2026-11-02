@@ -25,7 +25,7 @@ When `{previous_rounds_block}` is empty, collapse the surrounding blank line so 
 
 ## 2.3 Dispatch agents in parallel
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens agent with its role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens agent with its role — so the wave is visible to the user.
 
 Dispatch all **PANEL_SIZE** (5) selected lens agents in a **single message** as parallel Agent tool calls. Each agent receives its own substituted dispatch prompt as the user message. Use each agent's registered name (`lens-engineer`, `lens-artist`, `lens-philosopher`, `lens-mathematician`, `lens-scientist`, `lens-economist`, `lens-storyteller`, `lens-futurist`, `lens-psychologist`, `lens-historian`, `lens-cto`, `lens-data`, `lens-devops`, `lens-product`, `lens-security`, `lens-seo`) as the `subagent_type`.
 

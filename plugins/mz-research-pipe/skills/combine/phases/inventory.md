@@ -187,6 +187,8 @@ ______________________________________________________________________
 
 **Pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: decomposition gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/inventory.md` — do not substitute a path, summary, or placeholder:
 
 ```
@@ -201,6 +203,7 @@ ______________________________________________________________________
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the inventory in the question body:
 
 - question: `The inventory and decomposition above is ready for review.`
+- header: `Inventory`
 - options: **Approve** — proceed to Phase 2 (parallel lens dispatch) · **Reject** — task marked aborted, no further phases run
 
 ### Response handling
@@ -208,6 +211,7 @@ ______________________________________________________________________
 - **Approve** → update `state.md` phase to `decomposition_approved`, then proceed to Phase 2 by reading `phases/lens_dispatch.md`. Do not proceed to Phase 2 on any response other than an explicit Approve.
 - **Reject** → update `state.md` status to `aborted_by_user`, write a one-line reason (`user rejected decomposition at Phase 1.5`) to state, and stop. Do not proceed to any later phase. Do not silently restart.
 - **Any other reply (feedback)** → incorporate the user's feedback (add/remove/rename lenses, adjust file lists, re-classify sources, add or drop buckets), re-run §Phase 1.2 and §Phase 1.3 as needed, overwrite `inventory.md` with the revised decomposition, return to this gate, re-read `inventory.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: decomposition gate`, stop. A missing answer is never approval.
 
 ### Orchestrator-only notice
 

@@ -57,6 +57,8 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 
 **Pre-read**: Read `.mz/task/<task_name>/references_report.md` and capture its full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: refactor gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message — every affected file path, the reference count per file (up to `MAX_REFERENCES_PREVIEW`), and the exact before/after text of every proposed replacement. A silent diff is indistinguishable from a broken rename:
 
 ```
@@ -73,6 +75,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/references_report.md` �
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The references report above is ready for review.`
+- header: `Refactor`
 - options: **Approve** — proceed to Phase 2 (rewrite + rollback) · **Reject** — abort, no vault files modified
 
 **Response handling**:
@@ -80,6 +83,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/references_report.md` �
 - **Approve** → update state to `references_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not write the rollback manifest, do not touch vault files.
 - **Any other reply (feedback)** → incorporate (e.g., user excludes specific paths, corrects the new name, requests a narrower scope), re-run Phase 1, overwrite `references_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: refactor gate`, stop. A missing answer is never approval.
 
 ### Phase 2.5: Post-write verification
 

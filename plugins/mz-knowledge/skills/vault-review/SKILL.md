@@ -58,6 +58,8 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 **Pre-read**: Read `.mz/task/<task_name>/review_queue.md` in full and capture its contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: queue gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
@@ -76,6 +78,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/review_queue.md` — do
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The review queue above is ready for review.`
+- header: `Queue`
 - options: **Approve** — proceed to Phase 2 (review session) · **Reject** — mark task aborted, no notes updated
 
 **Response handling**:
@@ -83,6 +86,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/review_queue.md` — do
 - **Approve** → update state to `queue_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust queue parameters (exclude a folder, change weights, filter by maturity, resize), re-run Phase 1 if needed, overwrite `review_queue.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: queue gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

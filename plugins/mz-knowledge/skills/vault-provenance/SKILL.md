@@ -62,6 +62,8 @@ See `phases/scan_claims.md`.
 
 **Pre-read**: Read `.mz/task/<task_name>/claims_analysis.md` and capture its full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: claims gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
@@ -78,6 +80,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/claims_analysis.md` —
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The claims analysis above is ready for review.`
+- header: `Claims`
 - options: **Approve** — proceed to Phase 2 to back-fill frontmatter · **Reject** — abort task, no frontmatter written
 
 **Response handling**:
@@ -85,6 +88,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/claims_analysis.md` —
 - **Approve** → update state to `classifications_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. No frontmatter write occurs.
 - **Any other reply (feedback)** → incorporate edits (e.g., "reclassify claim 3 as received", "swap proposed source on claim 7", "enable annotation mode"), re-dispatch `provenance-tracer` if a full re-scan is needed or edit the artifact in place for targeted changes, overwrite `.mz/task/<task_name>/claims_analysis.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: claims gate`, stop. A missing answer is never approval.
 
 ### Phase 2 — Back-fill sources
 

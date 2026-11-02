@@ -1,52 +1,34 @@
-# Retry Policy — Typed Error Matrix
+# Retry Policy
 
-Canonical retry classes and budgets for any agent dispatch or external call inside mz-dev-pipe skills. Replaces the ad-hoc "retry once" / "escalate immediately" decisions previously scattered across phase files, where each loop re-derived the policy from scratch.
+Canonical source: SKILL_GUIDELINES.md, "Error Handling and Escalation", and the repository CLAUDE.md, "Plugin Authoring Conventions" (repository guidelines, not shipped with the plugin).
 
-## Error classes
+What an orchestrator does when a dispatched agent returns nothing usable, when a loop reaches its cap, and when a search comes back empty. `agent-status-protocol.md` covers the four `STATUS:` values.
 
-When a dispatched agent returns a terminal STATUS or VERDICT line (per `<PLUGIN_ROOT>/shared/agent-status-protocol.md`), classify the failure into one of three classes before deciding what to do next.
+## An agent returns nothing usable
 
-| Class                | Examples                                                                                                    | Default retry budget                                         |
-| -------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `transient`          | Network blip, rate-limit, agent timeout, MCP server hiccup, sub-agent crash with no contract violation      | 2 retries with jittered backoff (1s → 4s)                    |
-| `contract-violation` | Agent returns malformed STATUS line, missing required output file, schema mismatch, wrong artifact path     | 1 retry with clarified prompt; on second violation, escalate |
-| `blocked`            | Agent emits `STATUS: BLOCKED`, missing tool/credential, env unset, gh CLI 4xx after MCP fallback also fails | 0 retries — escalate immediately via `AskUserQuestion`       |
-| `expected_failure`   | Test was supposed to fail (RED phase), reviewer was supposed to find issues, audit returns findings         | Not a failure — proceed per the skill's normal handling      |
+| What happened                                                          | What to do                                                                                                                                                                                               |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| It is still running                                                    | Wait for its completion notification.                                                                                                                                                                    |
+| Its output is marked partial (`maxTurns`)                              | Resume it once with `SendMessage` and say what is left. Explore and Plan agents can't be resumed; re-dispatch them once with a narrower task.                                                            |
+| Its output is empty or malformed, or has no valid final `STATUS:` line | Re-dispatch once with something changed: a clarified prompt, a narrower scope or the missing input. Say what was wrong with the last output. The same prompt gets the same result.                       |
+| It failed with an API error or a usage limit, or the user stopped it   | Don't resume or re-dispatch it. Claude Code already retries transient API errors, up to 10 times with exponential backoff, and a new dispatch doesn't refill a quota. Treat it as `BLOCKED` and say why. |
+| The wave doesn't need its output                                       | Continue, and flag the gap in the wave summary and the final report.                                                                                                                                     |
+| A tool call was denied                                                 | Don't retry the same call. In an interactive session the denial is the user's answer.                                                                                                                    |
 
-## Decision flow
+A second empty or malformed result after the one re-dispatch is `BLOCKED`.
 
-For every dispatched agent:
+## Stalls and caps
 
-1. **Read the agent's terminal line.** Use `<PLUGIN_ROOT>/shared/agent-status-protocol.md` to parse `STATUS:` / `VERDICT:`.
-1. **If terminal line is missing entirely** → classify as `contract-violation`. Do not re-prompt without the explicit "your previous output was missing the STATUS line" preamble.
-1. **Classify into one of the four error classes** above.
-1. **Apply the retry budget**. Increment a per-call retry counter (NOT the loop-level iteration counter).
-1. **If budget exhausted** → escalate via the standard escalation gate below. Do not silently advance.
+- If the same check fails with the same error after two different fix attempts, change the approach or stop with `BLOCKED`, reporting the attempts and the last output.
+- Every loop has a named cap in SKILL.md, with a reason. It keeps its counter in `state.md`, so a resumed run continues from it.
+- At the cap, summarize the attempts and the last check output, and offer named options in a variant gate (`approval-gate.md`): **Accept** the current result and record what is unresolved, **Extend** by one more round, or **Abort**, which sets `Status: aborted_by_user`. Where nobody can answer, take the No-answer path: `Status: blocked`, with the cap and the options in `what_remains`.
 
-## Escalation gate
+## Zero results
 
-Three options, presented via `AskUserQuestion`:
+An empty result is ambiguous: nothing exists, the query is wrong, or the agent has no access. Before trusting an empty result for a whole source, run one smoke test that should return something if the query path works. For GitHub that is `gh pr list --repo <owner/repo> --state all --limit 1`; for a web source it is a widened bare-keyword query. Each agent names its smoke test and what each outcome means. Then emit one disclosure token per empty source:
 
-- **Retry once more** → reset that single retry counter, do not reset the loop counter.
-- **Skip and continue** → mark the work unit as `failed` in `state.md`, proceed without it.
-- **Abort task** → write `Status: failed` to `state.md`, stop. Do not write `Status: complete`.
+- `ZERO RESULTS VERIFIED`: the smoke test shows the empty result is real.
+- `ZERO RESULTS UNVERIFIED`: the smoke test failed, was blocked, or left access in doubt. Say which.
+- `ZERO RESULTS GLOBAL`: every source in the run came back empty, or the source itself is down. The agent returns `DONE_WITH_CONCERNS`.
 
-Honor `MZ_DEV_PIPE_AUTO_APPROVE=1` for `transient` only — auto-default to `Skip and continue`. NEVER auto-default `contract-violation` or `blocked` — those require human judgment.
-
-## Override precedence
-
-Per-class budgets MAY be overridden at task start:
-
-1. **Environment variable** — `MZ_DEV_PIPE_TRANSIENT_RETRIES=5`, `MZ_DEV_PIPE_CONTRACT_RETRIES=2`, `MZ_DEV_PIPE_BLOCKED_RETRIES=0` (the last one is fixed at 0 by design — overriding upward is rejected).
-1. **Project config** — `.mz/config.toml` `[retry_budget]` table.
-1. **Skill default** — values from this file.
-
-## Distinction from iteration limits
-
-This module governs **per-call retries** (agent A failed, do we re-dispatch agent A?). `<PLUGIN_ROOT>/shared/iteration-limits.md` governs **per-loop bounds** (the fix-test loop has run N times, do we exit?). They compose: a single loop iteration may include multiple retries against the same agent.
-
-Loop-counter values must be checkpointed to `state.md` after each iteration per the resume protocol. Per-call retry counters are ephemeral — they reset on every loop iteration and need not be persisted.
-
-## Why typed classes
-
-Without typed error classes, every retry loop re-derives "should we retry or escalate?" from local context. This produces inconsistent UX (some loops retry forever, some escalate immediately) and makes resume harder (the resume entry can't know whether the recorded retry counter is exhausted or fresh). Typed classes give every loop the same vocabulary and let the resume protocol restore counter state predictably.
+The orchestrator reports a verified source as having nothing to show. It keeps an unverified source in the report with the reason instead of dropping it. On a global result, it skips the dispatches that depend on results, opens the report with a warning, and asks the user to check the inputs, such as the username, the repository list or the query.

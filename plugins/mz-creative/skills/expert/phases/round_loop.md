@@ -48,7 +48,7 @@ When R1, substitute empty strings for `{prior_summary_block}` and `{prior_iter_b
 
 ## Step 2.2 — Parallel panelist dispatch
 
-Read `.mz/task/<task_name>/panel.md` to get the 5 agent names. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its lens role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Read `.mz/task/<task_name>/panel.md` to get the 5 agent names. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its lens role — so the wave is visible to the user.
 
 Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
 

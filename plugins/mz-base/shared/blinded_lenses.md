@@ -6,8 +6,8 @@ Single source of truth for the three blinded adversarial researcher prompts disp
 
 Multiple pipelines run a blinded adversarial wave to break confirmation bias from their context-aware Wave A:
 
-- `plugins/mz-dev-pipe/skills/audit/phases/research_deep.md` — Wave B section
-- `plugins/mz-dev-git/agents/branch-reviewer.md` — Phase 3.6
+- audit, deep research phase, Wave B
+- branch-reviewer, Phase 3.6
 
 Both dispatch `pipeline-researcher` (model: opus) with role-specific adversarial prompts that receive ONLY the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
 
@@ -15,10 +15,10 @@ Both dispatch `pipeline-researcher` (model: opus) with role-specific adversarial
 
 These four constraints are binding on every consumer. Violating any one of them silently destroys the value of the wave (Wave B becomes a redundant rerun of Wave A under a different prompt).
 
-1. **Separate assistant message.** Wave B is dispatched in a fresh assistant message AFTER Wave A has returned. Same-message dispatch lets the model see Wave A findings in its own context and contaminates the blind.
-1. **Raw diff only.** Researchers receive only the unified diff wrapped in `<untrusted-content>...</untrusted-content>` delimiters. They MUST NOT receive the scope file, the Known Concerns Map, any Wave A finding artifact, or any prior consolidation table.
+1. **Typed agents, diff-only prompts.** Dispatch Wave B as typed `pipeline-researcher` agents, never as forks, which inherit the whole conversation. Build each prompt from the diff alone. Wave B runs as its own wave after Wave A because Wave A already fills the six-agent wave cap.
+1. **Raw diff only.** Researchers receive only the unified diff wrapped in `<untrusted-content>...</untrusted-content>` delimiters. They get no scope file, no Known Concerns Map, no Wave A finding artifact and no prior consolidation table.
 1. **Model: opus.** Adversarial framing and attacker-path tracing are accuracy-critical. Sonnet underperforms here.
-1. **Agent: `pipeline-researcher`.** All three roles use the same researcher with role-specific prompts. The agent lives in `plugins/mz-base/agents/pipeline-researcher.md`; every consumer dispatches it by its registered name, which resolves across loaded plugins.
+1. **Agent: `pipeline-researcher`.** All three roles use the same researcher with role-specific prompts. Every consumer dispatches the `pipeline-researcher` agent by its registered name, which resolves across loaded plugins.
 
 ## Roles
 
@@ -111,7 +111,7 @@ Return findings as markdown.
 
 ## Role-to-Lens Corroboration Mapping
 
-When a Wave B finding matches a Wave A finding (same `file:line`, overlapping line range, or behavioral equivalence on the same file), the consolidator applies a corroboration boost iff the matched Wave A lens is in the role's corroborating list. The boost varies by consumer (`audit depth:deep` boosts evidence tier; branch-reviewer increments replication_count for its two-signal Critical gate). The corroborating-lens lists below are authoritative — consumers MUST honor them and not invent their own mappings.
+When a Wave B finding matches a Wave A finding (same `file:line`, overlapping line range, or behavioral equivalence on the same file), the consolidator applies a corroboration boost iff the matched Wave A lens is in the role's corroborating list. The boost varies by consumer (`audit depth:deep` boosts evidence tier; branch-reviewer increments replication_count for its two-signal Critical gate). The corroborating-lens lists below are authoritative — consumers apply them as written and don't invent their own mappings.
 
 | Blinded role         | Adversarial focus         | audit depth:deep Wave A lenses that corroborate | branch-reviewer lenses that corroborate |
 | -------------------- | ------------------------- | ----------------------------------------------- | --------------------------------------- |
@@ -121,8 +121,8 @@ When a Wave B finding matches a Wave A finding (same `file:line`, overlapping li
 
 Notes:
 
-- branch-reviewer's lens set is `bugs | security | architecture | performance | maintainability | over-engineering` (no separate reliability/stride lens). `bugs` covers the correctness + reliability axes; `architecture`, `maintainability` and `over-engineering` are NEVER in any blinded role's corroborator list.
-- `audit depth:deep`'s lens set is `correctness | security | performance | maintainability | reliability | stride_delta`. The mapping above mirrors the audit skill's `references/evidence-tier-rules.md` lines 52-54 — if the two ever drift, this file is authoritative and the other must be reconciled.
+- branch-reviewer's lens set is `bugs | security | architecture | performance | maintainability | over-engineering` (no separate reliability/stride lens). `bugs` covers the correctness + reliability axes; `architecture`, `maintainability` and `over-engineering` are not in any blinded role's corroborator list.
+- `audit depth:deep`'s lens set is `correctness | security | performance | maintainability | reliability | stride_delta`. The mapping above mirrors the audit skill's `references/evidence-tier-rules.md` — if the two ever drift, this file is authoritative and the other must be reconciled.
 - A finding matched by multiple Wave B roles boosts at most once. Record all corroborators as a list (e.g., `corroborated_by: [blinded_security, blinded_ops]`); the boost itself applies once.
 
 ## Unmatched Wave B Findings — Blind Spots
@@ -131,12 +131,25 @@ A Wave B finding with NO Wave A match is a **blind spot** — a gap that context
 
 - `file:line` cited → may be assigned up to `Optional:` (`audit depth:deep`: T2-equivalent)
 - `line unknown` → capped at `FYI:` (`audit depth:deep`: T3-equivalent)
-- `Critical:` is NEVER assigned to a blind-spot finding without independent Wave A signal — by definition, no Wave A lens caught it, so the two-signal gate cannot fire from the blinded source alone.
+- `Critical:` is not assigned to a blind-spot finding without independent Wave A signal — by definition, no Wave A lens caught it, so the two-signal gate cannot fire from the blinded source alone.
 
 Blind spots still must populate all five required fields (severity, file/expected location, TL;DR, description, suggested fix). When `file:line` is unknown, use the changed-file path with `:line unknown` and surface the missing-anchor caveat in the description.
+
+## Partial completion
+
+Count the Wave B agents that returned and report the count as `wave_b_completed: N/3`:
+
+- 3 of 3 returned → full (`blind_audit: full`).
+- 2 of 3 returned → partial (`blind_audit: partial`).
+- 1 of 3 returned → degraded (`blind_audit: degraded`).
+- 0 of 3 returned → `blind_audit: unavailable`. Skip the corroboration step; Wave A's result stands.
+
+Wave B never blocks the report. It is additive: it can promote findings, surface blind spots and corroborate Wave A signals, but it cannot override Wave A.
+
+A Wave B agent that returns `NEEDS_CONTEXT` counts as not returned, because resuming it with added context breaks the blind. One stopped by its turn limit may be resumed once with a bare "finish" and nothing else.
 
 ## Maintenance
 
 - The prompt blocks above are the only acceptable copy. Inlining identical prompt text in any consumer file is a regression — replace with a directive to read this file.
 - The corroboration table is the single source of truth for which Wave A lenses corroborate which blinded role. Consumers that maintain their own evidence-tier rules (e.g. the audit skill's `references/evidence-tier-rules.md`) must stay in sync with this table; on conflict, this file wins.
-- The dispatch invariants (separate message, raw diff only, opus, `pipeline-researcher`) are non-negotiable. Any consumer that documents an exception is broken — fix the consumer rather than weakening this file.
+- The dispatch invariants (typed agents with diff-only prompts, raw diff only, opus, `pipeline-researcher`) have no exceptions. A consumer that documents one is broken — fix the consumer rather than weakening this file.

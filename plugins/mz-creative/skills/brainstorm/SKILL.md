@@ -101,6 +101,8 @@ Update state phase to `panel_selected`.
 
 **Pre-read**: Read `.mz/task/<task_name>/panel.md` with the Read tool. Capture the full file contents (5 selected panelist agents with one-sentence justifications) into context. Also derive the 11 not-selected lenses from the 16-lens table minus the 5 in `panel.md`.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: panel gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the panel verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/panel.md` plus the inline list of not-selected lenses — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -120,6 +122,7 @@ Not selected: <comma-separated list of 11 remaining lens names>
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the panel contents in the question body, they live in the plan message above:
 
 - question: `The panel above is ready for review.`
+- header: `Panel`
 - options: **Approve** — proceed to Phase 2 (Ideation) · **Reject** — abort the task, nothing dispatched
 
 **Response handling**:
@@ -127,6 +130,7 @@ Not selected: <comma-separated list of 11 remaining lens names>
 - **Approve** → update state, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust panel per feedback, overwrite `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: panel gate`, stop. A missing answer is never approval.
 
 ## Phase 2: Ideation
 

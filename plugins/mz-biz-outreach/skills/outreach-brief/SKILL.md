@@ -63,6 +63,8 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **Pre-read**: Read `.mz/outreach/<run_name>/brief.md` with the Read tool and capture its full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: brief gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the brief verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/brief.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -77,6 +79,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the brief in the question body, it lives in the plan message above:
 
 - question: `The brief above is ready for review.`
+- header: `Brief`
 - options: **Approve** — proceed to Phase 2 (local-climate research) · **Reject** — abort the task, no research will run
 
 **Response handling**:
@@ -84,6 +87,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 - **Approve** → update `.mz/task/<task_name>/state.md` `Phase` field to `brief_approved` and proceed to Phase 2.
 - **Reject** → update `.mz/task/<task_name>/state.md` `Status` field to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → return to the Phase 1 intake loop, ask targeted follow-ups to resolve the feedback, overwrite `brief.json` and `brief.md`, then return to Surface 1, re-read `brief.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: brief gate`, stop. A missing answer is never approval.
 
 ## Red Flags
 

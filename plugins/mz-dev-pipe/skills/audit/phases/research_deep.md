@@ -4,9 +4,9 @@
 
 ## Wave A — Context-Aware Lenses
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its lens role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its lens role — so the wave is visible to the user.
 
-Dispatch 6 `pipeline-researcher` agents in a **single message** using parallel tool calls. Model tiers are split by lens: security and STRIDE-delta use **opus** (attacker-path traced evidence, highest accuracy stakes); correctness, performance, maintainability, and reliability use **sonnet** (research archetype default per `AGENTS_GUIDELINES.md`).
+Dispatch 6 `pipeline-researcher` agents in a **single message** using parallel tool calls. Model tiers are split by lens: security and STRIDE-delta use **opus** (attacker-path traced evidence, highest accuracy stakes); correctness, performance, maintainability, and reliability use **sonnet** (the default tier for research agents).
 
 All Wave A researchers receive the full context: they should read `.mz/task/<task_name>/scope.md` for the file list, tier, trust boundary delta, output format, and severity/confidence scales.
 
@@ -190,7 +190,7 @@ Once Wave A responses are persisted, emit a post-wave rollup — a `<returned>/<
 
 ## Wave B — Blinded Adversarial Lenses
 
-Dispatch 3 `pipeline-researcher` agents (model: **opus**) in a **single message**, AFTER Wave A completes. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its blinded lens role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Dispatch 3 `pipeline-researcher` agents (model: **opus**) in a **single message**, AFTER Wave A completes. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its blinded lens role — so the wave is visible to the user.
 
 **Critical**: Wave B researchers receive ONLY the raw git diff output. They must NOT receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
 
@@ -209,7 +209,7 @@ The three blinded prompt blocks are the single source of truth at `<PLUGIN_ROOT>
 1. Replace the literal placeholder `<raw diff output>` with the unified diff captured above (still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template).
 1. Dispatch all three `pipeline-researcher` agents (model: **opus**) in a single message using parallel tool calls. Each role's prompt becomes that agent's full input — do NOT add scope.md, the Known Concerns Map, Wave A findings, or any prior consolidation table.
 
-The dispatch invariants in `<PLUGIN_ROOT>/shared/blinded_lenses.md` (separate message after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
+The dispatch invariants in `<PLUGIN_ROOT>/shared/blinded_lenses.md` (typed agents with diff-only prompts in their own wave after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
 
 ### Wave B — Persist Responses
 
@@ -222,5 +222,7 @@ After Wave B returns, the orchestrator writes each response:
 | blinded_ops        | `.mz/task/<task_name>/findings_blinded_ops.md`        |
 
 When Wave B responses are persisted, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before consolidation. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+
+A Wave B agent that doesn't return, or returns `NEEDS_CONTEXT`, is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/blinded_lenses.md`: it counts as not returned, and with 0 of 3 back the corroboration step is skipped and Wave A's result stands.
 
 Update state file phase to `researched`. Record finding counts per lens in state.md.

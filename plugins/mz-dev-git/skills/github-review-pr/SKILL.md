@@ -31,6 +31,10 @@ Triggers: "review PR", "review pull request", "check this PR", "PR review".
 
 If no argument is provided, ask the user for a PR URL.
 
+## Constants
+
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
+
 ## Core Process
 
 | Phase | Goal                              | Details      |
@@ -74,7 +78,7 @@ Output the report path (`.mz/reviews/<YYYY_MM_DD>_github_review_pr_<owner>_<repo
 - **Empty / malformed PR argument** → escalate via AskUserQuestion; never guess, never fabricate a PR URL.
 - **`gh` unavailable for Phase 0 validation** → before escalating, try `mcp__*github*` MCP tools if exposed, then direct GitHub REST API (`curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}/pulls/{number}"`). Only escalate via AskUserQuestion after all three tiers fail.
 - **Missing tooling** (`git worktree` unavailable, `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
-- **Empty agent result** (report file missing, empty, or no `VERDICT:` line) → retry the dispatch once with the same prompt; if still empty, escalate via AskUserQuestion with the failure mode.
+- An agent returns nothing usable (report file missing, empty, or no `VERDICT:` line) → `<PLUGIN_ROOT>/shared/retry-policy.md`: re-dispatch once with a clarified prompt, and don't retry API errors or usage limits.
 - Never guess — on any ambiguity (inaccessible PR, 404, merge conflict in worktree, missing base ref) escalate via AskUserQuestion rather than proceed silently.
 
 ## State Management

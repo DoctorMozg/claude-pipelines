@@ -67,7 +67,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_cleanup_<slug>`. Apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase.
+- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_cleanup_<slug>`. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
 - **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `<PLUGIN_ROOT>/shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
 - **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
 
@@ -78,6 +78,8 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
 **Pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: plan gate]`; `Status` stays `running`.
 
 Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula to convert to a dollar estimate.
 
@@ -97,6 +99,7 @@ Approve cost (estimated): <N> agents × ~24k tokens ≈ ~$<Y.YY> on Sonnet
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the scan plan in the question body:
 
 - question: `The cleanup plan above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise.`
+- header: `Plan`
 - options: **Approve** — proceed to Phase 3 (parallel optimization) · **Reject** — abort, no files written
 
 **Response handling**:
@@ -104,7 +107,8 @@ Approve cost (estimated): <N> agents × ~24k tokens ≈ ~$<Y.YY> on Sonnet
 - **Approve** → proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → apply changes, overwrite `scan.md`, return to Surface 1, re-read `.mz/task/<task_name>/scan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 3. Surface 1 is still emitted so the transcript records what would have been approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the bypass contract.
+- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
 ### Phase 3: Parallel Optimization
 

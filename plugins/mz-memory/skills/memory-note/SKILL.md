@@ -70,6 +70,7 @@ File: .mz/memory/MEMORY.md
 **Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the entry — it lives in the plan message above.
 
 - question: `The memory note above is ready for review.`
+- header: `Memory note`
 - options:
   - **Approve** — write the entry to MEMORY.md
   - **Reject** — discard, no file changes
@@ -79,6 +80,7 @@ File: .mz/memory/MEMORY.md
 - **Approve** → run `Bash NOTE_SCRIPT [--log] "<body>"`, then proceed to verification.
 - **Reject** → stop. Do not write. Surface "Note discarded."
 - **Any other reply (feedback)** → revise the body using the user's input, return to Surface 1, re-emit the full updated plan message from scratch with the new entry, re-present the selector. This is a loop — repeat until the user explicitly approves.
+- **No answer** → stop. A missing answer is never approval.
 
 ### Phase 2: Verification
 

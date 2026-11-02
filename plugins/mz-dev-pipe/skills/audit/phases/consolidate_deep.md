@@ -48,14 +48,14 @@ For each finding, read its `evidence_tier` field:
 
 After capping, apply per-tier limits (read from SKILL.md constants):
 
-- Critical: include ALL (HIGH_CAP = unlimited)
-- High: top `MEDIUM_CAP = 10` by confidence
-- Medium: top 10 by confidence
-- Low / Advisory: record count, skip from report
+- Critical and BLOCKING: include all (`CRITICAL_CAP`)
+- High: include all (`HIGH_CAP` is unlimited in deep mode)
+- Medium: top `MEDIUM_CAP` (10 in deep mode) by confidence
+- Low / Advisory: `LOW_CAP` is 0, so record the count in the report body; the findings themselves go to the appendix
 
 Within each severity tier, sort by confidence (high > medium > low), breaking ties by lens priority: correctness > security > reliability > stride_delta > performance > maintainability.
 
-Findings below the cap are NOT discarded — they go to a "Deferred" section.
+Findings over a cap are not dropped. Write them to `.mz/task/<task_name>/findings_capped.md`, next to `findings.md`, in rank order and in the same finding format. Skip the file when nothing is over a cap. The "Deferred" section of `findings.md` gives the counts and names the appendix.
 
 ## 3.4 Rollback Rehearsal
 
@@ -184,7 +184,7 @@ Write `.mz/task/<task_name>/findings.md`:
 - **Skeptic**: verified | challenged *(if challenged, see cap_reason)*
 - **Fix clarity**: specific | FIX_UNCLEAR *(only rendered when set)*
 
-### High (top 10 of <total>)
+### High (<total>)
 #### F<id> — ...
 - **Severity original**: <original>
 - **Severity capped**: high
@@ -205,10 +205,9 @@ Write `.mz/task/<task_name>/findings.md`:
 - **Description**: <what the blinded researcher found>
 - **Severity assigned**: <based on evidence tier cap>
 
-## Deferred (not in report)
-- N additional high findings not included (below cap)
-- M additional medium findings not included (below cap)
-- K low/advisory findings skipped entirely
+## Deferred (listed in findings_capped.md)
+- M additional medium findings (below cap)
+- K low/advisory findings
 
 ## Split Recommendation (if score > 40)
 <concrete cut-point suggestions>

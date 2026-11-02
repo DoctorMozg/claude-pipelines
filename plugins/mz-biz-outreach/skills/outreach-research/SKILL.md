@@ -85,6 +85,8 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **Pre-read**: Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents (target profile, sector/geo scope, candidate-source plan, estimated fan-out cost) into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: strategy gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ````
@@ -101,6 +103,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy in the question body, it lives in the plan message above:
 
 - question: `The strategy above is ready for review.`
+- header: `Strategy`
 - options: **Approve** — proceed to Phase 2 (source research and company discovery) · **Reject** — abort the task, no outreach data generated
 
 **Response handling**:
@@ -108,6 +111,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 - **Approve** → update `.mz/task/<task_name>/state.md` phase to `strategy_approved`, proceed to Phase 2.
 - **Reject** → update `.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to Surface 1, re-read `strategy.json`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: strategy gate`, stop. A missing answer is never approval.
 
 ## Red Flags
 

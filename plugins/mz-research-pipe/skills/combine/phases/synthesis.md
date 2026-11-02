@@ -85,6 +85,8 @@ ______________________________________________________________________
 
 **Pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. Capture the full contents (deduplicated residual gap list with GAP_IDs, descriptions, contributing lenses, and proposed web queries) into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: gap-fill gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
 
 ```
@@ -99,6 +101,7 @@ ______________________________________________________________________
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the gaps in the question body:
 
 - question: `The residual gaps above are ready for review.`
+- header: `Gap-fill`
 - options: **Approve** — proceed to Phase 4 (web gap-fill dispatch) · **Reject** — skip web research, proceed to Phase 5 with gaps unresolved
 
 ### Response handling
@@ -106,6 +109,7 @@ ______________________________________________________________________
 - **Approve** → update `state.md` phase to `gapfill_approved`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. Record the approved gap list in `state.md` verbatim so Phase 4 can dispatch against it.
 - **Reject** → update `state.md` phase to `gapfill_declined`, skip Phase 4 entirely, and proceed directly to Phase 5 with the residual gaps marked unresolved in the final report's `## Gaps ### Unresolved` section.
 - **Any other reply (feedback)** → incorporate the feedback without re-running Phases 1–3. Feedback may: drop gaps from the list, merge two gaps into one (update the normalized text), rewrite a gap's text for clarity, or add a reason the user knows but the synthesis missed. Overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: gap-fill gate`, stop. A missing answer is never approval.
 
 ### Orchestrator-only notice
 
@@ -231,7 +235,7 @@ Before writing, check whether the resolved report path already exists on disk. I
 1. If that also exists, try `_v3`, `_v4`, … until a free slot is found.
 1. Log the final path (including any version suffix) in `state.md` under `Output`.
 
-This matches the collision-handling rule in `SKILL_GUIDELINES.md`. Do not overwrite an existing report under any circumstances.
+Do not overwrite an existing report under any circumstances.
 
 ### Phase 5.5: Update state
 

@@ -58,6 +58,8 @@ Discipline skill that atomizes a long research report into permanent notes, pre-
 
 **Pre-read**: Read `.mz/task/<task_name>/parsed_report.md` in full and capture its contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: noise gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
@@ -74,6 +76,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/parsed_report.md` — d
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The noise filter results above are ready for review.`
+- header: `Noise`
 - options: **Approve** — proceed to Phase 2 atomization · **Reject** — abort the task
 
 **Response handling**:
@@ -81,12 +84,15 @@ Emit the full verbatim contents of `.mz/task/<task_name>/parsed_report.md` — d
 - **Approve** → update `state.md` Status to `noise_filter_approved`, proceed to Phase 2.
 - **Reject** → update `state.md` Status to `aborted_by_user` and stop.
 - **Any other reply (feedback)** → typical feedback adds or removes sections from the noise list. Apply the edits to the effective noise list, re-run Phase 1 (`phases/parse_report.md`), overwrite `parsed_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: noise gate`, stop. A missing answer is never approval.
 
 ### Phase 2.5: User Approval — Atomization Proposals
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `.mz/task/<task_name>/proposals.md` in full and capture its contents into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: proposals gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
@@ -104,6 +110,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/proposals.md` — do no
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The atomization proposals above are ready for review.`
+- header: `Proposals`
 - options: **Approve** — write notes to vault and proceed to Phase 3 link suggestions · **Reject** — abort the task, no vault writes have occurred
 
 **Response handling**:
@@ -111,12 +118,15 @@ Emit the full verbatim contents of `.mz/task/<task_name>/proposals.md` — do no
 - **Approve** → update `state.md` Status to `proposals_approved`, continue Phase 2 (post-approval write).
 - **Reject** → update `state.md` Status to `aborted_by_user` and stop. No vault writes have occurred yet.
 - **Any other reply (feedback)** → apply feedback (skip numbered proposals, merge, split, retitle), re-run the affected window(s), regenerate `proposals.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: proposals gate`, stop. A missing answer is never approval.
 
 ### Phase 3.5: User Approval — Link Suggestions
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `.mz/task/<task_name>/link_suggestions.md` in full and capture its contents into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: links gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
@@ -134,6 +144,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/link_suggestions.md` �
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The link suggestions above are ready for review.`
+- header: `Links`
 - options: **Approve** — apply all links and complete the task · **Reject** — skip all links, mark task complete with no Related sections added
 
 **Response handling**:
@@ -141,6 +152,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/link_suggestions.md` �
 - **Approve** → update `state.md` Status to `links_approved`, apply all links, proceed to completion.
 - **Reject** → update `state.md` Status to `complete` with `LinksAdded: 0`, `LinksSkipped: true`. Written notes stay on disk without a Related section.
 - **Any other reply (feedback)** → skip specified links, accept the rest, overwrite `link_suggestions.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: links gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

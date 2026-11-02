@@ -45,7 +45,7 @@ Load `<SKILL_DIR>/behaviors/ideation.md`. Substitute variables per-voter:
 | `{lens_name}`             | short lens label (e.g. `engineer` for `lens-engineer`)                                           |
 | `{step}`                  | `vote`                                                                                           |
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its role — so the wave is visible to the user.
 
 Dispatch all **PANEL_SIZE** (5) panelists in a **single message** as parallel Agent tool calls. Each receives its own substituted prompt.
 

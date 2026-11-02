@@ -380,4 +380,4 @@ rg -A 10 '## printf positional' references/placeholder-patterns.md
 rg -A 30 '## Combined ripgrep recipe' references/placeholder-patterns.md
 ```
 
-Never cat or Read the whole file into context — it defeats the purpose of progressive disclosure under SKILL_GUIDELINES.md.
+Search for the section you need instead of reading the whole file; most of it doesn't apply to any one chunk.

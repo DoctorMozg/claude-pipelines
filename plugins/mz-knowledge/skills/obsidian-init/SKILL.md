@@ -71,6 +71,8 @@ Build the plan from interview answers (or defaults). Write the scaffold plan to 
 
 **Pre-read**: Read `.mz/task/<task_name>/scaffold_plan.md` and capture the full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: scaffold plan gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the scaffold plan verbatim as a normal markdown chat message:
 
 ```
@@ -102,6 +104,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/scaffold_plan.md` — d
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body, it lives in the plan message above:
 
 - question: `The scaffold plan above is ready for review.`
+- header: `Scaffold`
 - options:
   - **Approve** — proceed to Phase 1 and write all scaffolding files
   - **Reject** — abort the task, no files will be created
@@ -111,6 +114,7 @@ Response handling:
 - **Approve** → update state to `plan_approved`, proceed to Phase 1.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust the plan, overwrite `.mz/task/<task_name>/scaffold_plan.md`, return to this gate, re-read the updated plan, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: scaffold plan gate`, stop. A missing answer is never approval.
 
 ### Phase 1: Scaffold Vault
 

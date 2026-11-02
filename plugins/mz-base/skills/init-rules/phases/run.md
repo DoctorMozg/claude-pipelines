@@ -120,6 +120,8 @@ In rules mode "present" means `<target>/<filename>` exists and its version is th
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: install plan gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the plan as a normal markdown chat message:
 
 ```
@@ -150,6 +152,7 @@ On `--uninstall`, title it `Uninstall plan ready for review`, list `<id> — rem
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
 
 - question: `The plan above is ready for review.`
+- header: `Rules plan`
 - options: **Approve** — apply every write · **Reject** — abort, nothing written
 
 **Response handling**:
@@ -157,6 +160,7 @@ On `--uninstall`, title it `Uninstall plan ready for review`, list `<id> — rem
 - **Approve** → proceed to Step 7. This one confirmation covers every write in the run.
 - **Reject** → update state to `aborted_by_user`, stop. Do not write anything.
 - **Any other reply (feedback)** → apply it (for example drop a rule, a personal group, or a settings entry), rebuild the plan, re-emit the full updated plan message from scratch, and re-present the selector. Repeat until the user approves or rejects.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: install plan gate`, stop. A missing answer is never approval.
 
 ## Step 7: Apply
 

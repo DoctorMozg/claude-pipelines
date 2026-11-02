@@ -284,6 +284,8 @@ ______________________________________________________________________
 
 **Pre-read**: Read `<task_dir>/translation_plan.md` with the Read tool. Capture the full contents (files, languages, output mode, seeded glossary summary, verification cost block including `total_chunks` from `state.md`, wave plan, and any `INPLACE_DESTRUCTIVE` flags) into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: plan gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<task_dir>/translation_plan.md` — do not substitute a path, summary, or placeholder:
 
 ```
@@ -298,6 +300,7 @@ ______________________________________________________________________
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
 
 - question: `The translation plan above is ready for review.`
+- header: `Plan`
 - options: **Approve** — proceed to Phase 2 (parallel translation and Tier-1 verification) · **Reject** — task marked aborted, no files written
 
 **Response handling**:
@@ -305,6 +308,7 @@ ______________________________________________________________________
 - **Approve** → state `plan_approved`, record `approved_at` timestamp, proceed to Phase 2.
 - **Reject** → state `aborted_by_user`, write a one-line termination note to `state.md`, return control to the user. Do not dispatch anything.
 - **Any other reply (feedback)** → incorporate (drop/add files, change mode, edit glossary, rename paths, change chunking), re-run affected sub-steps (typically 1.2, 1.5, 1.6, 1.7, 1.8 — 1.1 and 1.4 only re-run if the user changes the language or argument shape), overwrite the plan, return to this gate, re-read `<task_dir>/translation_plan.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. Increment `approval_iterations` on every re-present. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
 **Feedback parsing**. Any reply that is not an explicit Approve or Reject is feedback. A conditional approval ("I approve if you drop the README") is feedback with conditions — do NOT auto-advance; re-present after applying them.
 

@@ -64,6 +64,8 @@ Discipline skill for multimodal capture into the vault as fleeting notes. Detect
 
 **Pre-read**: Read `.mz/task/<task_name>/transcript.md` and capture the full contents into context. Note the modality, tool, and duration/pages from the frontmatter.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: transcript gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the transcript verbatim as a normal markdown chat message (truncated at `MAX_TRANSCRIPT_PREVIEW` words with a trailing `...` when longer):
 
 ```
@@ -82,6 +84,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/transcript.md` (transcr
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the transcript in the question body, it lives in the plan message above:
 
 - question: `The transcript above is ready for review.`
+- header: `Transcript`
 - options:
   - **Approve** — proceed to Phase 2, write the fleeting note to the vault
   - **Reject** — abort, no fleeting note written
@@ -91,6 +94,7 @@ Response handling:
 - **Approve** → update state to `transcript_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → common feedback is "try a different tool" (switch `whisper-cpp` → `whisper`, `ocrit` → `tesseract`) or "the transcript is truncated, rerun". Incorporate the feedback, re-run Phase 1 with the adjusted tool choice, return to this gate, re-read `.mz/task/<task_name>/transcript.md`, and re-emit the entire plan message from scratch (never diff-only). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: transcript gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

@@ -38,6 +38,8 @@ Phase 2 (source research) and Phase 3 (scout fan-out) dispatch parallel agents p
 
 Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents — target company profile, scoring weights, sources candidate list, signals to look for, and outreach angles — into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: strategy gate]`; `Status` stays `running`.
+
 ### Surface 1 — emit the plan message
 
 Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
@@ -58,6 +60,7 @@ Output the strategy verbatim as a normal markdown chat message. Emit the full ve
 A short selector — do not re-embed the strategy in the question body, it lives in the plan message above:
 
 - question: `The strategy above is ready for review.`
+- header: `Strategy`
 - options: **Approve** — proceed to Phase 2 (source research) · **Reject** — abort the task, no sources will be researched
 
 ### Response handling
@@ -65,6 +68,7 @@ A short selector — do not re-embed the strategy in the question body, it lives
 - **Approve** → update `.mz/task/<task_name>/state.md` `Phase` field to `strategy_approved` and proceed to Phase 2.
 - **Reject** → update `.mz/task/<task_name>/state.md` `Status` field to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → re-dispatch `outreach-strategist` with the user's feedback appended to the prompt, overwrite `strategy.json`, return to Surface 1, re-read `strategy.json`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: strategy gate`, stop. A missing answer is never approval.
 
 ______________________________________________________________________
 

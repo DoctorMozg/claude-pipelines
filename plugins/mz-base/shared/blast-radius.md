@@ -1,6 +1,6 @@
 # Blast Radius — Shared Module
 
-Callable module that computes the downstream impact set of a target file or directory using import-graph walking, git-age overlay, and risk scoring. Auto-invoked by `audit` whenever scope is bounded (`scope:branch`, `scope:working`, or path-list) and by `cleanup` on every run. NOT auto-invoked when scope is `global` (everything is in scope already).
+Callable module that computes the downstream impact set of a target file or directory using import-graph walking, git-age overlay, and risk scoring. Auto-invoked by `audit` whenever scope is bounded (`scope:branch`, `scope:working`, or path-list) and by `cleanup` on every run. Not auto-invoked when scope is `global` (everything is in scope already).
 
 ## Status
 
@@ -10,16 +10,14 @@ Active. The standalone `/blast-radius` skill was demoted in v0.33.x; this module
 
 ### Input
 
-A list of file paths representing the bounded scope:
+A list of file paths representing the bounded scope. Resolve the input list with `<PLUGIN_ROOT>/shared/scope-parameter.md`. Two inputs don't come from a scope mode:
 
-- `scope:branch` → output of `git diff --name-only <base>..HEAD`
-- `scope:working` → output of `git status --porcelain | awk '{print $2}'`
 - Explicit path-list → as supplied
 - Standalone target (file/function/module) → resolve to single-element list
 
 ### Output
 
-A YAML block written to `.mz/task/<task_name>/blast_radius.yml`:
+A YAML block written to `<PROJECT_ROOT>/.mz/task/<task_name>/blast_radius.yml`:
 
 ```yaml
 generated_at: 2026-05-10T14:32:00Z
@@ -71,14 +69,14 @@ Vendored, generated, lockfile, and build-output paths are excluded (same exclusi
 
 - `high` — static import statement resolved to a real file in the project.
 - `medium` — dynamic import (e.g., Python `importlib.import_module`, JS dynamic `import()`) where the target name is a string literal.
-- `low` — grep-only match for the target symbol's name (could be a coincidence). Skills SHOULD treat low-confidence impacted files as advisory rather than authoritative.
+- `low` — grep-only match for the target symbol's name (could be a coincidence). Treat low-confidence impacted files as advisory rather than authoritative.
 
 ## Bounds
 
-Resolved per `<PLUGIN_ROOT>/shared/iteration-limits.md`:
+Both bounds are constants of this module:
 
-- `MAX_BLAST_DEPTH` — default 3. Stop walking transitive imports past this depth.
-- `MAX_BLAST_FILES` — default 200. Stop adding to the impacted list past this count.
+- `MAX_BLAST_DEPTH = 3` — stop walking transitive imports past this depth. Imports more than three hops out are mostly noise.
+- `MAX_BLAST_FILES = 200` — stop adding to the impacted list past this count. It keeps the YAML under the state-size budget.
 
 When either bound is hit, mark `cap_reached: true`, record which bound in `truncated_at`, and return what fits.
 
@@ -122,7 +120,7 @@ For each hop from 2 to `MAX_BLAST_DEPTH`:
 
 ### Step 4: Git-age overlay
 
-For each unique file in the graph (including the input files), batch git queries — DO NOT run one Bash call per file:
+For each unique file in the graph (including the input files), batch git queries, because one Bash call per file is too slow:
 
 ```bash
 for f in "file1.ts" "file2.py" "file3.rs"; do
@@ -148,7 +146,7 @@ Batch in groups of ≤10 files per Bash invocation.
 
 For each non-test file in the graph:
 
-- `tested` — a dedicated test file exists AND imports the file (matched by Step 2 researcher 3 results)
+- `tested` — a dedicated test file exists AND imports the file (found by Step 2, category 3, test files and fixtures)
 - `partially_tested` — file referenced inside test files but no dedicated test file matches its name
 - `untested` — no test references found
 

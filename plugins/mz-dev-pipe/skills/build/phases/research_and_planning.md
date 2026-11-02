@@ -226,6 +226,8 @@ Save review to `.mz/task/<task_name>/plan_review_<iteration>.md`.
 
 **Pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full file contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: plan gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the plan verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/plan.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -240,6 +242,7 @@ Save review to `.mz/task/<task_name>/plan_review_<iteration>.md`.
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
 
 - question: `The plan above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise.`
+- header: `Plan`
 - options: **Approve** — proceed to implementation phase · **Reject** — abort, no changes applied
 
 Response handling:
@@ -247,5 +250,6 @@ Response handling:
 - **Approve** → update state, proceed to next phase.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate, re-run upstream phase (spawn pipeline-planner with feedback), overwrite `plan.md`. Do NOT re-run the review loop on feedback — the user's word is final. Return to Surface 1, re-read `.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
 Update state file phase to `plan_approved`.

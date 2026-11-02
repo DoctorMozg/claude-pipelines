@@ -189,7 +189,7 @@ ______________________________________________________________________
 
 ### 2.1 Dispatch researchers
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens researcher with its role — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens researcher with its role — so the wave is visible to the user.
 
 Spawn N `pipeline-researcher` agents (model: **sonnet**) in a **single message** using parallel tool calls — one per selected lens. Each researcher reads `.mz/task/<task_name>/scope.md` for the file list, severity/confidence scales, and output format.
 
@@ -354,14 +354,14 @@ Assign each unique finding a stable numeric ID (`F1`, `F2`, ...).
 
 Within each severity tier, sort by confidence (high > medium > low), breaking ties by lens priority (correctness > security > reliability > performance > maintainability).
 
-Apply per-tier caps:
+Apply the per-tier caps from the SKILL.md constants:
 
-- **Critical**: include ALL (no cap)
-- **High**: top `HIGH_CAP = 10`
-- **Medium**: top `MEDIUM_CAP = 5`
-- **Low**: skip entirely from the report (record the count only)
+- **Critical**: include all (`CRITICAL_CAP`, no cap)
+- **High**: top `HIGH_CAP`
+- **Medium**: top `MEDIUM_CAP`
+- **Low**: `LOW_CAP`, so none in the report body (record the count)
 
-Findings that exceed a cap are NOT discarded — they move into a "Deferred" section of the summary and are reported to the user as "N additional <severity> findings not included in this report".
+Findings over a cap are not dropped. Write them to `.mz/task/<task_name>/findings_capped.md`, next to `findings.md`, in rank order and in the same finding format. Skip the file when nothing is over a cap. The report's "Deferred" section gives the counts and names the appendix, and the user is told "N additional <severity> findings not in the report body, listed in findings_capped.md".
 
 ### 3.3 Write findings artifact
 
@@ -392,10 +392,10 @@ Write `.mz/task/<task_name>/findings.md`:
 ### Medium (top 5 of <total>)
 #### F<id> — ...
 
-## Deferred (not in report)
-- N additional high findings not included (below top 10)
-- M additional medium findings not included (below top 5)
-- K low findings skipped entirely
+## Deferred (listed in findings_capped.md)
+- N additional high findings (below top 10)
+- M additional medium findings (below top 5)
+- K low findings
 
 ## Files with findings
 - `path/to/file_a.py`: F1, F4, F7 — 3 findings

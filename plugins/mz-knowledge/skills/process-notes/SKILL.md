@@ -58,6 +58,8 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 
 **Pre-read**: Read `.mz/task/<task_name>/proposals.md` and capture the full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: proposals gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the proposals verbatim as a normal markdown chat message:
 
 ```
@@ -74,6 +76,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/proposals.md` — do no
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the proposals in the question body, they live in the plan message above:
 
 - question: `The proposed atomic notes above are ready for review.`
+- header: `Proposals`
 - options:
   - **Approve** — proceed to Phase 2, write all notes with links
   - **Reject** — abort, discard proposals, do not write
@@ -84,12 +87,15 @@ Response handling:
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Number list** (e.g. `1,3`) → mark those note numbers as skipped, proceed to Phase 2 with the remaining set.
 - **Any other reply (feedback)** → pass feedback to the atomization-proposer, re-run Phase 1, overwrite `.mz/task/<task_name>/proposals.md`, return to this gate, re-read the updated proposals, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: proposals gate`, stop. A missing answer is never approval.
 
 ### Phase 2.5: User Approval — Proposed Links
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `.mz/task/<task_name>/link_proposals.md` and capture the full contents into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: links gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the link proposals verbatim as a normal markdown chat message:
 
@@ -107,6 +113,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/link_proposals.md` — 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the link proposals in the question body, they live in the plan message above:
 
 - question: `The proposed links above are ready for review.`
+- header: `Links`
 - options:
   - **Approve** — write all proposed links and complete the task
   - **Reject** — abort link writing, notes remain unlinked
@@ -117,6 +124,7 @@ Response handling:
 - **Reject** → update state to `aborted_by_user` for links (notes already written in Phase 2 remain on disk without links).
 - **Number list** (e.g. `1,3`) → mark those link numbers as skipped, proceed with the remaining set.
 - **Any other reply (feedback)** → skip specified links or apply feedback, re-present the updated set. Return to Surface 1, re-read `.mz/task/<task_name>/link_proposals.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: links gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

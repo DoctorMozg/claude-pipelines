@@ -94,6 +94,8 @@ After approval, apply the action from the state matrix:
 
 **Pre-read / resolve**: capture the resolved facts in context — the target path, whether the file will be created or modified, the action (`install` / `replace` / `uninstall`), and the exact sentinel block that will be written (install/replace) or removed (uninstall). The policy body is fixed source from `governance-policy.md`; show it so the user sees exactly what enters their `CLAUDE.md`.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: change gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the change as an ordinary markdown chat message (not inside a tool call). Show the verbatim block — never substitute a path or summary:
 
 ```
@@ -112,6 +114,7 @@ After approval, apply the action from the state matrix:
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the block, it lives in the plan message above:
 
 - question: `The CLAUDE.md change above is ready to apply.`
+- header: `CLAUDE.md`
 - options: **Approve** — apply the write and verify the sentinel count · **Reject** — abort, write nothing to `CLAUDE.md`
 
 Two named options only; feedback (e.g. "use global scope instead") rides the free-text reply field.
@@ -121,6 +124,7 @@ Two named options only; feedback (e.g. "use global scope instead") rides the fre
 - **Approve** → perform the Step 4 write, update `state.md` (`Action:`, `phase_complete: true`), proceed to Step 7 verification.
 - **Reject** → set `Status: aborted_by_user`, write nothing to `CLAUDE.md`, stop.
 - **Any other reply (feedback)** → adjust the scope or flags per the user's input, re-resolve the target, re-build the block, return to Surface 1, and re-emit the entire plan message. This is a loop — repeat until the user explicitly approves. Never write to `CLAUDE.md` without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: change gate`, stop. A missing answer is never approval.
 
 ## Step 6: Build the block (reference)
 

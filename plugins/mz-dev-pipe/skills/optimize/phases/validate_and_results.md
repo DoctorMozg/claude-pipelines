@@ -89,6 +89,8 @@ Rate confidence in the banked change from **measured signals only** — never fr
 
 **Pre-read**: Read `.mz/task/<task_name>/measurements/iter<N>_validated.md` with the Read tool and capture its full contents into context. Also capture the promoted diff, correctness result, review findings, and confidence rating.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: validation sign-off]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the iteration result verbatim as a normal markdown chat message. Emit the full verbatim contents of the validation measurement artifact and supporting results — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -113,6 +115,7 @@ Every number above traces to a measurement artifact under .mz/task/<task_name>/m
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the iteration result in the question body, it lives in the plan message above:
 
 - question: `The iteration result above is ready for sign-off.`
+- header: `Sign-off`
 - options: **Approve** — bank this change, the loop re-profiles (Phase 6) · **Reject** — revert this change, record it and re-enter Phase 4 for the next hypothesis
 
 **Response handling:**
@@ -120,7 +123,8 @@ Every number above traces to a measurement artifact under .mz/task/<task_name>/m
 - **Approve** → the change is banked. Record the new running-best value and proceed to Phase 6.
 - **Reject** → revert the promoted change, record it in the history buffer, and re-enter Phase 4 for the next backlog hypothesis (or Phase 6 if the backlog is exhausted).
 - **Any other reply (feedback)** → apply the requested adjustment, re-validate from §5.1, return to this gate, re-read the updated artifacts, and re-emit the entire plan message from scratch with the full new result. This is a loop — repeat until the user explicitly approves. Never bank the change without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → bypass per `<PLUGIN_ROOT>/shared/approval-gate.md`; log `auto-approved (unattended mode)`. The Phase 4.7 manual checkpoint is **not** covered by this bypass — if the contract is `manual`, that checkpoint already ran in Phase 4 with a real human.
+- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report. The Phase 4.7 manual checkpoint is **not** covered by this bypass: with a `manual` contract nobody will come, so an unattended run took the No-answer path there and never reaches this gate.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: validation sign-off`, stop. A missing answer is never approval.
 
 ## 5.5 Record and proceed
 

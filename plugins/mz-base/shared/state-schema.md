@@ -1,93 +1,145 @@
-# State File Schema — v2
+# State File Schema (v2)
 
-Canonical schema for `.mz/task/<task_name>/state.md` across every mozg pipeline skill. The state file is the single load-bearing checkpoint that survives context compaction. Every skill MUST write it, every skill MUST be able to read it, and every skill MUST refuse to operate on a state file whose `schema_version` it does not recognize.
+Canonical source: STATE_SCHEMA.md (repository guidelines, not shipped with the plugin).
 
-This file is the **runtime copy** of the repo-level authoring canonical at `guidelines/STATE_SCHEMA.md`. It lives in mz-base and reaches each consumer plugin through that plugin's `shared` link, so skills reference *this* file as `<PLUGIN_ROOT>/shared/state-schema.md`; they do not read `guidelines/`, which does not ship inside an installed plugin. When the canonical changes, mirror the change here.
+Rules for `state.md`, the checkpoint a multi-phase skill writes so it can find its place again after compaction or an interruption. The file lives at `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. The project root is `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run, not the Bash working directory.
 
-## Required keys (schema v2)
+## Key block
 
-Every `state.md` written by a mz-dev-pipe skill MUST contain at minimum these top-level keys:
+The file opens with plain `key: value` lines, with no `---` fence, followed by markdown body sections.
 
-| Key              | Type                          | Purpose                                                                                                                                                                                                                       |
-| ---------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schema_version` | integer                       | Schema major version. Currently `2`. Skills refuse to operate on unrecognized versions.                                                                                                                                       |
-| `Status`         | enum                          | `pending` \| `running` \| `complete` \| `aborted_by_user` \| `failed`                                                                                                                                                         |
-| `Phase`          | integer or string             | Skill-defined phase identifier. Numeric (`0`, `1`, `2.5`) or named (`research`, `planning`, `red_verified`).                                                                                                                  |
-| `PhaseName`      | string (optional)             | Human-readable phase label when `Phase` is numeric (e.g., `Phase: 6`, `PhaseName: implementation`).                                                                                                                           |
-| `Started`        | ISO-8601 timestamp            | When the task started. Format: `2026-05-10T14:32:00Z` or `2026-05-10`.                                                                                                                                                        |
-| `Iteration`      | integer (optional)            | Current iteration count for skills that loop. Default `0`. Skills with multiple counters use `<name>Iteration` keys.                                                                                                          |
-| `FilesWritten`   | YAML list of paths            | Cumulative list of artifact paths produced by the skill so far. Append-only; never truncate.                                                                                                                                  |
-| `phase_complete` | boolean                       | `false` on phase entry; `true` only once the phase's work is done **and** its post-conditions hold (artifacts written, gates passed). A resumer reads this to decide whether to re-run the recorded phase or advance past it. |
-| `what_remains`   | YAML list of strings          | Outstanding items for the current phase or task. May be `[]`. **MUST be `[]` when `Status: complete`.**                                                                                                                       |
-| `last_verified`  | ISO-8601 timestamp (optional) | When the last verification gate (lint/test/review) passed. Tells a resumer how stale the green state is.                                                                                                                      |
+| Key              | Required                              | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `schema_version` | yes                                   | Line 1. Currently `2`. Set when the file is created; only a migration changes it.                                                                                                                                                                                                                                                                                                                                                                            |
+| `Status`         | yes                                   | Line 2. One of the six values below, lowercase and unquoted.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Phase`          | yes                                   | Numeric (`0`, `2.5`) or named (`research`, `2_atomized`), using only letters, digits, `_`, `.` and `-`. Milestones go here.                                                                                                                                                                                                                                                                                                                                  |
+| `PhaseName`      | optional                              | Readable label for a numeric `Phase`.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `Started`        | yes                                   | `2026-05-16T14:32:00Z` or `2026-05-16`.                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `Iteration`      | optional                              | Loop counter, default `0`. Several counters use `<name>Iteration` keys.                                                                                                                                                                                                                                                                                                                                                                                      |
+| `FilesWritten`   | when read back                        | Artifacts the task produced, appended as they're written. Paths are relative to the project root (`.mz/task/<task_name>/plan.md`, not `plan.md`), or absolute for files outside it. Record bulk output as a directory with a count: `.mz/task/<task_name>/proposals/ (39 files)`. Required in every skill that follows `resume-protocol.md`. When a file that needs it has none, as after a migration, Resume rebuilds it from the files in the task folder. |
+| `phase_complete` | yes, except in single-dispatch skills | `false` when a phase starts; `true` once every artifact the phase promises is on disk and every gate it owns has passed.                                                                                                                                                                                                                                                                                                                                     |
+| `what_remains`   | yes, except in single-dispatch skills | YAML list of outstanding items a person can act on, refreshed on every phase transition. `[]` when `Status` is `complete`.                                                                                                                                                                                                                                                                                                                                   |
+| `last_verified`  | optional                              | When the last lint, test or review gate passed clean. Leave it out until the first one passes.                                                                                                                                                                                                                                                                                                                                                               |
 
-Skill-specific keys (e.g., `Reproduced`, `Root cause`, `current_wave`, `criteria checklist`) are allowed and encouraged. They live below the required block. Skills may add any additional keys they need without bumping the schema version — the schema bumps only when the **required** key set changes.
+- The first write includes `schema_version`, `Status`, `Phase`, `Started` and the ledger keys.
+- Schema keys come first. Skill-specific keys (`Reproduced`, `current_wave`, …) go below them and don't rename or replace a schema key. mz-memory reads the first `Status:` and the first `Phase:` anywhere in the file, even inside a longer key such as `AggregateStatus:`, so an earlier match would be read as the task's status.
+- Write the file after every phase transition and just before every approval gate.
 
-## Progress-ledger discipline
+## Status values
 
-`phase_complete`, `what_remains`, and `last_verified` are the progress ledger — the fields that tell a resumer *what is left*, not just *where it stopped*.
+| Value             | Meaning                                                                                               | What a resume check does |
+| ----------------- | ----------------------------------------------------------------------------------------------------- | ------------------------ |
+| `pending`         | The file exists and no phase has started.                                                             | offers the resume gate   |
+| `running`         | A phase is in progress, or a gate is waiting for an answer in an interactive session.                 | offers the resume gate   |
+| `blocked`         | The run stopped for an answer that can't come or an obstacle it can't clear; `what_remains` names it. | offers the resume gate   |
+| `complete`        | Every phase finished, and `what_remains` is `[]`.                                                     | starts a `_vN`           |
+| `aborted_by_user` | The user rejected a gate or cancelled the run.                                                        | starts a `_vN`           |
+| `failed`          | The run stopped on an error it couldn't recover from.                                                 | offers the resume gate   |
 
-- Set `phase_complete: false` on entering a phase; set it `true` only once that phase's artifacts are all written and its gates have passed. A resumer that finds `true` advances; one that finds `false` re-enters the phase at its idempotent entry point.
-- Refresh `what_remains` on every phase transition. It MUST be `[]` when `Status: complete` — a complete task with leftover items is a contradiction.
-- Stamp `last_verified` whenever a lint/test/review gate passes clean; leave it absent until the first gate passes.
+- While a gate waits, `Status` stays `running` and `what_remains` holds `awaiting approval: <gate>`. It becomes `blocked` only when no answer can come.
+- For `blocked`, `what_remains` names the blocker and the options, such as `awaiting answer: widen scope to global, or stop`.
+- Milestones such as `proposals_ready`, `scan_complete` and `plan_approved` go in `Phase`.
+- Reasons go in `what_remains` or a skill-specific key, never as a suffix on `Status`. A run that gets no usable CV path writes `Status: blocked` with `what_remains: [awaiting answer: path to the CV file]`, not `Status: aborted_missing_cv`.
+- A run that ends early because there's nothing to do is `complete`, with the reason in `Phase`, such as `Phase: empty_scope`.
+- Readers treat a legacy `completed` as `complete`. Writers use `complete`.
+- A `Status` that holds a milestone, a reason suffix or any other value outside this table counts as unfinished: the resume gate is offered, and the next write corrects the value.
+- The resume gate is a variant gate. It never picks an action by itself, unattended or with no answer; `resume-protocol.md` has the rules.
 
-## Minimal example
+## Example
 
-```yaml
+```
 schema_version: 2
 Status: running
 Phase: 6
 PhaseName: implementation
-Started: 2026-05-10T14:32:00Z
+Started: 2026-05-16T14:32:00Z
 Iteration: 2
 FilesWritten:
-  - research.md
-  - plan.md
-  - tests/test_foo.py
+  - .mz/task/2026_05_16_build_retry_path/research.md
+  - .mz/task/2026_05_16_build_retry_path/plan.md
+  - tests/test_retry.py
 phase_complete: false
 what_remains:
   - wire the retry path into the request handler
   - add the timeout regression test
-last_verified: 2026-05-10T15:10:00Z
-# Skill-specific below this line:
+last_verified: 2026-05-16T15:10:00Z
 current_wave: 2
 work_units_remaining: 3
+
+## Decisions
+- plan approved: .mz/task/2026_05_16_build_retry_path/plan.md
+- jittered backoff instead of a fixed delay, because the upstream API rate-limits bursts
 ```
 
-## Migration table
+## Body sections
 
-Migration is read-time, forward-only, and purely additive — no data loss, no field renames.
+- `## Decisions`: one line per decision worth remembering, most important first, such as an approved artifact and where it landed.
+- `## Lessons`: one line per thing a later run should do differently.
+- `## Notes`: other short facts worth keeping.
+- `## Auto-approvals`: one line per gate skipped in unattended mode, with the gate label, the phase and the time. It isn't harvested; the final report lists it.
 
-| From version | To version | Migration                                                                                                                                                                        |
-| ------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| (none)       | 2          | Pre-schema-versioned file. Add `schema_version: 2`, `phase_complete: false`, `what_remains: []` (leave `last_verified` absent). Log `Upgraded legacy state file to schema v2.`   |
-| 1            | 2          | Set `schema_version: 2`. Add `phase_complete: false` and `what_remains: []`; leave `last_verified` absent. Every v1 key is preserved unchanged. Log `Upgraded state file v1→v2.` |
-| 2            | 2          | No-op (same version).                                                                                                                                                            |
+Other sections, such as `## Concerns` from `agent-status-protocol.md` or an error log, are free-form. Keep them short.
 
-The `1 → 2` row is purely additive: a skill reading a `schema_version: 1` file adds the three ledger keys and proceeds. No prior key changes type or name.
+When mz-memory is installed, its SessionEnd hook reads each `state.md` changed since its last run, or the 50 most recently changed ones on its first run:
+
+1. It takes the first `Status:` value and continues only for `complete` or the legacy `completed`.
+1. It logs the task name, the first `Phase:` value, and the branch and commit.
+1. It copies the first 10 non-blank lines of `## Decisions`, `## Lessons` and `## Notes`, counted together in file order, into `.mz/memory/MEMORY.md`.
+
+Write for it this way:
+
+- Write each heading exactly: level two, the same case, nothing after the word. `## Decisions (2026-11-02)`, `## decisions` and `### Decisions` are skipped.
+- Put `## Decisions` first of the three, so a long `## Notes` doesn't use up the 10 lines.
+- A `##` heading ends a section. A `###` line doesn't, and it counts toward the 10.
+- `<private>…</private>` spans are removed after the 10 lines are chosen, so a private line still uses one of them.
+- Editing a finished `state.md` logs the task again at the next SessionEnd.
+- A task that never reaches `complete` is never harvested. If a decision from a `failed`, `blocked` or `aborted_by_user` task matters, pin it with `/memory-note`.
+- One changed file without a plain `Status:` line, or a `complete` one without a `Phase:` line, stops the capture. Every later capture then fails until that file is fixed. `**Status:** running`, `status: running`, `Status:running` and a missing `Status` key all stop it.
+
+## Compaction
+
+- Keep `state.md` well under 5,000 tokens, roughly 20,000 characters, because a larger file comes back after compaction only as a path. Record bulk output as a directory with a count, put long logs in their own files in the task directory, and keep body sections to one line per entry.
+- After compaction, re-read `state.md` before acting, then the current phase file. Don't rely on the summary.
+- Keep the resume check and a one-line resume pointer near the top of SKILL.md. The pointer names the `state.md` path and says to re-read it after compaction.
+- Read cross-phase facts, such as paths, decisions and counters, back from `state.md`, not from memory of the conversation.
+- An interactive conversation over 200,000 tokens can compact after about an hour idle, and that can happen while a gate waits.
+
+## Single-dispatch skills
+
+A skill that runs setup, one dispatch and its report in a single turn, with no approval gate and no phase files, may leave out `phase_complete` and `what_remains`. It still writes `Status`, `Phase` and `Started`. When it upgrades an older file, it adds only `schema_version: 2`.
+
+## Migration
+
+Migrate when you read the file, before acting on it. Migration runs forward only. It adds keys without renaming or dropping any, and it leaves the `Status` value as it is.
+
+| From   | To  | Migration                                                                                                                                                                                                                                              |
+| ------ | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| (none) | 2   | Add `schema_version: 2` as line 1, removing a `---` fence if the file has one, and move the `Status` line to line 2. Add `phase_complete: false` and `what_remains: []`, and leave `last_verified` out. Log `Upgraded legacy state file to schema v2.` |
+| 1      | 2   | Change `schema_version` to `2`, move the `Status` line to line 2, and add `phase_complete: false` and `what_remains: []`. Every v1 key stays as it was. Log `Upgraded state file v1→v2.`                                                               |
+| 2      | 2   | Nothing to do.                                                                                                                                                                                                                                         |
+
+A single-dispatch skill adds only `schema_version: 2`.
 
 ## Mismatch policy
 
-When a skill reads a `state.md` whose `schema_version` it does not recognize:
+A file whose `schema_version` is higher than the skill knows may belong to a newer install that shares the same `.mz/task/`. Don't modify it.
 
-1. **Higher version than the skill knows about** (e.g., file says `schema_version: 3`, skill code knows only `2`):
-   - Skill MUST NOT silently coerce. Treat as `BLOCKED`.
-   - Escalate via AskUserQuestion with options:
-     - `restart` — abandon the file, start a new task. User confirms file overwrite.
-     - `abort` — stop without touching the file.
-1. **Lower version than the skill knows about** (e.g., file says `schema_version: 1`, skill code knows `2`):
-   - Skill auto-migrates using the migration-table row. The `1 → 2` row always exists, so a v1 file never blocks.
-1. **No `schema_version` field at all** (legacy pre-schema file):
-   - Treat as the `(none) → 2` migration row. Add the keys and proceed. Log `Upgraded legacy state file to schema v2.`
+- In an interactive main session, ask with AskUserQuestion and offer three options:
+  - **Restart**: rename the task directory to `<task_name>_archived_<YYYY_MM_DD_HHMMSS>` and start fresh.
+  - **New**: leave the directory untouched and start `<task_name>_v2`, or the next free `_vN`. New is the safer choice when another install may still be using the directory.
+  - **Abort**: stop without touching anything.
+- Where nobody can answer, unattended mode included, stop and report the path and both versions. A skill running in a subagent returns `STATUS: BLOCKED`. This is the one blocker that isn't written to `state.md`, because the skill can't safely write a file it doesn't understand.
 
-## Schema-version writers
+A lower version, or a missing `schema_version`, migrates by the table above and never blocks.
 
-Every skill that writes `state.md` for the first time during a task MUST include `schema_version: 2` on the first line of the file, and MUST write `phase_complete` and `what_remains` in that same initial write. No exceptions. Subsequent updates to the same file (appending to `FilesWritten`, advancing `Phase`, flipping `phase_complete`, refreshing `what_remains`) MUST preserve `schema_version` unchanged.
+## Compact inline contract
 
-## Why this exists
+Skills that don't read this file put one of these blocks, verbatim, in their State Management section.
 
-Without `schema_version`, any future change to the state-file shape silently breaks resume. The plugin promises resumability via `state.md` (see `<PLUGIN_ROOT>/shared/resume-protocol.md`). That promise is only enforceable if the reader can detect "I do not understand this file" instead of guessing a parse and producing wrong behavior.
+Multi-phase skills:
 
-The progress ledger (`phase_complete`, `what_remains`) extends that promise: a resumer learns not just which phase it stopped in but whether that phase finished and what work is still outstanding — the context that compaction destroys first.
+> State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
-Any state-file change must follow the migration discipline above.
+Single-dispatch skills:
+
+> State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase` and `Started`. This skill runs setup, one dispatch and its report in a single turn with no approval gate, so it leaves out `phase_complete` and `what_remains`. On reading an older file, put `schema_version: 2` on line 1 and `Status` on line 2, add no other keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.

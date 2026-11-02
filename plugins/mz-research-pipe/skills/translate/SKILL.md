@@ -82,6 +82,8 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
 
 - **Pre-read**: Read `<task_dir>/translation_plan.md` with the Read tool. Capture the full contents (files, languages, output mode, seeded glossary summary, verification cost block, wave plan, and any `INPLACE_DESTRUCTIVE` flags) into context.
 
+- **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: plan gate]`; `Status` stays `running`.
+
 - **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<task_dir>/translation_plan.md` — do not substitute a path, summary, or placeholder:
 
   ```
@@ -96,6 +98,7 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
 - **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the plan in the question body:
 
   - question: `The translation plan above is ready for review.`
+  - header: `Plan`
   - options: **Approve** — proceed to Phase 2 (parallel translation and Tier-1 verification) · **Reject** — task marked aborted, no files written
 
 - **Approve** → state `plan_approved`, proceed to Phase 2.
@@ -103,6 +106,8 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
 - **Reject** → state `aborted_by_user`, stop. Do not proceed.
 
 - **Any other reply (feedback)** → re-run affected Phase 1 sub-steps, overwrite the plan, return to this gate, re-read `<task_dir>/translation_plan.md`, re-emit the entire plan message from scratch with the full new contents, re-present the selector. Increment `approval_iterations`; bounded by `MAX_APPROVAL_ITERATIONS`. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+
+- **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
 - **Cap reached** → when `approval_iterations` reaches `MAX_APPROVAL_ITERATIONS`, follow the escalation branch in `phases/discovery_and_planning.md` Phase 1.5 "Iteration accounting" — it is the single source of truth for the three-choice escalation (abort / approve as-is / one final narrow revision with counter reset). Do not re-state the logic here; the phase file owns it.
 

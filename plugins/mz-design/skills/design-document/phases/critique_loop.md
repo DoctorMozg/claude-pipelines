@@ -38,20 +38,20 @@ Model: **opus**. Prompt:
 You are critiquing a design draft from a visual-composition lens.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/design/<task_name>/design.md
-- .mz/design/<task_name>/wireframes.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/design.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/wireframes.md
 
 ## Your Lens
 Layout, grid, alignment, whitespace, visual hierarchy, density, scannability, balance, consistency. See your agent spec for detailed criteria.
 
 ## Output
-Write to .mz/design/<task_name>/iter_<N>_ui-designer.md using the format from your agent spec. End with `VERDICT: PASS` or `VERDICT: FAIL`.
+Write to <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_ui-designer.md using the format from your agent spec. End with `VERDICT: PASS` or `VERDICT: FAIL`.
 ```
 
 ### ux-designer
@@ -62,14 +62,14 @@ Model: **opus**. Prompt:
 You are critiquing a design draft from a UX flow and heuristics lens.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/design/<task_name>/design.md
-- .mz/design/<task_name>/wireframes.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/design.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/wireframes.md
 
 ## Reference
 Search <SKILL_DIR>/references/nielsen-heuristics.md for any heuristic you apply. Do not load the whole file.
@@ -78,7 +78,7 @@ Search <SKILL_DIR>/references/nielsen-heuristics.md for any heuristic you apply.
 Task flows, IA, interaction patterns, microcopy, state coverage, cognitive load, Nielsen's 10 heuristics. See your agent spec for detailed criteria.
 
 ## Output
-Write to .mz/design/<task_name>/iter_<N>_ux-designer.md using the format from your agent spec. End with `VERDICT: PASS` or `VERDICT: FAIL`.
+Write to <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_ux-designer.md using the format from your agent spec. End with `VERDICT: PASS` or `VERDICT: FAIL`.
 ```
 
 ### art-designer
@@ -89,19 +89,19 @@ Model: **opus**. Prompt:
 You are critiquing a design draft from a color, type, and mood lens.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/design/<task_name>/design.md (focus on §6 Color System and §7 Typography)
+- <PROJECT_ROOT>/.mz/design/<task_name>/design.md (focus on §6 Color System and §7 Typography)
 
 ## Your Lens
 Color harmony (complementary, analogous, triadic, split-complementary, tetradic, monochromatic), palette balance, semantic color clarity, type pairing, type scale musicality, weight distribution, mood coherence. See your agent spec for detailed criteria.
 
 ## Output
-Write to .mz/design/<task_name>/iter_<N>_art-designer.md using the format from your agent spec. End with `VERDICT: PASS` or `VERDICT: FAIL`.
+Write to <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_art-designer.md using the format from your agent spec. End with `VERDICT: PASS` or `VERDICT: FAIL`.
 ```
 
 ### accessibility-specialist
@@ -112,14 +112,14 @@ Model: **opus**. Prompt:
 You are critiquing a design draft from a WCAG 2.2 AA lens and owning the WCAG hard gate.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/design/<task_name>/design.md (focus on §6 Color System, §11 States, §12 Accessibility)
-- .mz/design/<task_name>/wcag-report.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/design.md (focus on §6 Color System, §11 States, §12 Accessibility)
+- <PROJECT_ROOT>/.mz/design/<task_name>/wcag-report.md
 
 ## Reference
 Search <SKILL_DIR>/references/wcag-contrast-thresholds.md for thresholds and the contrast formula.
@@ -132,7 +132,7 @@ Search <SKILL_DIR>/references/wcag-contrast-thresholds.md for thresholds and the
 5. Emit both `VERDICT: PASS|FAIL` (per-critic) and `WCAG_GATE: PASS|FAIL` (hard gate) on separate lines.
 
 ## Output
-Write to .mz/design/<task_name>/iter_<N>_accessibility-specialist.md using the format from your agent spec.
+Write to <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_accessibility-specialist.md using the format from your agent spec.
 ```
 
 All four critics are fully independent — they must be dispatched as **one message with four parallel Agent tool calls**, not sequentially.
@@ -145,19 +145,19 @@ Once all four critics return, spawn `design-critique-synthesizer` (model: **sonn
 You are synthesizing four critic outputs into a single action-item list and aggregate verdict.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/design/<task_name>/iter_<N>_ui-designer.md
-- .mz/design/<task_name>/iter_<N>_ux-designer.md
-- .mz/design/<task_name>/iter_<N>_art-designer.md
-- .mz/design/<task_name>/iter_<N>_accessibility-specialist.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_ui-designer.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_ux-designer.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_art-designer.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_accessibility-specialist.md
 
 ## Your Job
-Merge findings, resolve conflicts with lane ownership, compute the verdict block, and write .mz/design/<task_name>/critique_<N>.md using the format from your agent spec.
+Merge findings, resolve conflicts with lane ownership, compute the verdict block, and write <PROJECT_ROOT>/.mz/design/<task_name>/critique_<N>.md using the format from your agent spec.
 ```
 
 ## Step 3.3 — Read verdict block
@@ -165,7 +165,7 @@ Merge findings, resolve conflicts with lane ownership, compute the verdict block
 Search `critique_<N>.md` for the verdict block:
 
 ```bash
-grep -E '^(ui-designer|ux-designer|art-designer|accessibility-specialist|WCAG_GATE|AGGREGATE):' .mz/design/<task_name>/critique_<N>.md
+grep -E '^(ui-designer|ux-designer|art-designer|accessibility-specialist|WCAG_GATE|AGGREGATE):' "<PROJECT_ROOT>/.mz/design/<task_name>/critique_<N>.md"
 ```
 
 Parse the 6 lines. Store each PASS/FAIL value.
@@ -188,7 +188,7 @@ Critical findings: <count>
 
 If `AGGREGATE: PASS` (all four critics PASS **and** WCAG_GATE PASS):
 
-- Update state to `critique_passed`, save iteration count.
+- Set `Phase: critique_passed` in `state.md`, save iteration count.
 - Exit the loop, proceed to Phase 4 (Finalization).
 
 ## Step 3.5 — Handle AGGREGATE FAIL (iteration < MAX)
@@ -203,16 +203,16 @@ Spawn `design-revision-writer` (model: **opus**) with:
 You are applying critique action items to the current design draft.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/design/<task_name>/design.md
-- .mz/design/<task_name>/wireframes.md
-- .mz/design/<task_name>/wcag-report.md
-- .mz/design/<task_name>/critique_<N>.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/design.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/wireframes.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/wcag-report.md
+- <PROJECT_ROOT>/.mz/design/<task_name>/critique_<N>.md
 
 ## Your Job
 Apply every action item in critique_<N>.md. Touch only the flagged sections. Preserve untouched sections verbatim. If any §6 Color System hex value changes, regenerate wcag-report.md from scratch. Emit a change log and terminal STATUS: line per your agent spec.
@@ -230,9 +230,9 @@ If `iteration == MAX_DESIGN_ITERATIONS` and AGGREGATE is still FAIL:
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/design/<task_name>/critique_5.md` and capture the full contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/design/<task_name>/critique_5.md` and capture the full contents into context.
 
-**Surface 1 — emit the plan message.** Output the verdict and unresolved findings verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/design/<task_name>/critique_5.md` — do not substitute a path, summary, or placeholder. Structure:
+**Surface 1 — emit the plan message.** Output the verdict and unresolved findings verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/design/<task_name>/critique_5.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
 ## Design critique cap reached — design-document
@@ -258,12 +258,12 @@ Unresolved findings (critique_5.md):
 
 - question: `The design has hit the iteration cap with unresolved findings. Choose how to proceed.`
 - options:
-  - **Accept** — finalize the current state; log unresolved findings into `final-summary.md`, mark state `complete_with_unresolved`, proceed to Phase 4 with the caveat noted.
+  - **Accept** — finalize the current state; log unresolved findings into `final-summary.md`, keep `Status: running`, set `Phase: critique_accepted` and `unresolved: <count>`, then go to Phase 4 with the caveat noted.
   - **Abort** — mark state `aborted_by_user`, stop.
 
 **Response handling**:
 
-- **Accept** → log unresolved findings into `final-summary.md`, mark state `complete_with_unresolved`, proceed to Phase 4 with the caveat noted.
+- **Accept** → log unresolved findings into `final-summary.md`, keep `Status: running`, set `Phase: critique_accepted` and `unresolved: <count>`, then go to Phase 4 with the caveat noted. The task isn't complete until the user approves there.
 - **Abort** → mark state `aborted_by_user`, stop.
 - **Any other reply (guidance)** → treat the reply as the action list, dispatch the revision writer with the user's text, then go to Phase 4 directly (no further critique round — the user's word is final).
 

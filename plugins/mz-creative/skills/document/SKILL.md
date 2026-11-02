@@ -76,6 +76,8 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 **Pre-read**: Read `.mz/task/<task_name>/research.md` with the Read tool. Capture the full file contents (stack detection, public APIs, conventions, prior art, constraints, proposed doc structure) into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: research gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the research verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/research.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -90,6 +92,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the research contents in the question body, they live in the plan message above:
 
 - question: `The research above is ready for review.`
+- header: `Research`
 - options: **Approve** — proceed to Phase 2 (writing) · **Reject** — abort the task, no docs written
 
 **Response handling**:
@@ -97,6 +100,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 - **Approve** → update state to `research_approved`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → re-run Phase 1 with feedback, overwrite `research.md`, return to Surface 1, re-read `research.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: research gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
 

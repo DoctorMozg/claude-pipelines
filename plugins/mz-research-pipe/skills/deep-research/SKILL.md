@@ -65,6 +65,8 @@ Example for "State of WebAssembly in 2026":
 
 **Pre-write + capture**: Write the decomposition to `.mz/task/<task_name>/decomposition.md` as a numbered list of 3-7 subtopics, each with a 1-3 sentence description and rationale. Then Read that file with the Read tool to capture its full contents into context for the gate.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: decomposition gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/decomposition.md` — do not substitute a path, summary, or placeholder:
 
 ```
@@ -79,6 +81,7 @@ Example for "State of WebAssembly in 2026":
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the decomposition in the question body:
 
 - question: `The research decomposition above is ready for review.`
+- header: `Subtopics`
 - options: **Approve** — proceed to parallel dispatch of pipeline-web-researcher agents · **Reject** — abort the task, mark state aborted_by_user
 
 **Response handling**:
@@ -86,6 +89,7 @@ Example for "State of WebAssembly in 2026":
 - **Approve** → proceed to Step 2 (dispatch researchers).
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust the decomposition accordingly, overwrite `decomposition.md`, return to this gate, re-read `decomposition.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval; never dispatch researchers without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: decomposition gate`, stop. A missing answer is never approval.
 
 ### 2. Dispatch parallel pipeline-web-researcher agents
 

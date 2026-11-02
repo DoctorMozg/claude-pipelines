@@ -106,6 +106,8 @@ Legacy fields shared with job-search (`search_queries`, `title_aliases`, `biling
 
 **Pre-read**: Read `.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: strategy gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ````
@@ -124,6 +126,7 @@ Built from your CV plus preferences and selected region. Derived discipline, eng
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the strategy JSON in the question body, it lives in the plan message above:
 
 - question: `The freelance-search strategy above is ready for review.`
+- header: `Strategy`
 - options:
   - **Approve** — proceed to Phase 2 (source assembly + scout)
   - **Reject** — mark the task aborted, no scouting runs
@@ -133,6 +136,7 @@ Built from your CV plus preferences and selected region. Derived discipline, eng
 - **Approve** → update `state.md` `Phase` to `strategy_approved`, proceed to Phase 2.
 - **Reject** → update `state.md` `Status` to `aborted_by_user` and stop.
 - **Any other reply (feedback)** → re-dispatch `freelance-strategist` with the feedback appended, overwrite `search_strategy.json`, return to Surface 1, re-read the updated strategy, and re-emit the full plan message from scratch with the new JSON contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: strategy gate`, stop. A missing answer is never approval.
 
 ## Red Flags
 

@@ -53,7 +53,11 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 ## Constants
 
 - **MAX_RESEARCHERS**: 5 (standard) | **MAX_RESEARCHERS_WAVE_A**: 6 (deep) | **MAX_RESEARCHERS_WAVE_B**: 3 (deep)
-- **Severity caps**: resolved per `<PLUGIN_ROOT>/shared/severity-lattice.md` — `quick` mode for standard, `pre-PR` mode for deep.
+- **Severity caps**: cap modes `quick` (standard) and `pre-PR` (deep) from `<PLUGIN_ROOT>/shared/severity-lattice.md`. Findings over a cap are written to `findings_capped.md`, never dropped.
+- **CRITICAL_CAP**: unlimited, BLOCKING included — a ship-stopper cut from the report body would defeat the audit.
+- **HIGH_CAP**: 10 (standard) | unlimited (deep) — standard lists what is worth fixing today; deep makes every HIGH visible before a PR.
+- **MEDIUM_CAP**: 5 (standard) | 10 (deep) — keeps the report body scannable.
+- **LOW_CAP**: 0, INFO included (both modes) — style-level findings are counted in the report and listed in `findings_capped.md`.
 - **TASK_DIR**: `.mz/task/` | **LEDGER_PATH**: `.mz/reports/audit_ledger.md` (deep mode only)
 - **HOTSPOT_LOOKBACK_DAYS**: 90 (deep mode only — git log lookback for hotspot table; falls back to all-history on shallow clones)
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
@@ -85,13 +89,13 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase 0: Setup
 
-Derive `<YYYY_MM_DD>_audit_<slug>` (or `<YYYY_MM_DD>_deep_audit_<slug>` when `depth:deep`). Apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `Iteration` (review iterations), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys (`depth: standard|deep`). TaskCreate per phase.
+Derive `<YYYY_MM_DD>_audit_<slug>` (or `<YYYY_MM_DD>_deep_audit_<slug>` when `depth:deep`). **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `Iteration` (review iterations), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys (`depth: standard|deep`). TaskCreate per phase.
 
 When `depth:deep`: additionally dispatch `pipeline-tooling-detector` to detect test/lint commands for informational purposes (no tests are run); write to `.mz/task/<task_name>/tooling.md`. Phase 1 also computes git hotspot scores (commit counts over the last `HOTSPOT_LOOKBACK_DAYS` days, bot commits filtered) and records them in `scope.md`.
 
 ### Phases 1–4
 
-Route by `depth:` to the phase files in the table above. Both depth modes stop at the report — neither modifies code. The blinded invariant in `depth:deep` Phase 2 (Wave B dispatched in a SEPARATE message after Wave A completes) is non-negotiable.
+Route by `depth:` to the phase files in the table above. Both depth modes stop at the report — neither modifies code. The blinded invariant in `depth:deep` Phase 2 (Wave B dispatched as typed `pipeline-researcher` agents, in its own wave after Wave A completes) has no exceptions.
 
 ## Techniques
 

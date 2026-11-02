@@ -69,6 +69,8 @@ See `phases/validate.md`.
 
 **Pre-read**: Read `.mz/task/<task_name>/validation_report.md` and capture its full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: findings gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
 ```
@@ -85,6 +87,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/validation_report.md` �
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The validation findings above are ready for review.`
+- header: `Findings`
 - options: **Approve** — proceed to Phase 2 (migration planning) or complete if mode is validate · **Reject** — abort, no further action
 
 **Response handling**:
@@ -92,6 +95,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/validation_report.md` �
 - **Approve** → update state to `findings_approved`. If `Mode: validate`, mark `Status: complete` and stop — nothing is written to the vault in validate mode. If `Mode: migrate`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate (e.g., "re-scan with a corrected schema", "treat note_type X as pass-through"), re-run Phase 1 if needed, overwrite `validation_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: findings gate`, stop. A missing answer is never approval.
 
 ### Phase 2 — Plan migration + rollback
 
@@ -102,6 +106,8 @@ See `phases/migrate.md` (Step 1 + Step 2).
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `.mz/task/<task_name>/migration_plan.md` and capture its full contents into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: migration gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message:
 
@@ -119,6 +125,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/migration_plan.md` — 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
 - question: `The migration plan above is ready for review.`
+- header: `Migration`
 - options: **Approve** — proceed to Phase 3 (apply patches) · **Reject** — abort, no vault writes occurred, rollback manifest preserved
 
 **Response handling**:
@@ -126,6 +133,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/migration_plan.md` — 
 - **Approve** → update state to `plan_approved`, proceed to Phase 3. The user must have filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder — Phase 3 re-checks this and loops back here if any remain.
 - **Reject** → update state to `aborted_by_user` and stop. The rollback manifest stays on disk for reference; no vault writes occurred.
 - **Any other reply (feedback)** → incorporate edits to the plan (value picks, skip specific notes, adjust proposed frontmatter), re-run Phase 2 to refresh both `migration_plan.md` and `rollback.md`, overwrite the artifact, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never apply frontmatter patches without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: migration gate`, stop. A missing answer is never approval.
 
 ### Phase 3 — Apply frontmatter patches
 

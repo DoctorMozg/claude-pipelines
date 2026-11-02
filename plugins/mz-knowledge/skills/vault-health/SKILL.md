@@ -60,6 +60,8 @@ See `phases/collect.md`.
 
 **Pre-read**: Read `.mz/task/<task_name>/audit_data.md` and capture the full contents into context. The file contains the verbatim audit findings (orphans, broken wikilinks, stubs, stale notes, tag statistics with note names).
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: audit gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the audit findings verbatim as a normal markdown chat message:
 
 ```
@@ -76,6 +78,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/audit_data.md` — do n
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the audit data in the question body, it lives in the plan message above:
 
 - question: `The vault health findings above are ready for review.`
+- header: `Audit`
 - options:
   - **Approve** — proceed to Phase 2, write the audit report to the vault
   - **Reject** — abort without writing, task marked cancelled
@@ -85,6 +88,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/audit_data.md` — do n
 - **Approve** → update state, proceed to Phase 2 (write report).
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust what to include (narrow a check, drop a category, re-run a collector), re-run Phase 1 if needed, then return to this gate, re-read `.mz/task/<task_name>/audit_data.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: audit gate`, stop. A missing answer is never approval.
 
 ### Phase 2 — Write audit
 

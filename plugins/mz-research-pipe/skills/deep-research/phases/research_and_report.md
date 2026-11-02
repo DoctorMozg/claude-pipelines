@@ -28,7 +28,7 @@ Output format:
 - End with "Gaps" — what you could NOT find or verify.
 ```
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its subtopic — so the wave is visible to the user. See `SKILL_GUIDELINES.md` (Fan-Out Wave Observability).
+Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its subtopic — so the wave is visible to the user.
 
 IMPORTANT: Launch ALL pipeline-web-researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
 

@@ -17,18 +17,18 @@ From Phase 3:
 
 ## Step 4.1 — User approval gate
 
-This gate uses the two-surface plan pattern: the finalized design is emitted as a normal markdown chat message (the way a plan appears in plan mode), then a short AskUserQuestion selector.
-
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/design/<task_name>/design.md`, `.mz/design/<task_name>/wireframes.md`, and `.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. The critique loop must have converged with `AGGREGATE: PASS` and zero WCAG violations before this gate fires.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/design/<task_name>/design.md`, `<PROJECT_ROOT>/.mz/design/<task_name>/wireframes.md`, and `<PROJECT_ROOT>/.mz/design/<task_name>/wcag-report.md` with the Read tool. Capture the full design document body, ASCII wireframes, and WCAG contrast report into context. Read `LastVerdict` and `unresolved` from `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`: Phase 3 ends with `AGGREGATE: PASS`, or with the user accepting unresolved findings at the iteration cap.
+
+**State**: write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with `Phase: 4`, `PhaseName: approval`, `phase_complete: false` and `what_remains: [awaiting approval: design gate]`. `Status` stays `running`.
 
 **Surface 1 — emit the plan message.** Output the three artifacts verbatim as a normal markdown chat message. Emit the full verbatim contents — never substitute a path, line count, iteration summary, or `<verdict>` placeholder; the user reviews the actual finalized design (including the contrast pairs) in the message itself. Structure:
 
 ```
-## Design ready for review — design-document
+## Plan for review: design-document
 
-Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: PASS). All four specialist critics approved the design and the WCAG contrast report shows zero violations.
+Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: <PASS or FAIL>). <"All four specialist critics passed the design." or "Unresolved findings accepted at the iteration cap: <count>, listed in critique_<N>.md.">
 
 ### Design Document (design.md)
 
@@ -43,23 +43,27 @@ Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: PAS
 <verbatim wcag-report.md contents>
 
 ---
-**Approve** → write `final-summary.md` and mark the task complete  ·  **Reject** → mark the task aborted, nothing more written  ·  reply with feedback to revise
+**Approve** → write `final-summary.md` and finish the task  ·  **Reject** → mark the task aborted, nothing more written  ·  reply with feedback to revise
 ```
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the design artifacts in the question body, they live in the plan message above:
 
 - question: `The finalized design above is ready for review.`
+- header: `Design`
 - options: **Approve** — write `final-summary.md` and complete the task · **Reject** — abort the task, write nothing further
 
 ## Step 4.2 — Response handling
 
-- **Approve** → update state to `complete`, proceed to Step 4.3.
+- **Approve** → add `- design approved: .mz/design/<task_name>/design.md, wireframes.md, wcag-report.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, and go to Step 4.3. `Status` stays `running` until Step 4.4.
 - **Reject** → update state to `aborted_by_user` and stop. Do not write `final-summary.md`.
-- **Any other reply (feedback)** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to Step 4.1, re-read the updated artifact(s), and re-emit the entire plan message from scratch with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Step 4.3 without explicit approval.
+- **Any other reply (feedback)** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to Step 4.1, re-read the updated artifact(s), and re-emit the entire plan message from scratch with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Step 4.3 without explicit approval. Typed text, a "Chat about this" reply, and an Approve whose note asks for a change all count as feedback.
+- **No answer** (AskUserQuestion denied or unavailable, or the result carries the away signal) → set `Status: blocked`, keep `awaiting approval: design gate` in `what_remains`, and stop. A missing answer is never approval.
+
+After the gate resolves, append a gate entry to `<PROJECT_ROOT>/.mz/journal.md` with the artifact recipe in `<PLUGIN_ROOT>/shared/approval-gate.md`, "Journal entry".
 
 ## Step 4.3 — Write `final-summary.md`
 
-Only reached after explicit user approval. Write to `.mz/design/<task_name>/final-summary.md`:
+Only reached after explicit user approval. Write to `<PROJECT_ROOT>/.mz/design/<task_name>/final-summary.md`:
 
 ```markdown
 # Design Document — Final Summary
@@ -113,10 +117,8 @@ schema_version: 2
 Status: complete
 Phase: 4
 PhaseName: finalized
-phase_complete: true
-what_remains: []
+Started: <timestamp from setup>
 Iteration: <N>
-Completed: <timestamp>
 FilesWritten:
   - .mz/design/<task_name>/design.md
   - .mz/design/<task_name>/wireframes.md
@@ -126,6 +128,11 @@ FilesWritten:
   - .mz/design/<task_name>/critique_1.md
   - ... (critique_2..N)
   - .mz/design/<task_name>/final-summary.md
+phase_complete: true
+what_remains: []
+Completed: <timestamp>
+LastVerdict: <keep the Phase 3 block>
+unresolved: <count>
 ```
 
 ## Step 4.5 — Emit final output
@@ -135,15 +142,15 @@ Output a concise completion block visible to the user:
 ```
 Design document finalized.
 
-Task dir: .mz/design/<task_name>/
+Task dir: <PROJECT_ROOT>/.mz/design/<task_name>/
 Iterations: <N>/5
 Aggregate: <verdict>
 
 Primary artifact:
-  .mz/design/<task_name>/design.md
+  <PROJECT_ROOT>/.mz/design/<task_name>/design.md
 
 Read the full summary at:
-  .mz/design/<task_name>/final-summary.md
+  <PROJECT_ROOT>/.mz/design/<task_name>/final-summary.md
 ```
 
 Do not print the full design document in the chat — it is on disk, and the user approved its location.

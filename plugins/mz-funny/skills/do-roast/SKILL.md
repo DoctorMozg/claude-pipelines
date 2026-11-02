@@ -97,6 +97,8 @@ Parse `$ARGUMENTS`: split on first whitespace; validate token 1 against `PERSONA
 
 **Pre-read**: Capture the resolved target candidates produced by the target resolution ladder in `phases/analyze.md` — file list, directory list, branch diff command, or raw-text blob (truncated to 1000 chars) — into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: target gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the resolved target as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -113,6 +115,7 @@ Resolved "<target_raw>" to the following target as <persona>:
 **Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the resolved target — it lives in the plan message above.
 
 - question: `The resolved target above is ready for review.`
+- header: `Target`
 - options:
   - **Approve** — proceed to Phase 1 (structural/smell analysis)
   - **Reject** — abort the roast, no analysis performed
@@ -122,6 +125,7 @@ Resolved "<target_raw>" to the following target as <persona>:
 - **Approve** → update state `Phase: target_approved`, proceed to Phase 1.
 - **Reject** → update state `Status: aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → re-resolve per feedback, update state, return to Surface 1, re-read and re-emit the full updated plan message from scratch, re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: target gate`, stop. A missing answer is never approval.
 
 ## Error Handling
 

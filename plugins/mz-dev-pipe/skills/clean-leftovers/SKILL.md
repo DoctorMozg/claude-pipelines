@@ -65,11 +65,11 @@ Read the relevant phase file when you reach that phase. Do not pre-load all of t
 
 ### Phase 0: Setup
 
-1. **Resume check** — apply `<PLUGIN_ROOT>/shared/resume-protocol.md`. If `state.md` exists with `Status: running | failed`, present the Resume gate.
+1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
 1. **Parse arguments** — extract `scope:` (default `working`); the remaining text is an optional path or glob filter.
 1. **Resolve scope** — apply the scope reference above and save the concrete file list to `.mz/task/<task_name>/scope_files.txt`. Skip excluded markdown directories unless explicitly requested.
 1. **Task name** — `<YYYY_MM_DD>_clean_leftovers_<slug>` where `<slug>` is snake_case of scope mode + first 3 words of any path filter (max 20 chars). On same-day collision append `_v2`, `_v3`.
-1. **Create task dir & state** — `.mz/task/<task_name>/`. Write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line `schema_version: 2`, required keys (`Status`, `Phase`, `Started`, `Iteration` 0, `FilesWritten`, `phase_complete: false`, `what_remains: []`), plus skill-specific (`scope`, `files_in_scope`, `categories_to_clean`).
+1. **Create task dir & state** — `.mz/task/<task_name>/`. Write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line `schema_version: 2`, required keys (`Status`, `Phase`, `Started`, `Iteration` 0, `FilesWritten`, `phase_complete: false`, `what_remains: []`), plus skill-specific (`scope`, `files_in_scope`, `categories_to_clean`). Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
 1. **Emit a visible setup block** — task name, scope, file count, exclusions. Read `phases/research.md` and proceed to Phase 1.
 
 ### Phase 2.5: Approval Gate
@@ -79,6 +79,8 @@ Read the relevant phase file when you reach that phase. Do not pre-load all of t
 See `<PLUGIN_ROOT>/shared/approval-gate.md` for the two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format.
 
 **Pre-read**: Read `.mz/task/<task_name>/detection.md` with the Read tool. Capture the full file contents (per-category hit lists with file:line citations, severity classification, and the proposed cleanup plan) into context.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: detection gate]`; `Status` stays `running`.
 
 Compute `<N>` as `ceil(<files_in_scope> / MAX_FILES_PER_DISPATCH)` plus the verification re-scan, capped at `MAX_PARALLEL_AGENTS × MAX_FIX_ITERATIONS`. Use `<PLUGIN_ROOT>/shared/approval-gate.md` to convert to a dollar estimate.
 
@@ -98,6 +100,7 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on Opus
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the detection report in the question body:
 
 - question: `The detection report above is ready for review. Approve to proceed, or Reject to abort — reply with feedback to revise.`
+- header: `Detection`
 - options: **Approve** — proceed to Phase 3 (cleanup) · **Reject** — abort, no files edited
 
 **Response handling**:
@@ -105,7 +108,8 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on Opus
 - **Approve** → update state to `detection_approved`, proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust the plan, overwrite `detection.md`. Return to Surface 1, re-read `.mz/task/<task_name>/detection.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
-- **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed. Surface 1 is still emitted so the transcript records what would have been approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the bypass contract.
+- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: detection gate`, stop. A missing answer is never approval.
 
 ## Techniques
 

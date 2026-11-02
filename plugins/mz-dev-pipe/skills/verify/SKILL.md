@@ -64,7 +64,8 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
 1. **Task name** — `<YYYY_MM_DD>_verify_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — apply the resume-check contract in `<PLUGIN_ROOT>/shared/resume-protocol.md`: if `.mz/task/<task_name>/state.md` exists with `Status: running | failed`, present the Resume gate and re-enter per recorded `Phase`. Otherwise create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
+1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
+1. **Task dir & state** — create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 ### Phase 1–6

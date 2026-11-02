@@ -74,6 +74,8 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 
 **Pre-read**: Read `.mz/task/<task_name>/panel.md` and capture the full contents (5 selected panelist lenses with one-line rationale per pick — primary, adjacent, productive-tension picks all justified) into context. See `phases/intake_and_panel.md` Step 1.4 for the panel.md content schema.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: panel gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/panel.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -88,6 +90,7 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 **Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the panel — it lives in the plan message above.
 
 - question: `The panel above is ready for review.`
+- header: `Panel`
 - options: **Approve** — begin 3 rounds of expert critique · **Reject** — cancel task, no rounds will run
 
 **Response handling**:
@@ -95,6 +98,7 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 - **Approve** → update `state.md` to `panel_approved`, proceed to Phase 2 (Round Loop).
 - **Reject** → update `state.md` to `aborted_by_user` and stop. Do not run rounds.
 - **Any other reply (feedback)** → apply swaps/changes, overwrite `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: panel gate`, stop. A missing answer is never approval.
 
 ## Red Flags
 
