@@ -37,7 +37,7 @@ Besides the rules, the plan can include:
 
 ### `/construct-skill` — Skill Authoring Helper
 
-Helps draft new skills following the conventions in `guidelines/SKILL_GUIDELINES.md`. Walks you through frontmatter, dispatch prompts, approval gates, and progressive disclosure via a TDD-style RED/GREEN/REFACTOR loop.
+Drafts a new skill for a plugin in this marketplace repo, following its skill guidelines. Walks you through the description, anatomy, state, approval gates and the pre-publish checklist in a RED/GREEN/REFACTOR loop. It doesn't write `.claude/skills` skills or review existing ones.
 
 ### `/using-mozg-pipelines` — Routing Map
 

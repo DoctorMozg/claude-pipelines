@@ -242,7 +242,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | Skill               | Command                                                    | What it does                                                        |
 | ------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
 | **init-rules**      | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
-| **construct-skill** | `/construct-skill <intent>`                                | Drafts a new skill through a RED/GREEN/REFACTOR authoring loop      |
+| **construct-skill** | `/construct-skill <intent>`                                | Drafts a plugin skill in a marketplace repo, test-first             |
 
 2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs), plus 3 shared pipeline agents that other plugins dispatch (pipeline-researcher, pipeline-web-researcher, code-lens-over-engineering). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
 
