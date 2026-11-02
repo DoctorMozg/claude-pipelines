@@ -49,7 +49,7 @@ Researches the codebase, drafts Diátaxis-aligned documentation (tutorial, how-t
 /document @doc:docs/api.md polish the existing API reference
 ```
 
-**Pipeline**: Codebase research → user approval → expert-technical-writer (opus) → auto-naturalize (opus)
+**Pipeline**: Codebase research → user approval → expert-technical-writer (opus) → auto-naturalize (sonnet)
 
 **Modifiers**: `scope:branch|global|working`, `type:tutorial|howto|reference|explanation|readme|api|all`, `@doc:<path>` for polish jobs.
 
@@ -66,7 +66,7 @@ Rewrites AI-sounding text in one pass with no approval questions. The expert-nat
 /naturalize preserve:leverage,robust @file:docs/risk.md
 ```
 
-**Pipeline**: optional web research (pipeline-web-researcher) → expert-naturalizer (opus) detects and rewrites → punctuation check (one fix-only retry) → in-place overwrite with a diff
+**Pipeline**: optional web research (pipeline-web-researcher) → expert-naturalizer (sonnet) detects and rewrites → punctuation check (one fix-only retry) → in-place overwrite with a diff
 
 **Modifiers**: `@file:<path>` (overwrites the file, keeping the original at `.mz/task/<task>/input.md`), `preserve:<terms>` (comma-separated terms kept verbatim), `research:yes` (refreshes the embedded vocabulary list against current 2025–2026 pattern data).
 
@@ -82,7 +82,7 @@ Researches positioning and the project's existing voice, drafts copy in the requ
 /copywrite format:email scope:branch launch email for the rate-limit feature
 ```
 
-**Pipeline**: Positioning + codebase tone research → brief approval → expert-copywriter (opus) → auto-naturalize (opus)
+**Pipeline**: Positioning + codebase tone research → brief approval → expert-copywriter (opus) → auto-naturalize (sonnet)
 
 **Modifiers**: `format:landing|email|announcement|social|changelog|pitch` (required), `scope:branch|global|working`, `@brief:<path>` (strongly recommended).
 
@@ -107,7 +107,7 @@ The 16 lens agents are shared between `/brainstorm` and `/expert`. Each lens has
 | `expert-round-synthesizer` | sonnet | Cross-lens summarization between Delphi rounds                                              |
 | `expert-report-writer`     | opus   | Final consultation report after all 3 rounds                                                |
 | `expert-technical-writer`  | opus   | Diátaxis-aligned documentation grounded in research artifacts                               |
-| `expert-naturalizer`       | opus   | AI-pattern rewriter — vocabulary, rhythm, structural template breakage                      |
+| `expert-naturalizer`       | sonnet | AI-pattern rewriter — vocabulary, rhythm, structural template breakage                      |
 | `expert-copywriter`        | opus   | Promotional copy across landing / email / announcement / social / changelog / pitch formats |
 
 22 agents total = 16 lens personas + 6 support agents.

@@ -9,7 +9,7 @@ allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git 
 
 ## Overview
 
-Creates or polishes technical documentation for a project. Researches the codebase first, dispatches `expert-technical-writer` (opus) to write the document, then runs `expert-naturalizer` (opus) to remove residual AI patterns. Output lands at `.mz/reports/<YYYY_MM_DD>_document_<slug>.md`.
+Creates or polishes technical documentation for a project. Researches the codebase first, dispatches `expert-technical-writer` (opus) to write the document, then runs `expert-naturalizer` (sonnet) to remove residual AI patterns. Output lands at `.mz/reports/<YYYY_MM_DD>_document_<slug>.md`.
 
 ## When to Use
 

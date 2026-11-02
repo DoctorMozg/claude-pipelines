@@ -9,7 +9,7 @@ allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git 
 
 ## Overview
 
-Produces promotional and persuasive copy — landing pages, launch emails, announcements, social posts, changelog entries, and pitch one-pagers. Researches the product and competitive positioning first, dispatches `expert-copywriter` (opus) to write the copy, then runs `expert-naturalizer` (opus) to remove residual AI patterns. Output lands at `.mz/reports/<YYYY_MM_DD>_copywrite_<slug>.md`.
+Produces promotional and persuasive copy — landing pages, launch emails, announcements, social posts, changelog entries, and pitch one-pagers. Researches the product and competitive positioning first, dispatches `expert-copywriter` (opus) to write the copy, then runs `expert-naturalizer` (sonnet) to remove residual AI patterns. Output lands at `.mz/reports/<YYYY_MM_DD>_copywrite_<slug>.md`.
 
 ## When to Use
 
