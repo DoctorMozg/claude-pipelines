@@ -34,7 +34,7 @@ Proceed to Phase 2. Read `phases/profile_and_hypothesize.md`.
 
 ## 6.4 Stop — final report
 
-Set `state.md` `Status: complete`, `Phase: 6`, `PhaseName: terminate`; mark the Phase 6 task tracker done.
+Run the leftover sweep (§6.5) first. Then set `state.md` `Status: complete`, `Phase: 6`, `PhaseName: terminate`; mark the Phase 6 task tracker done.
 
 Emit the final results block. Every number in it must trace to a `pipeline-measure-runner` measurement artifact under `.mz/task/<task_name>/measurements/`; cite the artifact path beside each. A number with no artifact path is invalid — do not emit it.
 
@@ -61,3 +61,29 @@ Correctness:    every banked change passed <correctness_command | the manual che
 - Listing each measurement-artifact path lets the user re-check every number independently.
 
 The optimization run is complete.
+
+## 6.5 Leftover sweep — every exit
+
+§4.10 cleans up after each finished round, but a run that stops mid-round leaves candidate worktrees, their branches, and base refs behind. Every exit runs this sweep before writing the final `Status`: the §6.4 stop, a Reject at any gate, a Phase 1 hard-block, and `ALREADY WITHIN BUDGET`. Run it as one Bash call, with one `<branch> <path>` line per `candidate_worktrees` entry in `state.md` (branch first, because a path may contain spaces):
+
+```bash
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 1
+while read -r branch wt; do
+  [ -n "$wt" ] || continue
+  if git worktree list --porcelain | grep -qxF "worktree $wt"; then
+    git worktree unlock "$wt" 2>/dev/null || true
+    git worktree remove --force "$wt"
+  fi
+  git branch -D "$branch" 2>/dev/null || true
+done <<'LIST'
+<branch> <path>
+LIST
+git for-each-ref --format='%(refname)' "refs/mz/optimize/<task_name>/" | while read -r ref; do
+  git update-ref -d "$ref"
+done
+git worktree prune
+git for-each-ref "refs/mz/optimize/<task_name>/"
+```
+
+The last command must print nothing. Set `candidate_worktrees: []` in `state.md`. Keep `patches/`: Phase 5 needs the winner patch to revert a rejected promotion, and the patches are the record of every banked change.

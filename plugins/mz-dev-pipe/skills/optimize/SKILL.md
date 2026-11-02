@@ -278,6 +278,7 @@ Output the final results block: the contract's metric and goal, the **measured**
 - **A candidate agent returns malformed output** — retry up to `MAX_CANDIDATE_REVIEW_RETRIES`, then drop that candidate.
 - **`pipeline-tooling-detector` cannot detect a command** — fall back to asking the user to supply each contract field.
 - **An unfamiliar target domain** — Phase 2 dispatches `pipeline-researcher` with web research; the live profile remains the primary signal.
+- **Every exit** — a Reject at any gate, a Phase 1 hard-block, `ALREADY WITHIN BUDGET`, or the Phase 6 stop — runs the leftover sweep in `phases/terminate.md` §6.5 before the final `Status` is written, so no candidate worktree, branch, or `refs/mz/optimize/<task_name>/` ref outlives the run.
 - Always save state before spawning agents.
 
 ## State Management

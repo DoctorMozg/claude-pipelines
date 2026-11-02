@@ -74,7 +74,7 @@ boundary it crosses, and why the candidate needs it.
 
 ## 4.3 Stage A gate — candidate returns
 
-Each `pipeline-perf-candidate` agent returns one terminal `STATUS`. Route on it:
+Each `pipeline-perf-candidate` agent returns one terminal `STATUS`. As each result arrives, append a `<branch> <path>` entry for its worktree, whatever the status, to `candidate_worktrees:` in `state.md`: the exit sweep in `phases/terminate.md` §6.5 relies on that list after an interruption. Route on the status:
 
 - `STATUS: DONE` — the candidate is implemented and committed on `BASE_SHA`, and `correctness_command` ran green (or, for a `manual` contract, correctness is deferred to the Phase 4.7 checkpoint). The worktree advances to Stage B. A `DONE` without a candidate commit SHA counts as malformed output.
 - `STATUS: DONE_WITH_CONCERNS` — the candidate is implemented but `correctness_command` failed. Discard it immediately — a faster wrong answer is not a candidate — and record the correctness failure in the history buffer.
@@ -97,7 +97,7 @@ Run inside worktree:  <candidate worktree path>
 Repetitions:          <measure_reps>
 Warmup repetitions:   <measure_warmup>
 Noise ceiling (CV):   <noise_ceiling_cv>
-Output artifact:      .mz/task/<task_name>/measurements/iter<N>_candidate<M>.md
+Output artifact:      .mz/task/<task_name>/measurements/iter<N>_<H#>_candidate<M>.md
 
 Run the warmup reps and discard them, then the measured reps. Parse exactly one
 scalar per rep. Compute mean, median, and coefficient of variation. Write the
@@ -152,7 +152,7 @@ If no candidate survived §4.5 for this hypothesis, emit `DEAD END` for it and r
 
 ## 4.10 Worktree cleanup
 
-Before §4.11, **remove every candidate worktree** from this round — the winner's patch is already applied and saved under `patches/`; the losers are discarded. Run `git worktree remove --force <path>` for each (`git worktree unlock <path>` first if git reports it locked). Then delete the round's base ref with `git update-ref -d refs/mz/optimize/<task_name>/iter<N>-<H#>`. Leave no orphan worktree or ref: verify with `git worktree list` and `git for-each-ref refs/mz/optimize/<task_name>/`. This runs every round, win or `DEAD END`.
+Before §4.11, **remove every candidate worktree** from this round — the winner's patch is already applied and saved under `patches/`; the losers are discarded. For each entry in `candidate_worktrees`, run `git worktree remove --force <path>` (`git worktree unlock <path>` first if git reports it locked), then `git branch -D <branch>`. Then delete the round's base ref with `git update-ref -d refs/mz/optimize/<task_name>/iter<N>-<H#>` and set `candidate_worktrees: []`. Leave no orphan worktree, branch or ref: verify with `git worktree list` and `git for-each-ref refs/mz/optimize/<task_name>/`. This runs every round, win or `DEAD END`.
 
 ## 4.11 Round outcome & routing
 
