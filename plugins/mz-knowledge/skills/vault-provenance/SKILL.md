@@ -1,6 +1,6 @@
 ---
 name: vault-provenance
-description: "ALWAYS invoke when classifying epistemic status of claims in a note, back-filling sources frontmatter, or auditing a note's knowledge provenance. Triggers: epistemic status, provenance, claim sources, mark claims."
+description: 'Classifies claims in one vault note by epistemic status and back-fills its sources frontmatter. Use when the user wants claims and sources checked ("epistemic status", "provenance", "mark claims"). Not for whole-vault audits (use vault-health).'
 argument-hint: <note name or path>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, AskUserQuestion
@@ -14,11 +14,12 @@ Discipline skill that classifies every factual claim in a single vault note agai
 
 ## When to Use
 
-Invoke after drafting a research note, while auditing received-wisdom claims, or before promoting a note to `evergreen`. Trigger phrases: "classify claims in <note>", "back-fill sources for <note>", "audit provenance of <note>".
+Classifying the factual claims of a single vault note by epistemic status and back-filling its sources, for example after drafting a research note or before promoting it to `evergreen`.
 
 ### When NOT to use
 
 - Vault-wide provenance audits — this skill is per-note by design.
+- Whole-vault structure audits (orphans, broken links, stubs, tags) — use `vault-health`.
 - Suggesting new links between notes — use `vault-connect`.
 - Atomizing a note into smaller notes — use `process-notes`.
 - Schema or frontmatter compliance checks — use `vault-schema`.

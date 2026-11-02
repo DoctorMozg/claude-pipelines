@@ -1,6 +1,6 @@
 ---
 name: vault-answer
-description: 'ALWAYS invoke when asking a question that should be answered from vault notes with inline wikilink citations. Triggers: what does my vault say about, answer from notes, search my vault for, grounded answer.'
+description: 'Answers a question from vault notes with inline wikilink citations and an Unknowns list. Use when the user wants a note-grounded answer ("what does my vault say about X", "search my vault for Y"). Not for codebase or web questions (use ask).'
 argument-hint: <question>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Grep, Glob, Write, AskUserQuestion
@@ -14,10 +14,11 @@ Discipline skill for grounded Q&A over vault notes. Dispatches `vault-query-answ
 
 ## When to Use
 
-Factual questions that should be answered from vault content — "what does my vault say about X", "search my notes for Y", "summarize what I've written on Z". Trigger phrases: "answer from notes", "grounded answer", "vault-based answer".
+Answering factual questions from the content of vault notes, with inline wikilink citations and no vault writes.
 
 ### When NOT to use
 
+- Questions about a code repo or the web, not the user's notes — use `ask`.
 - Editing notes — use `Edit` directly.
 - Finding links between notes — use `vault-connect`.
 - General LLM questions not tied to vault content — answer directly without this skill.

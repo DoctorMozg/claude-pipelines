@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: vault-answer-near-miss-note-links
+description: Finding which existing notes a fresh note should link to, with typed relationships, is link discovery, which belongs to vault-connect.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Just finished writing Zettelkasten/permanent/Retrieval practice beats rereading.md.
+    Go through my other notes and tell me which ones it should link to, and how each
+    is related, like supports or contradicts.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-answer-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-answer"'
+    min: 0
+    max: 0
+    arm: both

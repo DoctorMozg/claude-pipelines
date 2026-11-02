@@ -1,6 +1,6 @@
 ---
 name: vault-connect
-description: "ALWAYS invoke when finding missing wikilinks for a note, suggesting connections between notes, discovering which vault notes should link to the current note, or improving a note's link density. Triggers: link notes, suggest wikilinks, find connections, improve link density."
+description: 'Proposes typed wikilinks between a note and related vault notes. Use when the user wants a note connected to the vault ("link notes", "suggest wikilinks", "improve link density"). Not for splitting a capture into new notes (use process-notes).'
 argument-hint: <note name or path to find links for>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, Glob, AskUserQuestion
@@ -14,13 +14,11 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 
 ## When to Use
 
-- After adding a new permanent note.
-- When a note feels isolated from the rest of the vault.
-- During a review session when a note has zero outlinks.
-- Surfacing "hidden" connections across distant topics.
+Finding existing vault notes that should link to or from a given note, with typed relationship labels and approval before any link is written.
 
 ### When NOT to use
 
+- Splitting a capture or fleeting note into new atomic notes — use `process-notes`.
 - Immediately after `process-notes` on the same note — link suggestions are already part of that pipeline.
 - For semantic search or content retrieval — search and read the vault files directly, or use an MCP-based search tool.
 - For note content editing unrelated to links — just use `Edit` directly.

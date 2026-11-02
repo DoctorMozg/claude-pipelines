@@ -1,6 +1,6 @@
 ---
 name: vault-health
-description: 'ALWAYS invoke when auditing an Obsidian vault for orphan notes, broken links, stale content, stub notes, or tag inconsistencies. Triggers: vault audit, orphan notes, broken wikilinks, vault health check.'
+description: 'Audits a whole Obsidian vault for orphan notes, broken wikilinks, stubs, stale notes and tag inconsistencies. Use when the user wants a vault audit ("vault health check", "find orphan notes"). Not for frontmatter schema rules (use vault-schema).'
 argument-hint: '[vault path or leave empty to use OBSIDIAN_VAULT_PATH env]'
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Glob, Grep, Write, AskUserQuestion
@@ -12,10 +12,11 @@ Discipline skill that audits an Obsidian vault and produces a structured `_vault
 
 ## When to Use
 
-Invoke for weekly vault maintenance, before a knowledge review session, or after large imports. Trigger phrases: "vault audit", "orphan notes", "broken wikilinks", "vault health check".
+Auditing the structure of a whole vault (orphans, broken links, stubs, stale notes, tags), for weekly maintenance, before a knowledge review session, or after large imports.
 
 ### When NOT to use
 
+- Frontmatter schema validation or migration — use `vault-schema`.
 - Fixing the issues found — use `process-notes` or `vault-connect` after the audit.
 - Semantic search or note retrieval — this skill only inventories health, it does not answer content queries.
 

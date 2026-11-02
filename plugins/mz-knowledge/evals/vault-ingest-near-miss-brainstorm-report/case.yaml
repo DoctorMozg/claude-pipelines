@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: vault-ingest-near-miss-brainstorm-report
+description: A brainstorm report already written under .mz/reports and headed for the vault belongs to vault-research, not media capture.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    I ran a brainstorm on pricing tiers last week and the report is sitting at
+    .mz/reports/2026_10_25_brainstorm_pricing-tiers.md. Can you get it into my
+    Obsidian vault? I would like the ideas to end up as separate notes rather than
+    one big file.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-ingest-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-ingest"'
+    min: 0
+    max: 0
+    arm: both

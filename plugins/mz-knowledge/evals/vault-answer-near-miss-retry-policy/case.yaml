@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: vault-answer-near-miss-retry-policy
+description: A cited question about how a repository's code behaves is codebase research, which belongs to ask rather than to a vault answer.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Where does this repo configure the retry policy for outbound payment calls? I
+    need file and line references, and whether the backoff is exponential. Back every
+    claim with a citation to the code.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-answer-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-answer"'
+    min: 0
+    max: 0
+    arm: both

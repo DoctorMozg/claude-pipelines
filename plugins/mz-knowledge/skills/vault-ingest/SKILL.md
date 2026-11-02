@@ -1,6 +1,6 @@
 ---
 name: vault-ingest
-description: ALWAYS invoke when capturing voice memos, screenshots, PDFs, YouTube videos, or images into the vault as fleeting notes. Triggers ingest audio, transcribe voice, capture screenshot, ingest PDF, capture YouTube.
+description: 'Turns a voice memo, screenshot, PDF or YouTube video into a transcribed fleeting note. Use when the user wants media captured into the vault ("ingest audio", "transcribe voice", "ingest PDF"). Not for existing captures (use process-notes).'
 argument-hint: '<path or URL> [modality hint: voice|image|pdf|youtube]'
 model: sonnet
 allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(ffprobe *), Bash(pdfinfo *), Bash(awk *), Bash(true *), Grep, Glob, AskUserQuestion
@@ -14,10 +14,7 @@ Discipline skill for multimodal capture into the vault as fleeting notes. Detect
 
 ## When to Use
 
-- Ingesting voice memos (`.m4a`, `.wav`, `.mp3`) into the vault with transcription.
-- Capturing screenshots or images (`.png`, `.jpg`, `.heic`) via OCR.
-- Importing PDF content into a single fleeting note.
-- Capturing YouTube videos via auto-subtitle download.
+Capturing raw media (voice memos, screenshots and images, PDFs, YouTube videos) into the vault as a single transcribed fleeting note.
 
 ### When NOT to use
 

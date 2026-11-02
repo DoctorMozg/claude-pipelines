@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: vault-answer-fire-sleep-experiments
+description: Asking what the user concluded, strictly from a folder of their own write-ups and with the source of each claim named, belongs to vault-answer even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Areas/Health/Sleep experiments/ has about two years of my logs and conclusions.
+    What did I actually decide about caffeine after 2pm, and why? Stick to what is
+    written in those files, name the file behind each claim, and tell me which parts
+    of the question I never wrote anything about.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-answer-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-answer"'

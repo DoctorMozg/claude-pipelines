@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: vault-connect-near-miss-sleep-papers-split
+description: Splitting a long multi-idea capture into new atomic notes and wiring them in is the process-notes pipeline, not link discovery for an existing note.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Inbox/2026-10-27 sleep papers.md is about 1500 words of highlights and half-formed
+    thoughts from three papers on sleep and memory. Split it into separate notes with
+    one idea each and proper titles, and tie each new note into what I already have
+    in the vault.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-connect-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-connect"'
+    min: 0
+    max: 0
+    arm: both
