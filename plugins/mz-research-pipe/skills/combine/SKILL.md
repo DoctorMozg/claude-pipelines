@@ -14,7 +14,7 @@ You orchestrate a local-first synthesis that harvests prior pipeline output — 
 
 ## When to Use
 
-Invoke when the user asks to synthesize, consolidate, or pull together knowledge that already lives on disk. Trigger phrases: "synthesize what we learned", "combine our findings", "consolidate past research", "pull together everything about X".
+Synthesizing knowledge that already lives on disk (prior research, task artifacts, reports, reviews, codebase files, git history) into one unified report.
 
 ### When NOT to use
 

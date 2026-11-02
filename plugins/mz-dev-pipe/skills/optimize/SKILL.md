@@ -21,10 +21,7 @@ The skill is **domain-generic**. The methodology — the scientific loop — is 
 
 ## When to Use
 
-- User wants to make something faster, smaller, or cheaper against a measurable goal.
-- Triggers: "optimize X", "make it faster", "profile the hotspot", "reduce the image size", "tune LLM hyperparameters", "speed up the build".
-- The target can be measured by a repeatable command — or the user can supply one.
-- Domains: source code, container images / services / configs, LLM hyperparameters, build pipelines, and composite `system` targets spanning several of these.
+Making source code, container images and services, LLM hyperparameters, build pipelines, or composite `system` targets faster, smaller, or cheaper against a goal that a repeatable command can measure.
 
 ### When NOT to use
 

@@ -14,12 +14,11 @@ Orchestrates a multi-agent cleanup pass over existing code. Builds import-graph-
 
 ## When to Use
 
-- User wants to clean up, reduce complexity, or eliminate dead code.
-- Triggers: "clean up", "refactor", "reduce complexity", "remove dead code", "remove unused imports".
-- Scope spans multiple files and benefits from parallel chunked cleanup.
+Behavior-preserving cleanup of existing code: reducing complexity and removing dead code and unused imports, across multiple files where parallel chunked work pays off.
 
 ### When NOT to use
 
+- Making code faster, smaller, or cheaper — use `optimize`.
 - Failing tests that need fixing — use `polish`.
 - Failing tests with a known root cause — use `debug` first, then `cleanup` on the fixed code.
 - Code that passes metrics but has UI/UX or test-quality issues — use `polish`.

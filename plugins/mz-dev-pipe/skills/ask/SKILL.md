@@ -14,7 +14,7 @@ Orchestrates a read-only research pass that answers a user's question. The pipel
 
 ## When to Use
 
-Invoke when the user asks a question whose answer requires reading the codebase, the web, or both. Trigger phrases: "how does X work here", "why do we use Y", "does this project support Z", "what's the best approach to W".
+Answering a question whose answer requires reading the codebase, the web, or both, with a short sourced reply in chat.
 
 ### When NOT to use
 
