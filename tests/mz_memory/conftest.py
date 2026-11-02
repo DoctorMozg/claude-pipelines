@@ -1,24 +1,29 @@
 import os
+import shlex
+import shutil
 import subprocess
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Protocol
 
 import pytest
 
-CAPTURE_SCRIPT = (
-    Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts" / "memory-capture.sh"
+from .memory_helpers import (
+    BASH,
+    CLAUDE_STUB,
+    OPTIONAL_TOOLS,
+    SANDBOX_TOOLS,
+    SCRIPTS,
+    FakeCurator,
+    RawTaskWriter,
+    SeedLessons,
+    TaskWriter,
+    lessons_file,
+    lessons_layout,
 )
 
+CAPTURE_SCRIPT = SCRIPTS / "memory-capture.sh"
+
 type CaptureRunner = Callable[[dict[str, str]], None]
-
-
-class TaskWriter(Protocol):
-    def __call__(self, name: str, status: str, extra: str = "") -> Path: ...
-
-
-class RawTaskWriter(Protocol):
-    def __call__(self, name: str, text: str) -> Path: ...
 
 
 def _state_text(status: str, extra: str) -> str:
@@ -102,3 +107,54 @@ def run_capture(capture_env: dict[str, str], capture_runner: CaptureRunner) -> C
     # Compression is on by default; switching it off keeps these tests from starting the real CLI.
     env = {**capture_env, "MZ_MEMORY_COMPRESS": "0"}
     return lambda: capture_runner(env)
+
+
+@pytest.fixture
+def seed_lessons(project: Path) -> SeedLessons:
+    def write(curated: Sequence[str], inbox: Sequence[str] = ()) -> Path:
+        path = lessons_file(project)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(lessons_layout(curated, inbox), encoding="utf-8")
+        return path
+
+    return write
+
+
+@pytest.fixture
+def bin_dir(tmp_path: Path) -> Path:
+    """A PATH directory holding only the tools a background run needs."""
+    directory = tmp_path / "bin"
+    directory.mkdir()
+    for tool in SANDBOX_TOOLS:
+        located = shutil.which(tool)
+        assert located is not None, f"{tool} is not installed"
+        (directory / tool).symlink_to(located)
+    for tool in OPTIONAL_TOOLS:
+        located = shutil.which(tool)
+        if located is not None:
+            (directory / tool).symlink_to(located)
+    return directory
+
+
+@pytest.fixture
+def curator(tmp_path: Path, bin_dir: Path) -> FakeCurator:
+    record = tmp_path / "claude_record"
+    record.mkdir()
+    stub = bin_dir / "claude"
+    stub.write_text(
+        CLAUDE_STUB.format(bash=BASH, record=shlex.quote(str(record))), encoding="utf-8"
+    )
+    stub.chmod(0o755)
+    fake = FakeCurator(record)
+    fake.respond()
+    return fake
+
+
+@pytest.fixture
+def date_shim(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A directory whose `date` prints $MZ_TEST_TODAY; put it first on PATH to pin the day."""
+    directory = tmp_path_factory.mktemp("date_shim")
+    shim = directory / "date"
+    shim.write_text('#!/bin/sh\nprintf "%s\\n" "$MZ_TEST_TODAY"\n', encoding="utf-8")
+    shim.chmod(0o755)
+    return directory

@@ -1,0 +1,183 @@
+import json
+import re
+import shutil
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Protocol
+
+SCRIPTS = Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts"
+BASH = shutil.which("bash") or "/bin/bash"
+
+PIN_START = "<!-- mz-pinned-start -->"
+PIN_END = "<!-- mz-pinned-end -->"
+DIGEST_START = "<!-- mz-digest-start -->"
+DIGEST_END = "<!-- mz-digest-end -->"
+LOG_START = "<!-- mz-log-start -->"
+LOG_END = "<!-- mz-log-end -->"
+LESSONS_START = "<!-- mz-lessons-start -->"
+LESSONS_END = "<!-- mz-lessons-end -->"
+INBOX_START = "<!-- mz-inbox-start -->"
+INBOX_END = "<!-- mz-inbox-end -->"
+
+# A background run's PATH holds only these and the claude stub, so the real CLI never runs.
+SANDBOX_TOOLS = (
+    "bash",
+    "dirname",
+    "mkdir",
+    "rmdir",
+    "mktemp",
+    "mv",
+    "cp",
+    "rm",
+    "cat",
+    "awk",
+    "grep",
+    "head",
+    "tail",
+    "wc",
+    "sort",
+    "cut",
+    "find",
+    "date",
+    "jq",
+)
+# The scripts degrade without these, so a host that lacks them still runs the suite.
+OPTIONAL_TOOLS = ("flock", "timeout")
+# Settings a developer's shell may carry that would change what a background run does.
+CALLER_VARS = frozenset(
+    {"CLAUDE_PROJECT_DIR", "MZ_MEMORY_COMPRESS", "MZ_MEMORY_CURATOR", "MZ_MEMORY_CURATOR_MODEL"}
+)
+
+CLAUDE_STUB = """#!{bash}
+rec={record}
+cat >"$rec/prompt"
+printf '%s\\n' "$@" >"$rec/args"
+printf '%s\\n' "MZ_MEMORY_CURATOR=${{MZ_MEMORY_CURATOR-unset}}" \\
+  "MZ_MEMORY_COMPRESS=${{MZ_MEMORY_COMPRESS-unset}}" "PWD=$PWD" >"$rec/env"
+if [ -f "$rec/during.sh" ]; then . "$rec/during.sh"; fi
+cat "$rec/response"
+exit "$(cat "$rec/exit_code")"
+"""
+
+
+class TaskWriter(Protocol):
+    def __call__(self, name: str, status: str, extra: str = "") -> Path: ...
+
+
+class RawTaskWriter(Protocol):
+    def __call__(self, name: str, text: str) -> Path: ...
+
+
+class SeedLessons(Protocol):
+    def __call__(self, curated: Sequence[str], inbox: Sequence[str] = ()) -> Path: ...
+
+
+@dataclass(frozen=True)
+class FakeCurator:
+    """The stub claude on PATH: replies with a canned result and records how it was called."""
+
+    record: Path
+
+    def respond(self, *operations: dict[str, object]) -> None:
+        envelope = {
+            "type": "result",
+            "subtype": "success",
+            "is_error": False,
+            "structured_output": {"operations": list(operations)},
+        }
+        self.respond_raw(json.dumps(envelope))
+
+    def respond_raw(self, text: str, exit_code: int = 0) -> None:
+        (self.record / "response").write_text(text, encoding="utf-8")
+        (self.record / "exit_code").write_text(str(exit_code), encoding="utf-8")
+
+    def during_call(self, script: str) -> None:
+        (self.record / "during.sh").write_text(script, encoding="utf-8")
+
+    @property
+    def called(self) -> bool:
+        return (self.record / "prompt").exists()
+
+    def prompt(self) -> str:
+        return (self.record / "prompt").read_text(encoding="utf-8")
+
+    def args(self) -> list[str]:
+        return (self.record / "args").read_text(encoding="utf-8").split("\n")[:-1]
+
+    def arg(self, flag: str) -> str:
+        args = self.args()
+        return args[args.index(flag) + 1]
+
+    def env(self) -> dict[str, str]:
+        lines = (self.record / "env").read_text(encoding="utf-8").splitlines()
+        return {key: value for key, _, value in (line.partition("=") for line in lines)}
+
+
+def op(kind: str, **fields: object) -> dict[str, object]:
+    """One curator operation, with every field the schema requires."""
+    return {"op": kind, "inbox": [], "lessons": [], "text": "", "tags": [], "reason": "", **fields}
+
+
+def memory_dir(project: Path) -> Path:
+    return project / ".mz" / "memory"
+
+
+def memory_file(project: Path) -> Path:
+    return memory_dir(project) / "MEMORY.md"
+
+
+def lessons_file(project: Path) -> Path:
+    return memory_dir(project) / "lessons.md"
+
+
+def region(path: Path, start: str, end: str) -> list[str]:
+    """The lines between two markers; empty when the file has no such region."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if start not in lines:
+        return []
+    return lines[lines.index(start) + 1 : lines.index(end)]
+
+
+def curated_lines(project: Path) -> list[str]:
+    return region(lessons_file(project), LESSONS_START, LESSONS_END)
+
+
+def inbox_lines(project: Path) -> list[str]:
+    return region(lessons_file(project), INBOX_START, INBOX_END)
+
+
+def line_ids(lines: list[str]) -> list[str]:
+    return [line.split()[1] for line in lines]
+
+
+def line_texts(lines: list[str]) -> list[str]:
+    return [line.split(" :: ", 1)[1] for line in lines]
+
+
+def line_field(line: str, name: str) -> str:
+    match = re.search(rf"\b{name}=(\S+)", line.split(" :: ", 1)[0])
+    assert match is not None, f"{name}= missing from {line!r}"
+    return match.group(1)
+
+
+def lessons_layout(curated: Sequence[str], inbox: Sequence[str]) -> str:
+    """lessons.md as the scripts create it, holding the given lines."""
+    lines = [
+        "# Project Lessons",
+        "",
+        "<!-- Auto-managed by mz-memory. Curated lessons first; new lessons wait in the Inbox. -->",
+        "",
+        "## Lessons",
+        "",
+        LESSONS_START,
+        *curated,
+        LESSONS_END,
+        "",
+        "## Inbox",
+        "",
+        INBOX_START,
+        *inbox,
+        INBOX_END,
+    ]
+    return "\n".join(lines) + "\n"

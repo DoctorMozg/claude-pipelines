@@ -1,54 +1,33 @@
 import json
 import os
 import shlex
-import shutil
 import subprocess
 import time
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
 
-SCRIPTS = Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts"
-COMPRESS_SCRIPT = SCRIPTS / "memory-compress.sh"
-BASH = shutil.which("bash") or "/bin/bash"
-# PATH holds only these and the claude stub, so the real CLI never runs.
-TOOLS = (
-    "bash",
-    "dirname",
-    "mkdir",
-    "rmdir",
-    "mktemp",
-    "mv",
-    "cp",
-    "rm",
-    "cat",
-    "awk",
-    "grep",
-    "head",
-    "tail",
-    "wc",
-    "find",
-    "date",
-    "jq",
+from .memory_helpers import (
+    BASH,
+    CALLER_VARS,
+    DIGEST_END,
+    DIGEST_START,
+    LOG_END,
+    LOG_START,
+    PIN_END,
+    PIN_START,
+    SCRIPTS,
+    FakeCurator,
+    memory_dir,
+    memory_file,
+    op,
+    region,
 )
-# The scripts degrade without these, so a host that lacks them still runs the suite.
-OPTIONAL_TOOLS = ("flock", "timeout")
-CALLER_VARS = {
-    "CLAUDE_PROJECT_DIR",
-    "MZ_MEMORY_COMPRESS",
-    "MZ_MEMORY_CURATOR",
-    "MZ_MEMORY_CURATOR_MODEL",
-}
 
-PIN_START = "<!-- mz-pinned-start -->"
-PIN_END = "<!-- mz-pinned-end -->"
-DIGEST_START = "<!-- mz-digest-start -->"
-DIGEST_END = "<!-- mz-digest-end -->"
-LOG_START = "<!-- mz-log-start -->"
-LOG_END = "<!-- mz-log-end -->"
+COMPRESS_SCRIPT = SCRIPTS / "memory-compress.sh"
+
 OLD_SUMMARY_MARK = "<!-- mz-compressed -->"
 PINNED = "- [2026-10-01] Use UTC timestamps everywhere."
 KEEP_RECENT = 100
@@ -56,57 +35,8 @@ COMPRESS_THRESHOLD = 300
 DIGEST_MAX_ITEMS = 40
 DIGEST_ITEM_CHARS = 300
 
-STUB = """#!{bash}
-rec={record}
-cat >"$rec/prompt"
-printf '%s\\n' "$@" >"$rec/args"
-printf '%s\\n' "MZ_MEMORY_CURATOR=${{MZ_MEMORY_CURATOR-unset}}" \\
-  "MZ_MEMORY_COMPRESS=${{MZ_MEMORY_COMPRESS-unset}}" >"$rec/env"
-if [ -f "$rec/during.sh" ]; then . "$rec/during.sh"; fi
-cat "$rec/response"
-exit "$(cat "$rec/exit_code")"
-"""
-
 type RunCompress = Callable[..., None]
 type SeedMemory = Callable[..., Path]
-
-
-@dataclass(frozen=True)
-class FakeCurator:
-    """The stub claude on PATH: replies with a canned result and records how it was called."""
-
-    record: Path
-
-    def respond(self, *operations: dict[str, object]) -> None:
-        envelope = {
-            "type": "result",
-            "subtype": "success",
-            "is_error": False,
-            "structured_output": {"operations": list(operations)},
-        }
-        self.respond_raw(json.dumps(envelope))
-
-    def respond_raw(self, text: str, exit_code: int = 0) -> None:
-        (self.record / "response").write_text(text, encoding="utf-8")
-        (self.record / "exit_code").write_text(str(exit_code), encoding="utf-8")
-
-    def during_call(self, script: str) -> None:
-        (self.record / "during.sh").write_text(script, encoding="utf-8")
-
-    @property
-    def called(self) -> bool:
-        return (self.record / "prompt").exists()
-
-    def prompt(self) -> str:
-        return (self.record / "prompt").read_text(encoding="utf-8")
-
-    def arg(self, flag: str) -> str:
-        args = (self.record / "args").read_text(encoding="utf-8").split("\n")[:-1]
-        return args[args.index(flag) + 1]
-
-    def env(self) -> dict[str, str]:
-        lines = (self.record / "env").read_text(encoding="utf-8").splitlines()
-        return {key: value for key, _, value in (line.partition("=") for line in lines)}
 
 
 def entries(count: int, extra_lines: int = 0, padding: str = "") -> list[str]:
@@ -125,50 +55,31 @@ def digest_item(number: int, n: int = 1, last: str = "2026-10-01", text: str = "
     return f"- [D-{number:04d}] n={n} last={last} trig=log src=task{number} tags=auth :: {body}"
 
 
-def op(kind: str, **fields: object) -> dict[str, object]:
-    return {"op": kind, "inbox": [], "lessons": [], "text": "", "tags": [], "reason": "", **fields}
-
-
 def _today() -> str:
     return date.today().isoformat()
 
 
-def _memory_dir(project: Path) -> Path:
-    return project / ".mz" / "memory"
-
-
-def _memory_file(project: Path) -> Path:
-    return _memory_dir(project) / "MEMORY.md"
-
-
-def _region(project: Path, start: str, end: str) -> list[str]:
-    lines = _memory_file(project).read_text(encoding="utf-8").splitlines()
-    if start not in lines:
-        return []
-    return lines[lines.index(start) + 1 : lines.index(end)]
-
-
 def _log(project: Path) -> list[str]:
-    return _region(project, LOG_START, LOG_END)
+    return region(memory_file(project), LOG_START, LOG_END)
 
 
 def _digest(project: Path) -> list[str]:
-    return _region(project, DIGEST_START, DIGEST_END)
+    return region(memory_file(project), DIGEST_START, DIGEST_END)
 
 
 def _archive(project: Path) -> str:
-    archive = _memory_dir(project) / "activity.archive.md"
+    archive = memory_dir(project) / "activity.archive.md"
     return archive.read_text(encoding="utf-8") if archive.exists() else ""
 
 
 def _ops(project: Path) -> list[dict[str, object]]:
-    log = _memory_dir(project) / "activity.ops.jsonl"
+    log = memory_dir(project) / "activity.ops.jsonl"
     return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
 
 
 def _insert_after_log_start(project: Path, line: str) -> str:
     """A shell snippet that adds `line` to the top of the log, as a SessionEnd capture would."""
-    path = shlex.quote(str(_memory_file(project)))
+    path = shlex.quote(str(memory_file(project)))
     program = shlex.quote("{ print } $0 == start { print line }")
     return (
         f"awk -v start={shlex.quote(LOG_START)} -v line={shlex.quote(line)} {program} {path} "
@@ -178,7 +89,7 @@ def _insert_after_log_start(project: Path, line: str) -> str:
 
 @pytest.fixture
 def project(tmp_path: Path) -> Path:
-    _memory_dir(tmp_path).mkdir(parents=True)
+    memory_dir(tmp_path).mkdir(parents=True)
     return tmp_path
 
 
@@ -205,38 +116,11 @@ def seed(project: Path) -> SeedMemory:
         if log_heading:
             lines += ["## Activity Log", ""]
         lines += [LOG_START, *log, LOG_END]
-        memory_file = _memory_file(project)
-        memory_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        return memory_file
+        path = memory_file(project)
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return path
 
     return write
-
-
-@pytest.fixture
-def bin_dir(tmp_path: Path) -> Path:
-    directory = tmp_path / "bin"
-    directory.mkdir()
-    for tool in TOOLS:
-        located = shutil.which(tool)
-        assert located is not None, f"{tool} is not installed"
-        (directory / tool).symlink_to(located)
-    for tool in OPTIONAL_TOOLS:
-        located = shutil.which(tool)
-        if located is not None:
-            (directory / tool).symlink_to(located)
-    return directory
-
-
-@pytest.fixture
-def curator(tmp_path: Path, bin_dir: Path) -> FakeCurator:
-    record = tmp_path / "claude_record"
-    record.mkdir()
-    stub = bin_dir / "claude"
-    stub.write_text(STUB.format(bash=BASH, record=shlex.quote(str(record))), encoding="utf-8")
-    stub.chmod(0o755)
-    fake = FakeCurator(record)
-    fake.respond()
-    return fake
 
 
 @pytest.fixture
@@ -346,7 +230,7 @@ class TestCompression:
 
         run_compress()
 
-        text = _memory_file(project).read_text(encoding="utf-8")
+        text = memory_file(project).read_text(encoding="utf-8")
         assert (
             text.index(PIN_END)
             < text.index("## Digest")
@@ -362,7 +246,7 @@ class TestCompression:
 
         run_compress()
 
-        text = _memory_file(project).read_text(encoding="utf-8")
+        text = memory_file(project).read_text(encoding="utf-8")
         assert len(_digest(project)) == 1
         assert text.index(DIGEST_END) < text.index(LOG_START)
 
@@ -406,7 +290,7 @@ class TestDigest:
         self, project: Path, seed: SeedMemory, curator: FakeCurator, run_compress: RunCompress
     ) -> None:
         seed(entries(COMPRESS_THRESHOLD + 50))
-        (_memory_dir(project) / "activity.archive.md").write_text(
+        (memory_dir(project) / "activity.archive.md").write_text(
             f"2026-10-01 evicted: {digest_item(7)}\n", encoding="utf-8"
         )
         curator.respond(op("ADD", inbox=["E-0001"], text="Item 100 shipped"))
@@ -527,9 +411,9 @@ class TestFailures:
 
         run_compress()
 
-        assert _memory_file(project).read_text(encoding="utf-8") == before
+        assert memory_file(project).read_text(encoding="utf-8") == before
         assert _ops(project)[-1]["event"] == "failed"
-        assert (_memory_dir(project) / ".compress-failed").read_text(
+        assert (memory_dir(project) / ".compress-failed").read_text(
             encoding="utf-8"
         ).strip() == _today()
 
@@ -548,7 +432,7 @@ class TestFailures:
         retried: bool,
     ) -> None:
         seed(entries(COMPRESS_THRESHOLD + 50))
-        failed_mark = _memory_dir(project) / ".compress-failed"
+        failed_mark = memory_dir(project) / ".compress-failed"
         failed_mark.write_text(f"{failed_on.isoformat()}\n", encoding="utf-8")
 
         run_compress()
@@ -568,7 +452,7 @@ class TestFailures:
 
         run_compress()
 
-        assert _memory_file(project).read_text(encoding="utf-8") == before
+        assert memory_file(project).read_text(encoding="utf-8") == before
         assert _ops(project)[-1]["why"] == "digest items would shrink from 5 to 1"
 
     def test_old_entries_rewritten_during_the_call_abort_the_run(
@@ -579,13 +463,13 @@ class TestFailures:
         rewritten = seed(lines[:50]).read_text(encoding="utf-8")
         seed(lines)
         curator.during_call(
-            f"printf '%s' {shlex.quote(rewritten)} >{shlex.quote(str(_memory_file(project)))}\n"
+            f"printf '%s' {shlex.quote(rewritten)} >{shlex.quote(str(memory_file(project)))}\n"
         )
         curator.respond(op("ADD", inbox=["E-0001"], text="Item 100 shipped"))
 
         run_compress()
 
-        assert _memory_file(project).read_text(encoding="utf-8") == rewritten
+        assert memory_file(project).read_text(encoding="utf-8") == rewritten
         assert _ops(project)[-1]["event"] == "aborted"
 
 
@@ -598,7 +482,7 @@ class TestSkips:
         run_compress()
 
         assert not curator.called
-        assert _memory_file(project).read_text(encoding="utf-8") == before
+        assert memory_file(project).read_text(encoding="utf-8") == before
 
     def test_missing_claude_leaves_the_log_alone(
         self, project: Path, seed: SeedMemory, run_compress: RunCompress
@@ -607,7 +491,7 @@ class TestSkips:
 
         run_compress()
 
-        assert _memory_file(project).read_text(encoding="utf-8") == before
+        assert memory_file(project).read_text(encoding="utf-8") == before
 
     def test_compression_off_skips_the_call(
         self, seed: SeedMemory, curator: FakeCurator, run_compress: RunCompress
@@ -622,7 +506,7 @@ class TestSkips:
         self, project: Path, seed: SeedMemory, curator: FakeCurator, run_compress: RunCompress
     ) -> None:
         seed(entries(COMPRESS_THRESHOLD + 50))
-        lock = _memory_dir(project) / ".compress.lock"
+        lock = memory_dir(project) / ".compress.lock"
         lock.mkdir()
 
         run_compress()
@@ -634,7 +518,7 @@ class TestSkips:
         self, project: Path, seed: SeedMemory, curator: FakeCurator, run_compress: RunCompress
     ) -> None:
         seed(entries(COMPRESS_THRESHOLD + 50))
-        lock = _memory_dir(project) / ".compress.lock"
+        lock = memory_dir(project) / ".compress.lock"
         lock.mkdir()
         twenty_minutes_ago = time.time() - 20 * 60
         os.utime(lock, (twenty_minutes_ago, twenty_minutes_ago))
@@ -653,7 +537,9 @@ class TestChildProcess:
 
         run_compress()
 
-        assert curator.env() == {"MZ_MEMORY_CURATOR": "1", "MZ_MEMORY_COMPRESS": "0"}
+        env = curator.env()
+        assert env["MZ_MEMORY_CURATOR"] == "1"
+        assert env["MZ_MEMORY_COMPRESS"] == "0"
 
     def test_child_gets_the_capped_curator_call(
         self, seed: SeedMemory, curator: FakeCurator, run_compress: RunCompress

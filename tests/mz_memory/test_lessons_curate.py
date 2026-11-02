@@ -1,55 +1,34 @@
 import json
 import os
 import shlex
-import shutil
 import subprocess
 import time
-from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Protocol
 
 import pytest
 
-SCRIPTS = Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts"
-CURATE_SCRIPT = SCRIPTS / "lessons-curate.sh"
-BASH = shutil.which("bash") or "/bin/bash"
-# PATH holds only these and the claude stub, so the real CLI never runs.
-TOOLS = (
-    "bash",
-    "dirname",
-    "mkdir",
-    "rmdir",
-    "mktemp",
-    "mv",
-    "cp",
-    "rm",
-    "cat",
-    "awk",
-    "grep",
-    "head",
-    "tail",
-    "wc",
-    "sort",
-    "cut",
-    "find",
-    "date",
-    "jq",
+from .memory_helpers import (
+    BASH,
+    CALLER_VARS,
+    INBOX_START,
+    SCRIPTS,
+    FakeCurator,
+    SeedLessons,
+    TaskWriter,
+    curated_lines,
+    inbox_lines,
+    lessons_file,
+    line_field,
+    line_ids,
+    line_texts,
+    memory_dir,
+    op,
 )
-# The scripts degrade without these, so a host that lacks them still runs the suite.
-OPTIONAL_TOOLS = ("flock", "timeout")
-CALLER_VARS = {
-    "CLAUDE_PROJECT_DIR",
-    "MZ_MEMORY_COMPRESS",
-    "MZ_MEMORY_CURATOR",
-    "MZ_MEMORY_CURATOR_MODEL",
-}
 
-LESSONS_START = "<!-- mz-lessons-start -->"
-LESSONS_END = "<!-- mz-lessons-end -->"
-INBOX_START = "<!-- mz-inbox-start -->"
-INBOX_END = "<!-- mz-inbox-end -->"
+CURATE_SCRIPT = SCRIPTS / "lessons-curate.sh"
+
 # Header, section headings, blank lines and the four markers of an empty lessons.md.
 FIXED_LINES = 13
 MAX_LINES = 500
@@ -75,64 +54,7 @@ HOOK_INPUT = json.dumps(
     }
 )
 
-STUB = """#!{bash}
-rec={record}
-cat >"$rec/prompt"
-printf '%s\\n' "$@" >"$rec/args"
-printf '%s\\n' "MZ_MEMORY_CURATOR=${{MZ_MEMORY_CURATOR-unset}}" \\
-  "MZ_MEMORY_COMPRESS=${{MZ_MEMORY_COMPRESS-unset}}" "PWD=$PWD" >"$rec/env"
-if [ -f "$rec/during.sh" ]; then . "$rec/during.sh"; fi
-cat "$rec/response"
-exit "$(cat "$rec/exit_code")"
-"""
-
 type RunCurate = Callable[..., None]
-type SeedLessons = Callable[[Sequence[str], Sequence[str]], Path]
-
-
-class TaskWriter(Protocol):
-    def __call__(self, name: str, status: str, extra: str = "") -> Path: ...
-
-
-@dataclass(frozen=True)
-class FakeCurator:
-    """The stub claude on PATH: replies with a canned result and records how it was called."""
-
-    record: Path
-
-    def respond(self, *operations: dict[str, object]) -> None:
-        envelope = {
-            "type": "result",
-            "subtype": "success",
-            "is_error": False,
-            "structured_output": {"operations": list(operations)},
-        }
-        self.respond_raw(json.dumps(envelope))
-
-    def respond_raw(self, text: str, exit_code: int = 0) -> None:
-        (self.record / "response").write_text(text, encoding="utf-8")
-        (self.record / "exit_code").write_text(str(exit_code), encoding="utf-8")
-
-    def during_call(self, script: str) -> None:
-        (self.record / "during.sh").write_text(script, encoding="utf-8")
-
-    @property
-    def called(self) -> bool:
-        return (self.record / "prompt").exists()
-
-    def prompt(self) -> str:
-        return (self.record / "prompt").read_text(encoding="utf-8")
-
-    def args(self) -> list[str]:
-        return (self.record / "args").read_text(encoding="utf-8").split("\n")[:-1]
-
-    def arg(self, flag: str) -> str:
-        args = self.args()
-        return args[args.index(flag) + 1]
-
-    def env(self) -> dict[str, str]:
-        lines = (self.record / "env").read_text(encoding="utf-8").splitlines()
-        return {key: value for key, _, value in (line.partition("=") for line in lines)}
 
 
 def lesson(
@@ -149,10 +71,6 @@ def item(number: int, trig: str = "failure", text: str = "") -> str:
     return f"- [I-{number:04d}] 2026-11-01 trig={trig} src=task{number}@def status=failed :: {body}"
 
 
-def op(kind: str, **fields: object) -> dict[str, object]:
-    return {"op": kind, "inbox": [], "lessons": [], "text": "", "tags": [], "reason": "", **fields}
-
-
 def _today() -> str:
     return date.today().isoformat()
 
@@ -161,54 +79,18 @@ def _day(offset: int) -> str:
     return (date(2026, 1, 1) + timedelta(days=offset)).isoformat()
 
 
-def _memory_dir(project: Path) -> Path:
-    return project / ".mz" / "memory"
-
-
-def _lessons_file(project: Path) -> Path:
-    return _memory_dir(project) / "lessons.md"
-
-
-def _region(project: Path, start: str, end: str) -> list[str]:
-    lines = _lessons_file(project).read_text(encoding="utf-8").splitlines()
-    return lines[lines.index(start) + 1 : lines.index(end)]
-
-
-def _curated(project: Path) -> list[str]:
-    return _region(project, LESSONS_START, LESSONS_END)
-
-
-def _inbox(project: Path) -> list[str]:
-    return _region(project, INBOX_START, INBOX_END)
-
-
-def _ids(lines: list[str]) -> list[str]:
-    return [line.split()[1] for line in lines]
-
-
-def _texts(lines: list[str]) -> list[str]:
-    return [line.split(" :: ", 1)[1] for line in lines]
-
-
-def _field(line: str, name: str) -> str:
-    prefix = f"{name}="
-    return next(
-        word[len(prefix) :] for word in line.split(" :: ", 1)[0].split() if word.startswith(prefix)
-    )
-
-
 def _archive(project: Path) -> list[str]:
-    archive = _memory_dir(project) / "lessons.archive.md"
+    archive = memory_dir(project) / "lessons.archive.md"
     return archive.read_text(encoding="utf-8").splitlines() if archive.exists() else []
 
 
 def _ops(project: Path) -> list[dict[str, object]]:
-    log = _memory_dir(project) / "lessons.ops.jsonl"
+    log = memory_dir(project) / "lessons.ops.jsonl"
     return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
 
 
 def _mark(project: Path) -> str:
-    return (_memory_dir(project) / ".lessons-curated").read_text(encoding="utf-8").strip()
+    return (memory_dir(project) / ".lessons-curated").read_text(encoding="utf-8").strip()
 
 
 def _line_count(path: Path) -> int:
@@ -227,14 +109,14 @@ def _wait_for(condition: Callable[[], bool], timeout: float = 15.0) -> None:
         time.sleep(0.05)
 
 
-def _needs_curation(lessons_file: Path) -> bool:
+def _needs_curation(store: Path) -> bool:
     script = (
         'source "$1/lib/common.sh"; source "$1/lib/lessons.sh"; source "$1/lib/curator.sh"; '
         'lessons_need_curation "$2"'
     )
     env = {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
     result = subprocess.run(
-        [BASH, "-c", script, "needs-curation", str(SCRIPTS), str(lessons_file)],
+        [BASH, "-c", script, "needs-curation", str(SCRIPTS), str(store)],
         env=env,
         capture_output=True,
         text=True,
@@ -243,62 +125,6 @@ def _needs_curation(lessons_file: Path) -> bool:
     )
     assert result.returncode in (0, 1), result.stderr
     return result.returncode == 0
-
-
-@pytest.fixture
-def seed(project: Path) -> SeedLessons:
-    def write(curated: Sequence[str], inbox: Sequence[str]) -> Path:
-        lines = [
-            "# Project Lessons",
-            "",
-            "<!-- Auto-managed by mz-memory. "
-            "Curated lessons first; new lessons wait in the Inbox. -->",
-            "",
-            "## Lessons",
-            "",
-            LESSONS_START,
-            *curated,
-            LESSONS_END,
-            "",
-            "## Inbox",
-            "",
-            INBOX_START,
-            *inbox,
-            INBOX_END,
-        ]
-        lessons_file = _lessons_file(project)
-        lessons_file.parent.mkdir(parents=True, exist_ok=True)
-        lessons_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        return lessons_file
-
-    return write
-
-
-@pytest.fixture
-def bin_dir(tmp_path: Path) -> Path:
-    directory = tmp_path / "bin"
-    directory.mkdir()
-    for tool in TOOLS:
-        located = shutil.which(tool)
-        assert located is not None, f"{tool} is not installed"
-        (directory / tool).symlink_to(located)
-    for tool in OPTIONAL_TOOLS:
-        located = shutil.which(tool)
-        if located is not None:
-            (directory / tool).symlink_to(located)
-    return directory
-
-
-@pytest.fixture
-def curator(tmp_path: Path, bin_dir: Path) -> FakeCurator:
-    record = tmp_path / "claude_record"
-    record.mkdir()
-    stub = bin_dir / "claude"
-    stub.write_text(STUB.format(bash=BASH, record=shlex.quote(str(record))), encoding="utf-8")
-    stub.chmod(0o755)
-    fake = FakeCurator(record)
-    fake.respond()
-    return fake
 
 
 @pytest.fixture
@@ -324,9 +150,9 @@ def run_curate(project: Path, bin_dir: Path) -> RunCurate:
 
 class TestOperations:
     def test_add_turns_inbox_items_into_one_lesson(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(2, trig="review"), item(1)])
+        seed_lessons([], [item(2, trig="review"), item(1)])
         curator.respond(
             op("ADD", inbox=["I-0002", "I-0001"], text="WHEN x → y — WHY z", tags=["git"])
         )
@@ -337,25 +163,25 @@ class TestOperations:
             f"- [L-0001] n=2 last={_today()} trig=failure src=task1@def tags=git"
             " :: WHEN x → y — WHY z"
         )
-        assert _curated(project) == [expected]
-        assert _inbox(project) == []
+        assert curated_lines(project) == [expected]
+        assert inbox_lines(project) == []
         assert [line.split(": ", 1)[0] for line in _archive(project)] == [
             f"{_today()} into=L-0001"
         ] * 2
 
     def test_merge_counts_the_recurrence_and_keeps_the_wording(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
         original = lesson(1, n=2, last="2026-10-01")
-        seed([original], [item(1)])
+        seed_lessons([original], [item(1)])
         curator.respond(op("MERGE", inbox=["I-0001"], lessons=["L-0001"]))
 
         run_curate()
 
-        assert _curated(project) == [
+        assert curated_lines(project) == [
             original.replace("n=2 last=2026-10-01", f"n=3 last={_today()}")
         ]
-        assert _inbox(project) == []
+        assert inbox_lines(project) == []
 
     @pytest.mark.parametrize(
         ("rewrite", "replaced"),
@@ -368,25 +194,25 @@ class TestOperations:
     def test_merge_takes_a_rewrite_only_when_it_keeps_most_of_the_text(
         self,
         project: Path,
-        seed: SeedLessons,
+        seed_lessons: SeedLessons,
         curator: FakeCurator,
         run_curate: RunCurate,
         rewrite: str,
         replaced: bool,
     ) -> None:
         original = "WHEN case one happens → handle it — WHY reason one"
-        seed([lesson(1, text=original)], [item(1)])
+        seed_lessons([lesson(1, text=original)], [item(1)])
         curator.respond(op("MERGE", inbox=["I-0001"], lessons=["L-0001"], text=rewrite))
 
         run_curate()
 
-        assert _texts(_curated(project)) == [rewrite if replaced else original]
+        assert line_texts(curated_lines(project)) == [rewrite if replaced else original]
 
     def test_supersede_archives_the_old_lesson_and_keeps_its_tags(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
         old = lesson(1, n=4, tags="hooks")
-        seed([old], [item(1)])
+        seed_lessons([old], [item(1)])
         curator.respond(
             op(
                 "SUPERSEDE",
@@ -402,27 +228,27 @@ class TestOperations:
             f"- [L-0002] n=1 last={_today()} trig=failure src=task1@def tags=hooks"
             " :: WHEN new → better — WHY changed"
         )
-        assert _curated(project) == [expected]
+        assert curated_lines(project) == [expected]
         assert f"{_today()} superseded_by=L-0002: {old}" in _archive(project)
 
     def test_drop_archives_the_item_with_its_reason(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
         dropped = item(1)
-        seed([], [item(2), dropped])
+        seed_lessons([], [item(2), dropped])
         curator.respond(op("DROP", inbox=["I-0001"], reason="one-off typo"))
 
         run_curate()
 
-        assert _inbox(project) == [item(2)]
+        assert inbox_lines(project) == [item(2)]
         assert _archive(project) == [f"{_today()} dropped (one-off typo): {dropped}"]
 
     def test_combine_sums_counts_and_keeps_the_latest_date_and_all_tags(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
         first = lesson(1, n=1, last="2026-10-01", tags="git")
         second = lesson(2, n=2, last="2026-10-05", tags="git,safety")
-        seed([first, second, lesson(3, n=5)], [])
+        seed_lessons([first, second, lesson(3, n=5)], [])
         curator.respond(
             op(
                 "COMBINE",
@@ -437,13 +263,13 @@ class TestOperations:
             "- [L-0004] n=3 last=2026-10-05 trig=review src=t1@abc tags=git,safety"
             " :: WHEN rebasing → stash — WHY lost work"
         )
-        assert _curated(project) == [lesson(3, n=5), combined]
+        assert curated_lines(project) == [lesson(3, n=5), combined]
         assert [line.split(": ", 1)[1] for line in _archive(project)] == [first, second]
 
     def test_curated_lessons_are_ordered_by_count_then_recency(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed(
+        seed_lessons(
             [
                 lesson(1, n=1, last="2026-10-05"),
                 lesson(2, n=4, last="2026-10-01"),
@@ -455,31 +281,33 @@ class TestOperations:
 
         run_curate()
 
-        assert _ids(_curated(project)) == ["[L-0002]", "[L-0003]", "[L-0004]", "[L-0001]"]
+        assert line_ids(curated_lines(project)) == ["[L-0002]", "[L-0003]", "[L-0004]", "[L-0001]"]
 
     def test_unreadable_lines_and_untouched_items_keep_their_place(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([lesson(1), "a hand-written note"], [item(3), "stray inbox text", item(2), item(1)])
+        seed_lessons(
+            [lesson(1), "a hand-written note"], [item(3), "stray inbox text", item(2), item(1)]
+        )
         curator.respond(op("DROP", inbox=["I-0002"], reason="noise"))
 
         run_curate()
 
-        assert _curated(project) == [lesson(1), "a hand-written note"]
-        assert _inbox(project) == [item(3), "stray inbox text", item(1)]
+        assert curated_lines(project) == [lesson(1), "a hand-written note"]
+        assert inbox_lines(project) == [item(3), "stray inbox text", item(1)]
 
     def test_model_text_and_tags_are_cleaned_before_they_are_written(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
         text = "WHEN\tsomething\nbreaks → " + "word " * 120
         curator.respond(op("ADD", inbox=["I-0001"], text=text, tags=["Hooks", "JQ!", "hooks", ""]))
 
         run_curate()
 
-        [line] = _curated(project)
-        [written] = _texts([line])
-        assert _field(line, "tags") == "hooks,jq"
+        [line] = curated_lines(project)
+        [written] = line_texts([line])
+        assert line_field(line, "tags") == "hooks,jq"
         assert written.startswith("WHEN something breaks → word word")
         assert written.endswith(" word...")
         assert len(written) <= LESSON_MAX_CHARS + len("...")
@@ -487,9 +315,9 @@ class TestOperations:
 
 class TestGuards:
     def test_unknown_ids_are_rejected_and_logged(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([lesson(1)], [item(1)])
+        seed_lessons([lesson(1)], [item(1)])
         curator.respond(
             op("ADD", inbox=["I-0099"], text="WHEN a → b — WHY c"),
             op("MERGE", inbox=["I-0001"], lessons=["L-0042"]),
@@ -497,16 +325,16 @@ class TestGuards:
 
         run_curate()
 
-        assert _inbox(project) == [item(1)]
+        assert inbox_lines(project) == [item(1)]
         assert [(entry["event"], entry["why"]) for entry in _ops(project)] == [
             ("rejected", "unknown or already covered inbox id"),
             ("rejected", "unknown or already used lesson id"),
         ]
 
     def test_each_inbox_item_serves_one_operation(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
         curator.respond(
             op("ADD", inbox=["I-0001"], text="WHEN a → b — WHY c"),
             op("DROP", inbox=["I-0001"], reason="duplicate"),
@@ -514,14 +342,14 @@ class TestGuards:
 
         run_curate()
 
-        assert _ids(_curated(project)) == ["[L-0001]"]
+        assert line_ids(curated_lines(project)) == ["[L-0001]"]
         assert [entry["event"] for entry in _ops(project)] == ["applied", "rejected"]
         assert not any("dropped" in line for line in _archive(project))
 
     def test_each_lesson_serves_one_operation(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([lesson(1)], [item(2), item(1)])
+        seed_lessons([lesson(1)], [item(2), item(1)])
         curator.respond(
             op("MERGE", inbox=["I-0001"], lessons=["L-0001"]),
             op("MERGE", inbox=["I-0002"], lessons=["L-0001"]),
@@ -529,13 +357,13 @@ class TestGuards:
 
         run_curate()
 
-        assert _field(_curated(project)[0], "n") == "2"
-        assert _inbox(project) == [item(2)]
+        assert line_field(curated_lines(project)[0], "n") == "2"
+        assert inbox_lines(project) == [item(2)]
 
     def test_a_lesson_made_in_this_run_is_not_touched_again(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(2), item(1)])
+        seed_lessons([], [item(2), item(1)])
         curator.respond(
             op("ADD", inbox=["I-0001"], text="WHEN a → b — WHY c"),
             op("MERGE", inbox=["I-0002"], lessons=["L-0001"]),
@@ -543,8 +371,8 @@ class TestGuards:
 
         run_curate()
 
-        assert _field(_curated(project)[0], "n") == "1"
-        assert _inbox(project) == [item(2)]
+        assert line_field(curated_lines(project)[0], "n") == "1"
+        assert inbox_lines(project) == [item(2)]
 
     @pytest.mark.parametrize(
         "bad",
@@ -560,23 +388,23 @@ class TestGuards:
     def test_malformed_operations_change_nothing(
         self,
         project: Path,
-        seed: SeedLessons,
+        seed_lessons: SeedLessons,
         curator: FakeCurator,
         run_curate: RunCurate,
         bad: dict[str, object],
     ) -> None:
-        before = seed([lesson(1), lesson(2)], [item(1)]).read_text(encoding="utf-8")
+        before = seed_lessons([lesson(1), lesson(2)], [item(1)]).read_text(encoding="utf-8")
         curator.respond(bad)
 
         run_curate()
 
-        assert _lessons_file(project).read_text(encoding="utf-8") == before
+        assert lessons_file(project).read_text(encoding="utf-8") == before
         assert _ops(project)[-1]["why"] == "malformed, or over the removal cap"
 
     def test_operations_past_the_cap_are_ignored(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(number) for number in range(MAX_OPS + 1, 0, -1)])
+        seed_lessons([], [item(number) for number in range(MAX_OPS + 1, 0, -1)])
         curator.respond(
             *(
                 op("DROP", inbox=[f"I-{number:04d}"], reason="noise")
@@ -586,7 +414,7 @@ class TestGuards:
 
         run_curate()
 
-        assert _inbox(project) == [item(MAX_OPS + 1)]
+        assert inbox_lines(project) == [item(MAX_OPS + 1)]
         assert _ops(project)[0] == {
             "date": _today(),
             "event": "rejected",
@@ -594,10 +422,10 @@ class TestGuards:
         }
 
     def test_removals_past_the_cap_are_rejected(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
         count = MAX_REMOVED + 1
-        seed(
+        seed_lessons(
             [lesson(number) for number in range(1, count + 1)],
             [item(number) for number in range(count, 0, -1)],
         )
@@ -618,25 +446,25 @@ class TestGuards:
         assert [entry["event"] for entry in _ops(project)] == ["applied"] * MAX_REMOVED + [
             "rejected"
         ]
-        assert _inbox(project) == [item(count)]
+        assert inbox_lines(project) == [item(count)]
 
     def test_a_combine_past_the_removal_cap_is_rejected_even_under_the_shrink_limit(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([lesson(number) for number in range(1, 61)], [])
+        seed_lessons([lesson(number) for number in range(1, 61)], [])
         ids = [f"L-{number:04d}" for number in range(1, MAX_REMOVED + 2)]
         curator.respond(op("COMBINE", lessons=ids, text="WHEN all → one — WHY duplicates"))
 
         run_curate()
 
-        assert len(_curated(project)) == 60
+        assert len(curated_lines(project)) == 60
         assert _ops(project)[-1]["event"] == "rejected"
 
     def test_a_large_shrink_aborts_the_whole_run(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        lessons_file = seed([lesson(number) for number in range(1, 6)], [item(1)])
-        before = lessons_file.read_text(encoding="utf-8")
+        store = seed_lessons([lesson(number) for number in range(1, 6)], [item(1)])
+        before = store.read_text(encoding="utf-8")
         curator.respond(
             op("ADD", inbox=["I-0001"], text="WHEN a → b — WHY c"),
             op(
@@ -648,7 +476,7 @@ class TestGuards:
 
         run_curate()
 
-        assert lessons_file.read_text(encoding="utf-8") == before
+        assert store.read_text(encoding="utf-8") == before
         assert _ops(project) == [
             {
                 "date": _today(),
@@ -657,69 +485,69 @@ class TestGuards:
             }
         ]
         assert _archive(project) == []
-        assert not (_memory_dir(project) / "lessons.md.bak").exists()
+        assert not (memory_dir(project) / "lessons.md.bak").exists()
 
 
 class TestRecords:
     def test_items_added_during_the_call_survive_and_wait_for_the_next_run(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        lessons_file = seed([], [item(2), item(1)])
+        store = seed_lessons([], [item(2), item(1)])
         late = item(9, text="WHEN late → keep — WHY arrived mid-run")
-        tmp = f"{lessons_file}.tmp"
+        tmp = f"{store}.tmp"
         curator.during_call(
             f"awk -v start={shlex.quote(INBOX_START)} -v line={shlex.quote(late)} "
-            f"'{{ print }} $0 == start {{ print line }}' {shlex.quote(str(lessons_file))} "
-            f">{shlex.quote(tmp)} && mv {shlex.quote(tmp)} {shlex.quote(str(lessons_file))}\n"
+            f"'{{ print }} $0 == start {{ print line }}' {shlex.quote(str(store))} "
+            f">{shlex.quote(tmp)} && mv {shlex.quote(tmp)} {shlex.quote(str(store))}\n"
         )
         curator.respond(op("ADD", inbox=["I-0001"], text="WHEN a → b — WHY c"))
 
         run_curate()
 
-        assert _inbox(project) == [late, item(2)]
+        assert inbox_lines(project) == [late, item(2)]
         assert _mark(project) == "2"
 
     def test_new_ids_continue_past_archived_lessons(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
-        (_memory_dir(project) / "lessons.archive.md").write_text(
+        seed_lessons([], [item(1)])
+        (memory_dir(project) / "lessons.archive.md").write_text(
             f"2026-10-01 evicted: {lesson(7)}\n", encoding="utf-8"
         )
         curator.respond(op("ADD", inbox=["I-0001"], text="WHEN a → b — WHY c"))
 
         run_curate()
 
-        assert _ids(_curated(project)) == ["[L-0008]"]
+        assert line_ids(curated_lines(project)) == ["[L-0008]"]
 
     def test_a_full_file_of_long_lessons_is_still_curated(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
         # About 200 KB of regions, past the 128 KiB Linux limit on a single command-line argument.
         long_text = "WHEN a long lesson → keep every detail — WHY " + "detail " * 50
-        seed([lesson(number, text=long_text) for number in range(1, 461)], [item(1)])
+        seed_lessons([lesson(number, text=long_text) for number in range(1, 461)], [item(1)])
         curator.respond(op("DROP", inbox=["I-0001"], reason="noise"))
 
         run_curate()
 
-        assert _inbox(project) == []
-        assert len(_curated(project)) == 460
+        assert inbox_lines(project) == []
+        assert len(curated_lines(project)) == 460
 
     def test_backup_holds_the_file_as_it_was_before_the_rewrite(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        before = seed([], [item(1)]).read_text(encoding="utf-8")
+        before = seed_lessons([], [item(1)]).read_text(encoding="utf-8")
         curator.respond(op("DROP", inbox=["I-0001"], reason="noise"))
 
         run_curate()
 
-        assert (_memory_dir(project) / "lessons.md.bak").read_text(encoding="utf-8") == before
+        assert (memory_dir(project) / "lessons.md.bak").read_text(encoding="utf-8") == before
 
     def test_ops_log_keeps_the_last_thousand_entries(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
-        log = _memory_dir(project) / "lessons.ops.jsonl"
+        seed_lessons([], [item(1)])
+        log = memory_dir(project) / "lessons.ops.jsonl"
         log.write_text(
             "".join(f'{{"n": {index}}}\n' for index in range(OPS_LOG_MAX)), encoding="utf-8"
         )
@@ -776,38 +604,38 @@ class TestFallbacks:
     def test_failed_call_leaves_the_file_and_still_advances_the_mark(
         self,
         project: Path,
-        seed: SeedLessons,
+        seed_lessons: SeedLessons,
         curator: FakeCurator,
         run_curate: RunCurate,
         reply: str,
         exit_code: int,
     ) -> None:
-        lessons_file = seed([lesson(1)], [item(2), item(1)])
-        before = lessons_file.read_text(encoding="utf-8")
+        store = seed_lessons([lesson(1)], [item(2), item(1)])
+        before = store.read_text(encoding="utf-8")
         curator.respond_raw(reply, exit_code)
 
         run_curate()
 
-        assert lessons_file.read_text(encoding="utf-8") == before
+        assert store.read_text(encoding="utf-8") == before
         assert _ops(project)[-1]["event"] == "failed"
         assert _mark(project) == "2"
 
     def test_missing_claude_skips_curation(
-        self, project: Path, seed: SeedLessons, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, run_curate: RunCurate
     ) -> None:
-        lessons_file = seed([lesson(1)], [item(1)])
-        before = lessons_file.read_text(encoding="utf-8")
+        store = seed_lessons([lesson(1)], [item(1)])
+        before = store.read_text(encoding="utf-8")
 
         run_curate()
 
-        assert lessons_file.read_text(encoding="utf-8") == before
-        assert not (_memory_dir(project) / "lessons.ops.jsonl").exists()
-        assert not (_memory_dir(project) / ".lessons-curated").exists()
+        assert store.read_text(encoding="utf-8") == before
+        assert not (memory_dir(project) / "lessons.ops.jsonl").exists()
+        assert not (memory_dir(project) / ".lessons-curated").exists()
 
     def test_missing_jq_skips_the_call(
-        self, seed: SeedLessons, curator: FakeCurator, bin_dir: Path, run_curate: RunCurate
+        self, seed_lessons: SeedLessons, curator: FakeCurator, bin_dir: Path, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
         (bin_dir / "jq").unlink()
 
         run_curate()
@@ -815,9 +643,9 @@ class TestFallbacks:
         assert not curator.called
 
     def test_compression_off_skips_the_call(
-        self, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
 
         run_curate({"MZ_MEMORY_COMPRESS": "0"})
 
@@ -829,13 +657,13 @@ class TestFallbacks:
         run_curate()
 
         assert not curator.called
-        assert not _lessons_file(project).exists()
+        assert not lessons_file(project).exists()
 
     def test_a_run_in_progress_is_not_started_twice(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
-        lock = _memory_dir(project) / ".curate.lock"
+        seed_lessons([], [item(1)])
+        lock = memory_dir(project) / ".curate.lock"
         lock.mkdir()
 
         run_curate()
@@ -844,10 +672,10 @@ class TestFallbacks:
         assert lock.is_dir()
 
     def test_lock_left_by_a_killed_run_is_cleared(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
-        lock = _memory_dir(project) / ".curate.lock"
+        seed_lessons([], [item(1)])
+        lock = memory_dir(project) / ".curate.lock"
         lock.mkdir()
         twenty_minutes_ago = time.time() - 20 * 60
         os.utime(lock, (twenty_minutes_ago, twenty_minutes_ago))
@@ -860,9 +688,9 @@ class TestFallbacks:
 
 class TestChildProcess:
     def test_child_runs_with_hooks_and_nested_curation_off(
-        self, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
 
         run_curate()
 
@@ -871,9 +699,9 @@ class TestChildProcess:
         assert env["MZ_MEMORY_COMPRESS"] == "0"
 
     def test_child_gets_no_tools_hooks_session_or_free_text(
-        self, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
 
         run_curate()
 
@@ -896,22 +724,22 @@ class TestChildProcess:
     )
     def test_model_defaults_to_sonnet_and_can_be_overridden(
         self,
-        seed: SeedLessons,
+        seed_lessons: SeedLessons,
         curator: FakeCurator,
         run_curate: RunCurate,
         override: dict[str, str],
         model: str,
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
 
         run_curate(override)
 
         assert curator.arg("--model") == model
 
     def test_child_runs_in_a_scratch_directory_outside_the_project(
-        self, project: Path, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([], [item(1)])
+        seed_lessons([], [item(1)])
 
         run_curate()
 
@@ -920,9 +748,9 @@ class TestChildProcess:
         assert not workdir.exists()
 
     def test_prompt_carries_both_regions_as_data(
-        self, seed: SeedLessons, curator: FakeCurator, run_curate: RunCurate
+        self, seed_lessons: SeedLessons, curator: FakeCurator, run_curate: RunCurate
     ) -> None:
-        seed([lesson(1)], [item(1)])
+        seed_lessons([lesson(1)], [item(1)])
 
         run_curate()
 
@@ -936,58 +764,58 @@ class TestChildProcess:
 
 class TestEviction:
     def test_low_count_lessons_go_first_lowest_count_then_oldest(
-        self, project: Path, seed: SeedLessons, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, run_curate: RunCurate
     ) -> None:
         seen_often = [lesson(number, n=3) for number in range(1, 11)]
         seen_once = [lesson(number, n=1, last=_day(number)) for number in range(11, 36)]
         seen_twice = [lesson(number, n=2, last=_day(number)) for number in range(36, 61)]
         inbox = [item(number) for number in range(450, 0, -1)]
-        lessons_file = seed([*seen_often, *seen_once, *seen_twice], inbox)
+        store = seed_lessons([*seen_often, *seen_once, *seen_twice], inbox)
         excess = FIXED_LINES + 60 + 450 - EVICT_TO
 
         run_curate()
 
-        assert _line_count(lessons_file) == EVICT_TO
-        assert _curated(project) == [*seen_often, *seen_twice[excess - len(seen_once) :]]
-        assert _inbox(project) == inbox
+        assert _line_count(store) == EVICT_TO
+        assert curated_lines(project) == [*seen_often, *seen_twice[excess - len(seen_once) :]]
+        assert inbox_lines(project) == inbox
         assert len(_archive(project)) == excess
 
     def test_oldest_inbox_items_go_once_only_frequent_lessons_are_left(
-        self, project: Path, seed: SeedLessons, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, run_curate: RunCurate
     ) -> None:
         seen_often = [lesson(number, n=3) for number in range(1, 6)]
         inbox = [item(number) for number in range(500, 0, -1)]
-        seed(seen_often, inbox)
+        seed_lessons(seen_often, inbox)
         excess = FIXED_LINES + 5 + 500 - EVICT_TO
 
         run_curate()
 
-        assert _curated(project) == seen_often
-        assert _inbox(project) == inbox[:-excess]
+        assert curated_lines(project) == seen_often
+        assert inbox_lines(project) == inbox[:-excess]
         # The archive lists victims in eviction order, oldest first.
         assert _archive(project) == [
             f"{_today()} evicted: {line}" for line in reversed(inbox[-excess:])
         ]
 
     def test_file_at_the_cap_is_left_alone(
-        self, project: Path, seed: SeedLessons, run_curate: RunCurate
+        self, project: Path, seed_lessons: SeedLessons, run_curate: RunCurate
     ) -> None:
-        lessons_file = seed([], [item(number) for number in range(MAX_LINES - FIXED_LINES, 0, -1)])
-        before = lessons_file.read_text(encoding="utf-8")
+        store = seed_lessons([], [item(number) for number in range(MAX_LINES - FIXED_LINES, 0, -1)])
+        before = store.read_text(encoding="utf-8")
 
         run_curate()
 
-        assert lessons_file.read_text(encoding="utf-8") == before
+        assert store.read_text(encoding="utf-8") == before
         assert _archive(project) == []
 
     def test_session_end_evicts_without_the_model(
-        self, project: Path, seed: SeedLessons, run_capture: Callable[[], None]
+        self, project: Path, seed_lessons: SeedLessons, run_capture: Callable[[], None]
     ) -> None:
-        lessons_file = seed([], [item(number) for number in range(600, 0, -1)])
+        store = seed_lessons([], [item(number) for number in range(600, 0, -1)])
 
         run_capture()
 
-        assert _line_count(lessons_file) == EVICT_TO
+        assert _line_count(store) == EVICT_TO
 
 
 NEED_CASES = {
@@ -1010,32 +838,32 @@ class TestTrigger:
     def test_curation_waits_for_enough_new_items(
         self,
         project: Path,
-        seed: SeedLessons,
+        seed_lessons: SeedLessons,
         inbox_numbers: range,
         mark: str | None,
         curated_count: int,
         expected: bool,
     ) -> None:
-        lessons_file = seed(
+        store = seed_lessons(
             [lesson(number) for number in range(1, curated_count + 1)],
             [item(number) for number in inbox_numbers],
         )
         if mark is not None:
-            (_memory_dir(project) / ".lessons-curated").write_text(f"{mark}\n", encoding="utf-8")
+            (memory_dir(project) / ".lessons-curated").write_text(f"{mark}\n", encoding="utf-8")
 
-        assert _needs_curation(lessons_file) is expected
+        assert _needs_curation(store) is expected
 
     def test_session_end_starts_the_curator_in_the_background(
         self,
         project: Path,
-        seed: SeedLessons,
+        seed_lessons: SeedLessons,
         curator: FakeCurator,
         bin_dir: Path,
         capture_env: dict[str, str],
         capture_runner: Callable[[dict[str, str]], None],
     ) -> None:
-        seed([], [item(number) for number in range(5, 0, -1)])
-        memory = _memory_dir(project)
+        seed_lessons([], [item(number) for number in range(5, 0, -1)])
+        memory = memory_dir(project)
 
         capture_runner({**capture_env, "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"})
 
