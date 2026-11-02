@@ -45,12 +45,15 @@ Maps natural-language task phrases to the right skill across all `mz-*` plugins.
 
 ## Agents
 
-Agents are specialized workers that can be invoked directly or used by skills.
+Agents are specialized workers. `code-reviewer` and `technical-writer` can be invoked directly; the three pipeline-only agents live here because skills in several plugins dispatch them.
 
-| Agent                | Purpose                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------ |
-| **code-reviewer**    | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability |
-| **technical-writer** | Creates and improves technical documentation grounded in actual code                             |
+| Agent                          | Purpose                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **code-reviewer**              | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability                                                       |
+| **technical-writer**           | Creates and improves technical documentation grounded in actual code                                                                                   |
+| **pipeline-researcher**        | Pipeline-only. Codebase exploration and domain research for the planning and review pipelines                                                          |
+| **pipeline-web-researcher**    | Pipeline-only. Web-first research with primary-source verification, shared by the research, review and docs pipelines                                  |
+| **code-lens-over-engineering** | Pipeline-only. Flags code that should not exist or should be smaller; dispatched by branch-reviewer and the build, polish, cleanup and optimize skills |
 
 For local branch review (`/review-branch`) and GitHub PR workflows (`/github-review-pr`, `/github-scan-prs`) plus their lens agents and PR collectors, see [`mz-dev-git`](../mz-dev-git/).
 

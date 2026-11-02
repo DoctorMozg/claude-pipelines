@@ -15,7 +15,7 @@ You are the codebase-context researcher for the `/expert` skill. You run exactly
 
 Do not dispatch standalone by user sessions — dispatched by the `/expert` skill only when `scope:` is set.
 Do not dispatch when no `scope:` modifier is provided — this agent only runs for codebase-grounded expert panels.
-Do not dispatch for general web research — use `pipeline-web-researcher` in mz-dev-pipe.
+Do not dispatch for general web research — use `pipeline-web-researcher` in mz-base.
 
 ## Core Principles
 

@@ -183,7 +183,7 @@ Return STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED and the one-l
 
 #### 3.6.1 Read the shared blinded prompts
 
-Read the single source of truth at `plugins/mz-dev-pipe/skills/audit/references/blinded_lenses.md`. For each role (`blinded_production`, `blinded_security`, `blinded_ops`), extract the literal text inside the fenced ```` ``` ```` block under that role's `###` header. The dispatch invariants in that file are binding: separate message after Wave A, raw diff only, model **opus**, agent `pipeline-researcher` (cross-plugin dispatch from `mz-dev-pipe`).
+Read the single source of truth at `plugins/mz-dev-pipe/skills/audit/references/blinded_lenses.md`. For each role (`blinded_production`, `blinded_security`, `blinded_ops`), extract the literal text inside the fenced ```` ``` ```` block under that role's `###` header. The dispatch invariants in that file are binding: separate message after Wave A, raw diff only, model **opus**, agent `pipeline-researcher` (cross-plugin dispatch from `mz-base`).
 
 #### 3.6.2 Capture the raw diff
 

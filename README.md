@@ -242,7 +242,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | **init-rules**      | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 | **construct-skill** | `/construct-skill <intent>`                                | Drafts a new skill through a RED/GREEN/REFACTOR authoring loop      |
 
-2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
+2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs), plus 3 shared pipeline agents that other plugins dispatch (pipeline-researcher, pipeline-web-researcher, code-lens-over-engineering). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
 
 **[Full documentation →](plugins/mz-base/)**
 
@@ -250,7 +250,7 @@ ______________________________________________________________________
 
 ### [`mz-dev-git`](plugins/mz-dev-git/) — Git & GitHub Review Workflows
 
-Multi-lens deep review for local branches and GitHub pull requests. Runs five parallel code-review specialists (bugs, security, architecture, performance, maintainability) per change, plus a daily GitHub PR triage and per-PR deep-review pipeline.
+Multi-lens deep review for local branches and GitHub pull requests. Runs six parallel code-review specialists (bugs, security, architecture, performance, maintainability, over-engineering) per change, plus a daily GitHub PR triage and per-PR deep-review pipeline.
 
 | Skill                | Command                    | What it does                                                                         |
 | -------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
@@ -258,7 +258,7 @@ Multi-lens deep review for local branches and GitHub pull requests. Runs five pa
 | **github-review-pr** | `/github-review-pr <URL>`  | Deep-reviews a GitHub PR in an isolated worktree, with severity-labeled findings     |
 | **github-scan-prs**  | `/github-scan-prs [repos]` | Triages PRs across repos (review-requested, mentioned, assigned, changes-requested)  |
 
-11 agents total: 2 orchestrators (branch-reviewer, github-pr-reviewer) plus 9 support agents (branch-info-collector, github-pr-scanner, github-pr-info-scorer, github-pr-data-fetcher, code-lens-{bugs,security,architecture,performance,maintainability}). Cross-plugin: branch-reviewer and github-pr-reviewer dispatch `pipeline-web-researcher` from `mz-dev-pipe` for unfamiliar domain topics — install both plugins for the full experience.
+11 agents total: 2 orchestrators (branch-reviewer, github-pr-reviewer) plus 9 support agents (branch-info-collector, github-pr-scanner, github-pr-info-scorer, github-pr-data-fetcher, code-lens-{bugs,security,architecture,performance,maintainability}). Cross-plugin: branch-reviewer and github-pr-reviewer dispatch `pipeline-web-researcher` from `mz-base` for unfamiliar domain topics, and branch-reviewer adds `code-lens-over-engineering` from `mz-base` as its sixth lens.
 
 **[Full documentation →](plugins/mz-dev-git/)**
 
@@ -280,7 +280,7 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **decomment**       | `/decomment [scope]`        | Strips AI-flavored comments and docstrings from code, never touching executable logic                                        |
 | **clean-leftovers** | `/clean-leftovers [scope]`  | Removes AI-generation leftovers — signatures, phase markers, planning comments, half-implementations                         |
 
-17 specialized agents (researcher, web-researcher, planner, plan-reviewer, coder, code-reviewer, test-writer, test-reviewer, test-runner, lint-runner, tooling-detector, optimizer, completeness-checker, decomment-proposer, leftover-cleaner, measure-runner, perf-candidate).
+15 specialized agents (planner, plan-reviewer, coder, code-reviewer, test-writer, test-reviewer, test-runner, lint-runner, tooling-detector, optimizer, completeness-checker, decomment-proposer, leftover-cleaner, measure-runner, perf-candidate).
 
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 
@@ -315,7 +315,7 @@ Research and content skills spun off from `mz-dev-pipe` — they produce reports
 | **explain**       | `/explain <scope>`       | Multi-angle code research → comprehensive report with Mermaid diagrams                               |
 | **translate**     | `/translate <request>`   | Discovery → glossary → plan → parallel translation → tiered verification, preserving markdown & code |
 
-1 agent (pipeline-translator). `/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` from `mz-dev-pipe` — install both plugins together.
+1 agent (pipeline-translator). `/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` from `mz-base`.
 
 **[Full documentation →](plugins/mz-research-pipe/)**
 

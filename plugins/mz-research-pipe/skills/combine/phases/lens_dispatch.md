@@ -150,7 +150,7 @@ Return the gap-fill as markdown **inline in your response** — the orchestrator
 End your response with a final line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
 
-The `STACK DETECTED` / `CONFLICT DETECTED` / `UNVERIFIED` tokens are contracts defined in the `pipeline-web-researcher` agent rules at `plugins/mz-dev-pipe/agents/pipeline-web-researcher.md`. Do not restate those rules in this prompt — the agent already enforces them. The "per your agent rules" phrasing is deliberate compression.
+The `STACK DETECTED` / `CONFLICT DETECTED` / `UNVERIFIED` tokens are contracts defined in the `pipeline-web-researcher` agent rules at `plugins/mz-base/agents/pipeline-web-researcher.md`. Do not restate those rules in this prompt — the agent already enforces them. The "per your agent rules" phrasing is deliberate compression.
 
 `pipeline-web-researcher` is read-only — it has no Write tool. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its `gapfill_<GAP_ID>.md` artifact via the Write tool — one Write call per returned gap, before Phase 4.3 reads the gap-fill files.
 

@@ -1,6 +1,6 @@
 # Phase 1: Research (Mandatory)
 
-The orchestrator dispatches `pipeline-web-researcher` (mz-dev-pipe plugin) to refresh the current catalog of AI code-tells and tool watermarks. Research is mandatory because tool watermark strings and AI-signature footers shift on a multi-month cadence; relying on the embedded list alone is how stale detection gets shipped to PR review.
+The orchestrator dispatches `pipeline-web-researcher` (mz-base plugin) to refresh the current catalog of AI code-tells and tool watermarks. Research is mandatory because tool watermark strings and AI-signature footers shift on a multi-month cadence; relying on the embedded list alone is how stale detection gets shipped to PR review.
 
 Output: `.mz/task/<task_name>/web_research.md`. The orchestrator merges these findings with `references/artifact-catalog.md` (lazy-loaded by grep in Phase 2) when scanning.
 

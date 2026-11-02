@@ -13,13 +13,13 @@ claude plugin install mz-dev-git
 
 ## Dependencies
 
-`mz-dev-git` is **functionally self-contained** for branch and PR review but **dispatches `pipeline-web-researcher` from `mz-dev-pipe`** when reviewers encounter unfamiliar domain topics that need authoritative external sources. Install `mz-dev-pipe` for the full experience:
+`mz-dev-git` dispatches three shared agents from **`mz-base`** (see [Cross-plugin dispatch](#cross-plugin-dispatch)). Install it alongside:
 
 ```bash
-claude plugin install mz-dev-pipe
+claude plugin install mz-base
 ```
 
-If `mz-dev-pipe` is absent, the reviewers skip the optional web-research step and continue with codebase-only analysis. No hard failure.
+If `mz-base` is absent, the reviewers skip the optional research step and run the five local lenses; branch-reviewer needs only 4 of its 6 lenses, so nothing fails hard.
 
 GitHub-PR skills additionally require the `gh` CLI authenticated, or `$GITHUB_TOKEN` set, or a GitHub MCP server exposed in the session.
 
@@ -27,14 +27,14 @@ GitHub-PR skills additionally require the `gh` CLI authenticated, or `$GITHUB_TO
 
 ### `/review-branch` — Branch Review
 
-Reviews all changes on the current branch against its base branch. Walks every modified file, runs five parallel code-review lenses (bugs, security, architecture, performance, maintainability), optionally consults `pipeline-web-researcher` for unfamiliar domains, and produces a structured report saved to `.mz/reviews/`.
+Reviews all changes on the current branch against its base branch. Walks every modified file, runs six parallel code-review lenses (bugs, security, architecture, performance, maintainability, over-engineering), optionally consults `pipeline-web-researcher` for unfamiliar domains, and produces a structured report saved to `.mz/reviews/`.
 
 ```
 /review-branch              # compare against main
 /review-branch develop      # compare against develop
 ```
 
-**Pipeline**: branch-info-collector (git metadata + prior reviews) → branch-reviewer fan-out (5 code-lens agents in parallel + optional web research) → consolidated findings report.
+**Pipeline**: branch-info-collector (git metadata + prior reviews) → branch-reviewer fan-out (6 code-lens agents in parallel + optional web research) → consolidated findings report.
 
 ### `/github-review-pr` — Pull Request Review
 
@@ -64,7 +64,7 @@ Specialized worker agents used by the skills above. You don't invoke these direc
 
 | Agent                         | Role                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------ |
-| **branch-reviewer**           | Top-level orchestrator. Walks each changed file, fans out 5 code-lens agents, merges findings    |
+| **branch-reviewer**           | Top-level orchestrator. Walks each changed file, fans out 6 code-lens agents, merges findings    |
 | **branch-info-collector**     | Pipeline collector — runs git metadata commands and scans for prior review reports               |
 | **github-pr-reviewer**        | Top-level PR orchestrator. Sets up a temp PR worktree, dispatches branch-reviewer, writes report |
 | **github-pr-scanner**         | Multi-repo PR triage orchestrator. Fans out github-pr-info-scorer per PR, produces tier ranking  |
@@ -80,7 +80,7 @@ All five `code-lens-*` agents and the four `github-pr-*` collectors/scorers are 
 
 ## Cross-plugin dispatch
 
-`branch-reviewer.md` and `github-pr-reviewer.md` reference `pipeline-web-researcher`, which lives in `mz-dev-pipe`. Claude Code resolves agent names across all loaded plugins, so the dispatch works as long as both plugins are installed. Documenting the dependency here rather than enforcing it via plugin manifest — Claude Code's plugin format does not currently support a `dependsOn` field.
+`branch-reviewer` dispatches `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering`; `github-pr-reviewer` dispatches `pipeline-web-researcher`. All three live in `mz-base` because skills in other plugins dispatch them too. Claude Code resolves agent names across all loaded plugins, so the dispatch works whenever `mz-base` is installed.
 
 ## License
 

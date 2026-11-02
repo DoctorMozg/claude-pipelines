@@ -18,7 +18,7 @@ These four constraints are binding on every consumer. Violating any one of them 
 1. **Separate assistant message.** Wave B is dispatched in a fresh assistant message AFTER Wave A has returned. Same-message dispatch lets the model see Wave A findings in its own context and contaminates the blind.
 1. **Raw diff only.** Researchers receive only the unified diff wrapped in `<untrusted-content>...</untrusted-content>` delimiters. They MUST NOT receive the scope file, the Known Concerns Map, any Wave A finding artifact, or any prior consolidation table.
 1. **Model: opus.** Adversarial framing and attacker-path tracing are accuracy-critical. Sonnet underperforms here.
-1. **Agent: `pipeline-researcher`.** All three roles use the same researcher with role-specific prompts. The agent lives in `plugins/mz-dev-pipe/agents/pipeline-researcher.md`; consumers in other plugins dispatch it cross-plugin (the registered agent name resolves across loaded plugins).
+1. **Agent: `pipeline-researcher`.** All three roles use the same researcher with role-specific prompts. The agent lives in `plugins/mz-base/agents/pipeline-researcher.md`; every consumer dispatches it by its registered name, which resolves across loaded plugins.
 
 ## Roles
 

@@ -18,7 +18,8 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 BUILD_SKILL="$REPO_ROOT/plugins/mz-dev-pipe/skills/build"
-AGENTS_DIRS=("$REPO_ROOT/plugins/mz-dev-pipe/agents" "$REPO_ROOT/plugins/mz-research-pipe/agents")
+# Agents resolve by name across plugins, so look in every plugin, as the contract matrix does.
+AGENTS_DIRS=("$REPO_ROOT"/plugins/*/agents)
 SHARED_DIR="$REPO_ROOT/plugins/mz-dev-pipe/skills/shared"
 FIXTURE_DIR="$REPO_ROOT/plugins/mz-dev-pipe/tests/smoke/fixture"
 METRICS_DIR="$REPO_ROOT/.mz/metrics/smoke"
@@ -69,12 +70,14 @@ for link in $shared_links; do
 done
 
 # --- Check 3: contract matrix still passes ----------------------------------
-if "$REPO_ROOT/plugins/mz-dev-pipe/tests/run_contract_matrix.sh" >/tmp/smoke_matrix.out 2>&1; then
+matrix_out=$(mktemp)
+if "$REPO_ROOT/plugins/mz-dev-pipe/tests/run_contract_matrix.sh" >"$matrix_out" 2>&1; then
   record_pass
 else
-  record_fail "contract matrix failed (see /tmp/smoke_matrix.out)"
+  record_fail "contract matrix failed"
+  cat "$matrix_out" >&2
 fi
-rm -f /tmp/smoke_matrix.out
+rm -f "$matrix_out"
 
 # --- Check 4: fixture parses as Python --------------------------------------
 if command -v python3 >/dev/null 2>&1; then

@@ -4,7 +4,7 @@ The orchestrator runs this phase directly (no subagent for the main analysis). O
 
 ## 1.1 Optional web research (when `research:yes`)
 
-If the user passed `research:yes`, dispatch `pipeline-web-researcher` (mz-dev-pipe plugin) with this brief:
+If the user passed `research:yes`, dispatch `pipeline-web-researcher` (mz-base plugin) with this brief:
 
 ```
 Topic: Current high-frequency AI-generated text patterns (single words, phrases, structural patterns, punctuation tells) — 2025–2026 data

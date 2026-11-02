@@ -95,7 +95,7 @@ Researches a scope across structure, execution flow, and domain context, then pr
 | ----------------------- | ---------------------------------------------------------------------------------------------- |
 | **pipeline-translator** | Translates a single file or chunk with Tier-1 structural verification and confidence reporting |
 
-`/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` from `mz-dev-pipe` — install both plugins together for full functionality.
+`/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` from `mz-base` — install `mz-base` alongside for full functionality.
 
 ## License
 

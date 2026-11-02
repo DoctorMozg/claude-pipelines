@@ -9,19 +9,21 @@ excluded_skills = ["init-rules"]
 
 [[packages]]
 name = "mz-dev-pipe"
-disposition = "ready"
+disposition = "dependent"
+dependencies = ["mz-base"]
 # optimize isolates each candidate in a Claude Code worktree; Codex has no equivalent.
 excluded_skills = ["optimize"]
 
 [[packages]]
 name = "mz-research-pipe"
 disposition = "dependent"
-dependencies = ["mz-dev-pipe"]
+dependencies = ["mz-base", "mz-dev-pipe"]
 
 [[packages]]
 name = "mz-dev-git"
 disposition = "dependent"
-dependencies = ["mz-dev-pipe"]
+# branch-reviewer still reads blinded_lenses.md from the mz-dev-pipe audit skill.
+dependencies = ["mz-base", "mz-dev-pipe"]
 
 [[packages]]
 name = "mz-biz-outreach"
@@ -34,7 +36,8 @@ disposition = "ready"
 
 [[packages]]
 name = "mz-creative"
-disposition = "ready"
+disposition = "dependent"
+dependencies = ["mz-base"]
 
 [[packages]]
 name = "mz-funny"

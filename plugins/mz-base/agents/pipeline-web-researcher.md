@@ -10,7 +10,7 @@ color: cyan
 
 ## Role
 
-You are a senior web researcher supporting the mz-dev-pipe skills. Your job is to conduct thorough, multi-source research and deliver clear, evidence-based findings that a downstream orchestrator can fold into a synthesis or planning artifact.
+You are a senior web researcher supporting the mozg pipeline skills. Your job is to conduct thorough, multi-source research and deliver clear, evidence-based findings that a downstream orchestrator can fold into a synthesis or planning artifact.
 
 ### When NOT to use
 

@@ -24,6 +24,14 @@ from mozg_pipelines.rendering import render_codex_package
 
 _REPOSITORY_ROOT = Path(__file__).parents[2]
 _PLAN_PATH = _REPOSITORY_ROOT / "data/codex_migration.toml"
+# Each dependent package names the packages that own the agents and files it dispatches.
+_EXPECTED_DEPENDENCIES = {
+    "mz-dev-pipe": ("mz-base",),
+    "mz-research-pipe": ("mz-base", "mz-dev-pipe"),
+    "mz-dev-git": ("mz-base", "mz-dev-pipe"),
+    "mz-biz-outreach": ("mz-creative",),
+    "mz-creative": ("mz-base",),
+}
 
 
 def test_migration_plan_covers_the_canonical_marketplace() -> None:
@@ -50,15 +58,11 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
     assert sum(len(package.skill_sources) for package in packages) == 52
     assert sum(len(package.role_sources) for package in packages) == 116
     assert not any(package.plan.disposition is PackageDisposition.BLOCKED for package in packages)
-    assert tuple(
-        (package.plan.name, package.plan.dependencies)
+    assert {
+        package.plan.name: package.plan.dependencies
         for package in packages
         if package.plan.disposition is PackageDisposition.DEPENDENT
-    ) == (
-        ("mz-research-pipe", ("mz-dev-pipe",)),
-        ("mz-dev-git", ("mz-dev-pipe",)),
-        ("mz-biz-outreach", ("mz-creative",)),
-    )
+    } == _EXPECTED_DEPENDENCIES
     assert {package.source_manifest.version for package in packages} == {"0.49.0"}
 
 
@@ -186,11 +190,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
         spec.catalog.suite_name: spec.catalog.dependencies
         for spec in specs
         if spec.catalog.dependencies
-    } == {
-        "mz-research-pipe": ("mz-dev-pipe",),
-        "mz-dev-git": ("mz-dev-pipe",),
-        "mz-biz-outreach": ("mz-creative",),
-    }
+    } == _EXPECTED_DEPENDENCIES
 
     hook_specs = {
         spec.catalog.suite_name: spec.catalog.hooks[0] for spec in specs if spec.catalog.hooks
@@ -252,11 +252,11 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
     assert sum(len(result.hook_script_paths) for result in results) == sum(
         len(package.hook_script_sources) for package in renderable_packages
     )
-    assert tuple(
+    assert {
         result.package_root.name
         for result in results
         if result.dependency_contract_path is not None
-    ) == ("mz-research-pipe", "mz-dev-git", "mz-biz-outreach")
+    } == set(_EXPECTED_DEPENDENCIES)
 
     rendered_contents = "\n".join(
         file_path.read_text(encoding="utf-8")

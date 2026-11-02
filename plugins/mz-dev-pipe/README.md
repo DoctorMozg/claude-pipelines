@@ -171,7 +171,7 @@ ______________________________________________________________________
 
 ### `/combine`, `/deep-research`, `/explain`, `/translate` — moved to `mz-research-pipe`
 
-These research and content skills now live in the [`mz-research-pipe`](../mz-research-pipe/README.md) plugin. Install both plugins together for full functionality — `/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` agents from `mz-dev-pipe`.
+These research and content skills now live in the [`mz-research-pipe`](../mz-research-pipe/README.md) plugin. Install both plugins together for full functionality.
 
 ## Scope Parameter
 
@@ -191,8 +191,6 @@ Specialized worker agents used by the pipeline skills. You don't invoke these di
 
 | Agent                             | Role                                                                                                      |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **pipeline-researcher**           | Codebase exploration + domain research via web search                                                     |
-| **pipeline-web-researcher**       | Web-first research with primary-source verification                                                       |
 | **pipeline-planner**              | Creates parallelizable implementation plans                                                               |
 | **pipeline-plan-reviewer**        | Validates plans for completeness and correctness                                                          |
 | **pipeline-coder**                | Implements specific work units from an approved plan                                                      |
@@ -203,6 +201,8 @@ Specialized worker agents used by the pipeline skills. You don't invoke these di
 | **pipeline-completeness-checker** | Final quality gate — verifies 100% task completion                                                        |
 | **pipeline-measure-runner**       | Runs a benchmark with warmup and N reps, computes mean/median/CV — the only source of measurement numbers |
 | **pipeline-perf-candidate**       | Implements one optimization hypothesis as a diversified candidate change in an isolated worktree          |
+
+The pipeline skills also dispatch three agents from [`mz-base`](../mz-base/README.md): `pipeline-researcher`, `pipeline-web-researcher` and `code-lens-over-engineering`. They live there because skills in other plugins dispatch them too.
 
 ## Architecture
 
