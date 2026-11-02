@@ -13,8 +13,6 @@ MZ_CURATOR_BUDGET_USD=0.50
 MZ_CURATOR_OPS_MAX=1000
 # Well past the child's timeout, so only a run that was killed leaves a lock this old.
 MZ_STALE_LOCK_MINUTES=10
-# A lesson seen this often is a promotion candidate, so eviction never drops it.
-MZ_LESSON_KEEP_N=3
 
 _lessons_region() {
   _memory_region "$1" "$2" "$3" 2>/dev/null | awk 'NF' || true

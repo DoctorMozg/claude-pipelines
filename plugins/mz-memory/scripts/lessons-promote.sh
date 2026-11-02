@@ -46,7 +46,7 @@ cmd_list() {
   else
     while IFS= read -r id; do
       [[ -n "$id" ]] && ids+=("$id")
-    done < <(promotion_candidates "$LESSONS_FILE" "$MZ_LESSON_KEEP_N")
+    done < <(promotion_candidates "$LESSONS_FILE")
   fi
   # Every id is checked before anything is printed, so a typo never yields a partial list.
   for id in ${ids[@]+"${ids[@]}"}; do

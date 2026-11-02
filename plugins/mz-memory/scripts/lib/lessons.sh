@@ -11,6 +11,8 @@ MZ_LESSON_MAX_CHARS=400
 MZ_LESSONS_SEEN_MAX=2000
 # Unit separator between task, status and text: it survives strip_private's whitespace collapse.
 MZ_LESSON_FS=$'\037'
+# A lesson seen this often is a promotion candidate, so eviction never drops it.
+MZ_LESSON_KEEP_N=3
 
 # Create lessons.md if missing. A file that lost a marker is rebuilt around its ID'd lines,
 # with the original kept as lessons.md.bak.
@@ -196,12 +198,12 @@ declined_file() {
   printf '%s/.promote-declined\n' "${1%/*}"
 }
 
-# promotion_candidates <lessons_file> <min_n> — ids of curated lessons seen at least <min_n> times.
+# promotion_candidates <lessons_file> — ids of curated lessons seen at least MZ_LESSON_KEEP_N times.
 # A declined lesson is left out until it recurs, so the SessionStart hint does not repeat itself.
 promotion_candidates() {
-  local lessons_file="$1" min_n="$2"
+  local lessons_file="$1"
   [[ -f "$lessons_file" ]] || return 0
-  _ranked_curated "$lessons_file" | awk -v min="$min_n" -v declined="$(declined_file "$lessons_file")" '
+  _ranked_curated "$lessons_file" | awk -v min="$MZ_LESSON_KEEP_N" -v declined="$(declined_file "$lessons_file")" '
     BEGIN { while ((getline line < declined) > 0) { split(line, field, " "); held[field[1]] = field[2] + 0 } }
     {
       id = substr($4, 2, length($4) - 2)

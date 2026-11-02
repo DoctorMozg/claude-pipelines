@@ -9,8 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck source=lib/lessons.sh
 source "${SCRIPT_DIR}/lib/lessons.sh"
-# shellcheck source=lib/curator.sh
-source "${SCRIPT_DIR}/lib/curator.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 
 PROJECT_DIR=$(find_project_root)
@@ -34,7 +32,7 @@ section() {
 # Lessons seen MZ_LESSON_KEEP_N times or more are worth making permanent rules.
 promotion_hint() {
   local ids shown
-  ids=$(promotion_candidates "$LESSONS_FILE" "$MZ_LESSON_KEEP_N")
+  ids=$(promotion_candidates "$LESSONS_FILE")
   [[ -n "$ids" ]] || return 0
   shown=$(awk -v max="$HINT_IDS" '
     NR <= max { out = out (NR > 1 ? ", " : "") $0 }
