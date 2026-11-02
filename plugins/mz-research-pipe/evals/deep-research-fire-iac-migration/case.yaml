@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: deep-research-fire-iac-migration
+description: The user wants a sourced written report gathered from the web across several angles of a decision, which is new multi-source research for deep-research.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    My team is deciding whether to leave Terraform for OpenTofu or Pulumi. Go find out
+    what's actually out there on the web about license risk, provider and module
+    compatibility, and real migration stories, then write me up a report with sources
+    for each claim.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: deep-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?deep-research"'

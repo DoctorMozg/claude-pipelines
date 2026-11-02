@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: cleanup-near-miss-slow-script
+description: Getting a slow, memory-hungry script under a time and RAM target is a measured performance goal, so it belongs to optimize.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    scripts/nightly_report.py loads the whole 2GB CSV into memory and takes about 6
+    minutes. I need it under 60 seconds and under 1GB of RAM.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: cleanup-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?cleanup"'
+    min: 0
+    max: 0
+    arm: both

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: explain-fire-payment-flow
+description: A user wants a diagram-supported walkthrough of how a code area works, which is what explain produces.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    Can you walk me through how the payment flow works in src/payments/? The retry
+    logic confuses me, and some diagrams would really help.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: explain-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?explain"'

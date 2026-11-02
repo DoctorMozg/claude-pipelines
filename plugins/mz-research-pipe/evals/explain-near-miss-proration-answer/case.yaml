@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: explain-near-miss-proration-answer
+description: A direct question that wants a short sourced answer, not a diagram report, belongs to ask.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    Quick question about src/billing/proration.py: when a customer downgrades
+    mid-cycle, how does it work out the credit? One paragraph with line numbers is
+    plenty, no need for a big write-up.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: explain-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?explain"'
+    min: 0
+    max: 0
+    arm: both

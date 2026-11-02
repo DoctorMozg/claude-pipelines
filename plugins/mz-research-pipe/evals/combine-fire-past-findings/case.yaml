@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: combine-fire-past-findings
+description: The user asks to turn research and task output already on disk into one report, which is what combine does.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    Over the past few weeks we ran several research and investigation rounds on the
+    auth refactor, and all the output is sitting in .mz/research and .mz/task. Can you
+    synthesize what we learned into one report?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: combine-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?combine"'

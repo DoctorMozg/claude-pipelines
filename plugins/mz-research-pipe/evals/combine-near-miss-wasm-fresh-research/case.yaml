@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: combine-near-miss-wasm-fresh-research
+description: The user wants a full report on a topic they have never researched, starting from zero on the web, which belongs to deep-research instead.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    Pull together a full report on where WebAssembly stands outside the browser:
+    runtimes, WASI, edge platforms, and who runs it in production. I haven't looked
+    into any of this before, so start from zero and use whatever sources you can find
+    on the web.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: combine-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?combine"'
+    min: 0
+    max: 0
+    arm: both

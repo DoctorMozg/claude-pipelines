@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: combine-fire-handoff-digest
+description: The user wants a pile of earlier review outputs and run reports boiled down into one handoff document, which is local synthesis for combine.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    New tech lead starts Monday. Since March we've piled up review outputs and run
+    reports for the caching layer in .mz/reviews and .mz/reports, plus the old task
+    folders under .mz/task. Boil all of that down into a single document for them, and
+    call out anywhere the earlier reports contradict each other.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: combine-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?combine"'

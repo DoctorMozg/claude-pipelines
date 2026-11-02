@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: brainstorm-near-miss-rfc-review
+description: The user wants several expert opinions on an RFC they already wrote, which belongs to expert instead of brainstorm.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    wrote an RFC for moving order handling to event sourcing, it's in
+    docs/rfcs/0042-event-sourcing.md. before I send it round, get a few expert
+    opinions on it. what holds up and what doesn't
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: brainstorm-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?brainstorm"'
+    min: 0
+    max: 0
+    arm: both

@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: copywrite-near-miss-readme-rewrite
+description: Rewriting a README so its flags and examples match the CLI source is technical documentation, so it belongs to document.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    Rewrite the README for our open-source CLI at github.com/acme/tagger. There's no install
+    section and the flags table is out of date. Check the CLI source and make sure every option,
+    default and example in the README matches what the code actually does.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: copywrite-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'
+    min: 0
+    max: 0
+    arm: both

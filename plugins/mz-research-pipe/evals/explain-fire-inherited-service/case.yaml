@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: explain-fire-inherited-service
+description: A user wants an illustrated architecture write-up of an unfamiliar service, which is explain's diagram-rich report.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    I just inherited the notification service under services/notify and I can't make
+    sense of how the pieces fit together. Could you put together an illustrated
+    write-up of the architecture and the path a message takes through it, with charts
+    showing which components talk to which? I'll be handing it to a new hire next week.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: explain-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?explain"'

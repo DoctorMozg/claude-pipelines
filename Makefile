@@ -7,6 +7,8 @@ EVAL_MODEL ?= sonnet
 EVAL_JUDGE ?= claude-haiku-5-5
 EVAL_MAX_USD ?= 5
 EVAL_RUNS ?=
+# Each job is a full claude child on your credential, so jobs share one rate limit.
+EVAL_JOBS ?= 4
 
 help:
 	@echo "Targets:"
@@ -16,7 +18,7 @@ help:
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
-	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_MAX_USD; spends tokens)"
+	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD; spends tokens)"
 
 contract-matrix:
 	@./plugins/mz-dev-pipe/tests/run_contract_matrix.sh
@@ -54,6 +56,6 @@ eval:
 	@test -d "plugins/$(PLUGIN)/evals" || { echo "plugins/$(PLUGIN) has no evals/ directory"; exit 2; }
 	@mkdir -p "plugins/$(PLUGIN)/evals/results"
 	$(CLAUDE) plugin eval . --eval-dir "plugins/$(PLUGIN)/evals" --ablation none --trust-plugin --no-publish \
-		--model "$(EVAL_MODEL)" --judge-model "$(EVAL_JUDGE)" --max-cost-usd "$(EVAL_MAX_USD)" \
+		--model "$(EVAL_MODEL)" --judge-model "$(EVAL_JUDGE)" --max-cost-usd "$(EVAL_MAX_USD)" -j "$(EVAL_JOBS)" \
 		$(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") \
 		--json "plugins/$(PLUGIN)/evals/results/last-$(EVAL_MODEL).json"

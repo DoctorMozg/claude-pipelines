@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: explain-near-miss-websocket-support
+description: A capability question needing codebase and web lookup, answered with sources and no diagrams, belongs to ask.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    Does our nginx config in deploy/nginx.conf support websocket upgrades, and what
+    does the nginx documentation recommend for proxy timeouts on long-lived
+    connections? I just want the answer with sources.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: explain-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?explain"'
+    min: 0
+    max: 0
+    arm: both

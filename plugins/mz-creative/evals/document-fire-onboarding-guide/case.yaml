@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: document-fire-onboarding-guide
+description: A step-by-step setup and deploy guide for new engineers is a technical how-to, so document should handle it.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    New hires keep asking me how to get the payments service running locally and how a deploy
+    works. Can you put together a step-by-step guide covering setup, the env vars it needs, and
+    the usual errors people hit? Everything is in the repo under services/payments.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: document-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?document"'

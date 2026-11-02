@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: copywrite-fire-investor-leave-behind
+description: A persuasive one-page leave-behind for investors is a pitch document, so copywrite should handle it.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    investor meeting thursday and I want a one-page leave-behind that makes the case for Trellis,
+    our scheduling API for dental clinics. 120 clinics live, growing about 15% a month. Needs to be
+    punchy and persuasive, not a feature dump.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: copywrite-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'

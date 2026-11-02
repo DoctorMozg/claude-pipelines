@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: deep-research-near-miss-billing-briefing
+description: The user wants a month of earlier research, audits and task folders folded into one briefing, which is local synthesis for combine.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+execution:
+  prompt: >-
+    I'm writing the design doc for the billing migration. Over the last month we ran a
+    bunch of pipeline tasks on it: research on Stripe vs Adyen in .mz/research, a couple
+    of audit reports, and the task folders from the schema build. Can you fold all of
+    that into one briefing organized around the decision we have to make? Sections:
+    Context, Options, Risks.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: deep-research-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?deep-research"'
+    min: 0
+    max: 0
+    arm: both

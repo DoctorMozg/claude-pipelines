@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: copywrite-near-miss-migration-guide
+description: A v1 to v2 migration guide with before/after code is technical documentation, so it belongs to document despite the release context.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    We just released v2 of our Node SDK and changed a bunch of things: client.fetch is now
+    client.request, the config file moved from .sdkrc to sdk.config.json, and callbacks are gone
+    in favor of promises. Write the v1 to v2 migration guide with before and after code for each
+    change, so people can upgrade without reading the source.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: copywrite-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'
+    min: 0
+    max: 0
+    arm: both

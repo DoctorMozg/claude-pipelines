@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: optimize-near-miss-split-function
+description: Breaking up a deeply nested function for readability is a refactor and complexity reduction, so it belongs to cleanup.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    handle_webhook in payments/webhooks.py is 250 lines of deeply nested ifs. Split
+    it into smaller functions and flatten the control flow. Same behavior, just readable.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: optimize-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?optimize"'
+    min: 0
+    max: 0
+    arm: both
