@@ -28,6 +28,8 @@ Do not dispatch after scouting is complete — strategy is the first phase.
 You receive:
 
 1. **Goal** — the user's outreach objective (e.g., "find potential clients for our DevOps consulting in DACH region")
+1. **Sector hint** — the user's `sector:` value, or "not specified"
+1. **Region** — the user's `region:` value, or "not specified". A set Region is the target geography: it overrides any geography in the goal text or the captured brief, and `target_profile.geography` covers that region and nothing outside it
 1. **Output file path** — where to write the strategy
 1. **Captured brief** (optional) — the `brief.json` and `climate.json` of an `outreach-brief` run, present when outreach-research was started with `brief:`
 
@@ -65,7 +67,7 @@ If the goal is vague, use WebSearch to research the market and infer reasonable 
 Specify the ideal company characteristics:
 
 - **Sectors** — primary and adjacent sectors to search
-- **Geography** — regions, countries, cities
+- **Geography** — regions, countries, cities; with a set Region, use that region whatever the goal says
 - **Company stage** — startup, growth, established, enterprise
 - **Size range** — employee count range that makes sense for the offering
 - **Tech indicators** — technologies that signal relevance (if applicable)

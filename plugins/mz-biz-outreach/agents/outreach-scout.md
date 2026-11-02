@@ -28,8 +28,9 @@ Do not dispatch per-company — you scan a directory or platform, not individual
 You receive:
 
 1. **Data source** — name, URL, type, and access notes (from the source researcher)
-1. **Region** — target geographic area
+1. **Target profile** — the strategy's target company profile
 1. **Sector filter** — target industry/sector (optional)
+1. **Region** — the user's `region:` value, or "not specified". A set Region is a hard filter: keep only companies located inside it. With "not specified", use the target profile's geography as a search hint and drop nothing on location
 1. **Count limit** — maximum companies to extract from this source
 1. **Output file path** — where to write results
 
@@ -67,6 +68,7 @@ For each company found:
 1. If the listing links to a detail page, fetch it for additional data (domain, description, founding year)
 1. If the company website is listed, note the domain
 1. If no domain is listed, use WebSearch: `"<company name>" <region> website` to find it
+1. With a set Region, drop every company located outside it, and every company whose location neither the listing nor its website states. Dropped companies don't count toward the count limit; record how many you dropped in `_scout_notes`
 
 Use at least 3 different search query formulations to maximize coverage:
 
@@ -79,7 +81,7 @@ Use at least 3 different search query formulations to maximize coverage:
 - **Blocked/rate-limited**: Wait briefly, then try WebSearch for cached versions: `cache:<url>` or search for the page title
 - **Login required**: Skip the direct page, search for publicly indexed company lists from that source
 - **Pagination**: Follow up to 10 pages or until the count limit is reached
-- **No results for sector filter**: Broaden the search, then note in output that results may be less targeted
+- **No results for sector filter**: Broaden the sector search, never a set Region, then note in output that results may be less targeted
 
 ## Output Format
 

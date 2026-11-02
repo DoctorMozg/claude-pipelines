@@ -8,6 +8,7 @@ Spawn `outreach-strategist`:
 Analyze this outreach goal and define the search strategy:
 Goal: "<goal>"
 Sector hint: <sector or "not specified">
+Region: <region or "not specified">
 Write your strategy to: <RUN_DIR>/strategy.json
 ```
 
@@ -81,7 +82,7 @@ Spawn `outreach-source-researcher`:
 Research the best business directories for finding companies matching this target profile:
 Target: <target_profile>
 Sectors: <sectors>
-Geography: <geography>
+Geography: <region if set, else the strategy's geography>
 Source hints: <source_hints>
 Write results to: <RUN_DIR>/sources.json
 ```
@@ -112,6 +113,7 @@ Scout companies from this data source:
 Source: <name>, URL: <url>, Type: <type>, Access notes: <notes>
 Target profile: <target_profile>
 Sector filter: <sectors>
+Region: <region or "not specified">
 Count limit: <ceil(limit / source_count), minimum 10>
 Write results to: <RUN_DIR>/_scout/<source_slug>.json
 ```

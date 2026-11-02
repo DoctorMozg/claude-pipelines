@@ -9,6 +9,8 @@ PLUGIN = REPO_ROOT / "plugins/mz-biz-outreach"
 STRATEGIST = PLUGIN / "agents/outreach-strategist.md"
 ENRICH_SKILL_DIR = PLUGIN / "skills/outreach-enrich-company"
 RESEARCH_DISCOVERY = PLUGIN / "skills/outreach-research/phases/discovery.md"
+RESEARCH_SKILL = PLUGIN / "skills/outreach-research/SKILL.md"
+AGENTS_DIR = PLUGIN / "agents"
 BRIEF_INTAKE = PLUGIN / "skills/outreach-brief/phases/intake.md"
 
 FENCE = re.compile(r"^(`{3,}|~{3,})([^\n]*)\n(.*?)^\1[ \t]*$", re.S | re.M)
@@ -17,6 +19,13 @@ FIELD = r"[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*"
 FIELD_WITH_ALTERNATIVE = re.compile(rf"`({FIELD})`(?:\s*\(or\s+`({FIELD})`\))?")
 DOTTED_STRATEGY_READ = re.compile(r"\bstrategy\.([a-z_][a-z0-9_]*)")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+MODIFIER_TOKEN = re.compile(r"\bfrom `([a-z_]+):<")
+LABELLED_LINE = re.compile(r"^([A-Za-z][A-Za-z_ ]*): (.*)$", re.M)
+OUTPUT_LINE = re.compile(r"^Write .* to: ", re.M)
+SPAWNED_AGENT = re.compile(r"\bSpawn (?:one )?`([a-z-]+)`")
+RUN_DIR_STRATEGY = re.compile(r"<run_dir>/[^\s`]*strategy\.json")
+REGION = "region"
+REGION_AGENT_PHASES = ["Phase 1: Strategy", "Phase 3: Scout + Dedup"]
 
 type ReadGroup = tuple[str, ...]
 
@@ -157,4 +166,109 @@ class TestBriefVoiceHandoff:
     def test_strategist_reads_voice_from_brief(self, brief_voice_path: str) -> None:
         assert brief_voice_path in _read(STRATEGIST), (
             f"outreach-strategist never says to build the sender voice from {brief_voice_path}"
+        )
+
+
+def _labelled_lines(block: str) -> dict[str, str]:
+    return {label: value.strip() for label, value in LABELLED_LINE.findall(block)}
+
+
+def _research_modifiers() -> list[str]:
+    return MODIFIER_TOKEN.findall(_section(_read(RESEARCH_SKILL), "Argument Parsing"))
+
+
+def _state_template() -> dict[str, str]:
+    setup = _section(_read(RESEARCH_SKILL), "Phase 0: Setup")
+    templates = [body for info, body in _fences(setup) if info == "yaml"]
+    assert len(templates) == 1, "expected one yaml state template in Phase 0: Setup"
+    return _labelled_lines(templates[0])
+
+
+def _state_key(template: dict[str, str], modifier: str) -> str | None:
+    """The state key whose leading word is the modifier, so `brief` maps to BriefRun."""
+    for key in template:
+        leading = re.match(r"[A-Za-z][a-z]*", key)
+        if leading and leading.group(0).lower() == modifier:
+            return key
+    return None
+
+
+def _dispatch_fence(phase: str) -> str:
+    """The prompt a discovery phase hands its agent, told apart by its `Write ... to:` line."""
+    section = _section(_read(RESEARCH_DISCOVERY), phase)
+    blocks = [body for _, body in _fences(section) if OUTPUT_LINE.search(body)]
+    assert len(blocks) == 1, f"expected one dispatch block in {phase}, found {len(blocks)}"
+    return blocks[0]
+
+
+def _spawned_agent(phase: str) -> Path:
+    match = SPAWNED_AGENT.search(_section(_read(RESEARCH_DISCOVERY), phase))
+    assert match is not None, f"{phase} names no agent to spawn"
+    return AGENTS_DIR / f"{match.group(1)}.md"
+
+
+MODIFIERS = _research_modifiers()
+
+
+class TestResearchModifiers:
+    def test_region_is_a_parsed_modifier(self) -> None:
+        assert REGION in MODIFIERS, f"Argument Parsing lists {MODIFIERS}, without {REGION}"
+
+    @pytest.mark.parametrize("modifier", MODIFIERS)
+    def test_modifier_is_kept_in_state(self, modifier: str) -> None:
+        template = _state_template()
+        key = _state_key(template, modifier)
+        assert key is not None, (
+            f"`{modifier}:` is parsed, but the state template has no key for it, "
+            f"so a resumed run loses it; keys: {sorted(template)}"
+        )
+        assert template[key].startswith("<"), (
+            f"the state template hard-codes `{key}: {template[key]}`, "
+            f"so a resumed run forgets the parsed `{modifier}:`"
+        )
+
+    @pytest.mark.parametrize("phase", REGION_AGENT_PHASES)
+    def test_agent_dispatch_passes_region(self, phase: str) -> None:
+        key = _state_key(_state_template(), REGION)
+        assert key is not None, f"the state template has no key for `{REGION}:`"
+        lines = _labelled_lines(_dispatch_fence(phase))
+        assert lines.get(key, "").startswith(f"<{REGION}"), (
+            f"the {phase} dispatch has no `{key}: <{REGION} ...>` line; it passes {sorted(lines)}"
+        )
+        agent = _spawned_agent(phase)
+        assert f"**{key}**" in _section(_read(agent), "Input"), (
+            f"{agent.name} is sent {key} but its Input never lists it"
+        )
+
+    def test_source_research_searches_region(self) -> None:
+        lines = _labelled_lines(_dispatch_fence("Phase 2: Source Research"))
+        assert any(value.startswith(f"<{REGION}") for value in lines.values()), (
+            f"the source researcher dispatch never passes the parsed `{REGION}:`; lines: {lines}"
+        )
+
+    def test_brief_scope_names_what_the_brief_sets(self) -> None:
+        phase = _section(_read(RESEARCH_DISCOVERY), "Phase 1: Strategy")
+        brief_blocks = [body for _, body in _fences(phase) if "brief.json" in body]
+        assert len(brief_blocks) == 1, "expected one dispatch block that embeds brief.json"
+        top_level = {path for path in _strategist_schema_paths() if "." not in path}
+        set_by_brief = sorted(f for f in top_level if re.search(rf"\b{f}\b", brief_blocks[0]))
+        assert set_by_brief, "the brief dispatch names no strategy.json field"
+        scope = _section(_read(RESEARCH_SKILL), "Scope Parameter")
+        brief_line = next(line for line in scope.splitlines() if line.startswith("- **`brief:"))
+        missing = [field for field in set_by_brief if field.replace("_", " ") not in brief_line]
+        assert not missing, (
+            f"the brief dispatch sets {missing} in strategy.json, "
+            "but the `brief:` scope line never says the brief shapes them"
+        )
+
+
+class TestRunDirContract:
+    def test_strategy_json_path_is_the_same_in_every_file(self) -> None:
+        forms: dict[str, list[str]] = {}
+        for path in sorted(ENRICH_SKILL_DIR.rglob("*.md")):
+            for form in RUN_DIR_STRATEGY.findall(_read(path)):
+                forms.setdefault(form, []).append(path.name)
+        assert len(forms) == 1, (
+            f"outreach-enrich-company locates strategy.json under <run_dir> "
+            f"in {len(forms)} ways: {forms}"
         )

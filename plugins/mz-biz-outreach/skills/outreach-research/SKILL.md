@@ -1,7 +1,7 @@
 ---
 name: outreach-research
 description: 'Ranks target companies for what the user sells, as a lead list. Use when the user wants to know who to target ("find companies", "find potential clients", "lead generation"). Not for deepening a card or writing letters (use outreach-enrich-company).'
-argument-hint: <target description> [sector:filter] [limit:N]
+argument-hint: <target description> [sector:filter] [region:market] [limit:N] [brief:run_name]
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Read, Write, Glob, Grep, WebFetch, WebSearch, AskUserQuestion
 ---
 
@@ -35,9 +35,9 @@ If empty, ask the user what kind of companies they want to find and why.
 Extract scope modifiers from `$ARGUMENTS`, case-insensitive. `outreach-research` is outbound (company discovery), so scope controls **which prospective companies enter the funnel**, not which files to scan. Remaining text controls the outreach goal (orthogonal).
 
 - **`sector:<value>`** — restrict discovery to a specific industry/vertical (e.g. `sector:HR-tech`, `sector:fintech`). Default: inferred by `outreach-strategist` from the goal text.
-- **`region:<value>`** — restrict discovery to a geographic market (e.g. `region:DACH`, `region:LATAM`). Default: inferred from the goal text; global if no signal.
+- **`region:<value>`** — restrict discovery to a geographic market (e.g. `region:DACH`, `region:LATAM`). It overrides any geography in the goal text or the brief and is a hard filter: the strategist targets it, the source researcher searches it, and scouts drop companies outside it. Default: inferred by `outreach-strategist` from the goal text; global if no signal.
 - **`limit:<N>`** — maximum companies to carry through the pipeline. Default: 20.
-- **`brief:<run_name>`** — seed discovery from an `outreach-brief` run. The strategist is given that run's `brief.json` and `climate.json`, so the target profile, outreach angles, and scoring weights reflect the captured brief and the local business climate. Default: none (goal text only).
+- **`brief:<run_name>`** — seed discovery from an `outreach-brief` run. The strategist is given that run's `brief.json` and `climate.json`, so the target profile, outreach angles, and scoring weights reflect the captured brief and the local business climate, and the sender voice comes from the brief's voice and goal. Default: none (goal text only).
 - **Default** — full-scope strategist-driven discovery using only the goal text when no modifiers are present.
 
 ## Argument Parsing
@@ -46,7 +46,7 @@ Extract from `$ARGUMENTS`:
 
 - **goal** — the full description (everything not matching a parameter pattern)
 - **sector** — optional, from `sector:<value>` (default: inferred by strategist)
-- **region** — optional, from `region:<value>` (default: inferred from goal text)
+- **region** — optional, from `region:<value>`; overrides any geography in the goal text or the brief (default: null, so the strategist infers geography from the goal)
 - **limit** — optional, from `limit:<N>` (default: 20)
 - **brief** — optional, from `brief:<run_name>`; resolves to `<PROJECT_ROOT>/.mz/outreach/<brief_run>/brief.json` + `climate.json` (default: none)
 
@@ -153,7 +153,8 @@ phase_complete: false
 what_remains: []
 Goal: <goal>
 Sector: <parsed or null>
-Limit: 20
+Region: <parsed or null>
+Limit: <limit>
 RunName: <run_name> (outreach output dir)
 BriefRun: <brief_run or null>
 ```
