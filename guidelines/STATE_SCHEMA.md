@@ -106,7 +106,7 @@ Write for it this way:
 - `<private>…</private>` spans are removed after the 10 lines are chosen, so a private line still takes one of them.
 - Editing a finished `state.md` logs the task again at the next SessionEnd.
 - A task that never reaches `complete` is never harvested, so a decision from a `failed`, `blocked` or `aborted_by_user` task doesn't reach the memory log. If it matters, pin it with `/memory-note`; the journal isn't read for recall.
-- One changed `state.md` without a plain `Status:` line, or a `complete` one without a `Phase:` line, stops the capture, and every later capture fails until that file is fixed. Forms that stop it include `**Status:** running`, `status: running`, `Status:running` and a file with no `Status` key; the same goes for `Phase` in a `complete` file. `**Status**: running` happens to match, but don't rely on it; write the plain form from §1.
+- A `state.md` without a plain `Status:` line is skipped, so its task is never logged, even when it finished. Forms it skips include `**Status:** complete`, `status: complete`, `Status:complete` and a file with no `Status` key. `**Status**: complete` happens to match, but don't rely on it; write the plain form from §1. A `complete` file without a `Phase:` line is logged without its phase. Neither case stops the capture of other files.
 
 The Activity Log's format and size cap are in JOURNAL_GUIDELINES.md.
 
