@@ -80,10 +80,10 @@ Default layout for a new document, adapted as needed:
 
 ```<lang>
 <runnable snippet>
-````
+```
 
 <Only what the reader needs to know about the snippet. No restating what the code obviously does.>
-```
+````
 
 Conventions:
 

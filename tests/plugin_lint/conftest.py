@@ -73,6 +73,28 @@ def split_tool_list(value: object) -> list[str]:
     return [entry.strip() for entry in re.split(r",(?![^(]*\))", value) if entry.strip()]
 
 
+_FENCE = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})")
+
+
+def split_fences(text: str) -> tuple[list[str], str | None]:
+    """Lines outside code fences, and the fence still open at the end of the text, if any."""
+    outside: list[str] = []
+    open_fence: str | None = None
+    for line in text.splitlines():
+        match = _FENCE.match(line)
+        if match is None:
+            if open_fence is None:
+                outside.append(line)
+            continue
+        marker = line.strip()
+        if open_fence is None:
+            open_fence = match["fence"]
+        # A fence closes only on a bare run of its own character, at least as long as the opener.
+        elif set(marker) == {open_fence[0]} and len(marker) >= len(open_fence):
+            open_fence = None
+    return outside, open_fence
+
+
 def assert_no_violations(violations: list[str]) -> None:
     assert not violations, f"{len(violations)} violation(s):\n" + "\n".join(violations)
 

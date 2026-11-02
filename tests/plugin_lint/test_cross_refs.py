@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from .conftest import PLUGINS_DIR, PluginFile, assert_no_violations
+from .conftest import PLUGINS_DIR, PluginFile, assert_no_violations, split_fences
 
 ROOTED_PATH = re.compile(
     r"(?P<root><SKILL_DIR>|\$\{CLAUDE_SKILL_DIR\}|<PLUGIN_ROOT>|\$\{CLAUDE_PLUGIN_ROOT\})"
@@ -67,5 +67,16 @@ class TestQuestions:
             if source.skill_dir is not None
             for match in QUESTION_HEADER.finditer(source.text)
             if len(match["header"]) > MAX_HEADER_CHARS and "<" not in match["header"]
+        ]
+        assert_no_violations(violations)
+
+
+class TestMarkdown:
+    def test_code_fences_close(self, plugin_files: tuple[PluginFile, ...]) -> None:
+        # An unclosed fence turns every later section into a code sample the model reads as data.
+        violations = [
+            f"{source.relative}: a {fence} fence is never closed"
+            for source in plugin_files
+            if (fence := split_fences(source.text)[1]) is not None
         ]
         assert_no_violations(violations)

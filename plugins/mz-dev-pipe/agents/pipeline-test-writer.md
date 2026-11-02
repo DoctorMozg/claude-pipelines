@@ -122,15 +122,15 @@ Keep the report prose minimal — the deliverable is the tests, not their descri
 ## Test Execution
 <Command to run these specific tests>
 
+## Notes
+<Any testing decisions, mock justifications, or known limitations>
+```
+
 ## Red Flags
 
 - The dispatch lacks the artifact, scope, dossier, or output path you need.
 - The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
-
-## Notes
-<Any testing decisions, mock justifications, or known limitations>
-```
 
 ## Status Protocol
 

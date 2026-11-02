@@ -136,6 +136,13 @@ negative news, no contactable decision-makers.>
 *Generated: <today's date> | Sources: <sources list from company JSON>*
 ```
 
+## Red Flags
+
+- The company JSON has no `intelligence_score` or `score_breakdown`, so scoring hasn't run; return `NEEDS_CONTEXT` instead of writing a partial card.
+- You are about to fill a null field from general knowledge or the company's name; write "Not found" instead.
+- The recommendation would name a contact who isn't in the JSON's contacts; name the best available channel instead.
+- The score you are about to write differs from `score_breakdown`; copy the JSON values, never recompute them.
+
 ## Status Protocol
 
 End every response to the orchestrator with exactly one terminal status line:

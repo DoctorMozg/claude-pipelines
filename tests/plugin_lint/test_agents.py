@@ -1,6 +1,6 @@
 import re
 
-from .conftest import DocSet, assert_no_violations, split_tool_list
+from .conftest import DocSet, assert_no_violations, split_fences, split_tool_list
 
 KNOWN_KEYS = frozenset(
     {
@@ -263,5 +263,14 @@ class TestBody:
             f"{doc.relative}: STACK_DETECTED should read STACK DETECTED"
             for doc in agents.docs
             if "STACK_DETECTED" in doc.body
+        ]
+        assert_no_violations(violations)
+
+    def test_red_flags_section_sits_outside_code_fences(self, agents: DocSet) -> None:
+        # Inside an output template, the section reads as text to emit, not as guidance.
+        violations = [
+            f"{doc.relative}: no ## Red Flags section outside code fences"
+            for doc in agents.docs
+            if "## Red Flags" not in (line.rstrip() for line in split_fences(doc.body)[0])
         ]
         assert_no_violations(violations)
