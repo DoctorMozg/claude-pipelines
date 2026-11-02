@@ -11,7 +11,6 @@ import pytest
 
 from .memory_helpers import (
     BASH,
-    CALLER_VARS,
     DIGEST_END,
     DIGEST_START,
     LOG_END,
@@ -20,6 +19,7 @@ from .memory_helpers import (
     PIN_START,
     SCRIPTS,
     FakeCurator,
+    clean_env,
     memory_dir,
     memory_file,
     op,
@@ -125,7 +125,7 @@ def seed(project: Path) -> SeedMemory:
 
 @pytest.fixture
 def run_compress(project: Path, bin_dir: Path) -> RunCompress:
-    env = {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    env = clean_env()
     env.update({"PATH": str(bin_dir), "MZ_MEMORY_ROOT": str(project)})
 
     def run(extra: Mapping[str, str] | None = None) -> None:

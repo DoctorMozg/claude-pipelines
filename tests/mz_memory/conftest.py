@@ -19,6 +19,7 @@ from .memory_helpers import (
     RawTaskWriter,
     SeedLessons,
     TaskWriter,
+    clean_env,
     lessons_file,
     lessons_layout,
 )
@@ -77,20 +78,14 @@ def mark_changed_since_capture(project: Path) -> MarkChanged:
 
 @pytest.fixture
 def capture_env(project: Path) -> dict[str, str]:
-    env = {
-        key: value
-        for key, value in os.environ.items()
-        if key not in {"MZ_MEMORY_COMPRESS", "CLAUDE_PROJECT_DIR"}
-    }
-    env["MZ_MEMORY_ROOT"] = str(project)
-    return env
+    return {**clean_env(), "MZ_MEMORY_ROOT": str(project)}
 
 
 @pytest.fixture
 def capture_runner() -> CaptureRunner:
     def run(env: dict[str, str]) -> None:
         result = subprocess.run(
-            ["bash", str(CAPTURE_SCRIPT)],
+            [BASH, str(CAPTURE_SCRIPT)],
             env=env,
             capture_output=True,
             text=True,
@@ -98,6 +93,8 @@ def capture_runner() -> CaptureRunner:
             check=False,
         )
         assert result.returncode == 0, result.stderr
+        # Capture prints nothing; output means a helper's result escaped its redirect.
+        assert result.stdout == ""
 
     return run
 

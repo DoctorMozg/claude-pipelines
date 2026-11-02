@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from .memory_helpers import BASH, LOG_END, LOG_START, SCRIPTS, region
+from .memory_helpers import BASH, LOG_END, LOG_START, SCRIPTS, clean_env, region
 
 COMMON_LIB = SCRIPTS / "lib" / "common.sh"
 
@@ -27,6 +27,7 @@ def call_helper() -> CallHelper:
         script = f'set -euo pipefail; source "$1"; {command}'
         return subprocess.run(
             [BASH, "-c", script, "_", str(COMMON_LIB), str(memory)],
+            env=clean_env(),
             capture_output=True,
             text=True,
             timeout=30,

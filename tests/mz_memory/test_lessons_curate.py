@@ -11,13 +11,13 @@ import pytest
 
 from .memory_helpers import (
     BASH,
-    CALLER_VARS,
     INBOX_START,
     LESSON_MAX_CHARS,
     SCRIPTS,
     FakeCurator,
     SeedLessons,
     TaskWriter,
+    clean_env,
     curated_lines,
     inbox_lines,
     lessons_file,
@@ -114,7 +114,7 @@ def _needs_curation(store: Path) -> bool:
         'source "$1/lib/common.sh"; source "$1/lib/lessons.sh"; source "$1/lib/curator.sh"; '
         'lessons_need_curation "$2"'
     )
-    env = {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    env = clean_env()
     result = subprocess.run(
         [BASH, "-c", script, "needs-curation", str(SCRIPTS), str(store)],
         env=env,
@@ -129,7 +129,7 @@ def _needs_curation(store: Path) -> bool:
 
 @pytest.fixture
 def run_curate(project: Path, bin_dir: Path) -> RunCurate:
-    env = {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    env = clean_env()
     env.update({"PATH": str(bin_dir), "MZ_MEMORY_ROOT": str(project)})
 
     def run(extra: Mapping[str, str] | None = None) -> None:

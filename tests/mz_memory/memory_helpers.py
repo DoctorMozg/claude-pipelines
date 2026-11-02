@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -50,9 +51,15 @@ SANDBOX_TOOLS = (
 )
 # The scripts degrade without these, so a host that lacks them still runs the suite.
 OPTIONAL_TOOLS = ("flock", "timeout")
-# Settings a developer's shell may carry that would change what a background run does.
+# Every setting the scripts take from their caller; a test sets the ones it needs itself.
 CALLER_VARS = frozenset(
-    {"CLAUDE_PROJECT_DIR", "MZ_MEMORY_COMPRESS", "MZ_MEMORY_CURATOR", "MZ_MEMORY_CURATOR_MODEL"}
+    {
+        "CLAUDE_PROJECT_DIR",
+        "MZ_MEMORY_ROOT",
+        "MZ_MEMORY_COMPRESS",
+        "MZ_MEMORY_CURATOR",
+        "MZ_MEMORY_CURATOR_MODEL",
+    }
 )
 
 CLAUDE_STUB = """#!{bash}
@@ -122,6 +129,11 @@ class FakeCurator:
     def env(self) -> dict[str, str]:
         lines = (self.record / "env").read_text(encoding="utf-8").splitlines()
         return {key: value for key, _, value in (line.partition("=") for line in lines)}
+
+
+def clean_env() -> dict[str, str]:
+    """os.environ without CALLER_VARS, so a developer's shell can't steer a script under test."""
+    return {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
 
 
 def op(kind: str, **fields: object) -> dict[str, object]:
