@@ -150,7 +150,7 @@ Counter-triggers that must prevent a wrong invocation go in the description, bec
 description: "Builds a feature end to end, from plan to tested code. Use when the user asks to build, implement or add a feature or module. Not for bug fixes (use debug) or polishing working code (use polish)."
 ```
 
-**Measure before bulk changes.** Run `claude plugin eval` on a few skills before rewriting many descriptions (plugin-evals.md; changelog 2.1.269). A should-not-trigger case needs `min: 0, max: 0` and `arm: both`. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes: list the plugin's dependencies in `plugins:`, run through `make eval`, and cap a routing case at `max_turns: 2`.
+**Measure before bulk changes.** Run `claude plugin eval` on a few skills before rewriting many descriptions (plugin-evals.md; changelog 2.1.269). A should-not-trigger case needs `min: 0, max: 0` and `arm: both`. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes: list the plugin's dependencies in `plugins:`, run through `make eval`, hold some should-trigger queries out, and know what a routing case's `max_turns: 2` counts as a miss.
 
 Agent descriptions follow AGENTS_GUIDELINES.md, "Descriptions and Trigger Scenarios".
 
