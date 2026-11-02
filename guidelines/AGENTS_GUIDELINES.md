@@ -93,7 +93,7 @@ Repo convention: set the tier and effort once, in the agent's frontmatter. A ski
 
 **Cost.** At list prices, Opus 5.5 costs about twice as much as Sonnet 5.5 and 8-40 times as much as Haiku 5.5 (platform: pricing, 2026-11). A tier above what the job needs is a cost to review, not a safe default. Anthropic's June 2025 research eval found that a team led by Opus scored 90.2% higher than single-agent Opus. The multi-agent runs used about 15 times the tokens of a chat, where a single agent used about 4 times (Anthropic multi-agent research post). Delegation saved money in only two measured cases: routine work with a long cost tail, and work larger than one context window (platform: optimizing-for-cost-and-intelligence, measured with Sonnet 5 workers). Fan-out has other reasons too: each agent gets a clean context, and a reviewer gets fresh eyes.
 
-**Effort.** `medium` is the default on the 5.5 models. Reserve `high` and above for agents where it measurably helps, such as deep review, planning or security analysis. A higher effort costs tokens and latency on every response the agent produces. A per-dispatch `effort` overrides the frontmatter, and `CLAUDE_CODE_EFFORT_LEVEL` overrides both (sub-agents.md; changelog 2.1.292). `CLAUDE_CODE_SUBAGENT_EFFORT` sets the level for agents that don't name one (changelog 2.1.316).
+**Effort.** `medium` is the default on the 5.5 models. Reserve `high` and above for agents where it measurably helps, such as deep review, planning or security analysis. A higher effort costs tokens and latency on every response the agent produces. Repo convention: an agent above `medium` has an entry, with its reason, in `HIGH_EFFORT_AGENTS` in `tests/plugin_lint/test_agents.py`, which fails on an unlisted agent and on a stale entry. A per-dispatch `effort` overrides the frontmatter, and `CLAUDE_CODE_EFFORT_LEVEL` overrides both (sub-agents.md; changelog 2.1.292). `CLAUDE_CODE_SUBAGENT_EFFORT` sets the level for agents that don't name one (changelog 2.1.316).
 
 **Resolution order** (sub-agents.md; changelog 2.1.251):
 
@@ -488,7 +488,7 @@ Run this before merging a new or changed agent.
 
 - [ ] `description` opens with a capability clause and "Use when…", puts the primary trigger in the first sentence, and holds the counter-triggers. A standalone agent gives two to four prose trigger scenarios (at most five), with a proactive one only when it fits. A pipeline-only agent states its purpose, who dispatches it and when not to use it (§3).
 - [ ] The tool list matches the archetype and least privilege. An analysis agent omits `Edit`, and holds `Write` only for its named output file. An agent with `memory:` is reviewed as holding Read, Write and Edit. Every MCP tier in a fallback chain has a matching `tools` entry (§4, §11).
-- [ ] The model tier fits the work. `effort` is above `medium` only where it helps, and a dispatch that overrides `model` or `effort` gives a reason (§5).
+- [ ] The model tier fits the work. `effort` is above `medium` only where it helps, with a `HIGH_EFFORT_AGENTS` entry, and a dispatch that overrides `model` or `effort` gives a reason (§5).
 - [ ] A new or rewritten body has Role, Core Principles, Process, Output Format and Red Flags. It is written in the second person and stays under about 2,500 words (§10).
 - [ ] The archetype fits, and any deviation has a one-line reason (§11).
 - [ ] An agent whose output an orchestrator consumes ends with one `STATUS:` line. Contract tokens appear in order: disclosure, then `VERDICT:`, then `STATUS:` (§12).
