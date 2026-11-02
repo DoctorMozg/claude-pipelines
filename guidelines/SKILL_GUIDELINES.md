@@ -205,7 +205,7 @@ Outside Claude Code (claude.ai uploads, the Skills API, `package_skill.py`), fro
 
 ## 7. State Management
 
-A multi-phase skill keeps its cross-phase state in `.mz/task/<task_name>/state.md`, under the project root defined in `guidelines/JOURNAL_GUIDELINES.md` rather than the Bash working directory. Its keys, status values, progress ledger, body sections and compaction rules are defined in `guidelines/STATE_SCHEMA.md`, the single source. Skills mirror its compact contract and add their own keys below the schema keys, never renaming or replacing one.
+A multi-phase skill keeps its cross-phase state in `.mz/task/<task_name>/state.md`, under the project root defined in `guidelines/JOURNAL_GUIDELINES.md` rather than the Bash working directory. Its keys, status values, progress ledger, body sections and compaction rules are defined in `guidelines/STATE_SCHEMA.md`, the single source. Skills copy one of its compact contract blocks verbatim, with any skill-specific sentences after it (`guidelines/STATE_SCHEMA.md`, "Compact Inline Contract"), and add their own keys below the schema keys, never renaming or replacing one.
 
 - **Task name**: `<YYYY_MM_DD>_<skill>_<slug>`. The date is today's, written with underscores. `<slug>` is a snake_case summary of the argument, at most 20 characters. On a same-day collision, append `_v2`, `_v3`. Examples: `2026_04_20_build_oauth_flow`, `2026_04_20_debug_payment_err`.
 - **Status values** (mirrors STATE_SCHEMA.md): `pending | running | blocked | complete | aborted_by_user | failed`. `blocked` means the run stopped for an answer or an obstacle, with the reason in `what_remains`. Milestones go in `Phase`.
@@ -346,7 +346,7 @@ The pattern comes from addyosmani/agent-skills, `docs/skill-anatomy.md`, which c
 
 Run this before merging a new or changed skill.
 
-**Mechanical checks.** Most are scripted. `make test` runs the `tests/plugin_lint/` suite: `test_skills.py` covers the frontmatter, Bash-grant, `argument-hint`, size, table-of-contents, reference-listing, phase-table and anatomy items, `test_cross_refs.py` covers paths and AskUserQuestion headers, and `test_dependencies.py` covers dispatched agents and `dependencies`. The pre-commit hooks `skill-description-shape`, `skill-reference-path` and `no-rule-citations` cover the description's shape, bare reference paths and rule numbers. `make validate`, which the CI `validate` job also runs, calls `claude plugin validate --strict` on the repo and every plugin for what Claude Code accepts; the strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML). Check the rest by hand: the 250-character budget and the AskUserQuestion option count.
+**Mechanical checks.** Most are scripted. `make test` runs the `tests/plugin_lint/` suite: `test_skills.py` covers the frontmatter, Bash-grant, `argument-hint`, size, table-of-contents, reference-listing, phase-table and anatomy items, `test_cross_refs.py` covers paths and AskUserQuestion headers, and `test_dependencies.py` covers dispatched agents and `dependencies`. `test_state_contract.py` checks that each inline state contract starts with a STATE_SCHEMA.md block verbatim, and that each SKILL.md writing v2 state carries the block's `## Lessons` sentence. The pre-commit hooks `skill-description-shape`, `skill-reference-path` and `no-rule-citations` cover the description's shape, bare reference paths and rule numbers. `make validate`, which the CI `validate` job also runs, calls `claude plugin validate --strict` on the repo and every plugin for what Claude Code accepts; the strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML). Check the rest by hand: the 250-character budget and the AskUserQuestion option count.
 
 - [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser and uses only documented keys (§3, §6).
 - [ ] `allowed-tools` grants Bash one command at a time, as `Bash(<command> *)`, and never as a bare `Bash` unless the skill is a listed open-ended exemption (§6).
@@ -371,7 +371,7 @@ Run this before merging a new or changed skill.
 - [ ] The phase table is present for a multi-phase skill (§4).
 - [ ] A code-editing or analysis skill accepts `scope:`, documents its default and its read and edit boundary, links the shared scope file, and states the edit boundary in every writer dispatch (§5).
 - [ ] Bounds and paths are named constants with reasons. Phase files use `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` placeholders, expanded before use (§6).
-- [ ] `state.md` follows STATE_SCHEMA.md, uses the task-name convention, and is written after every phase and before every gate (§7).
+- [ ] The State Management section copies a STATE_SCHEMA.md compact contract block verbatim, and `state.md` follows that schema, uses the task-name convention, and is written after every phase and before every gate (§7).
 - [ ] Predictable failures are listed under `## Error Handling` with their responses. Escalation follows §8, including the case where nobody can answer.
 - [ ] Reports use `.mz/<root>/<task_name>.md`, and the skill passes report paths to agents (§9).
 - [ ] Every wave of two or more agents has a manifest and a rollup, and stays within the wave cap (§10; AGENTS_GUIDELINES.md, "Parallel Waves").

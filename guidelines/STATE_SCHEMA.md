@@ -182,7 +182,7 @@ When a skill reads a `state.md` whose `schema_version` it doesn't know:
 
 ## 9. Compact Inline Contract
 
-Skills that don't read the runtime copy embed one of these blocks in their State Management section. §1 is the full schema; the block names what every skill writes, and a skill adds its own keys below the schema keys as needed. Both blocks spell out the root expression from JOURNAL_GUIDELINES.md, "Project Root", because a plugin can't read `guidelines/`; when that section changes, update the blocks.
+Skills that don't read the runtime copy embed one of these blocks in their State Management section. §1 is the full schema; the block names what every skill writes, and a skill adds its own keys below the schema keys as needed. Both blocks spell out the root expression from JOURNAL_GUIDELINES.md, "Project Root", because a plugin can't read `guidelines/`; when that section changes, update the blocks. `tests/plugin_lint/test_state_contract.py` pins every copy. The shared runtime copy holds both blocks exactly. Every inline contract in a plugin starts with one of them, with skill-specific sentences only after it. Every SKILL.md that writes v2 state carries a block's `## Lessons` sentence. So a change to a block here updates the shared copy and every plugin copy in the same commit, or `make test` fails.
 
 Multi-phase skills:
 

@@ -135,7 +135,7 @@ Print every item as a visible list marked PASS, FAIL or n/a (with the reason), w
 - [ ] The phase table is present for a multi-phase skill ("Phase Overview Table").
 - [ ] A code-editing or analysis skill accepts `scope:`, documents its default and its read and edit boundary, links the shared scope file, and states the edit boundary in every writer dispatch ("Scope Parameter").
 - [ ] Bounds and paths are named constants with reasons. Phase files use `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` placeholders, expanded before use ("Constants and Paths").
-- [ ] `state.md` follows STATE_SCHEMA.md, as copied in the anatomy reference's state blocks, uses the task-name convention, and is written after every phase and before every gate ("State Management").
+- [ ] The State Management section copies one of the anatomy reference's state blocks verbatim, and `state.md` follows that schema, uses the task-name convention, and is written after every phase and before every gate ("State Management").
 - [ ] Predictable failures are listed under `## Error Handling` with their responses. Escalation follows "Error Handling and Escalation", including the case where nobody can answer.
 - [ ] Reports use `.mz/<root>/<task_name>.md`, and the skill passes report paths to agents ("Report Naming").
 - [ ] Every wave of two or more agents has a manifest and a rollup, and stays within the wave cap ("Wave Observability"; AGENTS_GUIDELINES.md, "Parallel Waves").
