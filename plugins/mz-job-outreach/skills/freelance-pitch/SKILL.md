@@ -1,6 +1,6 @@
 ---
 name: freelance-pitch
-description: 'ALWAYS invoke when the user wants to draft a freelance proposal for a single gig — by rank from /freelance-search, by URL, or picked from a list. Triggers: "freelance pitch", "draft proposal", "pitch this gig", "proposal for gig 3".'
+description: 'Drafts a grounded freelance proposal for one gig. Use when the user wants to pitch a specific gig, by rank, URL or pick ("freelance pitch", "draft proposal", "pitch this gig", "proposal for gig 3"). Not for finding gigs (use freelance-search).'
 argument-hint: "[<rank-N> | <gig-URL>] [personality:off]"
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash(tr *), Bash(sed *), Bash(cut *), Bash(cp *), Bash(rm *), Bash(sha1sum *), Bash(shasum *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -16,7 +16,7 @@ The proposal is a markdown file at `.mz/outreach/<run_dir>/proposals/<gig_slug>.
 
 ## When to Use
 
-Invoke when the user wants to draft a proposal for one specific freelance gig. Trigger phrases: "draft a proposal", "pitch this gig", "freelance pitch", "proposal for gig <N>", "proposal for <URL>".
+Drafting a proposal for one specific freelance gig, picked from the latest search run or given by URL.
 
 ### When NOT to use
 

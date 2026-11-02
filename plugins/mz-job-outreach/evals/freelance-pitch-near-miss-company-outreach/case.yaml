@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: freelance-pitch-near-miss-company-outreach
+description: Cold outreach selling a consultancy to a researched company, starting from its company card, belongs to outreach-enrich-company, not to a proposal for a posted gig.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    My two-person devops consultancy wants to land Northwind Logistics as a
+    client. The research card is already at
+    .mz/outreach/2026_10_14_outreach_research_logistics/companies/northwind-logistics.md.
+    Dig deeper on them, then write the cold emails and LinkedIn messages for their
+    CTO and head of platform.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-pitch-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-pitch"'
+    min: 0
+    max: 0
+    arm: both

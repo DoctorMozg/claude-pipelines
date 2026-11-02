@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: govern-fire-queue-swap
+description: Swapping the job-queue infrastructure under every worker is hard to reverse and needs weighing and a sign-off, which is govern's job even when worded without its vocabulary.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    We're on Celery with Redis and I'm tempted to move everything to Temporal. Every
+    worker would need rewriting and there's no easy way back once we're on it. Before
+    I commit, I want a few people to tear the idea apart and a written verdict I can
+    put my name on.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: govern-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?govern"'

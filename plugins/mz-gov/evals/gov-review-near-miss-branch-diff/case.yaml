@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: gov-review-near-miss-branch-diff
+description: Going over the commits on a feature branch before pushing is a code change review, which belongs to review-branch.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    review my branch before I push. it's the oauth token refresh work, about 12
+    commits. did I break anything in the session handling?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-review-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-review"'
+    min: 0
+    max: 0
+    arm: both

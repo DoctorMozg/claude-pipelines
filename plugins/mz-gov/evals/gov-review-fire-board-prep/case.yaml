@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: gov-review-fire-board-prep
+description: Grading the team's written-up technical choices for missing rejected options and downsides, with no path given, is gov-review described in the user's own words.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    Over the past year we've written up most of our big technical choices and why
+    we made them, one file per choice. The architecture group meets Thursday and I
+    want to walk in knowing which of those write-ups hold up and which ones skip
+    the rejected options or the downsides. Grade them for me. Don't rewrite
+    anything, I'll sort out the weak ones myself.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-review"'

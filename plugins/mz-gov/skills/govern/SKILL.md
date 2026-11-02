@@ -1,6 +1,6 @@
 ---
 name: govern
-description: ALWAYS invoke for a substantial design or architecture decision — schema/API/dependency/boundary changes. Triggers:"should I","ADR for X","decide between","record this decision". NOT for refactors, trivial fixes, or prototyping.
+description: 'Runs a substantial design decision through review and sign-off into an ADR, RFD or design doc. Use when the user wants a choice made and recorded ("should I X or Y", "ADR for X", "decide between A and B"). Not for auditing records (use gov-review).'
 argument-hint: <decision to govern> [artifact:adr|rfd|design|auto] [rich]
 model: sonnet
 allowed-tools: Agent(gov-router), Agent(gov-provenance-recorder), Agent(gov-critic-alternatives), Agent(gov-critic-reversibility), Agent(gov-critic-blast-radius), Agent(gov-critic-assumptions), Agent(gov-critic-quick), Agent(gov-discussion-synthesizer), Agent(gov-artifact-writer), AskUserQuestion, Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(mv *), Bash(gh pr view *), Bash(gh auth status *), Bash(curl *), Glob, Grep
@@ -14,8 +14,7 @@ Takes a development decision and runs it through a five-phase lifecycle — rout
 
 ## When to Use
 
-- A substantial, ambiguous design or architecture choice — behavior, public API, data schema, a dependency swap, a module boundary, security posture, or anything hard to reverse with more than one defensible approach.
-- Triggers: "should I X or Y", "write an ADR for X", "decide between A and B", "record this decision".
+A substantial, ambiguous design or architecture choice — behavior, public API, data schema, a dependency swap, a module boundary, security posture, or anything hard to reverse with more than one defensible approach.
 
 ### When NOT to use
 

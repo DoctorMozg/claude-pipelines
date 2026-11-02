@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: freelance-pitch-fire-posting-url
+description: A message meant to win one specific contract posting, given by URL, is a single-gig proposal even without the words proposal or pitch.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    Found this posting: https://jobs.example.com/projects/airflow-etl-migration-4417.
+    They need an ETL migration off cron scripts onto Airflow, roughly three months,
+    and they state a budget of 12 to 15k. Write the message I send to win it. Open
+    with my five years of Airflow work and keep the price inside what they state.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-pitch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-pitch"'

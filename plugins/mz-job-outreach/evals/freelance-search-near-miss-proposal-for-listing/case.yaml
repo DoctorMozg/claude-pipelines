@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: freelance-search-near-miss-proposal-for-listing
+description: Writing a proposal for one specific listing the user already found is a pitch task, so it belongs to freelance-pitch.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    Found a freelance listing I want: https://jobs.example.com/gig/4821, a React
+    Native developer to rebuild a booking app, budget 8 to 12k. I already know it's
+    the one, I don't need more options. Write the proposal I can send them, and work
+    in my case study from the Lisbon bike-share app.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-search-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-search"'
+    min: 0
+    max: 0
+    arm: both

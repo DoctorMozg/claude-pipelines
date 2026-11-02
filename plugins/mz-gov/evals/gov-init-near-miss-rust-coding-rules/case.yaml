@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: gov-init-near-miss-rust-coding-rules
+description: Putting general coding rules into the project CLAUDE.md is a job for init-rules, not for the governance policy install.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    New Rust crate, and two people join on Monday. Put our usual coding rules into
+    the project CLAUDE.md: clippy clean, no unwrap in library code, unit tests next
+    to the module they cover. Look at what's in the repo first and tune the rules
+    to it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-init-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-init"'
+    min: 0
+    max: 0
+    arm: both

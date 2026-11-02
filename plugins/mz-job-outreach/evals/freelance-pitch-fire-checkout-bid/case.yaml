@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: freelance-pitch-fire-checkout-bid
+description: Writing the bid for one contractor job with a stated scope and budget is a single-gig proposal, even when no URL or rank is given.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    Fintech startup needs a contractor to rebuild their checkout in six weeks for
+    about 8k. I want it. Write me the bid: what I'd build, the stages, the price.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-pitch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-pitch"'

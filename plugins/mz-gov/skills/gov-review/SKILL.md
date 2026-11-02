@@ -1,6 +1,6 @@
 ---
 name: gov-review
-description: ALWAYS invoke to audit existing governance artifacts for quality gaps. Triggers:"review our ADRs","audit decision records","check governance docs". NOT for making a new decision (use govern) or reviewing code (use audit/review-branch).
+description: 'Audits ADRs, RFDs and design docs into a read-only findings report. Use when the user wants existing decision records checked ("review our ADRs", "audit decision records", "check governance docs"). Not for reviewing code changes (use review-branch).'
 argument-hint: '[path-or-glob] [docs/decisions|docs/rfcs|docs/design]'
 model: sonnet
 allowed-tools: Agent(gov-audit-reviewer), Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), AskUserQuestion
@@ -14,9 +14,7 @@ Audits already-written governance artifacts — ADRs, RFDs, and design docs — 
 
 ## When to Use
 
-- The user wants existing decision records checked for quality, not a new decision made.
-- Triggers: "review our ADRs", "audit our decision records", "check the governance docs", "are our ADRs any good".
-- One artifact or a whole directory — the skill fans out across however many it finds.
+Checking the quality of existing decision records (ADRs, RFDs and design docs), whether one artifact or a whole directory.
 
 ### When NOT to use
 

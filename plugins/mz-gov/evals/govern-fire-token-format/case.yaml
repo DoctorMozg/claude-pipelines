@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: govern-fire-token-format
+description: A should-I question on a security-relevant, hard-to-reverse auth choice with an explicit ask for an ADR belongs to govern.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    Should I switch our session handling from JWTs to opaque tokens looked up in
+    Redis? Revocation is a pain right now, but I don't love adding a network hop to
+    every request. Write an ADR once we've settled on one.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: govern-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?govern"'

@@ -1,6 +1,6 @@
 ---
 name: gov-init
-description: ALWAYS invoke when the user wants to install or update the governance policy in CLAUDE.md. Triggers:"gov init","install governance policy","set up governance". NOT for running a decision (use govern) or auditing artifacts (use gov-review).
+description: 'Installs, updates or removes the governance policy in CLAUDE.md. Use when the user wants governance set up ("gov init", "install governance policy", "set up governance"). Not for running a decision (use govern) or auditing records (use gov-review).'
 argument-hint: '[project|global] [--force] [--uninstall]'
 model: sonnet
 allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Glob, Grep, AskUserQuestion
@@ -14,7 +14,7 @@ Install the `mz-gov` governance policy into `CLAUDE.md` so Claude proactively re
 
 ## When to Use
 
-Triggers: "gov init", "install governance policy", "set up governance", "add govern policy to CLAUDE.md".
+Installing, updating or removing the governance policy block in `CLAUDE.md`, for one project or globally.
 
 ### When NOT to use
 

@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: freelance-search-near-miss-permanent-python-role
+description: Matching a CV against permanent salaried openings is a job hunt, so it belongs to job-search.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    Match my CV (~/resume.md) against current openings for permanent Python roles,
+    Berlin or fully remote in the EU. Base salary 95k or above, no crypto. Check the
+    smaller remote job boards too, not just LinkedIn.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-search-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-search"'
+    min: 0
+    max: 0
+    arm: both

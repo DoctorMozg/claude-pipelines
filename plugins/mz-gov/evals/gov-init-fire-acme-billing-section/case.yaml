@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: gov-init-fire-acme-billing-section
+description: Asking for the standard text that makes Claude route big design choices through the decision-record workflow, written into a named CLAUDE.md, is a policy install without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    We have the decision-record workflow available on the billing team, but Claude
+    never reaches for it on its own. It just codes the change and moves on, and
+    nobody finds out why we chose a schema until months later. In
+    ~/Work/acme-billing/CLAUDE.md add the section that tells Claude to bring
+    substantial, ambiguous design choices through that workflow before it writes
+    any code. Use the standard text that ships with it, don't write your own.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-init-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-init"'

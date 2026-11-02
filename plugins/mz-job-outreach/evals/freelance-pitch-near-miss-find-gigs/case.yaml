@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: freelance-pitch-near-miss-find-gigs
+description: Hunting for contract work that matches a CV across several boards is discovery, so it belongs to freelance-search, not a proposal for one known gig.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    I'm a Flutter developer with eight years behind me and I'm leaving my agency
+    in January. Can you hunt down contract work for me? EU and UK clients only,
+    three months minimum, 500 euros a day or better. My CV is at
+    ~/cv/flutter_cv.pdf. Once there's a shortlist I'll want to go after the best
+    ones.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-pitch-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-pitch"'
+    min: 0
+    max: 0
+    arm: both

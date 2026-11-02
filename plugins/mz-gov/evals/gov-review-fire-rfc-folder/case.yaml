@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: gov-review-fire-rfc-folder
+description: Grading a folder of existing proposals for thin rationale and missing tradeoffs, without editing them, is gov-review even though no trigger phrase appears.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+execution:
+  prompt: >-
+    There are about fifteen proposals sitting in docs/rfcs/ and I suspect a lot
+    of them are thin. Read through all of them and tell me which ones lack real
+    rationale, skip the tradeoffs, or carry a status that doesn't match reality.
+    A ranked list is fine, nothing gets edited.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-review"'

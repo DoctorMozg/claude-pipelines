@@ -1,6 +1,6 @@
 ---
 name: freelance-search
-description: 'ALWAYS invoke when the user wants to find freelance gigs, contracts, or consulting engagements matched to a CV from vetted/niche/regional boards (not Upwork/Fiverr). Triggers: "find freelance gigs", "freelance search", "freelance hunt".'
+description: 'Finds and ranks freelance gigs and consulting work matched to a CV from vetted niche boards. Use when the user wants freelance or contract work ("find freelance gigs", "freelance search", "freelance hunt"). Not for salaried roles (use job-search).'
 argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [pitches:topN]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(tr *), Bash(sha1sum *), Bash(cut *), Bash(jq *), Bash(mv *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -18,7 +18,7 @@ This skill explicitly excludes mass-market open marketplaces (Upwork, Fiverr, Pe
 
 ## When to Use
 
-Invoke when the user wants to discover freelance/contract/consulting work matching their CV, build a gig shortlist, or prepare for outreach to vetted freelance networks. Trigger phrases: "find freelance gigs", "freelance hunt", "find contract work", "match contracts to my CV", "find consulting engagements".
+Discovering and shortlisting freelance, contract and consulting work that matches a CV, including outreach guidance for vetted freelance networks.
 
 ### When NOT to use
 
