@@ -3,7 +3,7 @@ name: vault-review
 description: ALWAYS invoke when starting a knowledge review session, surfacing notes to review, checking which notes are due for review, or running the weekly/monthly review ritual.
 argument-hint: '[optional: review mode — daily|weekly|monthly, or leave empty for smart queue]'
 model: sonnet
-allowed-tools: Agent, Read, Write, Glob, Grep, AskUserQuestion
+allowed-tools: Agent, Bash, Read, Write, Glob, Grep, AskUserQuestion
 ---
 
 # Vault Review

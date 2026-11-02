@@ -3,7 +3,7 @@ name: github-review-pr
 description: ALWAYS invoke when the user wants to review a GitHub pull request. Triggers:"review PR","review pull request","check this PR","PR review". Provide a PR URL or owner/repo#number as argument.
 argument-hint: <PR URL or owner/repo#number>
 model: sonnet
-allowed-tools: Agent, Bash, Read
+allowed-tools: Agent, Bash, Read, AskUserQuestion
 ---
 
 # Review PR

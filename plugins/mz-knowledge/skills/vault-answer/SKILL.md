@@ -3,7 +3,7 @@ name: vault-answer
 description: 'ALWAYS invoke when asking a question that should be answered from vault notes with inline wikilink citations. Triggers: what does my vault say about, answer from notes, search my vault for, grounded answer.'
 argument-hint: <question>
 model: sonnet
-allowed-tools: Agent, Read, Grep, Glob, Write, AskUserQuestion
+allowed-tools: Agent, Bash, Read, Grep, Glob, Write, AskUserQuestion
 ---
 
 # Vault Answer

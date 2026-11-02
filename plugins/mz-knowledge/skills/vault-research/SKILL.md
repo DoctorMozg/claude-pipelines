@@ -3,7 +3,7 @@ name: vault-research
 description: 'ALWAYS invoke when injecting a research report or brainstorm report from .mz/research or .mz/reports into the vault as atomized notes. Triggers: ingest research, import report, atomize report, research to notes.'
 argument-hint: <report path>
 model: opus
-allowed-tools: Agent, Read, Write, Grep, AskUserQuestion
+allowed-tools: Agent, Bash, Read, Write, Grep, AskUserQuestion
 ---
 
 # Vault Research
