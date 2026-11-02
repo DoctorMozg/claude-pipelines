@@ -41,4 +41,4 @@ python_version = "3.12"
 strict = true
 explicit_package_bases = true
 mypy_path = "src"
-files = ["src", "tests/conftest.py", "tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/plugin_lint"]
+files = ["src", "tests/conftest.py", "tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/plugin_lint", "tests/e2e"]

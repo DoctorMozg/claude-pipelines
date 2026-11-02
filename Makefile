@@ -1,4 +1,4 @@
-.PHONY: smoke contract-matrix pytest test validate help
+.PHONY: smoke contract-matrix pytest test validate gh-smoke help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
@@ -10,6 +10,7 @@ help:
 	@echo "  pytest            Run the Python test suite (hook scripts, Codex migration)"
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
+	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
 
 contract-matrix:
 	@./plugins/mz-dev-pipe/tests/run_contract_matrix.sh
@@ -35,3 +36,7 @@ validate:
 	done; \
 	if [ -n "$$failed" ]; then echo "validate --strict failed:$$failed"; exit 1; fi; \
 	echo "validate --strict passed: marketplace and $$(ls -d plugins/*/ | wc -l) plugins"
+
+# Live GitHub and model calls, so it stays out of `test` and CI.
+gh-smoke:
+	@$(PYTHON) -I tests/e2e/gh_smoke.py
