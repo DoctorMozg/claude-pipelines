@@ -6,12 +6,21 @@ import time
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol
 
 import pytest
 
-LOG_START = "<!-- mz-log-start -->"
-LOG_END = "<!-- mz-log-end -->"
+from .memory_helpers import (
+    LOG_END,
+    LOG_START,
+    CaptureRunner,
+    MarkChanged,
+    RawTaskWriter,
+    TaskWriter,
+    memory_dir,
+    memory_file,
+    region,
+)
+
 MAX_LOG_LINES = 400
 COMPRESS_THRESHOLD = 300
 # Every external command capture may run; each gets a counting shim on an otherwise empty PATH.
@@ -43,30 +52,14 @@ COUNTED_TOOLS = (
     "wc",
 )
 
-type CaptureRunner = Callable[[dict[str, str]], None]
-type MarkChanged = Callable[[Path], None]
-
-
-class TaskWriter(Protocol):
-    def __call__(self, name: str, status: str, extra: str = "") -> Path: ...
-
-
-class RawTaskWriter(Protocol):
-    def __call__(self, name: str, text: str) -> Path: ...
-
-
-def _memory_file(project: Path) -> Path:
-    return project / ".mz" / "memory" / "MEMORY.md"
-
 
 def _logged_tasks(project: Path) -> list[str]:
-    lines = _memory_file(project).read_text(encoding="utf-8").splitlines()
+    lines = memory_file(project).read_text(encoding="utf-8").splitlines()
     return [line.split()[2] for line in lines if line.startswith("- [")]
 
 
 def _log_region(project: Path) -> list[str]:
-    lines = _memory_file(project).read_text(encoding="utf-8").splitlines()
-    return lines[lines.index(LOG_START) + 1 : lines.index(LOG_END)]
+    return region(memory_file(project), LOG_START, LOG_END)
 
 
 def _entries(count: int, extra_lines: int = 0) -> list[str]:
@@ -80,7 +73,7 @@ def _entries(count: int, extra_lines: int = 0) -> list[str]:
 def _seed_log(project: Path, runner: CaptureRunner, env: dict[str, str], lines: list[str]) -> None:
     """Create a current-layout memory file through capture itself, then fill its Activity Log."""
     runner({**env, "MZ_MEMORY_COMPRESS": "0"})
-    memory = _memory_file(project)
+    memory = memory_file(project)
     text = memory.read_text(encoding="utf-8")
     memory.write_text(
         text.replace(f"{LOG_START}\n", f"{LOG_START}\n" + "".join(f"{line}\n" for line in lines)),
@@ -106,7 +99,7 @@ class TestStatusFilter:
         run_capture()
 
         assert _logged_tasks(project) == ["2026_11_01_build_auth"]
-        assert "use JWT" in _memory_file(project).read_text(encoding="utf-8")
+        assert "use JWT" in memory_file(project).read_text(encoding="utf-8")
 
     def test_legacy_completed_status_is_captured(
         self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
@@ -197,7 +190,7 @@ class TestUpgradeFromDateKeyedDedup:
     def seeded_log(self, project: Path, run_capture: Callable[[], None]) -> None:
         run_capture()
         (project / ".mz" / "memory" / ".last-capture").unlink()
-        memory = _memory_file(project)
+        memory = memory_file(project)
         text = memory.read_text(encoding="utf-8")
         memory.write_text(
             text.replace(f"{LOG_START}\n", f"{LOG_START}\n- [2026-10-01] task_a (phase=done)\n"),
@@ -262,7 +255,7 @@ class TestMalformedState:
         run_capture()
 
         assert _logged_tasks(project) == ["2026_11_01_audit_api"]
-        assert "(phase=" not in _memory_file(project).read_text(encoding="utf-8")
+        assert "(phase=" not in memory_file(project).read_text(encoding="utf-8")
 
     def test_bold_status_line_is_skipped(
         self,
@@ -315,7 +308,7 @@ class TestMalformedState:
 
         run_capture()
 
-        memory_text = _memory_file(project).read_text(encoding="utf-8")
+        memory_text = memory_file(project).read_text(encoding="utf-8")
         assert "decision number 9\n" in memory_text
         assert "decision number 10\n" not in memory_text
 
@@ -332,7 +325,7 @@ class TestPrivacy:
 
         run_capture()
 
-        memory_text = _memory_file(project).read_text(encoding="utf-8")
+        memory_text = memory_file(project).read_text(encoding="utf-8")
         assert "jane@acme.test" not in memory_text
         assert "contact first" in memory_text
 
@@ -377,9 +370,9 @@ class TestBackgroundCompression:
 
     @staticmethod
     def _compression_finished(project: Path) -> bool:
-        memory_dir = project / ".mz" / "memory"
-        return (memory_dir / "activity.archive.md").exists() and not (
-            memory_dir / ".compress.lock"
+        directory = memory_dir(project)
+        return (directory / "activity.archive.md").exists() and not (
+            directory / ".compress.lock"
         ).exists()
 
     def test_log_past_the_threshold_is_compressed_by_default(

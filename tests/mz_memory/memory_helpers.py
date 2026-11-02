@@ -2,7 +2,7 @@ import json
 import re
 import shutil
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -65,6 +65,10 @@ if [ -f "$rec/during.sh" ]; then . "$rec/during.sh"; fi
 cat "$rec/response"
 exit "$(cat "$rec/exit_code")"
 """
+
+
+type CaptureRunner = Callable[[dict[str, str]], None]
+type MarkChanged = Callable[[Path], None]
 
 
 class TaskWriter(Protocol):

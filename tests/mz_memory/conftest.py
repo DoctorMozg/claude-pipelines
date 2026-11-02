@@ -13,7 +13,9 @@ from .memory_helpers import (
     OPTIONAL_TOOLS,
     SANDBOX_TOOLS,
     SCRIPTS,
+    CaptureRunner,
     FakeCurator,
+    MarkChanged,
     RawTaskWriter,
     SeedLessons,
     TaskWriter,
@@ -22,8 +24,6 @@ from .memory_helpers import (
 )
 
 CAPTURE_SCRIPT = SCRIPTS / "memory-capture.sh"
-
-type CaptureRunner = Callable[[dict[str, str]], None]
 
 
 def _state_text(status: str, extra: str) -> str:
@@ -65,7 +65,7 @@ def write_task(write_raw_task: RawTaskWriter) -> TaskWriter:
 
 
 @pytest.fixture
-def mark_changed_since_capture(project: Path) -> Callable[[Path], None]:
+def mark_changed_since_capture(project: Path) -> MarkChanged:
     """Push a state file's mtime past the capture marker, so the next capture reads it again."""
 
     def mark(state_file: Path) -> None:
