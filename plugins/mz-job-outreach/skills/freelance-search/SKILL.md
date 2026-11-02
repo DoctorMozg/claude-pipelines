@@ -3,7 +3,7 @@ name: freelance-search
 description: 'ALWAYS invoke when the user wants to find freelance gigs, contracts, or consulting engagements matched to a CV from vetted/niche/regional boards (not Upwork/Fiverr). Triggers: "find freelance gigs", "freelance search", "freelance hunt".'
 argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [pitches:topN]'
 model: sonnet
-allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(tr *), Bash(sha1sum *), Bash(cut *), Bash(jq *), Bash(mv *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 
 # Freelance Search Pipeline

@@ -175,7 +175,7 @@ ______________________________________________________________________
 
 ### 7.1 Final verification
 
-Run tests and linters one last time to confirm the final state is still green after the last iteration. If any regression appears at this stage (should not, since Phase 4 ran per iteration), treat it as an escalation — do not try to auto-fix it here; ask the user.
+Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel one last time to confirm the final state is still green after the last iteration. If any regression appears at this stage (should not, since Phase 4 ran per iteration), treat it as an escalation — do not try to auto-fix it here; ask the user.
 
 ### 7.2 Write summary
 

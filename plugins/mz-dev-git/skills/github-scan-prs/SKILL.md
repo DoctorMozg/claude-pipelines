@@ -3,7 +3,7 @@ name: github-scan-prs
 description: ALWAYS invoke when the user wants to check which PRs need attention across GitHub repositories. Triggers:"scan PRs","check PRs","what PRs need attention","PR inbox","daily PR report".
 argument-hint: '[owner/repo1, owner/repo2, ...]'
 model: sonnet
-allowed-tools: Agent, Bash, Read, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh repo view *), Bash(gh auth status *), Bash(curl *), Read, Write, AskUserQuestion
 ---
 
 # Scan PRs

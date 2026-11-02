@@ -3,7 +3,7 @@ name: gov-init
 description: ALWAYS invoke when the user wants to install or update the governance policy in CLAUDE.md. Triggers:"gov init","install governance policy","set up governance". NOT for running a decision (use govern) or auditing artifacts (use gov-review).
 argument-hint: '[project|global] [--force] [--uninstall]'
 model: sonnet
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Glob, Grep, AskUserQuestion
 ---
 
 # Gov Init

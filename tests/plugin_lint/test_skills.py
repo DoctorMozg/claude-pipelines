@@ -58,6 +58,21 @@ REFERENCE_TOC_MIN_LINES = 100
 SKILL_MAX_CHARS = 20_000
 SKILL_MAX_LINES = 500
 PHASE_MAX_LINES = 400
+# Interpreters and exec wrappers run whatever follows them, so a grant on the bare program is bare Bash.
+BASH_EQUIVALENT_GRANT = re.compile(
+    r"^Bash\((?:\*|(?:bash|sh|zsh|python3?|node|perl|env|eval|exec|xargs|sudo|npx|uv run)"
+    r"(?: \*|:\*)?)\)$"
+)
+# `Bash(ls*)` also matches `lsof`; ` *` and `:*` are the word-boundary forms.
+UNBOUNDED_TRAILING_STAR = re.compile(r"[^ :]\*\)$")
+# Orchestrators that run commands nobody can list in advance keep bare Bash (user decision, 2026-11-02).
+OPEN_ENDED_BASH_SKILLS = {
+    "debug": "reproduces failures with the project's test command, trigger scripts and git bisect",
+    "polish": "runs the user's criterion checks and the project's formatters itself",
+    "optimize": "runs the user's measure command and a profiler it picks",
+    "verify": "runs the type checker, example scripts and README code blocks",
+    "clean-leftovers": "runs the detected linter, often through npx or uv run",
+}
 
 
 def _skill_dir_files(doc: PluginDoc, folder: str) -> list[Path]:
@@ -119,6 +134,29 @@ class TestFrontmatter:
             and "AskUserQuestion" not in split_tool_list(item.frontmatter.get("allowed-tools"))
         ]
         assert_no_violations(violations)
+
+
+    def test_bash_grants_are_scoped(self, skills: DocSet) -> None:
+        violations: list[str] = []
+        for parsed in skills.parsed:
+            skill = parsed.doc.path.parent.name
+            for entry in split_tool_list(parsed.frontmatter.get("allowed-tools")):
+                if entry == "Bash" and skill in OPEN_ENDED_BASH_SKILLS:
+                    continue
+                if entry == "Bash" or BASH_EQUIVALENT_GRANT.match(entry):
+                    violations.append(f"{parsed.doc.relative}: {entry!r} grants any command")
+                elif entry.startswith("Bash(") and UNBOUNDED_TRAILING_STAR.search(entry):
+                    violations.append(f"{parsed.doc.relative}: {entry!r} needs a space before *")
+        assert_no_violations(violations)
+
+    def test_open_ended_bash_exemptions_are_current(self, skills: DocSet) -> None:
+        bare_bash = {
+            parsed.doc.path.parent.name
+            for parsed in skills.parsed
+            if "Bash" in split_tool_list(parsed.frontmatter.get("allowed-tools"))
+        }
+        stale = sorted(set(OPEN_ENDED_BASH_SKILLS) - bare_bash)
+        assert not stale, f"exempt skills that no longer grant bare Bash: {stale}"
 
 
 class TestStructure:

@@ -3,7 +3,7 @@ name: ask
 description: 'ALWAYS invoke when answering a user question that needs codebase or web research. Triggers: "how does X work here", "why do we use Y", "does the project support Z". When NOT to use: code edits, diagram-rich walkthroughs (use explain).'
 argument-hint: <question — e.g. "how does the auth middleware refresh tokens", "why does the build use esbuild", "does this repo support websockets">
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(curl -fsSL *), Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Question-Answering Pipeline

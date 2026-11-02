@@ -3,7 +3,7 @@ name: vault-provenance
 description: "ALWAYS invoke when classifying epistemic status of claims in a note, back-filling sources frontmatter, or auditing a note's knowledge provenance. Triggers: epistemic status, provenance, claim sources, mark claims."
 argument-hint: <note name or path>
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Grep, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, AskUserQuestion
 ---
 
 # Vault Provenance

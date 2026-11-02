@@ -3,7 +3,7 @@ name: gov-review
 description: ALWAYS invoke to audit existing governance artifacts for quality gaps. Triggers:"review our ADRs","audit decision records","check governance docs". NOT for making a new decision (use govern) or reviewing code (use audit/review-branch).
 argument-hint: '[path-or-glob] [docs/decisions|docs/rfcs|docs/design]'
 model: sonnet
-allowed-tools: Agent(gov-audit-reviewer), Read, Grep, Glob, Bash, AskUserQuestion
+allowed-tools: Agent(gov-audit-reviewer), Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), AskUserQuestion
 ---
 
 # Governance Artifact Review (read-only)

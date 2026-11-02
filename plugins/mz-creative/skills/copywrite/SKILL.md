@@ -2,7 +2,7 @@
 name: copywrite
 description: 'ALWAYS invoke when the user wants promotional, marketing, or persuasive copy. Triggers: "write a landing page for", "draft a launch email", "write release notes", "social post for", "pitch one-pager", "marketing copy for", "announcement copy". Researches positioning + product context, dispatches expert-copywriter, then runs an automatic naturalize pass.'
 argument-hint: <what to promote, plus format:landing|email|announcement|social|changelog|pitch>
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(git log *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet
 ---
 

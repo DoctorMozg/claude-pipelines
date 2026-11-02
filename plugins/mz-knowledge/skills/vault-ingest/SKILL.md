@@ -3,7 +3,7 @@ name: vault-ingest
 description: ALWAYS invoke when capturing voice memos, screenshots, PDFs, YouTube videos, or images into the vault as fleeting notes. Triggers ingest audio, transcribe voice, capture screenshot, ingest PDF, capture YouTube.
 argument-hint: '<path or URL> [modality hint: voice|image|pdf|youtube]'
 model: sonnet
-allowed-tools: Agent, Read, Write, Bash, Grep, Glob, AskUserQuestion
+allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(ffprobe *), Bash(pdfinfo *), Bash(awk *), Bash(true *), Grep, Glob, AskUserQuestion
 ---
 
 # Vault Ingest

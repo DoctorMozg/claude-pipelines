@@ -103,7 +103,7 @@ Save report to `<PROJECT_ROOT>/.mz/task/<task_name>/optimization.md`.
 
 ### 10.2 Verify after refactor
 
-Re-run linters and the full test suite to ensure refactor didn't break anything.
+Re-dispatch `pipeline-lint-runner` and `pipeline-test-runner` (the full suite) in parallel, as in Phase 8.2-8.4, to ensure the refactor didn't break anything.
 
 **If any test regressed**: identify which refactor change caused the regression from the report, revert that specific change, and re-run checks. The green bar wins; the refactor loses.
 

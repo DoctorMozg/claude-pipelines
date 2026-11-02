@@ -2,7 +2,7 @@
 name: memory-note
 description: ALWAYS invoke when the user wants to manually save a note, decision, or convention into project memory. Triggers "remember that", "note this", "save to memory", "pin this decision", "add to memory". Pins go to the persistent Pinned section; activity entries go to the rolling Activity Log.
 argument-hint: <note body>  [--log to append to Activity Log instead of Pinned]
-allowed-tools: Bash, Read, AskUserQuestion
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory-note.sh *), Bash(date *), Read, AskUserQuestion
 model: haiku
 ---
 

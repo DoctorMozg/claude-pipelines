@@ -3,7 +3,7 @@ name: outreach-research
 description: 'ALWAYS invoke when the user wants to find potential companies, generate leads, or plan outreach. Triggers: "find companies", "lead generation", "outreach", "prospect", "find potential clients", "research targets".'
 argument-hint: <target description> [sector:filter] [limit:N]
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Glob, Grep, WebFetch, WebSearch, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Read, Write, Glob, Grep, WebFetch, WebSearch, AskUserQuestion
 ---
 
 # Outreach Research Pipeline

@@ -3,7 +3,7 @@ name: decomment
 description: ALWAYS invoke when the user wants to strip AI-flavored comments and docstrings from code. Triggers "decomment", "strip AI comments", "remove robotic comments". When NOT to use - markdown (use naturalize), full comment deletion, code refactor.
 argument-hint: '[scope:branch|global|working] [path/glob override]'
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git status *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(perl -0777 -pe *), Bash(awk *), Bash(sed *), Bash(mv *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 ## Overview

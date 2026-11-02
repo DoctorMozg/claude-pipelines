@@ -3,7 +3,7 @@ name: vault-connect
 description: "ALWAYS invoke when finding missing wikilinks for a note, suggesting connections between notes, discovering which vault notes should link to the current note, or improving a note's link density. Triggers: link notes, suggest wikilinks, find connections, improve link density."
 argument-hint: <note name or path to find links for>
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Grep, Glob, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, Glob, AskUserQuestion
 ---
 
 # Vault Connect

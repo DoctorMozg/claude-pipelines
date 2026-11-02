@@ -3,7 +3,7 @@ name: job-search
 description: 'ALWAYS invoke when the user wants to find vacancies, match jobs against a CV, or build a job-hunt shortlist with cover letters. Triggers: "find me a job", "search jobs", "match vacancies to my CV", "job hunt", "find openings".'
 argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [contacts:topN] [letters:topN]'
 model: sonnet
-allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(cp *), Bash(tr *), Bash(sha1sum *), Bash(cut *), Bash(jq *), Bash(mv *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 
 # Job Search Pipeline

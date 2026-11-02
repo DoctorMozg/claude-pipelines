@@ -3,7 +3,7 @@ name: govern
 description: ALWAYS invoke for a substantial design or architecture decision — schema/API/dependency/boundary changes. Triggers:"should I","ADR for X","decide between","record this decision". NOT for refactors, trivial fixes, or prototyping.
 argument-hint: <decision to govern> [artifact:adr|rfd|design|auto] [rich]
 model: sonnet
-allowed-tools: Agent(gov-router), Agent(gov-provenance-recorder), Agent(gov-critic-alternatives), Agent(gov-critic-reversibility), Agent(gov-critic-blast-radius), Agent(gov-critic-assumptions), Agent(gov-critic-quick), Agent(gov-discussion-synthesizer), Agent(gov-artifact-writer), AskUserQuestion, Read, Write, Bash, Glob, Grep
+allowed-tools: Agent(gov-router), Agent(gov-provenance-recorder), Agent(gov-critic-alternatives), Agent(gov-critic-reversibility), Agent(gov-critic-blast-radius), Agent(gov-critic-assumptions), Agent(gov-critic-quick), Agent(gov-discussion-synthesizer), Agent(gov-artifact-writer), AskUserQuestion, Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(mv *), Bash(gh pr view *), Bash(gh auth status *), Bash(curl *), Glob, Grep
 ---
 
 # Govern — Decision Lifecycle Orchestrator

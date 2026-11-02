@@ -3,7 +3,7 @@ name: freelance-pitch
 description: 'ALWAYS invoke when the user wants to draft a freelance proposal for a single gig — by rank from /freelance-search, by URL, or picked from a list. Triggers: "freelance pitch", "draft proposal", "pitch this gig", "proposal for gig 3".'
 argument-hint: "[<rank-N> | <gig-URL>] [personality:off]"
 model: sonnet
-allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash(tr *), Bash(sed *), Bash(cut *), Bash(cp *), Bash(rm *), Bash(sha1sum *), Bash(shasum *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 
 # Freelance Pitch

@@ -3,7 +3,7 @@ name: obsidian-init
 description: ALWAYS invoke when bootstrapping a new Obsidian vault with CLAUDE.md, folder structure, schema, and rules. Triggers init vault, bootstrap obsidian, setup knowledge base, create vault structure.
 argument-hint: <vault path> [--minimal]
 model: sonnet
-allowed-tools: Agent, Read, Write, Bash, Grep, Glob, AskUserQuestion
+allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Grep, Glob, AskUserQuestion
 ---
 
 # Obsidian Init

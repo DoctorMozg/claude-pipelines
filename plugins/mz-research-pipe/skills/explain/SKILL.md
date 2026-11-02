@@ -3,7 +3,7 @@ name: explain
 description: 'ALWAYS invoke when the user wants to understand how code works, needs visual documentation, or asks "what does X do". Triggers: "explain X", "how does X work", "diagram this", "walk me through", "visualize the flow".'
 argument-hint: '[scope:branch|global|working] [output:<path>] <scope or question — e.g. "src/auth/", "how does the payment flow work", "explain the WebSocket reconnection logic">'
 model: sonnet
-allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Code Explanation Pipeline

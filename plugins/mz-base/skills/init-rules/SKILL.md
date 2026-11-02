@@ -3,7 +3,7 @@ name: init-rules
 description: ALWAYS invoke when the user wants to install development rules for a project or globally. Triggers:"init rules","set up rules","install rules","configure coding rules","onboard project".
 argument-hint: '[project|global] [--target=rules|claudemd] [--force] [--uninstall]'
 model: sonnet
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(command -v *), Bash(jq *), Bash(dirname *), Bash(mv *), Bash(rm *), Glob, Grep, AskUserQuestion
 ---
 
 # Init Rules

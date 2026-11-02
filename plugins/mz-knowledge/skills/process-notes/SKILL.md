@@ -3,7 +3,7 @@ name: process-notes
 description: ALWAYS invoke when processing fleeting notes into permanent atomic notes, atomizing long notes, running the fleeting-to-permanent pipeline, or converting raw captures into vault-ready notes.
 argument-hint: '<note name, daily note date YYYY-MM-DD, #fleeting tag, or paste raw text>'
 model: opus
-allowed-tools: Agent, Bash, Read, Write, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, AskUserQuestion
 ---
 
 # Process Notes

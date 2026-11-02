@@ -3,7 +3,7 @@ name: obsidian-cli
 description: 'ALWAYS invoke when using the obsidian CLI tool to interact with a vault from the terminal. Triggers: obsidian CLI, vault command line, obsidian read/create/search from shell.'
 argument-hint: '[vault operation: read|create|append|search|tags|backlinks|property]'
 model: haiku
-allowed-tools: Bash, Read
+allowed-tools: Bash(obsidian read *), Bash(obsidian daily:read *), Bash(obsidian search *), Bash(obsidian tags *), Bash(obsidian backlinks *), Bash(obsidian create *), Bash(obsidian append *), Bash(obsidian daily:append *), Bash(obsidian property:set *), Read
 ---
 
 ## Overview

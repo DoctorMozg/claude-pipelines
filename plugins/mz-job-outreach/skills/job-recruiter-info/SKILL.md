@@ -3,7 +3,7 @@ name: job-recruiter-info
 description: 'ALWAYS invoke when the user wants to find recruiter, hiring-manager, or careers contacts for a single job listing or company — outside the full /job-search pipeline. Triggers: "find a recruiter", "find recruiter contacts", "find hiring manager", "who recruits for X", "careers email for X", "who do I apply to at X".'
 argument-hint: '"<job listing URL or company name>" [region:<region>] [language:<lang>]'
 model: sonnet
-allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash(mv *), Bash(rm *), Bash(rmdir *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 
 # Job Recruiter Info

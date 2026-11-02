@@ -3,7 +3,7 @@ name: vault-refactor
 description: 'ALWAYS invoke when renaming a vault note, moving a note to a different folder, or refactoring wikilink references across the vault. Triggers: rename note, move note, vault refactor, update wikilinks.'
 argument-hint: '<old_name>::<new_name_or_path> [vault path]'
 model: opus
-allowed-tools: Agent, Read, Write, Grep, Glob, Bash, AskUserQuestion
+allowed-tools: Agent, Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(mv *), Bash(sha256sum *), Bash(shasum *), AskUserQuestion
 ---
 
 # Vault Refactor

@@ -3,7 +3,7 @@ name: outreach-update-card
 description: ALWAYS invoke when the user wants to log an outreach action against a company card .md (created by outreach-research). Appends a dated one-line entry to the card's Interaction History section, then relocates the card to the active folder with today's date prefix. Triggers - "log action on a card", "update card with an action", "record interaction on a card", "I just emailed them, add it to the card".
 argument-hint: '"<path/to/card.md>" "<action description>"'
 model: haiku
-allowed-tools: Read, Write, Bash, AskUserQuestion
+allowed-tools: Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), AskUserQuestion
 ---
 
 # Outreach Update Card

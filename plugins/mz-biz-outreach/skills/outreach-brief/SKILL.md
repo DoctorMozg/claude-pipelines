@@ -3,7 +3,7 @@ name: outreach-brief
 description: ALWAYS invoke when the user wants to scope outreach — capture what they sell and who they target, then research the local business climate. Triggers - "draft an outreach brief", "prep outreach", "research local market for outreach".
 argument-hint: '[<seed description of the outreach>]'
 model: sonnet
-allowed-tools: Agent, AskUserQuestion, Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
+allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 ---
 
 # Outreach Brief + Local-Climate Research

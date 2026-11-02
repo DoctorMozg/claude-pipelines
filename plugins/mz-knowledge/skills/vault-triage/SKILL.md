@@ -3,7 +3,7 @@ name: vault-triage
 description: 'ALWAYS invoke when triaging inbox fleeting notes in a fast batch with promote/merge/discard/defer decisions. Triggers: triage inbox, fleeting review, clear inbox, batch decide.'
 argument-hint: '[vault path]'
 model: sonnet
-allowed-tools: Agent, Read, Write, Bash, Glob, AskUserQuestion
+allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Bash(sha256sum *), Bash(shasum *), Glob, AskUserQuestion
 ---
 
 # Vault Triage

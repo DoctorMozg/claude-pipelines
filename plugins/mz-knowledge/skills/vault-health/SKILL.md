@@ -3,7 +3,7 @@ name: vault-health
 description: 'ALWAYS invoke when auditing an Obsidian vault for orphan notes, broken links, stale content, stub notes, or tag inconsistencies. Triggers: vault audit, orphan notes, broken wikilinks, vault health check.'
 argument-hint: '[vault path or leave empty to use OBSIDIAN_VAULT_PATH env]'
 model: sonnet
-allowed-tools: Agent, Bash, Read, Glob, Grep, Write, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Glob, Grep, Write, AskUserQuestion
 ---
 
 ## Overview
