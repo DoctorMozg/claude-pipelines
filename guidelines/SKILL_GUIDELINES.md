@@ -199,6 +199,10 @@ Repo convention for `.mz/` paths: a skill that writes under `.mz/` resolves `PRO
 
 Outside Claude Code (claude.ai uploads, the Skills API, `package_skill.py`), frontmatter may hold only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`. Any other field fails with a hard error (skills.md, "Using skill frontmatter outside Claude Code"). A skill meant for those surfaces drops `model`, `when_to_use`, `argument-hint` and the other Claude Code fields.
 
+**Frontmatter keys.** A key has to match the skills.md frontmatter table exactly, hyphens included. Claude Code ignores a key it doesn't recognize without reporting an error (skills.md), so a misspelled `allowed_tools` silently drops its grant.
+
+**`allowed-tools`.** The field pre-approves the listed tools for the turn that invokes the skill. It doesn't restrict which tools Claude can call, deny and ask rules still override it, and workspace trust doesn't gate it, so a project skill's grant applies even in a `-p` run in a folder nobody has trusted (skills.md). A bare `Bash` therefore lets that turn run any shell command without a prompt. Repo convention: grant each command the skill runs, as `Bash(git status *)`, and never a bare `Bash`. The `:*` suffix is an equivalent trailing wildcard, and commands in Claude Code's built-in read-only set need no grant (permissions.md). A command left off the list still asks for permission, which stalls or fails an unattended run, so check every Bash line in the skill and its phase files before narrowing.
+
 ## 7. State Management
 
 A multi-phase skill keeps its cross-phase state in `.mz/task/<task_name>/state.md`, under the project root defined in `guidelines/JOURNAL_GUIDELINES.md` rather than the Bash working directory. Its keys, status values, progress ledger, body sections and compaction rules are defined in `guidelines/STATE_SCHEMA.md`, the single source. Skills mirror its compact contract and add their own keys below the schema keys, never renaming or replacing one.
@@ -341,9 +345,10 @@ The pattern comes from addyosmani/agent-skills, `docs/skill-anatomy.md`, which c
 
 Run this before merging a new or changed skill.
 
-**Mechanical checks.** These suit a script. Pre-commit already runs three of them, `skill-description-shape`, `skill-reference-path` and `no-rule-citations` in `.pre-commit-config.yaml`; check the rest by hand until a repo script runs them in `make test`. `make validate`, which the CI `validate` job also runs, calls `claude plugin validate --strict` on the repo and every plugin for what Claude Code accepts. A strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML); it doesn't replace validate, and no script runs it yet.
+**Mechanical checks.** Most are scripted. `tests/plugin_lint/test_skills.py`, which `make test` runs, covers the frontmatter, `argument-hint`, table-of-contents, reference-listing, phase-table and anatomy items. The pre-commit hooks `skill-description-shape`, `skill-reference-path` and `no-rule-citations` cover the description's shape, bare reference paths and rule numbers. `make validate`, which the CI `validate` job also runs, calls `claude plugin validate --strict` on the repo and every plugin for what Claude Code accepts; the strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML). Check the rest by hand: the 250-character budget, the size limits, the Bash grants, paths resolving inside the plugin, the AskUserQuestion limits, and dispatched agents with their dependencies.
 
-- [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser (§3).
+- [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser and uses only documented keys (§3, §6).
+- [ ] `allowed-tools` grants Bash one command at a time, as `Bash(<command> *)`, never as a bare `Bash` (§6).
 - [ ] `description` plus any `when_to_use` is at most 250 characters; `description` is one line, contains no `<` or `>`, and is quoted if it contains `: ` or starts with `[` or `"` (§3).
 - [ ] An `argument-hint` that starts with `[` is quoted (§12).
 - [ ] SKILL.md is under about 20,000 characters and 500 lines, phase files are under about 400 lines, and reference files over 100 lines open with a table of contents (§2).

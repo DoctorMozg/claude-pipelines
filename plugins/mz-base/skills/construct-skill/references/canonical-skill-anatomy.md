@@ -40,7 +40,7 @@ Replace every `<placeholder>` and drop any section the skill has no content for.
 name: <kebab-case-name>
 description: "<What the skill produces or covers>. Use when <the user's goal, in phrases users type>. Not for <nearest near miss> (use <sibling-skill>)."
 argument-hint: "[what the user passes]"
-allowed-tools: <comma-separated tool list>
+allowed-tools: <comma-separated tools; each Bash command as Bash(<command> *)>
 ---
 
 # <Skill Title>
