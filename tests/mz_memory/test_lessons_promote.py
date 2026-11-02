@@ -13,6 +13,7 @@ from .memory_helpers import (
     HINT_START,
     SCRIPTS,
     SeedLessons,
+    clean_env,
     lessons_file,
     memory_dir,
     ok,
@@ -50,7 +51,7 @@ def _lessons_text(project: Path) -> str:
 @pytest.fixture
 def env(project: Path, date_shim: Path) -> dict[str, str]:
     """Environment with `date` pinned, so archive lines and events carry a known date."""
-    base = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
+    base = clean_env()
     return {
         **base,
         "MZ_MEMORY_ROOT": str(project),

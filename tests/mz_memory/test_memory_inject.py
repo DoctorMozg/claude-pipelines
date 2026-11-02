@@ -1,5 +1,4 @@
 import json
-import os
 import subprocess
 from collections.abc import Callable, Iterable
 from pathlib import Path
@@ -18,6 +17,7 @@ from .memory_helpers import (
     SCRIPTS,
     TRUNCATION_MARK,
     SeedLessons,
+    clean_env,
     lessons_file,
     log_entries,
     memory_file,
@@ -72,7 +72,7 @@ def _items(context: str, heading: str) -> list[str]:
 
 @pytest.fixture
 def run_hook(project: Path) -> RunHook:
-    base_env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
+    base_env = clean_env()
     base_env["MZ_MEMORY_ROOT"] = str(project)
 
     def run(path: str = "") -> str:

@@ -16,6 +16,7 @@ from .memory_helpers import (
     PIN_START,
     SCRIPTS,
     TaskWriter,
+    clean_env,
     inbox_lines,
     lessons_file,
     line_field,
@@ -49,7 +50,7 @@ class NoteRunner(Protocol):
 @pytest.fixture
 def run_note(project: Path, date_shim: Path) -> NoteRunner:
     """Run memory-note.sh with `date` pinned, so day-keyed dedup is testable."""
-    base_env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
+    base_env = clean_env()
     base_env["MZ_MEMORY_ROOT"] = str(project)
     base_env["PATH"] = f"{date_shim}{os.pathsep}{os.environ['PATH']}"
 

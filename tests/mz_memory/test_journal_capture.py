@@ -1,5 +1,4 @@
 import json
-import os
 import re
 import subprocess
 from collections.abc import Callable, Iterable
@@ -8,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from .memory_helpers import BASH, SCRIPTS
+from .memory_helpers import BASH, SCRIPTS, clean_env
 
 SCRIPT = SCRIPTS / "journal-capture.sh"
 # Everything the script runs except jq, so a PATH built from these hides jq only.
@@ -47,7 +46,7 @@ def journal(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def capture(tmp_path: Path) -> Capture:
-    base_env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
+    base_env = clean_env()
     base_env["MZ_MEMORY_ROOT"] = str(tmp_path)
 
     def run(stdin: str, path: str = "") -> None:
