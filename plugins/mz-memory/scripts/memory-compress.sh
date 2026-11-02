@@ -37,7 +37,7 @@ TOTAL=$(printf '%s\n' "$LOG" | grep -cE '^- ' || true)
 [[ "${TOTAL:-0}" -gt "$COMPRESS_THRESHOLD" ]] || exit 0
 
 # Split: keep most-recent KEEP_RECENT entries verbatim, summarize the rest.
-RECENT=$(printf '%s\n' "$LOG" | head -n "$KEEP_RECENT")
+RECENT=$(printf '%s\n' "$LOG" | head -n "$KEEP_RECENT" || true)
 OLD=$(printf '%s\n' "$LOG" | tail -n "+$((KEEP_RECENT + 1))")
 [[ -n "$OLD" ]] || exit 0
 

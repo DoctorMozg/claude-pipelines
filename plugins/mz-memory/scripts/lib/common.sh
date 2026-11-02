@@ -163,7 +163,7 @@ extract_log() {
     $0 == start { capture = 1; next }
     $0 == end { capture = 0 }
     capture { print }
-  ' "$memory_file" | head -n "$max_lines"
+  ' "$memory_file" | head -n "$max_lines" || true
 }
 
 # Prepend a block of pre-formatted entries into the Activity Log region and
