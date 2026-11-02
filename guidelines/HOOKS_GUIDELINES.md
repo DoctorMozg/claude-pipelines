@@ -283,6 +283,8 @@ Run the no-op path as well, such as a missing file or the wrong tool: exit 0 and
 
 **Live check.** `/hooks` lists every configured hook with its source. `claude --debug` logs each run and its output to `~/.claude/debug/<session-id>.txt`; `claude --debug-file <path>` writes the same log to a path you choose. On a new hook's first run, watch for a hook-error notice: a wrong path means the hook never runs (hooks.md).
 
+**End-to-end eval.** `claude plugin eval` runs a plugin's hooks for real, so a case can check what a hook does inside a session (observed on 2.1.316). SessionEnd hooks finish before graders read files, so a `{source: file, path}` regex grader sees what a hook wrote. The trace records SessionStart `hook_started` and `hook_response` events with the hook's stdout, so a trace regex can check injected context. UserPromptSubmit events and the prompt itself aren't in the trace. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes, including `git init` in the `scaffold_script` for any hook that resolves the project root.
+
 ## 14. Versioning
 
 Hook scripts carry no version of their own. `./set_versions.sh` rewrites the `version` field in every `plugins/<name>/.claude-plugin/plugin.json` and the marketplace's `metadata.version`. Bump the version for any change to a hook or a script: a set `version` pins installed copies, so users keep the old files until it changes (plugins-reference.md). A plugin loaded in place from a marketplace added by local path isn't pinned (plugins-reference.md), so a local test can pass while installed users still run the old script.
