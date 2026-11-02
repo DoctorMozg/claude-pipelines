@@ -37,6 +37,8 @@ Factual questions that should be answered from vault content — "what does my v
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                | Details                           |
 | ----- | ------------------- | --------------------------------- |
 | 0     | Setup               | Inline below                      |

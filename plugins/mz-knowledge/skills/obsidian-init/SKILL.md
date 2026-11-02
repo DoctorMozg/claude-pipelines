@@ -30,6 +30,8 @@ Discipline skill that bootstraps a new Obsidian vault (or retrofits an existing 
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                          | Details                    |
 | ----- | ----------------------------- | -------------------------- |
 | 0     | Setup + interview             | Inline below               |

@@ -34,6 +34,8 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                           | Details                          |
 | ----- | ------------------------------ | -------------------------------- |
 | 0     | Setup                          | Inline below                     |

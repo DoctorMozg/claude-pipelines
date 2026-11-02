@@ -38,6 +38,8 @@ If no argument is provided, ask the user for a PR URL.
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                              | Details      |
 | ----- | --------------------------------- | ------------ |
 | 0     | Setup                             | Inline below |

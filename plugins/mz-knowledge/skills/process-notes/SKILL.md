@@ -37,6 +37,8 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                   | Details                       |
 | ----- | ---------------------- | ----------------------------- |
 | 0     | Setup                  | Inline below                  |

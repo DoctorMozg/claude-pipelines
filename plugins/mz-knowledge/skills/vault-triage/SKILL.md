@@ -34,6 +34,8 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                      | Details                       |
 | ----- | ------------------------- | ----------------------------- |
 | 0     | Setup                     | Inline below                  |

@@ -37,6 +37,8 @@ Discipline skill for multimodal capture into the vault as fleeting notes. Detect
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                         | Details                           |
 | ----- | ---------------------------- | --------------------------------- |
 | 0     | Setup                        | Inline below                      |

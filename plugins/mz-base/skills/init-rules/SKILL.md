@@ -49,6 +49,8 @@ Phase files write `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` because th
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                                    | Details                                         |
 | ----- | --------------------------------------- | ----------------------------------------------- |
 | 0     | Setup                                   | Inline below                                    |

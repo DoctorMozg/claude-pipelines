@@ -40,6 +40,8 @@ Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; neve
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                         | Details         |
 | ----- | ---------------------------- | --------------- |
 | 0     | Setup                        | Inline below    |

@@ -38,6 +38,8 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal                  | Details                    |
 | ----- | --------------------- | -------------------------- |
 | 0     | Setup                 | Inline below               |

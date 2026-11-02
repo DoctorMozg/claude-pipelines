@@ -37,6 +37,8 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 
 ## Core Process
 
+### Phase Overview
+
 | Phase | Goal            | Details                       |
 | ----- | --------------- | ----------------------------- |
 | 0     | Setup           | Inline below                  |
