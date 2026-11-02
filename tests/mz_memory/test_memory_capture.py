@@ -1,6 +1,5 @@
 import os
 import shlex
-import subprocess
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -8,14 +7,14 @@ from typing import Protocol
 
 import pytest
 
-CAPTURE_SCRIPT = (
-    Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts" / "memory-capture.sh"
-)
 LOG_START = "<!-- mz-log-start -->"
 LOG_END = "<!-- mz-log-end -->"
 COMPRESSED_MARK = "<!-- mz-compressed -->"
 MAX_LOG_LINES = 400
 COMPRESS_THRESHOLD = 300
+
+type CaptureRunner = Callable[[dict[str, str]], None]
+type MarkChanged = Callable[[Path], None]
 
 
 class TaskWriter(Protocol):
@@ -26,19 +25,6 @@ class RawTaskWriter(Protocol):
     def __call__(self, name: str, text: str) -> Path: ...
 
 
-def _state_text(status: str, extra: str) -> str:
-    return (
-        "schema_version: 2\n"
-        f"Status: {status}\n"
-        "Phase: 3\n"
-        "Started: 2026-11-01\n"
-        "FilesWritten: []\n"
-        "phase_complete: true\n"
-        "what_remains: []\n"
-        f"{extra}"
-    )
-
-
 def _memory_file(project: Path) -> Path:
     return project / ".mz" / "memory" / "MEMORY.md"
 
@@ -46,36 +32,6 @@ def _memory_file(project: Path) -> Path:
 def _logged_tasks(project: Path) -> list[str]:
     lines = _memory_file(project).read_text(encoding="utf-8").splitlines()
     return [line.split()[2] for line in lines if line.startswith("- [")]
-
-
-def _mark_changed_since_capture(project: Path, state_file: Path) -> None:
-    marker_mtime = (project / ".mz" / "memory" / ".last-capture").stat().st_mtime
-    os.utime(state_file, (marker_mtime + 5, marker_mtime + 5))
-
-
-@pytest.fixture
-def project(tmp_path: Path) -> Path:
-    (tmp_path / ".mz" / "task").mkdir(parents=True)
-    return tmp_path
-
-
-@pytest.fixture
-def write_raw_task(project: Path) -> RawTaskWriter:
-    def write(name: str, text: str) -> Path:
-        state_file = project / ".mz" / "task" / name / "state.md"
-        state_file.parent.mkdir(parents=True, exist_ok=True)
-        state_file.write_text(text, encoding="utf-8")
-        return state_file
-
-    return write
-
-
-@pytest.fixture
-def write_task(write_raw_task: RawTaskWriter) -> TaskWriter:
-    def write(name: str, status: str, extra: str = "") -> Path:
-        return write_raw_task(name, _state_text(status, extra))
-
-    return write
 
 
 def _log_region(project: Path) -> list[str]:
@@ -91,21 +47,9 @@ def _entries(count: int, extra_lines: int = 0) -> list[str]:
     return lines
 
 
-def _run_capture(env: dict[str, str]) -> None:
-    result = subprocess.run(
-        ["bash", str(CAPTURE_SCRIPT)],
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
-
-
-def _seed_log(project: Path, env: dict[str, str], lines: list[str]) -> None:
+def _seed_log(project: Path, runner: CaptureRunner, env: dict[str, str], lines: list[str]) -> None:
     """Create a current-layout memory file through capture itself, then fill its Activity Log."""
-    _run_capture({**env, "MZ_MEMORY_COMPRESS": "0"})
+    runner({**env, "MZ_MEMORY_COMPRESS": "0"})
     memory = _memory_file(project)
     text = memory.read_text(encoding="utf-8")
     memory.write_text(
@@ -121,24 +65,6 @@ def _wait_until(condition: Callable[[], bool], seconds: float) -> bool:
             return True
         time.sleep(0.05)
     return condition()
-
-
-@pytest.fixture
-def capture_env(project: Path) -> dict[str, str]:
-    env = {
-        key: value
-        for key, value in os.environ.items()
-        if key not in {"MZ_MEMORY_COMPRESS", "CLAUDE_PROJECT_DIR"}
-    }
-    env["MZ_MEMORY_ROOT"] = str(project)
-    return env
-
-
-@pytest.fixture
-def run_capture(capture_env: dict[str, str]) -> Callable[[], None]:
-    # Compression is on by default; switching it off keeps these tests from starting the real CLI.
-    env = {**capture_env, "MZ_MEMORY_COMPRESS": "0"}
-    return lambda: _run_capture(env)
 
 
 class TestStatusFilter:
@@ -188,36 +114,48 @@ class TestDedup:
         assert _logged_tasks(project) == ["2026_11_01_build_auth"]
 
     def test_finished_task_is_not_relogged_when_another_completes(
-        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+        mark_changed_since_capture: MarkChanged,
     ) -> None:
         write_task("2026_11_01_build_auth", "complete")
         run_capture()
         newer = write_task("2026_11_02_debug_crash", "complete")
-        _mark_changed_since_capture(project, newer)
+        mark_changed_since_capture(newer)
 
         run_capture()
 
         assert sorted(_logged_tasks(project)) == ["2026_11_01_build_auth", "2026_11_02_debug_crash"]
 
     def test_task_that_finishes_later_is_captured(
-        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+        mark_changed_since_capture: MarkChanged,
     ) -> None:
         write_task("2026_11_01_build_auth", "running")
         run_capture()
         finished = write_task("2026_11_01_build_auth", "complete")
-        _mark_changed_since_capture(project, finished)
+        mark_changed_since_capture(finished)
 
         run_capture()
 
         assert _logged_tasks(project) == ["2026_11_01_build_auth"]
 
     def test_edited_state_is_logged_again(
-        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+        mark_changed_since_capture: MarkChanged,
     ) -> None:
         write_task("2026_11_01_build_auth", "complete")
         run_capture()
         rerun = write_task("2026_11_01_build_auth", "complete", "\n## Notes\n\n- reran phase 3\n")
-        _mark_changed_since_capture(project, rerun)
+        mark_changed_since_capture(rerun)
 
         run_capture()
 
@@ -316,11 +254,12 @@ class TestMalformedState:
         write_task: TaskWriter,
         write_raw_task: RawTaskWriter,
         run_capture: Callable[[], None],
+        mark_changed_since_capture: MarkChanged,
     ) -> None:
         write_raw_task("2026_11_01_build_draft", "schema_version: 2\nPhase: 1\n")
         run_capture()
         finished = write_task("2026_11_02_debug_crash", "complete")
-        _mark_changed_since_capture(project, finished)
+        mark_changed_since_capture(finished)
 
         run_capture()
 
@@ -364,8 +303,9 @@ class TestPruning:
         capture_env: dict[str, str],
         write_task: TaskWriter,
         run_capture: Callable[[], None],
+        capture_runner: CaptureRunner,
     ) -> None:
-        _seed_log(project, capture_env, _entries(MAX_LOG_LINES + 50))
+        _seed_log(project, capture_runner, capture_env, _entries(MAX_LOG_LINES + 50))
         write_task("2026_11_02_build_auth", "complete")
 
         run_capture()
@@ -395,24 +335,32 @@ class TestBackgroundCompression:
         return COMPRESSED_MARK in _log_region(project) and not lock.exists()
 
     def test_log_past_the_threshold_is_compressed_by_default(
-        self, project: Path, write_task: TaskWriter, compress_env: dict[str, str]
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        compress_env: dict[str, str],
+        capture_runner: CaptureRunner,
     ) -> None:
         # Entries with Decisions span several lines, so 120 entries already pass the line threshold.
-        _seed_log(project, compress_env, _entries(120, extra_lines=2))
+        _seed_log(project, capture_runner, compress_env, _entries(120, extra_lines=2))
         write_task("2026_11_02_build_auth", "complete")
 
-        _run_capture(compress_env)
+        capture_runner(compress_env)
 
         assert _wait_until(lambda: self._compression_finished(project), seconds=15)
         assert len(_log_region(project)) <= COMPRESS_THRESHOLD
 
     def test_opt_out_leaves_a_long_log_uncompressed(
-        self, project: Path, write_task: TaskWriter, compress_env: dict[str, str]
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        compress_env: dict[str, str],
+        capture_runner: CaptureRunner,
     ) -> None:
-        _seed_log(project, compress_env, _entries(COMPRESS_THRESHOLD + 50))
+        _seed_log(project, capture_runner, compress_env, _entries(COMPRESS_THRESHOLD + 50))
         write_task("2026_11_02_build_auth", "complete")
 
-        _run_capture({**compress_env, "MZ_MEMORY_COMPRESS": "0"})
+        capture_runner({**compress_env, "MZ_MEMORY_COMPRESS": "0"})
 
         assert not _wait_until(lambda: self._compression_finished(project), seconds=1.5)
         assert COMPRESSED_MARK not in _log_region(project)

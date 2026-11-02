@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# SessionEnd hook — captures completed task summaries into project memory.
-# Targets <1.5s; offloads LLM compression to a detached child.
+# SessionEnd hook — logs completed tasks into project memory and collects every task's
+# ## Lessons into the lessons Inbox. Targets <1.5s; offloads LLM compression to a detached child.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
+# shellcheck source=lib/lessons.sh
+source "${SCRIPT_DIR}/lib/lessons.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"
 MEMORY_FILE="${MEMORY_DIR}/MEMORY.md"
+LESSONS_FILE="${MEMORY_DIR}/lessons.md"
 TASK_DIR="${PROJECT_DIR}/.mz/task"
 AGENT_MEMORY_DIR="${PROJECT_DIR}/.claude/agent-memory"
 
@@ -42,15 +45,20 @@ else
 fi
 
 NEW_BLOCK=""
+LESSON_RECORDS=""
 
 while IFS= read -r state_file; do
   [[ -n "$state_file" && -f "$state_file" ]] || continue
 
+  TASK_NAME=$(basename "$(dirname "$state_file")")
   STATUS=$(grep -o 'Status[*]*: [a-z_]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //' || true)
+
+  # Lessons are read whatever the status: failed and blocked runs are where most of them come from.
+  TASK_LESSONS=$(extract_state_lessons "$state_file" "$TASK_NAME" "${STATUS:-unknown}")
+  [[ -n "$TASK_LESSONS" ]] && LESSON_RECORDS="${LESSON_RECORDS}${TASK_LESSONS}"$'\n'
+
   # Writers use `complete`; `completed` is still read because older skills wrote it.
   [[ "$STATUS" == "complete" || "$STATUS" == "completed" ]] || continue
-
-  TASK_NAME=$(basename "$(dirname "$state_file")")
 
   # Without a marker we can't tell what the old date-keyed dedup already logged.
   if [[ "$FIRST_RUN" == 1 ]] && awk -v task="$TASK_NAME" '$1 == "-" && $3 == task { found = 1; exit } END { exit !found }' "$MEMORY_FILE"; then
@@ -65,9 +73,10 @@ while IFS= read -r state_file; do
     ENTRY="${ENTRY} [${GIT_BRANCH}@${GIT_SHA}]"
   fi
 
-  # Copy the first 10 non-blank lines of the Decisions, Lessons and Notes sections, counted together in file order.
+  # Copy the first 10 non-blank lines of the Decisions and Notes sections, counted together in file order.
+  # Lessons go to lessons.md instead, so they don't age out with the log.
   EXTRA=$(awk '
-    /^##[[:space:]]+(Decisions|Lessons|Notes)[[:space:]]*$/ { capture = 1; next }
+    /^##[[:space:]]+(Decisions|Notes)[[:space:]]*$/ { capture = 1; next }
     /^##[[:space:]]/ && capture { capture = 0 }
     capture && NF { print "  " $0 }
   ' "$state_file" 2>/dev/null | head -10 || true)
@@ -89,6 +98,11 @@ while IFS= read -r state_file; do
     done
   fi
 done <<<"$CHANGED"
+
+# Lessons are written before the log: a retry after a failed log write skips lessons already seen.
+if [[ -n "$LESSON_RECORDS" ]]; then
+  printf '%s' "$LESSON_RECORDS" | strip_private | add_lessons_to_inbox "$LESSONS_FILE" "$TODAY" "$GIT_SHA"
+fi
 
 # Strip <private>...</private> regions before persisting.
 NEW_BLOCK=$(printf '%s' "$NEW_BLOCK" | strip_private)
