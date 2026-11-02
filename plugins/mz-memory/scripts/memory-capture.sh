@@ -48,8 +48,8 @@ NEW_BLOCK=""
 while IFS= read -r state_file; do
   [[ -n "$state_file" && -f "$state_file" ]] || continue
 
-  STATUS=$(grep -o 'Status[*]*: [a-z_]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //')
-  # `complete` is the STATE_SCHEMA enum; `completed` is kept for older skills.
+  STATUS=$(grep -o 'Status[*]*: [a-z_]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //' || true)
+  # Writers use `complete`; `completed` is still read because older skills wrote it.
   [[ "$STATUS" == "complete" || "$STATUS" == "completed" ]] || continue
 
   TASK_NAME=$(basename "$(dirname "$state_file")")
@@ -59,7 +59,7 @@ while IFS= read -r state_file; do
     continue
   fi
 
-  PHASE=$(grep -o 'Phase[*]*: [A-Za-z0-9_.-]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //')
+  PHASE=$(grep -o 'Phase[*]*: [A-Za-z0-9_.-]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //' || true)
 
   ENTRY="- [${TODAY}] ${TASK_NAME}"
   [[ -n "$PHASE" ]] && ENTRY="${ENTRY} (phase=${PHASE})"
@@ -67,13 +67,12 @@ while IFS= read -r state_file; do
     ENTRY="${ENTRY} [${GIT_BRANCH}@${GIT_SHA}]"
   fi
 
-  # Pull a "## Decisions" / "## Lessons" / "## Notes" section out of state.md
-  # if present. Cap at 10 lines to keep the log compact.
+  # Copy the first 10 non-blank lines of the Decisions, Lessons and Notes sections, counted together in file order.
   EXTRA=$(awk '
     /^##[[:space:]]+(Decisions|Lessons|Notes)[[:space:]]*$/ { capture = 1; next }
     /^##[[:space:]]/ && capture { capture = 0 }
     capture && NF { print "  " $0 }
-  ' "$state_file" 2>/dev/null | head -10)
+  ' "$state_file" 2>/dev/null | head -10 || true)
 
   NEW_BLOCK="${NEW_BLOCK}${ENTRY}"$'\n'
   [[ -n "$EXTRA" ]] && NEW_BLOCK="${NEW_BLOCK}${EXTRA}"$'\n'

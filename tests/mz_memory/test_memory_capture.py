@@ -16,6 +16,10 @@ class TaskWriter(Protocol):
     def __call__(self, name: str, status: str, extra: str = "") -> Path: ...
 
 
+class RawTaskWriter(Protocol):
+    def __call__(self, name: str, text: str) -> Path: ...
+
+
 def _state_text(status: str, extra: str) -> str:
     return (
         "schema_version: 2\n"
@@ -50,12 +54,20 @@ def project(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def write_task(project: Path) -> TaskWriter:
-    def write(name: str, status: str, extra: str = "") -> Path:
+def write_raw_task(project: Path) -> RawTaskWriter:
+    def write(name: str, text: str) -> Path:
         state_file = project / ".mz" / "task" / name / "state.md"
         state_file.parent.mkdir(parents=True, exist_ok=True)
-        state_file.write_text(_state_text(status, extra), encoding="utf-8")
+        state_file.write_text(text, encoding="utf-8")
         return state_file
+
+    return write
+
+
+@pytest.fixture
+def write_task(write_raw_task: RawTaskWriter) -> TaskWriter:
+    def write(name: str, status: str, extra: str = "") -> Path:
+        return write_raw_task(name, _state_text(status, extra))
 
     return write
 
@@ -211,6 +223,75 @@ class TestUpgradeFromDateKeyedDedup:
         run_capture()
 
         assert sorted(_logged_tasks(project)) == ["task_a", "task_a_v2"]
+
+
+class TestMalformedState:
+    def test_file_without_status_does_not_stop_other_captures(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        write_raw_task: RawTaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_raw_task("2026_11_01_build_draft", "schema_version: 2\nPhase: 1\n")
+        write_task("2026_11_01_debug_crash", "complete")
+
+        run_capture()
+
+        assert _logged_tasks(project) == ["2026_11_01_debug_crash"]
+
+    def test_complete_file_without_phase_is_logged_without_phase(
+        self, project: Path, write_raw_task: RawTaskWriter, run_capture: Callable[[], None]
+    ) -> None:
+        write_raw_task("2026_11_01_audit_api", "schema_version: 2\nStatus: complete\n")
+
+        run_capture()
+
+        assert _logged_tasks(project) == ["2026_11_01_audit_api"]
+        assert "(phase=" not in _memory_file(project).read_text(encoding="utf-8")
+
+    def test_bold_status_line_is_skipped(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        write_raw_task: RawTaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_raw_task("2026_11_01_polish_ui", "**Status:** complete\n**Phase:** 4\n")
+        write_task("2026_11_01_debug_crash", "complete")
+
+        run_capture()
+
+        assert _logged_tasks(project) == ["2026_11_01_debug_crash"]
+
+    def test_marker_advances_past_a_malformed_file(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        write_raw_task: RawTaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_raw_task("2026_11_01_build_draft", "schema_version: 2\nPhase: 1\n")
+        run_capture()
+        finished = write_task("2026_11_02_debug_crash", "complete")
+        _mark_changed_since_capture(project, finished)
+
+        run_capture()
+
+        assert _logged_tasks(project) == ["2026_11_02_debug_crash"]
+
+    def test_long_decisions_section_is_cut_to_ten_lines(
+        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+    ) -> None:
+        # Enough output to overflow the pipe buffer after head exits, so awk gets SIGPIPE.
+        decisions = "".join(f"- decision number {index}\n" for index in range(20_000))
+        write_task("2026_11_01_build_auth", "complete", f"\n## Decisions\n\n{decisions}")
+
+        run_capture()
+
+        memory_text = _memory_file(project).read_text(encoding="utf-8")
+        assert "decision number 9\n" in memory_text
+        assert "decision number 10\n" not in memory_text
 
 
 class TestPrivacy:
