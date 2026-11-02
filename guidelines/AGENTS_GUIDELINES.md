@@ -303,7 +303,7 @@ Put the table under `## Common Rationalizations`, or merge it into `## Red Flags
 - There is no minimum row count.
 - When the user explicitly chooses to skip a step, state the risk once in the report and follow the choice. That isn't a rationalization to rebut.
 
-Skills draw on the seed library at `plugins/mz-dev-base/skills/construct-skill/references/anti-rationalization-library.md`.
+Skills draw on the seed library at `plugins/mz-base/skills/construct-skill/references/anti-rationalization-library.md`.
 
 ## 16. Instruction Wording
 
@@ -439,7 +439,7 @@ Not allowed in any file under `plugins/`:
 Instead:
 
 - State the substance: write "Evidence is required for every finding.", not "Rule N requires evidence."
-- Where a plugin needs the full text of a rule, ship a copy under that plugin's `skills/shared/`, with one line naming the canonical source. Or symlink the file from inside the plugin: for marketplace installs, Claude Code copies the symlink's target into the cache (plugins/host-marketplace.md). Test an install first.
+- Where a plugin needs the full text of a rule, ship it once in `plugins/mz-base/shared/`, with one line naming the canonical source, and reach it through the plugin-root `shared` link (SKILL_GUIDELINES.md, "Phase and Reference Files").
 - Delete decorative citations that trail a sentence which already states the rule.
 
 Exceptions:
