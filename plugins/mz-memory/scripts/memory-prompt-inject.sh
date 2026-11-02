@@ -6,7 +6,7 @@ set -euo pipefail
 # high-signal). Activity log entries are filtered to those whose line text
 # contains at least one prompt keyword (>=4 chars, alphanumeric).
 #
-# Output schema: hookSpecificOutput with required `additionalContext`.
+# Output schema: hookSpecificOutput with `additionalContext`, which is optional; the no-op path sends it empty.
 # Hard budget: <100ms typical, never blocks the prompt.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

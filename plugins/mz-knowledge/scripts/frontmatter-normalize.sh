@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# PostToolUse hook: normalizes Obsidian frontmatter after writing .md files.
-# Full normalization deferred to v2 — this stub keeps the hook slot reserved.
-echo '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":""}}'
+set -euo pipefail
+
+# PostToolUse hook (Write|Edit): reserved slot for Obsidian frontmatter normalization after .md writes.
+# Normalization is deferred to v2, so the hook prints nothing and changes nothing.
 exit 0

@@ -1,44 +1,54 @@
 #!/usr/bin/env bash
-# Injects Obsidian vault context at session start.
-# Reads vault path from OBSIDIAN_VAULT_PATH or MZ_VAULT_PATH env vars.
-# Outputs JSON with additionalContext for SessionStart hook event.
+set -euo pipefail
+
+# SessionStart hook (startup, clear, compact): injects today's daily note, the MOC list and recent notes.
+# The vault comes from OBSIDIAN_VAULT_PATH, then MZ_VAULT_PATH; with no vault, notes or jq it prints nothing.
+
+MAX_MOCS=20
+MAX_RECENT=3
 
 VAULT="${OBSIDIAN_VAULT_PATH:-${MZ_VAULT_PATH:-}}"
+[[ -n "$VAULT" && -d "$VAULT" ]] || exit 0
+command -v jq >/dev/null 2>&1 || exit 0
 
-if [[ -z "$VAULT" || ! -d "$VAULT" ]]; then
-  echo '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":""}}'
-  exit 0
+# Reads note paths, one per line, and prints their names without directory or .md, joined by ", ".
+join_note_names() {
+  local path name joined=""
+  while IFS= read -r path; do
+    name="${path##*/}"
+    joined="${joined:+$joined, }${name%.md}"
+  done
+  printf '%s' "$joined"
+}
+
+lines=()
+
+today=$(date +%Y-%m-%d)
+if [[ -f "$VAULT/daily/$today.md" ]]; then
+  lines+=("Today's daily note: $today.md")
 fi
 
-TODAY=$(date +%Y-%m-%d)
-CONTEXT=""
-
-# Today's daily note
-DAILY_NOTE="$VAULT/daily/$TODAY.md"
-if [[ -f "$DAILY_NOTE" ]]; then
-  CONTEXT="Today's daily note: $TODAY.md"
-fi
-
-# MOC list (00 - MOCs/ directory)
-MOC_DIR="$VAULT/00 - MOCs"
-if [[ -d "$MOC_DIR" ]]; then
-  MOC_LIST=$(find "$MOC_DIR" -maxdepth 1 -name "*.md" -not -name ".*" -print0 2>/dev/null | \
-    xargs -0 -I{} basename {} .md 2>/dev/null | head -20 | tr '\n' ', ' | sed 's/,$//')
-  if [[ -n "$MOC_LIST" ]]; then
-    CONTEXT="${CONTEXT}\nVault MOCs: ${MOC_LIST}"
+moc_dir="$VAULT/00 - MOCs"
+if [[ -d "$moc_dir" ]]; then
+  # head closes the pipe early, which pipefail would otherwise turn into an exit.
+  mocs=$(find "$moc_dir" -maxdepth 1 -name '*.md' -not -name '.*' 2>/dev/null |
+    sort | head -n "$MAX_MOCS" | join_note_names || true)
+  if [[ -n "$mocs" ]]; then
+    lines+=("Vault MOCs: $mocs")
   fi
 fi
 
-# Last 3 modified notes (excluding attachments/system files)
-RECENT=$(find "$VAULT" -maxdepth 3 -name "*.md" -not -path "*/.obsidian/*" \
-  -not -name ".*" -print0 2>/dev/null | \
-  xargs -0 ls -t 2>/dev/null | head -3 | xargs -I{} basename {} .md 2>/dev/null | \
-  tr '\n' ', ' | sed 's/,$//')
-if [[ -n "$RECENT" ]]; then
-  CONTEXT="${CONTEXT}\nRecently modified: ${RECENT}"
+# xargs -r: GNU xargs would otherwise run a bare `ls -t` on the working directory when find matches nothing.
+recent=$(find "$VAULT" -maxdepth 3 -name '*.md' -not -path '*/.obsidian/*' -not -name '.*' -print0 2>/dev/null |
+  xargs -0 -r ls -t 2>/dev/null | head -n "$MAX_RECENT" | join_note_names || true)
+if [[ -n "$recent" ]]; then
+  lines+=("Recently modified: $recent")
 fi
 
-# Build JSON — escape the context string
-CONTEXT_ESCAPED=$(printf '%s' "$CONTEXT" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' 2>/dev/null || echo '""')
+if ((${#lines[@]} == 0)); then
+  exit 0
+fi
 
-printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":%s}}\n' "$CONTEXT_ESCAPED"
+context=$(printf '%s\n' "${lines[@]}")
+jq -n --arg context "$context" \
+  '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $context}}'
