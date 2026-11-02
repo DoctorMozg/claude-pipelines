@@ -244,7 +244,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | **init-rules**      | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 | **construct-skill** | `/construct-skill <intent>`                                | Drafts a plugin skill in a marketplace repo, test-first             |
 
-2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs), plus 3 shared pipeline agents that other plugins dispatch (pipeline-researcher, pipeline-web-researcher, code-lens-over-engineering). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
+3 user-facing agents: code-reviewer (single-file/staged-diff review), technical-writer (source-grounded docs) and pipeline-web-researcher (sourced web research, which other plugins' pipelines also dispatch), plus 2 shared pipeline agents (pipeline-researcher, code-lens-over-engineering). Ships 19 curated coding rules installable via `/init-rules`, with the personal and delegation groups opt-in, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
 
 **[Full documentation →](plugins/mz-base/)**
 
@@ -360,13 +360,13 @@ ______________________________________________________________________
 
 Two flavors of skill share this plugin. **Panels** — `/brainstorm` and `/expert` — drive a unified roster of **16 lens agents** (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian, cto, data, devops, product, security, seo) through ideation or Delphi-style critique. **Writing pipelines** — `/document`, `/naturalize`, `/copywrite` — produce technical documentation, naturalize AI-generated prose, and write promotional copy, with the `document` and `copywrite` skills running an automatic naturalize pass on every output.
 
-| Skill          | Command                     | What it does                                                                   |
-| -------------- | --------------------------- | ------------------------------------------------------------------------------ |
-| **brainstorm** | `/brainstorm <topic>`       | Panel selection → parallel ideation → synthesis → voting rounds                |
-| **expert**     | `/expert <idea>`            | Panel selection → 3 rounds (view → summary → react) → dedicated report writer  |
-| **document**   | `/document <topic>`         | Codebase research → user approval → expert-technical-writer → auto-naturalize  |
-| **naturalize** | `/naturalize <text\|@file>` | AI-pattern analysis → user approval → expert-naturalizer (+ optional in-place) |
-| **copywrite**  | `/copywrite <topic>`        | Positioning research → brief approval → expert-copywriter → auto-naturalize    |
+| Skill          | Command                     | What it does                                                                    |
+| -------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| **brainstorm** | `/brainstorm <topic>`       | Panel selection → parallel ideation → synthesis → voting rounds                 |
+| **expert**     | `/expert <idea>`            | Panel selection → 3 rounds (view → summary → react) → dedicated report writer   |
+| **document**   | `/document <topic>`         | Codebase research → user approval → expert-technical-writer → auto-naturalize   |
+| **naturalize** | `/naturalize <text\|@file>` | expert-naturalizer rewrite → punctuation check → in-place overwrite with a diff |
+| **copywrite**  | `/copywrite <topic>`        | Positioning research → brief approval → expert-copywriter → auto-naturalize     |
 
 22 agents total: 16 lens personas (shared between brainstorm and expert) plus 6 support agents (expert-researcher, expert-round-synthesizer, expert-report-writer, expert-technical-writer, expert-naturalizer, expert-copywriter).
 
