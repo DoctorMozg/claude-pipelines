@@ -13,7 +13,7 @@ EN_DASH = "\N{EN DASH}"
 
 type Run = Callable[..., subprocess.CompletedProcess[str]]
 type Write = Callable[..., str]
-type Hits = Callable[[str], list[str]]
+type Hits = Callable[..., list[str]]
 
 
 @pytest.fixture
@@ -44,8 +44,9 @@ def write(tmp_path: Path) -> Write:
 def hits(run: Run, write: Write) -> Hits:
     """Hits for one document as `line: name char`, after checking the exit code agrees with them."""
 
-    def check(text: str) -> list[str]:
-        result = run(write(text))
+    def check(text: str, *preserve: str) -> list[str]:
+        flags = [arg for term in preserve for arg in ("--preserve", term)]
+        result = run(*flags, write(text))
         assert result.returncode == (1 if result.stdout else 0), result.stderr
         return [line.removeprefix("doc.md:") for line in result.stdout.splitlines()]
 
@@ -136,3 +137,34 @@ class TestCli:
     def test_unclosed_fence_does_not_hide_the_next_file(self, run: Run, write: Write) -> None:
         result = run(write("```\ncode; here\n", "open.md"), write("Prose; here.\n", "next.md"))
         assert result.stdout.splitlines() == ["next.md:1: semicolon ;"]
+
+
+class TestPreservedTerms:
+    def test_preserved_term_is_not_reported(self, hits: Hits) -> None:
+        assert hits("Try Fast→Lane today.\n", "Fast→Lane") == []
+
+    def test_banned_character_outside_the_term_is_reported(self, hits: Hits) -> None:
+        assert hits("Fast→Lane is new; try it.\n", "Fast→Lane") == ["1: semicolon ;"]
+
+    def test_same_character_elsewhere_on_the_line_is_reported(self, hits: Hits) -> None:
+        assert hits("Fast→Lane → faster.\n", "Fast→Lane") == ["1: arrow →"]
+
+    def test_each_flag_adds_a_term(self, hits: Hits) -> None:
+        assert hits("Fast→Lane and Q3 — Q4 plans.\n", "Fast→Lane", "Q3 — Q4") == []
+
+    def test_term_with_a_backslash_is_matched_literally(self, hits: Hits) -> None:
+        assert hits("Use back\\slash; daily.\n", "back\\slash;") == []
+
+    @pytest.mark.parametrize(
+        "args",
+        [
+            pytest.param(("--preserve",), id="no-term"),
+            pytest.param(("--preserve", "", "doc.md"), id="empty-term"),
+            pytest.param(("--preserve", "x"), id="no-file"),
+        ],
+    )
+    def test_malformed_preserve_is_a_usage_error(self, run: Run, write: Write, args: tuple[str, ...]) -> None:
+        write("Clean.\n")
+        result = run(*args)
+        assert result.returncode == 2
+        assert "usage" in result.stderr

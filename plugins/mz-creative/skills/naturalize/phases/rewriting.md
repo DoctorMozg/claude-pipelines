@@ -36,6 +36,7 @@ Input file: <PROJECT_ROOT>/.mz/task/<task_name>/input.md
 Output file: <output_path>
 Report file: <report_path>
 Preserve: <terms from preserve:, or "none beyond auto-preserve">
+Specificity gaps: list each vague claim in the report; the output replaces the user's text, so it carries no [SPECIFICITY NEEDED] marker
 Medium: <from the file's extension or path when obvious, else omit this line>
 Long-document handling: <chunk by H2 if the input exceeds CHUNK_THRESHOLD words, else single pass>
 Extra patterns: <only after step 1.2: read <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md and add its patterns to this rewrite's pass list; omit this line otherwise>
@@ -49,6 +50,7 @@ Dispatch it as a single Agent tool call with `subagent_type: expert-naturalizer`
 1. The agent emitted `STATUS: DONE` or `STATUS: DONE_WITH_CONCERNS`.
 1. `output_path` holds only the rewritten text. If the agent appended a `## Naturalization report` section anyway, move that section and the `---` above it into `report_path`.
 1. Code blocks, tables and every `preserve:` term from the input still appear in the output.
+1. `output_path` holds no `[SPECIFICITY NEEDED]` marker, because Phase 2 copies it over the user's file. Delete any marker that slipped through with Edit, leaving its sentence as written, and add that sentence to `report_path` under the specificity gaps.
 
 On `BLOCKED`, leave the user's file untouched and escalate via AskUserQuestion. On `NEEDS_CONTEXT`, re-dispatch once with the missing context, usually a clearer preserve list.
 
@@ -58,7 +60,7 @@ Update `state.md`: `Phase: 1`, `phase_complete: true`, and add `output_path` and
 
 ### 2.1 Punctuation check
 
-Run `<PUNCTUATION_CHECK> <output_path>` as a command of its own, not chained with `;` or `&&`, because the skill's Bash grant matches only that command. It checks prose only; code, URLs and quotes are skipped, and the change report in `report_path` isn't checked at all.
+Run `<PUNCTUATION_CHECK> <preserve flags> <output_path>` as a command of its own, not chained with `;` or `&&`, because the skill's Bash grant matches only that command. `<preserve flags>` is one `--preserve '<term>'` per `PreserveTerms` entry, or nothing when there are none, since the rewrite keeps those terms verbatim. It checks prose only; code, URLs, quotes and preserved terms are skipped, and the change report in `report_path` isn't checked at all.
 
 - **Exit 0**: the rewrite is clean. Set `PunctuationCheck: clean`.
 

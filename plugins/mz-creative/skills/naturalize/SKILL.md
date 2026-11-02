@@ -2,14 +2,14 @@
 name: naturalize
 description: 'Rewrites machine-sounding or overly polished text so a real person seems to have written it. Use when the user wants existing text to sound human ("humanize this text", "make this sound less like AI"). Not for new promotional copy (use copywrite).'
 argument-hint: <text or @file:path to rewrite> [preserve:<terms>] [research:yes]
-allowed-tools: Agent, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/forbidden-punctuation.sh *), Bash(diff -u *), Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Agent, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/forbidden-punctuation.sh *), Bash(diff -u *), Bash(git rev-parse *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 # Text Naturalization Pipeline
 
 ## Overview
 
-Rewrites AI-generated text to read as if a human wrote it, in one pass with no approval gates. `expert-naturalizer` (opus) detects the AI patterns (vocabulary spikes, structural templates, sentence-rhythm uniformity) and rewrites them, removing banned punctuation such as em dashes and semicolons. With `research:yes`, `pipeline-web-researcher` (mz-base) first gathers patterns newer than the embedded list. A script then checks the rewrite for banned punctuation. File input is overwritten in place, with the original kept in the task folder and a diff shown at the end.
+Rewrites AI-generated text to read as if a human wrote it, in one pass with no approval gates. `expert-naturalizer` (sonnet) detects the AI patterns (vocabulary spikes, structural templates, sentence-rhythm uniformity) and rewrites them, removing banned punctuation such as em dashes and semicolons. With `research:yes`, `pipeline-web-researcher` (mz-base) first gathers patterns newer than the embedded list. A script then checks the rewrite for banned punctuation. File input is overwritten in place, with the original kept in the task folder and a diff shown at the end.
 
 ## When to Use
 
@@ -39,7 +39,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **REPORT_DIR**: `<PROJECT_ROOT>/.mz/reports/`
 - **CHUNK_THRESHOLD**: 2000 (words above this trigger section-by-section rewriting)
-- **PUNCTUATION_CHECK**: `${CLAUDE_PLUGIN_ROOT}/scripts/forbidden-punctuation.sh` (exit 0 when clean, 1 with one `file:line: <name> <char>` line per hit, 2 when it can't read the file)
+- **PUNCTUATION_CHECK**: `${CLAUDE_PLUGIN_ROOT}/scripts/forbidden-punctuation.sh` (each `--preserve <term>` exempts a preserved term; exit 0 when clean, 1 with one `file:line: <name> <char>` line per hit, 2 on a usage error or a file it can't read)
 
 ## Core Process
 
@@ -60,8 +60,7 @@ No phase asks for approval. File input is safe to overwrite because `input.md` k
 1. If empty → `AskUserQuestion` for input source. Never guess.
 1. If `@file:` referenced, read the file and verify it is text (not binary, not too large to fit in context — if >50KB, warn the user).
 1. `task_name` = `<YYYY_MM_DD>_naturalize_<slug>` where slug derives from the input (file basename or first 5 words of inline text). On collision append `_v2`, `_v3`.
-1. Run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`.
-1. Write the input text verbatim to `<PROJECT_ROOT>/.mz/task/<task_name>/input.md`. For `@file:` input this copy is the original that the diff compares against and the user can restore from.
+1. Write the input text verbatim to `<PROJECT_ROOT>/.mz/task/<task_name>/input.md` with the Write tool, which creates the folder. Don't copy it with Bash, which a sandbox may mount read-only. For `@file:` input this copy is the original that the diff compares against and the user can restore from.
 1. Write `state.md`: schema_version: 2, Status, Phase, Started, phase_complete: false, what_remains: [], InputSource, PreserveTerms, ResearchRequested, FilesWritten.
 1. Emit a visible setup block: `task_name`, input source, length in words, preserve terms, research flag.
 
@@ -84,6 +83,7 @@ Then run Phases 1 and 2 from `phases/rewriting.md`.
 - You overwrote the file before `input.md` held the original.
 - You ran the punctuation check on the change report instead of the rewrite.
 - You over-edited a code block, table, or proper name.
+- You left a `[SPECIFICITY NEEDED]` marker in the text that replaces the user's file.
 - You added a citation, statistic, or named source that wasn't in the input.
 - You "improved" text that was already human-written.
 
