@@ -17,6 +17,7 @@ If a brief run was supplied (`BriefRun` is set in `state.md`), append its captur
 Captured brief (from outreach-brief): <verbatim contents of <PROJECT_ROOT>/.mz/outreach/<brief_run>/brief.json>
 Local business climate: <verbatim contents of <PROJECT_ROOT>/.mz/outreach/<brief_run>/climate.json — per industry × region economic, regulatory, deal, and pain-point signals, plus proposal hooks>
 Fold the brief's offering, ICP, and geography into target_profile; fold the climate signals and proposal hooks into outreach_angles; and weight scoring toward the signals the climate surfaces.
+Write sender_voice as a 3-5 line voice description built from the brief's goal_channels_voice.voice and goal_channels_voice.goal.
 ```
 
 Read `strategy.json`. Extract target profile, scoring weights, outreach angles, source hints.

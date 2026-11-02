@@ -29,6 +29,7 @@ You receive:
 
 1. **Goal** — the user's outreach objective (e.g., "find potential clients for our DevOps consulting in DACH region")
 1. **Output file path** — where to write the strategy
+1. **Captured brief** (optional) — the `brief.json` and `climate.json` of an `outreach-brief` run, present when outreach-research was started with `brief:`
 
 ## Source Discipline
 
@@ -114,6 +115,13 @@ Suggest what types of directories and sources the source researcher should prior
 - VC portfolios if targeting funded startups
 - Government programs if targeting a specific country
 
+### Step 7: Define Sender Voice
+
+`outreach-enrich-company` reads `sender_voice` to set the tone of every letter, so write it only from what the user said:
+
+- **With a captured brief** — write a 3-5 line voice description: turn `goal_channels_voice.voice` into concrete guidance on register, sentence length and person, and aim the single call to action at `goal_channels_voice.goal`.
+- **Without a brief** — leave `sender_voice` as an empty string. Don't infer a voice from the goal: enrich-company then falls back to its default voice and reports that as a concern.
+
 ## Output Format
 
 Write a JSON object to the output file path:
@@ -157,6 +165,7 @@ Write a JSON object to the output file path:
       "personalization_hook": "How to customize per company"
     }
   ],
+  "sender_voice": "3-5 line voice description from the brief's voice and goal; empty string without a brief",
   "source_hints": [
     "Types of directories to prioritize",
     "Specific platforms or events to check"
