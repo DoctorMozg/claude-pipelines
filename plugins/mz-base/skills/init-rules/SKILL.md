@@ -14,7 +14,7 @@ Install curated development rules based on detected project context. Two deliver
 - `--target=rules` (default) — write rule files into `.claude/rules/` (project) or `~/.claude/rules/` (global). Files with `paths:` frontmatter stay path-scoped.
 - `--target=claudemd` — inject rule content directly into `./CLAUDE.md` (project) or `~/.claude/CLAUDE.md` (global), wrapped in sentinel blocks for idempotent re-runs and clean uninstall.
 
-Personal preference groups install only when the user picks them. Every install also proposes a few settings entries that Claude Code enforces on its own (ask before `git push`, deny `.env` reads, a pre-commit Stop hook, attribution off). Re-runs also clean up stale content: rules this skill has retired, installs from older versions, and hand-written CLAUDE.md copies of retired or rewritten sections. One approval gate covers all of it together with the settings.
+Personal preference groups install only when the user picks them, and so does the Delegation group, which routes web research, wide searches and docs writing to specialised agents. Every install also proposes a few settings entries that Claude Code enforces on its own (ask before `git push`, deny `.env` reads, a pre-commit Stop hook, attribution off). Re-runs also clean up stale content: rules this skill has retired, installs from older versions, and hand-written CLAUDE.md copies of retired or rewritten sections. One approval gate covers all of it together with the settings.
 
 ## When to Use
 
@@ -63,7 +63,7 @@ Phase files write `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` because th
 1. Parse `$ARGUMENTS`: scope (`project`/`global`), target (`rules`/`claudemd`), `--force`, `--uninstall`. Unknown token → AskUserQuestion.
 1. `task_name` = `<YYYY_MM_DD>_init_rules_<scope>_<target>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`.
 1. Create `<TASK_DIR><task_name>/`.
-1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO>`, `phase_complete: false`, `what_remains: []`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `AgentsMd: n/a`, `PersonalGroups: []`, `Installed: []`, `Replaced: []`, `Upgraded: []`, `Skipped: []`, `Removed: []`, `Retired: []`, `HandRemoved: []`, `SettingsAdded: []`, `SettingsRemoved: []`. `schema_version: 2` is the first line of the file.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO>`, `phase_complete: false`, `what_remains: []`, `Scope: <project|global>`, `Target: <rules|claudemd>`, `Force: <bool>`, `Uninstall: <bool>`, `DetectedContexts: []`, `AgentsMd: n/a`, `PersonalGroups: []`, `Delegation: skip`, `Installed: []`, `Replaced: []`, `Upgraded: []`, `Skipped: []`, `Removed: []`, `Retired: []`, `HandRemoved: []`, `SettingsAdded: []`, `SettingsRemoved: []`. `schema_version: 2` is the first line of the file.
 1. Emit setup block: task_name, resolved target path, mode flags.
 
 Every run, in both modes and for uninstall, passes the single approval gate in Phase 1 Step 6 before its first write. That one confirmation covers every write in the run.
@@ -96,6 +96,7 @@ After each phase, update `<TASK_DIR><task_name>/state.md` with:
 - `DetectedContexts:` list of detected language/tooling tags
 - `AgentsMd:` the AGENTS.md guard answer from Phase 1 Step 1 (`import`, `rules`, `claudemd-only`, or `n/a`)
 - `PersonalGroups:` personal groups chosen in Phase 1 Step 4
+- `Delegation:` the Delegation group answer from Phase 1 Step 4 (`install`, `installed` or `skip`)
 - `Installed:` / `Replaced:` / `Upgraded:` / `Skipped:` / `Removed:` / `Retired:` filenames or rule ids touched in this run
 - `HandRemoved:` headings of hand-written CLAUDE.md sections removed by the stale scan
 - `SettingsAdded:` / `SettingsRemoved:` settings entries written or removed

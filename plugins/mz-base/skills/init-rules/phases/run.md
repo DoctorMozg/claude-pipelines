@@ -77,20 +77,39 @@ Bundled at `<SKILL_DIR>/rules/`.
 
 These files carry one person's taste rather than broadly evidenced defaults, so they install only on an explicit choice.
 
-## Step 4: Choose personal groups
+**Delegation group (only when chosen in Step 4):**
+
+| Group      | Rule files                                                                   | Offered when | Summary                                                                                                                                                                                    |
+| ---------- | ---------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Delegation | `delegation.md`, plus `delegation-naturalize.md` when mz-creative is enabled | always       | Sends sourced web research to `pipeline-web-researcher`, wide read-only searches to `Explore` and docs writing to `technical-writer`; with mz-creative, docs then go through `/naturalize` |
+
+mz-base ships the agents `delegation.md` names, so the group is always offered. `delegation-naturalize.md` names a mz-creative skill, so it joins only when `enabledPlugins` holds a `mz-creative@<marketplace>` key set to `true`. Check the settings files in precedence order, skipping any that don't exist: in project scope `.claude/settings.local.json`, then `.claude/settings.json` (both at the repository root), then `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`; in global scope only the last one. For each file run:
+
+```bash
+jq -r '[(.enabledPlugins // {}) | to_entries[] | select(.key | startswith("mz-creative@")) | .value] | if length == 0 then "unset" elif any(. == true) then "true" else "false" end' "<settings file>"
+```
+
+The first `true` or `false` decides; `unset`, or a file jq can't parse, moves on to the next file. When no file decides, mz-creative counts as not enabled. Without `jq`, read the same files with the Read tool and apply the same rule.
+
+## Step 4: Choose optional groups
 
 Skip on `--uninstall`.
 
-A group counts as installed when any of its files already exists at the target (rules mode) or any of its ids has a start sentinel in CLAUDE.md (claudemd mode). Installed groups stay selected and get the normal skip or replace handling in Step 5. Ask only about the offered groups that are not installed; if none remain, skip the question.
+A group counts as installed when any of its files already exists at the target (rules mode) or any of its ids has a start sentinel in CLAUDE.md (claudemd mode). Installed groups stay selected and get the normal skip or replace handling in Step 5. Ask only about the offered groups that are not installed. Drop a question whose groups are all installed, and skip the call when neither question remains.
 
-This is an input collector, not an approval gate. Call AskUserQuestion with `multiSelect: true`:
+This is an input collector, not an approval gate. Call AskUserQuestion once, with both questions:
 
-- question: `Which personal preference groups should be installed too?`
-- header: `Personal`
-- one option per remaining group: label = group name, description = its Summary from the Step 3 table
-- a last option: **None** — install no personal preferences
+1. Personal groups, with `multiSelect: true`:
+   - question: `Which personal preference groups should be installed too?`
+   - header: `Personal`
+   - one option per remaining group: label = group name, description = its Summary from the Step 3 table
+   - a last option: **None** — install no personal preferences
+1. The Delegation group, with `multiSelect: false`:
+   - question: `Install the delegation rules, which send web research, wide searches and docs writing to specialised agents?`
+   - header: `Delegation`
+   - options: **Install** — the group's files from the Step 3 table, naming `delegation-naturalize.md` only when mz-creative is enabled · **Skip** — install neither file
 
-Add the chosen groups' files to the selection and record the group names in `state.md` → `PersonalGroups`. An answer of **None**, or no selection, adds nothing.
+Add the chosen groups' files to the selection. Record the personal group names in `state.md` → `PersonalGroups`, and the Delegation answer in `Delegation` as `install`, `installed` or `skip`. An answer of **None**, **Skip**, or no selection adds nothing.
 
 ## Step 5: Build the plan
 
@@ -112,7 +131,7 @@ In rules mode "present" means `<target>/<filename>` exists and its version is th
 1. Hand-written copies, in both modes: read the scope's CLAUDE.md (`./CLAUDE.md` for project, `~/.claude/CLAUDE.md` for global). Outside sentinel blocks, find each heading that matches a Sections row as `retired.md` describes. A section runs from its heading to the next heading of the same or higher level. Propose it as `hand-remove` when its Now in is `retired`, or when the rule named there is selected in this run. A parent heading left with no content once its subsections go is proposed too.
 1. Never propose text inside sentinel blocks, and leave everything outside the proposed sections as it is.
 
-**Uninstall.** Rules mode lists every bundled or retired rule filename that exists at the target, personal files included. Claudemd mode lists every `<!-- mz-rule:<id>` sentinel pair in CLAUDE.md.
+**Uninstall.** Rules mode lists every bundled or retired rule filename that exists at the target, personal and delegation files included. Claudemd mode lists every `<!-- mz-rule:<id>` sentinel pair in CLAUDE.md.
 
 **Settings.** Read `phases/enforce.md` and run its Step 1 to add the settings section: entries to add or remove, and the limits it says to state.
 
@@ -132,6 +151,7 @@ In rules mode "present" means `<target>/<filename>` exists and its version is th
 Rules target: <resolved path> (<create-new | create-new, imports AGENTS.md | modify-existing>)
 Detected: <context tags>
 Personal groups: <chosen groups | none>
+Delegation: <install | installed | skip> (mz-creative <enabled in <settings file> | not enabled>)
 
 Rules:
 <one line per rule: <id> — install | replace (--force) | upgrade <old> → <new> | skip (<reason>)>
@@ -252,10 +272,11 @@ Rules installed to <target>:
   ✓ code-quality.md
   ✓ python-conventions.md (detected: pyproject.toml)
   ✓ personal-review.md (personal: Review rituals)
+  ✓ delegation.md (Delegation)
   ⊘ git-conventions.md (exists, use --force)
 
 Detected: python, git
-Installed: 8  Replaced: 0  Skipped: 1
+Installed: 9  Replaced: 0  Skipped: 1
 ```
 
 **CLAUDE.md mode:**
@@ -336,7 +357,7 @@ Marker regex: `^<!-- mz-rule:<id> v=(\S+) -->$`. A file at the target without it
 
 - **Stack detection**: manifest files + language-extension globs before rule selection.
 - **Conditional mapping**: look up in the Step 3 tables; never invent rules.
-- **Personal opt-in**: personal files install only through the Step 4 choice, never by detection alone.
+- **Opt-in groups**: personal and delegation files install only through the Step 4 choice, never by detection alone.
 - **Idempotent writes**: honor `--force`; never silently clobber.
 - **Sentinel-bounded edits** (claudemd mode): detection via start-sentinel grep, replacement bounded by matching end sentinel. Preserve all content outside the block.
 - **Frontmatter stripping**: on inject, remove YAML frontmatter and demote any stray H1 to H2 so CLAUDE.md stays single-rooted.
@@ -345,7 +366,8 @@ Marker regex: `^<!-- mz-rule:<id> v=(\S+) -->$`. A file at the target without it
 ## Red Flags
 
 - You invented rule files instead of reading the Step 3 tables.
-- You installed a personal file the user did not choose in Step 4.
+- You installed a personal or delegation file the user did not choose in Step 4.
+- You installed `delegation-naturalize.md` without a settings file from Step 3 setting `mz-creative@<marketplace>` to `true`.
 - You copied rules to a non-standard location.
 - You skipped stack detection.
 - You wrote rules, CLAUDE.md, or settings before the Step 6 approval.

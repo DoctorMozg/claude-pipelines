@@ -31,6 +31,7 @@ Detects project languages and installs relevant coding rules. Two delivery modes
 Besides the rules, the plan can include:
 
 - **Personal preference groups**, opt-in from a multi-select: Code style extras, Git + C++ style, Review rituals.
+- **Delegation rules**, opt-in: send sourced web research to `pipeline-web-researcher`, wide read-only searches to `Explore` and docs writing to `technical-writer`. When mz-creative is enabled, a second file runs `/naturalize` on the docs afterwards.
 - **Enforced settings**: ask before `git push`, deny reading `.env` files, a pre-commit Stop hook when the project uses pre-commit, and commit/PR attribution off. They go into `.claude/settings.local.json` (project) or `~/.claude/settings.json` (global), and entries you already have stay as they are.
 - **Stale cleanup**: retired rules are removed, installs from older versions are upgraded, and hand-written `CLAUDE.md` copies of retired or rewritten sections are offered for deletion, each shown verbatim first.
 - **AGENTS.md guard**: in a project that relies on `AGENTS.md`, the skill asks before creating a `CLAUDE.md` that would stop it from loading.
@@ -80,6 +81,8 @@ Available via `/init-rules`. Each rule is a focused guideline installed as a `.m
 | **personal-git**             | opt-in, git repo          | Six-word commit messages, no AI attribution                                                |
 | **personal-cpp**             | opt-in, C++               | `auto` where possible                                                                      |
 | **personal-review**          | opt-in                    | Two-perspective review of real tradeoffs, short bug autopsy                                |
+| **delegation**               | opt-in                    | Which specialised agent gets web research, wide searches and docs writing                  |
+| **delegation-naturalize**    | opt-in, mz-creative       | `/naturalize` on prose docs after `technical-writer` changes them                          |
 
 ## License
 
