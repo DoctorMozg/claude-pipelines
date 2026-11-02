@@ -9,6 +9,10 @@ EVAL_MAX_USD ?= 5
 EVAL_RUNS ?=
 # Each job is a full claude child on your credential, so jobs share one rate limit.
 EVAL_JOBS ?= 4
+# Routing and hook cases need no baseline; set with-without to measure what a plugin adds.
+EVAL_ABLATION ?= none
+# Extra flags for one run, such as `--tag inject` or `--case 'capture-*'`.
+EVAL_ARGS ?=
 
 help:
 	@echo "Targets:"
@@ -18,7 +22,8 @@ help:
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
-	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD; spends tokens)"
+	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
+	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads plugins/<n>/evals/flags; spends tokens)"
 
 contract-matrix:
 	@./plugins/mz-dev-pipe/tests/run_contract_matrix.sh
@@ -50,12 +55,15 @@ gh-smoke:
 	@$(PYTHON) -I tests/e2e/gh_smoke.py
 
 # Targets the repo root so a case's `plugins:` may also load sibling plugins: dependencies and
-# cross-plugin near misses. Routing needs no baseline arm, and --trust-plugin covers only this repo.
+# cross-plugin near misses. --trust-plugin and --scaffold are safe only because every suite and
+# scaffold script here is authored in this repo. A suite's own flags, such as tool grants, live in evals/flags.
 eval:
-	@test -n "$(PLUGIN)" || { echo "usage: make eval PLUGIN=<name> [EVAL_MODEL=opus] [EVAL_RUNS=1]"; exit 2; }
+	@test -n "$(PLUGIN)" || { echo "usage: make eval PLUGIN=<name> [EVAL_MODEL=opus] [EVAL_RUNS=1] [EVAL_ARGS=...]"; exit 2; }
 	@test -d "plugins/$(PLUGIN)/evals" || { echo "plugins/$(PLUGIN) has no evals/ directory"; exit 2; }
 	@mkdir -p "plugins/$(PLUGIN)/evals/results"
-	$(CLAUDE) plugin eval . --eval-dir "plugins/$(PLUGIN)/evals" --ablation none --trust-plugin --no-publish \
+	$(CLAUDE) plugin eval . --eval-dir "plugins/$(PLUGIN)/evals" --ablation "$(EVAL_ABLATION)" \
+		--trust-plugin --scaffold --no-publish \
 		--model "$(EVAL_MODEL)" --judge-model "$(EVAL_JUDGE)" --max-cost-usd "$(EVAL_MAX_USD)" -j "$(EVAL_JOBS)" \
 		$(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") \
+		$(shell cat "plugins/$(PLUGIN)/evals/flags" 2>/dev/null) $(EVAL_ARGS) \
 		--json "plugins/$(PLUGIN)/evals/results/last-$(EVAL_MODEL).json"
