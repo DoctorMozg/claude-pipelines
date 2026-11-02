@@ -89,7 +89,7 @@ After completing Steps 3-6, **re-evaluate each issue** before including it. For 
 - Would 3 out of 3 senior engineers agree this needs fixing?
 - Is the evidence concrete (specific code path) or speculative?
 
-Assign a confidence score (0-100). **Drop any issue scoring below 80.** Include the score in the output.
+Assign a confidence score (0-100) and include it in the output. An issue scoring below 80 is never `Critical:` and is never dropped: list it under `## Low confidence` as one line, `FYI: (possible <severity>, <score>) <file>:<line> — <issue>`, for example `FYI: (possible Critical, 65) src/auth.ts:42 — token expiry compared in seconds against ms`.
 
 ## Output Format
 
@@ -112,16 +112,7 @@ Verdict logic:
 - `VERDICT: PASS` if zero `Critical:` findings exist, regardless of the count of Nits, Optionals, or FYIs.
 - `VERDICT: FAIL` if one or more `Critical:` findings exist.
 
-## Status Protocol
-
-In addition to the verdict line, emit one terminal `STATUS:` line per the canonical four-state protocol (see `${CLAUDE_PLUGIN_ROOT}/shared/agent-status-protocol.md`):
-
-- `DONE` — the review completed end-to-end and the verdict line is authoritative.
-- `DONE_WITH_CONCERNS` — the review completed but surfaced procedural concerns (incomplete diff, partially-readable artifacts) above the verdict.
-- `NEEDS_CONTEXT` — could not complete the review without additional input (referenced file unreadable, prior-phase artifact missing); list what is needed.
-- `BLOCKED` — a hard failure prevented the review (broken diff, tooling unavailable); list the blocker.
-
-The orchestrator branches on `STATUS:` first; the verdict line is read only when status is `DONE` or `DONE_WITH_CONCERNS`.
+Write the review in this shape, omitting `## Low confidence` when it would be empty:
 
 ```markdown
 # Code Review
@@ -143,22 +134,30 @@ The orchestrator branches on `STATUS:` first; the verdict line is read only when
 ### 2. <Issue title>
 ...
 
+## Low confidence
+- FYI: (possible <severity>, <score>) `path/to/file.ext:line_number` — <issue>
+
 ## Plan Compliance
 - [x] WU-1: <status>
 - [x] WU-2: <status>
 - [ ] WU-3: <what's missing>
-
-## Red Flags
-
-- You are reviewing without reading the changed files, diff, or report artifacts in scope.
-- You are about to flag a finding without a concrete file, line, code path, or source.
-- The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
 
 ## Notes
 <Observations that don't require changes but are worth noting>
 
 VERDICT: PASS | FAIL
 ```
+
+## Status Protocol
+
+In addition to the verdict line, emit one terminal `STATUS:` line per the canonical four-state protocol (see `${CLAUDE_PLUGIN_ROOT}/shared/agent-status-protocol.md`):
+
+- `DONE` — the review completed end-to-end and the verdict line is authoritative.
+- `DONE_WITH_CONCERNS` — the review completed but surfaced procedural concerns (incomplete diff, partially-readable artifacts) above the verdict.
+- `NEEDS_CONTEXT` — could not complete the review without additional input (referenced file unreadable, prior-phase artifact missing); list what is needed.
+- `BLOCKED` — a hard failure prevented the review (broken diff, tooling unavailable); list the blocker.
+
+The orchestrator branches on `STATUS:` first; the verdict line is read only when status is `DONE` or `DONE_WITH_CONCERNS`.
 
 ## Common Rationalizations
 
@@ -169,6 +168,12 @@ VERDICT: PASS | FAIL
 | "Critical findings are rare in polish/fix passes, so scrutiny can be relaxed." | The rarity is exactly what makes them dangerous: operators stop looking, and a single Critical slips straight to merge. Polish passes are where regressions hide in 2-line diffs.      |
 | "The diff is small, so the blast radius must be small."                        | Small diffs in shared utilities, auth guards, or serialization code can flip invariants for every caller. Read the callers, not just the diff.                                         |
 | "The file is outside my work unit, I shouldn't re-read it."                    | If the diff touches a symbol used in that file, stale context will lie to you. Re-read every file whose behavior could change, not just the ones listed in the plan.                   |
+
+## Red Flags
+
+- You are reviewing without reading the changed files, diff, or report artifacts in scope.
+- You are about to flag a finding without a concrete file, line, code path, or source.
+- You are about to drop a stylistic or low-confidence finding; label it `Nit:` or `FYI:` instead, and leave formatter-owned issues to the formatter.
 
 ## Verdict Criteria
 

@@ -41,7 +41,7 @@ After identifying all issues, **re-evaluate each one** before including it in yo
 - Would 3 out of 3 senior engineers agree this needs fixing?
 - Is the evidence concrete (specific code path) or speculative?
 
-Assign a confidence score (0-100). **Drop any issue scoring below 80.** Include the score in the output for transparency.
+Assign a confidence score (0-100) and include it in the output. An issue scoring below 80 is never `Critical:` and is never dropped: list it under `## Low confidence` as one line, `FYI: (possible <severity>, <score>) <file>:<line> — <issue>`, for example `FYI: (possible Critical, 65) src/auth.ts:42 — token expiry compared in seconds against ms`.
 
 ## Output Format
 
@@ -69,6 +69,8 @@ For each finding, report:
 **Suggestion**: How to fix it (with code if helpful).
 ```
 
+After the findings, add a `## Low confidence` section holding the one-line `FYI:` entries from Confidence Scoring, or leave it out when there are none.
+
 Verdict logic:
 
 - `VERDICT: PASS` if zero `Critical:` findings exist, regardless of the count of Nits, Optionals, or FYIs.
@@ -88,7 +90,7 @@ Verdict logic:
 
 - You are reviewing without reading the changed files, diff, or report artifacts in scope.
 - You are about to flag a finding without a concrete file, line, code path, or source.
-- The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- You are about to drop a stylistic or low-confidence finding; label it `Nit:` or `FYI:` instead, and leave formatter-owned issues to the formatter.
 
 ## Guidelines
 

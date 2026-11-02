@@ -1,7 +1,14 @@
 import re
 from pathlib import Path
 
-from .conftest import REPO_ROOT, DocSet, PluginDoc, assert_no_violations, split_tool_list
+from .conftest import (
+    REPO_ROOT,
+    DocSet,
+    PluginDoc,
+    PluginFile,
+    assert_no_violations,
+    split_tool_list,
+)
 
 KNOWN_KEYS = frozenset(
     {
@@ -75,6 +82,24 @@ OPEN_ENDED_BASH_SKILLS = {
     "verify": "runs the type checker, example scripts and README code blocks",
     "clean-leftovers": "runs the detected linter, often through npx or uv run",
 }
+# A dispatch note that overrides the agent's pin must say why inline, or it reads as drift.
+MODEL_NOTE = re.compile(r"\bmodel:\s*(?:\*\*)?(?P<model>haiku|sonnet|opus)\b(?:\*\*)?(?P<next>.?)")
+BACKTICKED_NAME = re.compile(r"`(?P<name>[a-z0-9]+(?:-[a-z0-9]+)+)`")
+
+
+def _unexplained_overrides(text: str, pins: dict[str, object]) -> list[str]:
+    """Notes naming a model other than the agent's pin and closing with no reason after it."""
+    found: list[str] = []
+    for number, line in enumerate(text.splitlines(), start=1):
+        for note in MODEL_NOTE.finditer(line):
+            named = [m["name"] for m in BACKTICKED_NAME.finditer(line, 0, note.start())]
+            agents = [name for name in named if name in pins]
+            if not agents or pins[agents[-1]] == note["model"] or note["next"] not in ("", ")"):
+                continue
+            found.append(
+                f"{number}: {agents[-1]} is pinned to {pins[agents[-1]]}, not {note['model']}"
+            )
+    return found
 
 
 def _skill_dir_files(doc: PluginDoc, folder: str) -> list[Path]:
@@ -241,4 +266,20 @@ class TestStructure:
                 if lines >= PHASE_MAX_LINES:
                     relative = phase.relative_to(REPO_ROOT).as_posix()
                     violations.append(f"{relative}: {lines} lines (limit {PHASE_MAX_LINES})")
+        assert_no_violations(violations)
+
+
+class TestDispatchNotes:
+    def test_model_override_states_its_reason(
+        self, agents: DocSet, plugin_files: tuple[PluginFile, ...]
+    ) -> None:
+        pins = {
+            str(item.frontmatter.get("name")): item.frontmatter.get("model")
+            for item in agents.parsed
+        }
+        violations = [
+            f"{source.relative}:{finding}; give the reason inside the note"
+            for source in plugin_files
+            for finding in _unexplained_overrides(source.text, pins)
+        ]
         assert_no_violations(violations)

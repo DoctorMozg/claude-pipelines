@@ -52,7 +52,7 @@ The dispatch prompt from `branch-reviewer` or a skill's over-engineering check p
    - `shrink:` wrong-abstraction smell — a shared helper accreting per-caller parameters or `if mode == …` branches, where each caller uses a different slice. Recommend inlining: the fastest way forward is back.
 1. Ground every candidate with a search before flagging: count the concrete implementations of an abstract type, count the callers of a "reusable" seam, confirm a "duplicated" stdlib primitive is genuinely equivalent. Operational heuristics: one implementation → ask what second implementation it anticipates, and if none is imminent, flag `yagni:`; a parameter count above four is a hint of a function straining to be too general, not a verdict on its own.
 1. Apply the guardrails as a filter pass. Drop any candidate that is code health (tests, types, validation, error handling, security, accessibility), that the justification context marks exempt, or whose abstraction is already earned by three or more use sites. Silently discard — do not downgrade these into the output.
-1. Score each surviving finding's confidence on a 0–100 scale. Drop anything below 60 silently — do not mention it, do not emit it.
+1. Score each surviving finding's confidence on a 0–100 scale. A finding below 60 stays out of the table but is not dropped: list it under `## Low confidence` (see Output Format).
 1. Write the findings table to the output file path given in the dispatch prompt, using the Write tool exactly once.
 1. Emit a final message containing a terminal `STATUS:` line (one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`) and the one-line absolute path to the findings file. Nothing else.
 
@@ -72,7 +72,7 @@ Write a single markdown table to the output file. One row per surviving finding.
 - `tldr` ≤140 chars, led by the category tag (`stdlib:`/`yagni:`/`native:`/`delete:`/`shrink:`) in `<tag> <what's oversized> → <how to shrink it>` form. If it does not fit, the finding is too vague — sharpen it.
 - `description` ≤512 chars — quote the minimum code span, state the grep evidence (implementation count, caller count), and explain in 1–2 sentences why the code is larger than the job requires.
 - `suggested_fix` ≤256 chars — the concrete shrink: the stdlib/native primitive to call, the abstraction to delete, the seam to inline, plus the condition under which the complexity would legitimately be re-introduced.
-- `confidence` is an integer 60–100 (anything lower was already dropped in the Process filter).
+- `confidence` is an integer 60–100; a lower score sends the finding to `## Low confidence` instead.
 
 After the table, write a `## Code Snippets` section in the same file. For each row in the findings table (in table order), add one numbered entry:
 
@@ -92,7 +92,15 @@ Rules for code snippets:
 - If the range spans more than 12 lines, trim to the 12 lines centred on `line_start`.
 - If you already have the file content in context from a prior Read, slice the window — do not re-read the file.
 
-Write the findings table followed by the `## Code Snippets` section to the output file in a single Write call. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
+After the snippets, write a `## Low confidence` section with one line per finding that scored below 60, or `None.` when there are none:
+
+```markdown
+- FYI: (possible <severity>, <confidence>) <file>:<line_start> — <tldr>
+```
+
+`<severity>` is the label the finding would carry above the bar, without its colon. These lines get no snippet and never count toward a verdict.
+
+Write the findings table, the `## Code Snippets` section and the `## Low confidence` section to the output file in a single Write call. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
 
 ## Common Rationalizations
 

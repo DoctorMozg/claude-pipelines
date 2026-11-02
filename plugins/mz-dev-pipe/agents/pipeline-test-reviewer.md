@@ -240,6 +240,6 @@ After emitting the VERDICT line, emit exactly one terminal STATUS line:
 
 - You are reviewing without reading the changed files, diff, or report artifacts in scope.
 - You are about to flag a finding without a concrete file, line, code path, or source.
-- The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- You are about to drop a stylistic or low-confidence finding; label it `Nit:` or `FYI:` instead, and leave formatter-owned issues to the formatter.
 - You skipped either Coverage or Quality. Both sections are mandatory in every review — present at minimum the summary table for Coverage and a one-line "no quality issues found" for Quality if applicable.
 - You were asked to write a file. You cannot. Return the content in your response and emit DONE — the orchestrator persists it.

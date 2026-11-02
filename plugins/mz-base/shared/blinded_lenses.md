@@ -20,7 +20,7 @@ Multiple pipelines run a blinded adversarial wave to break confirmation bias fro
 - audit, deep research phase, Wave B
 - branch-reviewer, Phase 3.6
 
-Both dispatch `pipeline-researcher` (model: opus) with role-specific adversarial prompts that receive ONLY the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
+Both dispatch `pipeline-researcher` (model: opus, overriding its sonnet pin; see the invariants below) with role-specific adversarial prompts that receive ONLY the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
 
 ## Blinded Dispatch Invariants
 

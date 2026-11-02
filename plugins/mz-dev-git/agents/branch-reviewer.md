@@ -145,6 +145,7 @@ Focus new discovery on areas and categories NOT represented in the map.
 
 Write findings to: $ARTIFACT_ROOT/.mz/task/<task_name>/phase3_<lens_name>_findings.md
 Schema: markdown table with columns: file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame | map_match
+Findings scored below 60 go under `## Low confidence` after the snippets, one line each: `- FYI: (possible <severity>, <confidence>) <file>:<line_start> — <tldr>`, or `None.`
 
 Five-field discipline: every row must populate file (+ line_start/line_end), severity, tldr (≤140 chars, "<what's wrong> → <how to fix>" form), description (≤512 chars; quote the minimum code span plus a 1–2 sentence explanation), and suggested_fix (≤256 chars; concrete repair steps). Findings missing any of those five are invalid — drop them rather than emitting partial rows.
 
@@ -162,7 +163,7 @@ Return STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED and the one-l
 
 ### Phase 3.5 — Consolidate Lens Findings
 
-1. Read all present `phase3_<lens_name>_findings.md` files. For each file, read both the findings table **and** the `## Code Snippets` section. Build a per-finding code snippet map keyed by `(file, line_start)` — when multiple lenses supply snippets for the same key, keep any non-empty one (they should be identical). If a lens was dropped and its snippet is missing, read the relevant file under `$CODE_ROOT` at `(line_start - 3, line_end + 3)` and extract the 7-line window at consolidation time.
+1. Read all present `phase3_<lens_name>_findings.md` files. For each file, read the findings table, the `## Code Snippets` section and the `## Low confidence` lines. Build a per-finding code snippet map keyed by `(file, line_start)` — when multiple lenses supply snippets for the same key, keep any non-empty one (they should be identical). If a lens was dropped and its snippet is missing, read the relevant file under `$CODE_ROOT` at `(line_start - 3, line_end + 3)` and extract the 7-line window at consolidation time.
 
 1. **Dedup key**: tuple `(file, line_start, category)`. If two lenses produced findings with the same tuple, merge them into one row. Merged row's confidence = max of sources; `replication_count` counts distinct lenses.
 
@@ -182,7 +183,9 @@ Return STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED and the one-l
 
 1. Write the consolidated findings to `$ARTIFACT_ROOT/.mz/task/<task_name>/phase3_consolidated.md` with the same schema (`file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame`) plus `replication_count`, `contested`, and `map_match` columns, followed by a `## Code Snippets` section using the snippet map built in step 1. Number each snippet entry to match its row position in the consolidated table. When merging duplicate findings across lenses, keep the longest non-empty `tldr`, the most complete `description`, and the most actionable `suggested_fix`; never produce a merged row missing any of the five required fields.
 
-1. Emit a consolidation summary: `lenses_completed: N`, `lenses_dropped: N`, `findings_raw: N`, `findings_after_dedup: N`, `contested: N`, `interim_critical: N`, `validated_prior: N`, `new_findings: N`. Note: `interim_critical` is a placeholder — final Critical eligibility is re-evaluated in Phase 3.7 after Wave B integration. Findings that cleared the two-signal gate from Wave A alone keep their Critical status; findings whose Critical eligibility depends on Wave B corroboration are decided in 3.7.
+1. Append a `## Low confidence` section to `phase3_consolidated.md` holding every lens's low-confidence lines, dropping only exact duplicates. These lines skip dedup, the Critical gate and Phase 3.7; they go to the report as written.
+
+1. Emit a consolidation summary: `lenses_completed: N`, `lenses_dropped: N`, `findings_raw: N`, `findings_after_dedup: N`, `contested: N`, `interim_critical: N`, `validated_prior: N`, `new_findings: N`, `low_confidence: N`. Note: `interim_critical` is a placeholder — final Critical eligibility is re-evaluated in Phase 3.7 after Wave B integration. Findings that cleared the two-signal gate from Wave A alone keep their Critical status; findings whose Critical eligibility depends on Wave B corroboration are decided in 3.7.
 
 ### Phase 3.6 — Blind Audit (Wave B)
 
@@ -532,6 +535,12 @@ Numbered to match the # column in the Issues table above.
 - **Description**: <Informational observation, 2–4 sentences>
 - **Suggested fix**: <Concrete repair steps, or `n/a — informational only` if no action is recommended>
 
+## Low Confidence
+
+> Findings a lens scored below 60, copied from the `## Low confidence` section of `phase3_consolidated.md`. They never count toward the verdict. Write `None.` when there are none.
+
+- FYI: (possible <severity>, <confidence>) <file>:<line_start> — <tldr>
+
 ## Blind Spots
 
 > Findings surfaced ONLY by the blinded adversarial wave (Wave B) — no Wave A lens flagged them. These represent gaps that context-aware analysis missed because of confirmation bias. Severity is capped per `blinded_lenses.md`: `Optional:` when a `file:line` is cited, `FYI:` when the blinded reviewer returned `line unknown`. Never `Critical:` here — by definition the two-signal gate cannot fire without Wave A corroboration. Omit this section if `blind_audit: unavailable` (label the omission in Lens Telemetry instead) or if Wave B produced zero unmatched findings.
@@ -661,7 +670,7 @@ Never embed STATUS lines inside the report file body. The file is the artifact; 
 
 - You are reviewing without reading the changed files, diff, or report artifacts in scope.
 - You are about to flag a finding without a concrete file, line, code path, or source.
-- The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- You are about to drop a stylistic or low-confidence finding; label it `Nit:` or `FYI:` instead, and leave formatter-owned issues to the formatter.
 - A finding in "Findings Found" or "Still Open" is missing its `**Code**:` block — every actionable finding must include a 7-line code snippet. Pull from the lens's `## Code Snippets` section or read the file directly.
 - A finding (in any section) is missing one of the five required fields: severity, file:line, TL;DR, description, suggested fix. Repair it or drop it; never emit a partial row. The only allowed substitutions are on Validated Prior Concerns: `What was done` (ResolvedWithReply), `Verification` (ResolvedSilently), or omitted suggested-fix on `Outdated`. Blind Spots may use `<path>:line unknown` when the blinded reviewer could not anchor to a line — this is a documented exception, not a missing field.
 - Wave B was dispatched in the same wave as Wave A, or as forks. Wave A already fills the six-agent wave cap, and a fork inherits Wave A's findings. Restart it as typed `pipeline-researcher` agents in their own wave after Phase 3.5 returns.

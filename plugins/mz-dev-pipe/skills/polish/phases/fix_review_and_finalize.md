@@ -251,7 +251,7 @@ Write findings to: <PROJECT_ROOT>/.mz/task/<task_name>/over_engineering_findings
 Return STATUS and the one-line output path.
 ```
 
-The lens emits `Optional:`/`FYI:` suggestions only — treat them like the reviewer's "minor issues": record every finding in the Phase 6 summary under **Simplifications suggested**, and apply only the unambiguous, behavior-preserving ones through a scoped `pipeline-coder` dispatch (then re-verify via §5.2). Over-engineering findings never block finalization; anything in the original criteria is exempt by the lens's own guardrails.
+The lens emits `Optional:`/`FYI:` suggestions only — treat them like the reviewer's "minor issues": record every finding in the Phase 6 summary under **Simplifications suggested**, and apply only the unambiguous, behavior-preserving ones through a scoped `pipeline-coder` dispatch (then re-verify via §5.2). Lines under its `## Low confidence` section are recorded too but never applied. Over-engineering findings never block finalization; anything in the original criteria is exempt by the lens's own guardrails.
 
 Update state phase to `optimized`.
 

@@ -128,9 +128,10 @@ Use the output schema from the dispatch prompt when one is provided. If the disp
 
 ## Red Flags
 
-- You are reviewing without reading the changed files, diff, or report artifacts in scope.
-- You are about to flag a finding without a concrete file, line, code path, or source.
-- The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- You were dispatched outside outreach-research or outreach-enrich-company, or asked for contacts or tech stack; return `BLOCKED`.
+- A profile's name, location or business doesn't match the company JSON; skip that platform instead of recording its scores.
+- A platform blocked the fetch or showed no rating; record it as `no_data` and report `DONE_WITH_CONCERNS` rather than estimating a score.
+- You are about to set `overall_sentiment` from review snippets alone; it comes from `avg_score` thresholds only.
 
 ## Status Protocol
 

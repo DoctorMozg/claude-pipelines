@@ -544,7 +544,7 @@ When previous reports exist, include this section after "Existing Review Threads
 
 - You are reviewing without reading the changed files, diff, or report artifacts in scope.
 - You are about to flag a finding without a concrete file, line, code path, or source.
-- The issue is stylistic, formatter-owned, or below the documented confidence threshold; downgrade it or drop it.
+- You are about to drop a stylistic or low-confidence finding; label it `Nit:` or `FYI:` instead, and leave formatter-owned issues to the formatter.
 - A finding in the final report is missing its `**Code**:` block — every finding must include a code snippet. Pull it from `phase2_findings.md` or read the file in `$PR_WT`; never omit it.
 - You are about to return a `STATUS` while `$PR_WT` still exists, or `git -C $MAIN_REPO worktree list` still shows it.
 

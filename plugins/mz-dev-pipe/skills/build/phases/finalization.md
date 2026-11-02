@@ -94,7 +94,7 @@ Work through your full refactor checklist:
 5. Unnecessary complexity
 6. Consistency
 
-Also read <PROJECT_ROOT>/.mz/task/<task_name>/over_engineering_findings.md if it exists (from the Phase 9 over-engineering lens). Apply the behavior-preserving simplifications it lists — replacing hand-rolled logic with a stdlib/native primitive, inlining a one-implementation abstraction — but only where the full suite stays GREEN and the change is not part of the plan's required scope. Skip any finding you cannot apply without changing behavior; leave it for the summary.
+Also read <PROJECT_ROOT>/.mz/task/<task_name>/over_engineering_findings.md if it exists (from the Phase 9 over-engineering lens). Apply the behavior-preserving simplifications it lists — replacing hand-rolled logic with a stdlib/native primitive, inlining a one-implementation abstraction — but only where the full suite stays GREEN and the change is not part of the plan's required scope. Skip any finding you cannot apply without changing behavior; leave it for the summary. Take findings from its table only: its `## Low confidence` lines go to the summary as written and are never applied.
 
 Report all changes made and which tests you re-ran locally (if any) to confirm GREEN held.
 ```
@@ -109,7 +109,7 @@ Re-dispatch `pipeline-lint-runner` and `pipeline-test-runner` (the full suite) i
 
 ### 10.3 Review refactor
 
-Spawn a `pipeline-code-reviewer` agent (model: **sonnet**) with: <!-- sonnet: heuristic structural pass checking only for behavioral drift introduced by the optimizer over already-opus-reviewed code, not full correctness; opus not required here -->
+Spawn a `pipeline-code-reviewer` agent (model: **sonnet**, overriding its opus pin because this pass only checks the optimizer's diff for behavior drift in code that already had its opus review) with:
 
 ```
 Review the refactor changes made to this code.

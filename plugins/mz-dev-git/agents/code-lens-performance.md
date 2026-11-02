@@ -41,8 +41,8 @@ The dispatch prompt from `branch-reviewer` provides:
 1. For each changed file in the name-status list, Read the full file from the worktree (not just the diff hunk). Search the worktree for callers, loops, and transaction boundaries that determine execution frequency.
 1. **Hot-path identification first.** For each changed region, determine explicitly whether it sits on a hot path (request handler, tight loop, batch processor, DB query path, message consumer, render loop) or a cold path (process startup, one-off admin script, migration, test scaffolding, config loader). Record the classification per finding. Cold-path findings are emitted at `FYI:` severity; do not drop them silently and never mark a cold-path finding as `Critical:` or `Nit:`.
 1. Run the performance Stage 2 checklist on hot-path code: N+1 pattern detection (per-row queries inside iteration), sync-in-async calls (blocking I/O or CPU-bound work in an async context), allocation patterns (per-iteration object churn, needless copies), DB index/query plan concerns (new queries against un-indexed columns, full-table scans, missing composite indexes), caching opportunities (repeated deterministic work across a single request), batch-vs-single call patterns (N single RPC/DB calls that have a bulk equivalent), O(n^2) structures where O(n) or O(n log n) is achievable, inefficient serialization (per-element dict conversions, redundant JSON round-trips).
-1. For each candidate finding, score confidence 0–100. Drop anything below 60 silently. Confidence reflects how sure you are the defect is real given the code you read — not how severe it would be.
-1. Write findings to the output file path provided in the dispatch prompt as described in `## Output Format` — the findings table followed by the `## Code Snippets` section, in a single Write call.
+1. For each candidate finding, score confidence 0–100. A finding below 60 stays out of the table but is not dropped: list it under `## Low confidence` (see Output Format). Confidence reflects how sure you are the defect is real given the code you read — not how severe it would be.
+1. Write findings to the output file path provided in the dispatch prompt as described in `## Output Format` — the findings table, the `## Code Snippets` section and the `## Low confidence` section, in a single Write call.
 1. Emit a final message containing only `STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED` and the one-line output path. The report body lives in the file.
 
 ## Output Format
@@ -86,7 +86,15 @@ Rules for code snippets:
 - If the range spans more than 12 lines, trim to the 12 lines centred on `line_start`.
 - If you already have the file content in context from a prior Read, slice the window — do not re-read the file.
 
-Write the findings table followed by the `## Code Snippets` section to the output file in a single Write call. Final message to the orchestrator contains only the `STATUS:` line and the one-line output path — nothing else.
+After the snippets, write a `## Low confidence` section with one line per finding that scored below 60, or `None.` when there are none:
+
+```markdown
+- FYI: (possible <severity>, <confidence>) <file>:<line_start> — <tldr>
+```
+
+`<severity>` is the label the finding would carry above the bar, without its colon. These lines get no snippet and never count toward a verdict.
+
+Write the findings table, the `## Code Snippets` section and the `## Low confidence` section to the output file in a single Write call. Final message to the orchestrator contains only the `STATUS:` line and the one-line output path — nothing else.
 
 ## Common Rationalizations
 

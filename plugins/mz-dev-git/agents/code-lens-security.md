@@ -52,7 +52,7 @@ The dispatch prompt from `branch-reviewer` provides:
    - Path traversal: file paths concatenated from user input without normalization and base-directory checks.
    - Weak crypto primitives: MD5/SHA1 for auth contexts, ECB mode, hand-rolled crypto, static IVs, low-entropy seeds.
 1. For each candidate finding, verify surrounding guards (sanitizers, parameterized queries, auth middleware, allowlist checks) do not already neutralize the risk. Do not flag a parameterized query as SQL injection because the string concatenates inside a safe layer.
-1. Score confidence 0–100. Drop anything below 60 silently.
+1. Score confidence 0–100. A finding below 60 stays out of the table but is not dropped: list it under `## Low confidence` (see Output Format).
 1. Write the findings table to the output file path given in the dispatch prompt.
 1. Emit a final message containing a terminal `STATUS:` line (one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`) and the one-line absolute path to the findings file. Nothing else.
 
@@ -93,7 +93,15 @@ Rules for code snippets:
 - If the range spans more than 12 lines, trim to the 12 lines centred on `line_start`.
 - If you already have the file content in context from a prior Read, slice the window — do not re-read the file.
 
-Write the findings table followed by the `## Code Snippets` section to the output file in a single Write call. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
+After the snippets, write a `## Low confidence` section with one line per finding that scored below 60, or `None.` when there are none:
+
+```markdown
+- FYI: (possible <severity>, <confidence>) <file>:<line_start> — <tldr>
+```
+
+`<severity>` is the label the finding would carry above the bar, without its colon. These lines get no snippet and never count toward a verdict.
+
+Write the findings table, the `## Code Snippets` section and the `## Low confidence` section to the output file in a single Write call. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
 
 ### Status Protocol
 

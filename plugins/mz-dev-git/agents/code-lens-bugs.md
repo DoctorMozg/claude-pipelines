@@ -49,7 +49,7 @@ The dispatch prompt from `branch-reviewer` provides, in this shape:
    - API misuse: deprecated calls, ignored return values that signal failure, wrong call order against a library contract.
    - Copy-paste errors: near-duplicate blocks where one side was not updated (variable name, index, key, branch identifier).
 1. For each candidate finding, verify that surrounding guards, invariants, framework contracts, or the type system do not already prevent it. Search the worktree or read additional files to confirm.
-1. Score each surviving finding's confidence on a 0–100 scale. Drop anything below 60 silently — do not mention it, do not downgrade it into the output.
+1. Score each surviving finding's confidence on a 0–100 scale. A finding below 60 stays out of the table but is not dropped: list it under `## Low confidence` (see Output Format).
 1. Write the findings table to the output file path given in the dispatch prompt, using the Write tool exactly once.
 1. Emit a final message containing a terminal `STATUS:` line (one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`) and the one-line absolute path to the findings file. Nothing else.
 
@@ -67,7 +67,7 @@ Write a single markdown table to the output file. One row per surviving finding.
 - `tldr` ≤140 chars in `<what's wrong> → <how to fix>` form. If it does not fit, the finding is too vague — sharpen it.
 - `description` ≤512 chars — quote the minimum code span plus a 1–2 sentence explanation of why it is a defect.
 - `suggested_fix` ≤256 chars — concrete repair steps (function/helper/pattern reference is fine; one short code fragment is fine).
-- `confidence` is an integer 60–100 (anything lower was already dropped in Process step 5).
+- `confidence` is an integer 60–100; a lower score sends the finding to `## Low confidence` instead.
 
 After the table, write a `## Code Snippets` section in the same file. For each row in the findings table (in table order), add one numbered entry:
 
@@ -87,7 +87,15 @@ Rules for code snippets:
 - If the range spans more than 12 lines, trim to the 12 lines centred on `line_start`.
 - If you already have the file content in context from a prior Read, slice the window — do not re-read the file.
 
-Write the findings table followed by the `## Code Snippets` section to the output file in a single Write call. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
+After the snippets, write a `## Low confidence` section with one line per finding that scored below 60, or `None.` when there are none:
+
+```markdown
+- FYI: (possible <severity>, <confidence>) <file>:<line_start> — <tldr>
+```
+
+`<severity>` is the label the finding would carry above the bar, without its colon. These lines get no snippet and never count toward a verdict.
+
+Write the findings table, the `## Code Snippets` section and the `## Low confidence` section to the output file in a single Write call. Emit only `STATUS:` + one-line path in the final message; the report body lives in the file.
 
 ## Common Rationalizations
 

@@ -71,7 +71,7 @@ Write findings to: <PROJECT_ROOT>/.mz/task/<task_name>/over_engineering_findings
 Return STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED and the one-line output path.
 ```
 
-Surviving findings are `Optional:`/`FYI:` only — surface them in the §5.4 plan message and let them inform the §5.3 confidence rating (a rare high-severity over-engineering finding lowers confidence). They never block banking a measured win.
+Its findings are `Optional:`/`FYI:` only — surface them in the §5.4 plan message and let the table rows inform the §5.3 confidence rating (a rare high-severity over-engineering finding lowers confidence). Lines under its `## Low confidence` section appear in the message but never move the rating. They never block banking a measured win.
 
 ## 5.3 Confidence rating
 
