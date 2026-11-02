@@ -1,6 +1,6 @@
 ---
 name: pipeline-web-researcher
-description: Web-first research agent. Multi-source research with strict source-hierarchy discipline and structured findings (Key Findings with confidence levels, Trend Analysis, Risks). Dispatched by /deep-research for parallel multi-subtopic fan-out, by /combine for gap-fill, by /ask, /clean-leftovers and /naturalize for web lookups, and by branch-reviewer and github-pr-reviewer when unfamiliar domains need authoritative external research. Do not use for codebase-only questions (use pipeline-researcher).
+description: "Researches technical questions on the web and reports what primary sources say, with a confidence level per finding plus trends and risks. Use when the user wants sourced web research on a technical question: what changed between releases of a language, library, framework or API, how two tools or services differ in documented behavior, or whether a claim about current practice holds up against official docs and changelogs. A question with several independent parts gets one dispatch per part, sent together. Skills dispatch it too: /deep-research for parallel subtopics, /combine for gap-fill, /ask, /clean-leftovers and /naturalize for web lookups, and branch-reviewer and github-pr-reviewer when an unfamiliar domain needs outside research. Do not use for questions the repository itself answers (use Explore, or pipeline-researcher inside a pipeline)."
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: medium
