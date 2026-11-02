@@ -404,17 +404,20 @@ ______________________________________________________________________
 
 ### [`mz-memory`](plugins/mz-memory/) — Project Memory
 
-Cross-session project memory that persists knowledge automatically — injects on session start and again after `/clear` or compaction, captures completed tasks on session end, and selectively injects relevant memory per prompt.
+Cross-session project memory that persists knowledge automatically — injects on session start and again after `/clear` or compaction, captures completed tasks on session end, and selectively injects relevant memory per prompt. It also collects lessons from review findings, failures and your corrections, curates them in the background, and lets you promote the recurring ones into project rules.
 
-| Hook               | Event            | What it does                                                         |
-| ------------------ | ---------------- | -------------------------------------------------------------------- |
-| **Memory inject**  | SessionStart     | Loads `.mz/memory/MEMORY.md` into context on startup, clear, compact |
-| **Memory capture** | SessionEnd       | Captures completed task summaries, prunes to 200 lines               |
-| **Memory prompt**  | UserPromptSubmit | Selectively injects memory matching the prompt's keywords            |
+| Hook               | Event            | What it does                                                                                           |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------ |
+| **Memory inject**  | SessionStart     | Injects Pinned, the top lessons, the Digest and the newest log lines on startup, clear, compact        |
+| **Memory capture** | SessionEnd       | Logs completed tasks, collects `## Lessons`, starts background curation and compression                |
+| **Memory prompt**  | UserPromptSubmit | Injects the memory and lessons matching the prompt; reminds Claude to save a lesson after a correction |
 
-| Skill           | Command                       | What it does                                                    |
-| --------------- | ----------------------------- | --------------------------------------------------------------- |
-| **memory-note** | `/memory-note [--log] <note>` | Manually pins a note to project memory through an approval gate |
+| Skill               | Command                                   | What it does                                                                          |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| **memory-note**     | `/memory-note [--log \| --lesson] <note>` | Pins a note through an approval gate, or saves a lesson to the Inbox without one      |
+| **lessons-promote** | `/lessons-promote [<ids>]`                | Turns recurring lessons into CLAUDE.md or `.claude/rules/` rules, one gate per lesson |
+
+Background curation and compression run `claude -p` on your account; `MZ_MEMORY_COMPRESS=0` turns both off.
 
 Pairs with `mz-dev-pipe` agents that have native `memory: project` for per-agent persistent memory.
 
