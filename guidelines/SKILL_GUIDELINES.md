@@ -132,7 +132,7 @@ The description is the main signal Claude uses to invoke a skill on its own. If 
 
 **Shape.** Open with a third-person clause naming what the skill produces or covers, then "Use when…". Name a capability, not the skill's steps, and never end with a workflow summary such as "— orchestrates X, Y, Z". Avoid "I" and "you": the description is injected into the system prompt, and a mixed point of view hurts discovery (platform: skills best-practices).
 
-**Wording.** State when to use the skill in plain directive terms, a little pushy, because Claude still tends to under-trigger skills (anthropics/skills skill-creator; agentskills.io, optimizing descriptions). Don't use all caps unless `claude plugin eval` shows a gain without firing on near misses. skill-creator calls all-caps ALWAYS and NEVER a yellow flag. Current models over-apply emphasized rules (best-practices.md, "What you can stop doing"), and Anthropic warns that emphatic wording written for older models can over-trigger on Opus 4.5 and 4.6 (platform: claude-prompting-best-practices). A prefix that every skill shares, such as "ALWAYS invoke when", tells Claude nothing about which skill to pick.
+**Wording.** State when to use the skill in plain directive terms, a little pushy, because Claude still tends to under-trigger skills (anthropics/skills skill-creator; agentskills.io, optimizing descriptions). Don't use all caps unless `claude plugin eval` shows a gain without firing on near misses. skill-creator calls all-caps ALWAYS and NEVER a yellow flag. Current models over-apply emphasized rules (best-practices.md, "What you can stop doing"), and Anthropic warns that emphatic wording written for older models can over-trigger on Opus 4.5 and 4.6 (platform: claude-prompting-best-practices). A prefix that every skill shares, such as "ALWAYS invoke when", tells Claude nothing about which skill to pick. Removing only that lead from an old description still cost routing in this repo's pilot. The capability-clause shape above, with the old typed phrases kept, matched the old scores without caps, so rewrite the whole description rather than just dropping the lead (observed on 2.1.316, Sonnet).
 
 **Triggers.** Cover what the user is trying to do:
 
@@ -140,7 +140,7 @@ The description is the main signal Claude uses to invoke a skill on its own. If 
 - at least one request that doesn't name the domain;
 - the nearest sibling skill, as a counter-trigger.
 
-Counter-triggers that must prevent a wrong invocation go in the description, because the body loads only after the skill is picked. Fix a miss by revising the wording in general terms, not by pasting in that query's keywords.
+Counter-triggers that must prevent a wrong invocation go in the description, because the body loads only after the skill is picked. Fix a miss by revising the wording in general terms, not by pasting in that query's keywords. When you rewrite a description, keep the phrases users type that the old one listed. In this repo's pilot, dropping them with the caps cut `document` on Sonnet from 3 of 6 routed runs to 0. Restoring them, still without caps, brought it to 4.
 
 **Length.** Put the skill's distinctive domain words in the first sentence. Claude Code cuts `description` plus `when_to_use` at 1,536 characters (skills.md; changelog 2.1.105), and the Agent Skills spec and claude.ai uploads allow 1,024 (agentskills.io specification). When the listing goes over its budget, Claude Code drops whole descriptions, least-used skills first. Repo convention: keep `description` plus any `when_to_use` at or under 250 characters. This protects the shared listing budget; it isn't a platform limit.
 
@@ -150,7 +150,7 @@ Counter-triggers that must prevent a wrong invocation go in the description, bec
 description: "Builds a feature end to end, from plan to tested code. Use when the user asks to build, implement or add a feature or module. Not for bug fixes (use debug) or polishing working code (use polish)."
 ```
 
-**Measure before bulk changes.** Run `claude plugin eval` on a few skills before rewriting many descriptions (plugin-evals.md; changelog 2.1.269). A should-not-trigger case needs `min: 0, max: 0` and `arm: both`. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes: list the plugin's dependencies in `plugins:`, run through `make eval`, hold some should-trigger queries out, and know what a routing case's `max_turns: 2` counts as a miss.
+**Measure before bulk changes.** Run `claude plugin eval` on a few skills before rewriting many descriptions (plugin-evals.md; changelog 2.1.269). A should-not-trigger case needs `min: 0, max: 0` and `arm: both`. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes: list the plugin's dependencies in `plugins:`, run through `make eval`, hold some should-trigger queries out, and cap a routing case at `max_turns: 2`.
 
 Agent descriptions follow AGENTS_GUIDELINES.md, "Descriptions and Trigger Scenarios".
 
