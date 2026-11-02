@@ -224,7 +224,7 @@ set -euo pipefail
 
 - **Header.** A shebang, `set -euo pipefail`, and a one-line comment naming the event and matcher, so a reader can find the hooks.json entry. Update the comment when the matcher changes.
 - **Optional variables** are written as `${VAR:-}` or `${VAR:-default}`. Under `set -u`, `cmd "$UNSET" || true` still dies with "unbound variable"; only the default expansion helps.
-- **Pipelines cut short.** `head` and `grep -q` can close a pipe early, which `pipefail` turns into a failure. A `grep` that finds nothing exits 1 as well, so under `set -e` an assignment such as `x=$(grep … | head -1)` ends the script. End such a pipeline with `|| true`, as `vault-context.sh` does: `x=$(grep … | head -1 || true)`.
+- **Pipelines cut short.** `head` and `grep -q` can close a pipe early, which `pipefail` turns into a failure. A `grep` that finds nothing exits 1 as well, so under `set -e` an assignment such as `x=$(grep … | head -1)` ends the script. End such a pipeline with `|| true`, as `vault-context.sh` does: `x=$(grep … | head -1 || true)`. `memory-prompt-inject.sh` once lost its whole injection this way, when a prompt of about a thousand distinct words made `head -n 12` close its keyword pipeline.
 - **Shared code** lives in a library under `scripts/lib/` that defines functions and runs nothing when sourced, like `plugins/mz-memory/scripts/lib/common.sh`. Source it without `|| true`: a missing library means a broken install, and the hook-error notice is the right signal. A script that is both run and sourced guards its entry point with `if [[ "${BASH_SOURCE[0]}" == "$0" ]]`.
 
 ```bash
@@ -256,7 +256,7 @@ Command hooks run with the user's full permissions (hooks.md). Treat every input
 
 ## 13. Testing
 
-**Automated tests.** Repo convention: a new or changed hook script with real logic gets pytest coverage that runs the script through `subprocess` with a synthetic event on stdin and a temporary root, then asserts the exit code and the output shape. `tests/mz_knowledge/test_vault_context.py` and `tests/mz_memory/` (`memory-inject.sh`, `memory-capture.sh`) are the models. Run them with `pytest tests/mz_knowledge tests/mz_memory` from the repo's dev environment. Neither `make test` nor CI runs them, so run them by hand before committing a hook change.
+**Automated tests.** Repo convention: a new or changed hook script with real logic gets pytest coverage that runs the script through `subprocess` with a synthetic event on stdin and a temporary root, then asserts the exit code and the output shape. The suites in `tests/mz_memory/`, `tests/mz_knowledge/test_vault_context.py` and `tests/mz_dev_pipe/test_detect_tooling.py` are the models, and the `path_without_jq` fixture in `tests/conftest.py` builds a PATH without `jq` for the missing-`jq` case. A new test folder goes into `testpaths` in `pyproject.toml`, since pytest collects nothing outside it. `make test` runs the suite, and so does the CI `tests` job.
 
 **Smoke runs.** Every hook script runs without the harness. Feed a full event, with `hook_event_name`, `session_id`, `cwd` and the event's own fields, and point the script at a temporary root:
 
@@ -277,7 +277,7 @@ cat "$root/.mz/journal.md"
 
 Run the no-op path as well, such as a missing file or the wrong tool: exit 0 and no stdout.
 
-**Lint.** `pre-commit run --files <script>` runs shellcheck and shfmt (`-i 2 -ci`) as configured in `.pre-commit-config.yaml`; shellcheck doesn't need to be on PATH. That config turns off SC2086 and SC2046, so shellcheck doesn't flag unquoted expansions (§12); check them by eye.
+**Lint.** `pre-commit run --files <script>` runs shellcheck and shfmt (`-i 2 -ci`) as configured in `.pre-commit-config.yaml`; shellcheck doesn't need to be on PATH. The config turns off only SC1091, because shellcheck can't follow a `source` path built from `$SCRIPT_DIR`. Unquoted expansions (§12) are flagged.
 
 **Validator.** Run `claude plugin validate --strict plugins/<name>`. It checks hooks.json for invalid JSON, unknown event names, a wrong nesting level and an unquoted `${CLAUDE_PLUGIN_ROOT}` in shell form, and `--strict` fails on any of them. It stays silent on `once`, on `if` for a non-tool event, on a missing or non-executable script, on an invalid regex matcher, on unknown handler fields, and on `async` or `onFailure` where they have no effect (observed on 2.1.316). Check those by hand against §15.
 

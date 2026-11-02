@@ -199,7 +199,7 @@ Redaction is best-effort. Claude Code's own transcript keeps the raw answers (ob
 
 ## 9. Verification
 
-- **The hook runs standalone.** Feed `journal-capture.sh` a synthetic PostToolUse event on stdin, with `MZ_MEMORY_ROOT` pointing at a scratch folder. It exits 0 with no stdout or stderr on every path: a valid event, malformed JSON, empty input, a tool other than AskUserQuestion, an unwritable root, no git root, and no `jq` (observed). `guidelines/HOOKS_GUIDELINES.md` covers the failure discipline it follows. No automated test covers it yet; `tests/mz_memory/` covers the capture and inject hooks.
+- **The hook runs standalone.** Feed `journal-capture.sh` a synthetic PostToolUse event on stdin, with `MZ_MEMORY_ROOT` pointing at a scratch folder. It exits 0 with no stdout or stderr on every path: a valid event, malformed JSON, empty input, a tool other than AskUserQuestion, an unwritable root, no git root, and no `jq` (observed). `guidelines/HOOKS_GUIDELINES.md` covers the failure discipline it follows. `tests/mz_memory/test_journal_capture.py` runs these cases, apart from the unwritable root and the missing git root.
 - **A gate leaves an entry.** In an interactive session with mz-memory installed, answering a gate in the dialog adds a Layer A entry. This needs a live session, so it can't run in CI. If no entry appears, check that:
   - mz-memory is installed, and `jq` is on PATH;
   - hooks aren't turned off, and mz-memory is enabled and trusted (AGENTS_GUIDELINES.md, "Agent/Hook Interface", lists every case);
