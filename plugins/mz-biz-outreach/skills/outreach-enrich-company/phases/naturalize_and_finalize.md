@@ -24,6 +24,15 @@ The snapshots are used to revert any draft that the naturalizer damages.
 
 Dispatch one `expert-naturalizer` agent per surviving draft, in parallel waves of at most 6 concurrent agents per wave. Use `subagent_type: expert-naturalizer`.
 
+Emit the pre-dispatch manifest right before each wave, and pass each role label as the agent's `description`. Skip both blocks for a wave of one agent:
+
+```
+Dispatching letter naturalization, wave <k> — <N> agents in parallel
+Purpose: remove AI patterns from each surviving letter draft
+- expert-naturalizer — email rewrite, contact <n>
+- expert-naturalizer — LinkedIn DM rewrite, contact <n>
+```
+
 ### 4.3 Dispatch template (one Agent call per draft)
 
 ```
@@ -74,6 +83,15 @@ Medium routing override: "Email between colleagues" for email and
 ```
 
 ### 4.4 Post-naturalize validation per draft
+
+Once every agent of a wave has reported, failed or been stopped, emit that wave's post-wave rollup before validating:
+
+```
+Wave complete (letter naturalization, wave <k>) — <returned>/<dispatched> agents returned
+- expert-naturalizer: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 After each naturalizer returns:
 

@@ -45,7 +45,14 @@ Load `<SKILL_DIR>/behaviors/ideation.md`. Substitute variables per-voter:
 | `{lens_name}`             | short lens label (e.g. `engineer` for `lens-engineer`)                                           |
 | `{step}`                  | `vote`                                                                                           |
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its role — so the wave is visible to the user.
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching round <N> vote — 5 agents in parallel
+Purpose: vote on the shortlist in synthesis_round_<N>.md
+- lens-<name> — votes on shortlist from its lens
+- lens-<name> — votes on shortlist from its lens
+```
 
 Dispatch all **PANEL_SIZE** (5) panelists in a **single message** as parallel Agent tool calls. Each receives its own substituted prompt.
 
@@ -53,7 +60,15 @@ Dispatch all **PANEL_SIZE** (5) panelists in a **single message** as parallel Ag
 
 Read each voter's file at `{output_path}`. Extract the **Vote**, **Justification**, and (optional) **Objection** fields from each lens's vote artifact.
 
-Emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per voter with its status and a short summary — before tallying. A voter with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every voter has reported, failed or been stopped, emit the post-wave rollup before tallying:
+
+```
+Wave complete (round <N> vote) — <returned>/5 agents returned
+- lens-<name>: <STATUS> — <summary, ≤8 words>
+- lens-<name>: <STATUS> — <summary, ≤8 words>
+```
+
+A voter with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count, and counts as not-returned.
 
 Build a vote tally:
 

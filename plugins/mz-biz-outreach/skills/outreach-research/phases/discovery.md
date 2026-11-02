@@ -97,6 +97,15 @@ ______________________________________________________________________
 
 Spawn one `outreach-scout` per source, in parallel **waves of ≤MAX_SCOUTS_PER_WAVE (6) concurrent agents per single assistant message**. If `sources.json` contains more than 6 sources, dispatch in sequential waves until every source has been scouted. Scouts are writer agents (they write `<RUN_DIR>/_scout/<source_slug>.json`). Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
+Emit the pre-dispatch manifest right before each wave, and pass each role label as the agent's `description`. Skip both blocks for a wave of one agent:
+
+```
+Dispatching source scouting, wave <k> — <N> agents in parallel
+Purpose: scout companies from each data source
+- outreach-scout — <source name, ≤6 words>
+- outreach-scout — <source name, ≤6 words>
+```
+
 ```
 Scout companies from this data source:
 Source: <name>, URL: <url>, Type: <type>, Access notes: <notes>
@@ -105,6 +114,15 @@ Sector filter: <sectors>
 Count limit: <ceil(limit / source_count), minimum 10>
 Write results to: <RUN_DIR>/_scout/<source_slug>.json
 ```
+
+Once every scout of a wave has reported, failed or been stopped, emit that wave's post-wave rollup before starting the next wave:
+
+```
+Wave complete (source scouting, wave <k>) — <returned>/<dispatched> agents returned
+- outreach-scout: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 ### 3.2 Deduplicate and fan out
 

@@ -25,7 +25,14 @@ When `{previous_rounds_block}` is empty, collapse the surrounding blank line so 
 
 ## 2.3 Dispatch agents in parallel
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens agent with its role — so the wave is visible to the user.
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching round <N> ideation — 5 agents in parallel
+Purpose: generate ideas on "<topic, trimmed>"
+- lens-<name> — generates ideas from its lens
+- lens-<name> — generates ideas from its lens
+```
 
 Dispatch all **PANEL_SIZE** (5) selected lens agents in a **single message** as parallel Agent tool calls. Each agent receives its own substituted dispatch prompt as the user message. Use each agent's registered name (`lens-engineer`, `lens-artist`, `lens-philosopher`, `lens-mathematician`, `lens-scientist`, `lens-economist`, `lens-storyteller`, `lens-futurist`, `lens-psychologist`, `lens-historian`, `lens-cto`, `lens-data`, `lens-devops`, `lens-product`, `lens-security`, `lens-seo`) as the `subagent_type`.
 
@@ -39,7 +46,15 @@ Each agent writes its artifact to `{output_path}`. After dispatch, for each agen
 1. Validate structure: at least one `## Idea` block with a title, concept, lens rationale, and feasibility signal.
 1. If the file is missing, empty, or off-topic: retry once with a clarified prompt per the behavior post-dispatch checklist. If still bad, exclude the agent from this iteration and note the gap in `state.md`.
 
-Then emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per agent with its status and a short summary — before merging. An agent with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every agent has reported, failed or been stopped, emit the post-wave rollup before merging:
+
+```
+Wave complete (round <N> ideation) — <returned>/5 agents returned
+- lens-<name>: <STATUS> — <summary, ≤8 words>
+- lens-<name>: <STATUS> — <summary, ≤8 words>
+```
+
+An agent with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count, and counts as not-returned.
 
 Merge all agent outputs into `<PROJECT_ROOT>/.mz/task/<task_name>/ideas_round_<N>.md`:
 

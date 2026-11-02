@@ -48,7 +48,14 @@ When R1, substitute empty strings for `{prior_summary_block}` and `{prior_iter_b
 
 ## Step 2.2 — Parallel panelist dispatch
 
-Read `<PROJECT_ROOT>/.mz/task/<task_name>/panel.md` to get the 5 agent names. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its lens role — so the wave is visible to the user.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/panel.md` to get the 5 agent names. Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching round <N> panel — 5 agents in parallel
+Purpose: critique the idea in intake.md, round <N> of 3
+- lens-<name> — critiques idea from its lens
+- lens-<name> — critiques idea from its lens
+```
 
 Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
 
@@ -87,7 +94,15 @@ Should return 4. A file that passes the section-count check but returns fewer th
 - Retry once with a clarified dispatch that explicitly lists the missing sections.
 - If the retry still fails, log the gap in `state.md` under a `## Gaps` section and continue the round without that agent's output. Never block a round on a single missing agent.
 
-Once collection is settled, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per panelist with its status and a short summary — before dispatching the synthesizer. A panelist with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every panelist has reported, failed or been stopped and collection is settled, emit the post-wave rollup before dispatching the synthesizer:
+
+```
+Wave complete (round <N> panel) — <returned>/5 agents returned
+- lens-<name>: <STATUS> — <summary, ≤8 words>
+- lens-<name>: <STATUS> — <summary, ≤8 words>
+```
+
+A panelist with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count, and counts as not-returned.
 
 ## Step 2.4 — Dispatch round synthesizer
 

@@ -115,7 +115,7 @@ The four output filenames (`discuss_<N>_alternatives.md`, `discuss_<N>_reversibi
 Once all four return, emit the rollup before synthesis. The ratio must be exact — a critic that returned no `VERDICT:`/`STATUS:` line is listed as `NO RETURN BLOCK`, never dropped from the count:
 
 ```
-Wave complete — <returned>/4 critics returned
+Wave complete — <returned>/4 agents returned
 - gov-critic-alternatives:  <VERDICT> — <≤8 words>
 - gov-critic-reversibility: <VERDICT> — <≤8 words>
 - gov-critic-blast-radius:  <VERDICT> — <≤8 words>

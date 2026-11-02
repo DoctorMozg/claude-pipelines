@@ -4,7 +4,18 @@
 
 ## Wave A — Context-Aware Lenses
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its lens role — so the wave is visible to the user.
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching Wave A context-aware lenses — 6 agents in parallel
+Purpose: locate problems in the changed files across six lenses
+- pipeline-researcher — correctness lens scan
+- pipeline-researcher — security lens, attacker paths
+- pipeline-researcher — performance lens scan
+- pipeline-researcher — maintainability lens scan
+- pipeline-researcher — reliability lens scan
+- pipeline-researcher — trust-boundary STRIDE delta
+```
 
 Dispatch 6 `pipeline-researcher` agents in a **single message** using parallel tool calls. Model tiers are split by lens: security and STRIDE-delta use **opus** (attacker-path traced evidence, highest accuracy stakes); correctness, performance, maintainability, and reliability use **sonnet** (the default tier for research agents).
 
@@ -186,11 +197,26 @@ After the Wave A parallel dispatch returns, the orchestrator writes each researc
 | reliability     | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_reliability.md`     |
 | stride_delta    | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_stride_delta.md`    |
 
-Once Wave A responses are persisted, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before dispatching Wave B. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every Wave A researcher has reported, failed or been stopped and the responses are persisted, emit the post-wave rollup before dispatching Wave B:
+
+```
+Wave complete (Wave A context-aware lenses) — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 ## Wave B — Blinded Adversarial Lenses
 
-Dispatch 3 `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin because blinded attacker-path tracing is accuracy-critical) in a **single message**, AFTER Wave A completes. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its blinded lens role — so the wave is visible to the user.
+Dispatch 3 `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin because blinded attacker-path tracing is accuracy-critical) in a **single message**, AFTER Wave A completes. Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching Wave B blind audit — 3 agents in parallel
+Purpose: independent diff-only adversarial review to break confirmation bias
+- pipeline-researcher — blinded production reliability adversary
+- pipeline-researcher — blinded security attacker
+- pipeline-researcher — blinded ops and SRE adversary
+```
 
 **Critical**: Wave B researchers receive only the raw git diff output. They must not receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
 
@@ -221,7 +247,14 @@ After Wave B returns, the orchestrator writes each response:
 | blinded_security   | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_blinded_security.md`   |
 | blinded_ops        | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_blinded_ops.md`        |
 
-When Wave B responses are persisted, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before consolidation. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every Wave B researcher has reported, failed or been stopped and the responses are persisted, emit the post-wave rollup before consolidation:
+
+```
+Wave complete (Wave B blind audit) — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 A Wave B agent that doesn't return, or returns `NEEDS_CONTEXT`, is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/blinded_lenses.md`: it counts as not returned, and with 0 of 3 back the corroboration step is skipped and Wave A's result stands. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 

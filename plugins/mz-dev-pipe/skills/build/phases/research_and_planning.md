@@ -102,7 +102,26 @@ Report concise, actionable findings. No fluff.
 
 **Parallel dispatch**: if domain research is obviously needed (task mentions specific APIs, protocols, or libraries), dispatch 1.1, 1.2, and 1.3 all in parallel. If unclear, dispatch 1.1 and 1.2 first, then decide on 1.3 from their results.
 
+**Wave manifest**: emit the pre-dispatch manifest before launching the research wave, and pass each role label as the agent's `description`. Drop the third line when 1.3 is not part of the wave, so `N` reads 2 or 3. A 1.3 dispatch that waits for the 1.1 and 1.2 results is a single dispatch and needs no manifest.
+
+```
+Dispatching build research — <N> agents in parallel
+Purpose: gather codebase context and compare approaches for the plan
+- pipeline-researcher — codebase exploration
+- pipeline-researcher — feasibility and approach comparison
+- pipeline-researcher — domain research, when needed
+```
+
 ### 1.4 Save research
+
+When every researcher of the wave has reported, failed or been stopped, emit the post-wave rollup before combining the findings:
+
+```
+Wave complete (build research) — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <finding, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 Write combined findings to `<PROJECT_ROOT>/.mz/task/<task_name>/research.md`. Structure:
 

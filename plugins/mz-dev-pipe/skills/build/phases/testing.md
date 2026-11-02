@@ -75,6 +75,15 @@ Set `test_review_iteration = 0`.
 
 Spawn TWO review agents **in parallel** (both model: **sonnet**). `pipeline-code-reviewer` is pinned to opus, but here it reads test code only; Phase 7 gives the production code its opus review.
 
+Emit the pre-dispatch manifest before launching the pair, and pass each role label as the agent's `description`:
+
+```
+Dispatching test review — 2 agents in parallel
+Purpose: check test coverage, quality and craftsmanship before implementation
+- pipeline-test-reviewer — coverage and quality review
+- pipeline-code-reviewer — test code craftsmanship review
+```
+
 **Agent A — Test Reviewer** (`pipeline-test-reviewer` — combined coverage + quality):
 
 ```
@@ -130,6 +139,16 @@ Output:
 ```
 
 ### 4.2 Consolidate reviews
+
+Once both reviewers have reported, failed or been stopped, emit the post-wave rollup before consolidating:
+
+```
+Wave complete (test review) — <returned>/<dispatched> agents returned
+- pipeline-test-reviewer: <VERDICT> — <summary, ≤8 words>
+- pipeline-code-reviewer: <VERDICT> — <summary, ≤8 words>
+```
+
+A reviewer that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 Save both reviews to `<PROJECT_ROOT>/.mz/task/<task_name>/test_review_<iteration>.md`.
 

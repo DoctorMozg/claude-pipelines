@@ -39,6 +39,15 @@ Dispatch `CANDIDATE_COUNT` `pipeline-perf-candidate` agents in **one** message (
 
 **Diversification rule.** The candidates must not be four variants of one change. Assign each a *distinct* transformation class — or a distinct mechanism within the hypothesis — drawn from the toolkit's Transformation catalog. Diversity is what makes the round informative: if all four converge on the same edit, the round taught nothing. On a re-entry after a `DEAD END`, the next round diversifies *away* from the failed class entirely.
 
+Once the classes are assigned, emit the pre-dispatch manifest before the Agent calls and pass each role label as the agent's `description`:
+
+```
+Dispatching candidate implementation — <N> agents in parallel
+Purpose: implement distinct candidates for hypothesis <H#>
+- pipeline-perf-candidate — <transformation class, ≤6 words>
+- pipeline-perf-candidate — <transformation class, ≤6 words>
+```
+
 Dispatch prompt per candidate:
 
 ```
@@ -82,6 +91,15 @@ Each `pipeline-perf-candidate` agent returns one terminal `STATUS`. As each resu
 - `STATUS: NEEDS_CONTEXT` for a missing dispatch field — re-dispatch the agent with the field supplied, up to `MAX_CANDIDATE_REVIEW_RETRIES` times, then drop the candidate.
 - `STATUS: BLOCKED` — a fundamental obstacle the agent cannot get past. Drop the candidate and record it in the history buffer; do not re-dispatch.
 - Malformed output (no parseable terminal `STATUS`) — re-dispatch up to `MAX_CANDIDATE_REVIEW_RETRIES` times, then drop.
+
+Once every candidate of the wave has reported, failed or been stopped, emit the post-wave rollup before Stage B:
+
+```
+Wave complete (candidate implementation) — <returned>/<dispatched> agents returned
+- pipeline-perf-candidate: <STATUS> — <transformation class, ≤8 words>
+```
+
+A candidate that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Only worktrees that returned `STATUS: DONE` advance to Stage B.
 

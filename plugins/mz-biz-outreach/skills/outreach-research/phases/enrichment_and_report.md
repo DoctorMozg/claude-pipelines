@@ -4,12 +4,30 @@
 
 Dispatch one `outreach-scanner` per company in parallel **waves of ≤6 concurrent agents per single assistant message**. Scanners are writer agents (they rewrite the company JSON), so the 6-agent wave cap applies. Run sequential waves until every company has been scanned. Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
+Emit the pre-dispatch manifest right before each wave, and pass each role label as the agent's `description`. Skip both blocks for a wave of one agent:
+
+```
+Dispatching company scan, wave <k> — <N> agents in parallel
+Purpose: scan each company for reviews and reputation data
+- outreach-scanner — review scan, company <n>
+- outreach-scanner — review scan, company <n>
+```
+
 ```
 Scan this company for reviews and reputation data.
 Company file: <RUN_DIR>/companies/<slug>.json
 Read the company JSON, scan review platforms, then write the updated JSON
 back to the same path with reviews and review_summary fields populated.
 ```
+
+Once every scanner of a wave has reported, failed or been stopped, emit that wave's post-wave rollup before starting the next wave:
+
+```
+Wave complete (company scan, wave <k>) — <returned>/<dispatched> agents returned
+- outreach-scanner: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 After all scanners complete:
 
@@ -82,12 +100,30 @@ ______________________________________________________________________
 
 Dispatch `outreach-card-writer` agents one per non-skipped company, in parallel **waves of ≤6 concurrent agents per single assistant message**. Card writers only read JSONs and write separate `.md` files, so there is zero conflict risk, but the 6-agent wave cap still applies to every parallel dispatch. Run sequential waves until every non-skipped company has a card. Wait for every agent in the wave to report, then check that each card exists on disk before using it.
 
+Emit the pre-dispatch manifest right before each wave, and pass each role label as the agent's `description`. Skip both blocks for a wave of one agent:
+
+```
+Dispatching card writing, wave <k> — <N> agents in parallel
+Purpose: write a dossier card for each non-skipped company
+- outreach-card-writer — dossier card, company <n>
+- outreach-card-writer — dossier card, company <n>
+```
+
 ```
 Write a complete company dossier card.
 Company JSON: <RUN_DIR>/companies/<slug>.json
 Strategy file: <RUN_DIR>/strategy.json
 Output: <RUN_DIR>/companies/<slug>.md
 ```
+
+Once every card writer of a wave has reported, failed or been stopped, emit that wave's post-wave rollup before starting the next wave:
+
+```
+Wave complete (card writing, wave <k>) — <returned>/<dispatched> agents returned
+- outreach-card-writer: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 After all card writers complete, verify each non-skipped company has a `.md` card.
 Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` `Phase` field to `cards_written`.

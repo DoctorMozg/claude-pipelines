@@ -167,6 +167,15 @@ If **external dependencies detected**: proceed to 2.3.
 
 **Parallel dispatch optimization**: If external dependency involvement is obvious from the bug report itself (e.g., "WebSocket reconnection fails", "OAuth token refresh broken", "gRPC deadline exceeded"), dispatch both the codebase researcher (2.1) and domain researcher (2.3) in parallel. Otherwise, run them sequentially.
 
+In the parallel case, emit the pre-dispatch manifest before launching both agents and pass each role label as the agent's `description`:
+
+```
+Dispatching parallel diagnosis — 2 agents in parallel
+Purpose: diagnose "<bug, trimmed>" and research its external dependency
+- pipeline-researcher — codebase root-cause investigation
+- pipeline-researcher — external dependency research
+```
+
 ### 2.3 Domain research (conditional)
 
 Dispatch a second `pipeline-researcher` agent (model: **sonnet**):
@@ -206,6 +215,15 @@ Use WebSearch and WebFetch to find:
 ```
 
 ### 2.4 Synthesize diagnosis
+
+If 2.1 and 2.3 ran in parallel, emit the post-wave rollup once both have reported, before merging:
+
+```
+Wave complete (parallel diagnosis) — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Merge codebase investigation + domain research (if any) into `<PROJECT_ROOT>/.mz/task/<task_name>/diagnosis.md`:
 

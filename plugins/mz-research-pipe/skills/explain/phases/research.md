@@ -36,7 +36,27 @@ Count files in scope and scan for external dependencies to decide how many resea
 
 Spawn all researchers in a **single message** using parallel tool calls.
 
+When two or more researchers are dispatched, emit the pre-dispatch manifest right before the Agent calls, and pass each role label as the call's `description`. The single comprehensive analyst needs neither manifest nor rollup.
+
+```
+Dispatching code research — <N> agents in parallel
+Purpose: explain "<user question, trimmed>"
+- pipeline-researcher — <role, e.g. structure analyst>
+- pipeline-researcher — <role, e.g. domain researcher>
+```
+
+One bullet per dispatched role: comprehensive analyst, structure analyst, flow analyst or domain researcher.
+
 ### 2.2 Researcher artifacts
+
+When every researcher has reported, failed or been stopped, emit the post-wave rollup before writing any artifact:
+
+```
+Wave complete — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <role>: <summary, ≤8 words>
+```
+
+A researcher that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Each researcher is read-only and returns its findings **inline in its response**. The **orchestrator** (not a sub-agent) writes the returned markdown to `<PROJECT_ROOT>/.mz/task/<task_name>/research_<role>.md` using the Write tool, one call per returned response:
 

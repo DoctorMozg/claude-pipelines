@@ -36,13 +36,33 @@ Initial `status` for every row is `pending`. The orchestrator updates this colum
 For each wave in ascending order:
 
 1. Update `state.md`: `Phase: 2_wave_<N>`.
+
+1. When the wave holds two or more agents, emit the pre-dispatch manifest right before the Agent calls, with `<W>` the total wave count in `dispatch_plan.md`. Pass each role label as the call's `description`. Label a follow-up wave of `NEEDS_CONTEXT` retries `retry of wave <w>` instead.
+
+   ```
+   Dispatching comment proposals, wave <w> of <W> — <N> agents in parallel
+   Purpose: propose AI-comment edits for <N> files
+   - pipeline-decomment-proposer — <file name>
+   - pipeline-decomment-proposer — <file name>
+   ```
+
 1. In a single assistant message, dispatch up to `MAX_PARALLEL` (=6) `pipeline-decomment-proposer` agents in parallel — one Agent tool call per file in the wave. Each dispatch prompt must include:
+
    - The target file path (absolute).
    - The proposal output path (absolute, matching `proposal_path` for the row).
    - The `task_dir` path.
    - The reference table path: `<SKILL_DIR>/references/per-language-comment-syntax.md`.
    - The reminder line: `Read the reference table for your file's extension before tokenizing. Emit exactly one STATUS: line at end.`
+
 1. Wait for every agent in the current wave to report, then check that each proposal artifact exists on disk before using it. Launch the next wave only after that. Sequential messages are sequential — a wave is exactly one assistant message with N parallel Agent calls.
+
+1. Before launching the next wave, emit the post-wave rollup for this one, carrying the manifest's label. An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned. Skip it for a single-agent wave.
+
+   ```
+   Wave complete (wave <w> of <W>) — <returned>/<dispatched> agents returned
+   - pipeline-decomment-proposer: <STATUS> — <file name>, <edit count> edits proposed
+   ```
+
 1. Never dispatch more than `MAX_PARALLEL` agents in one wave — split overflow into the next sequential wave.
 
 For each agent's terminal `STATUS:` line, update the row's `status` column in `dispatch_plan.md`:

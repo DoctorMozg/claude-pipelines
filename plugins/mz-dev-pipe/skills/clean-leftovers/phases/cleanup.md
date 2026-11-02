@@ -12,6 +12,15 @@ The orchestrator dispatches `expert-leftover-cleaner` (opus) in parallel waves t
 
 Send all agents in a wave as **parallel tool calls in a single message**. Per the repo's parallel-fan-out cap (6), do not exceed MAX_PARALLEL_AGENTS per message.
 
+Before launching a wave of two or more cleaners, emit the pre-dispatch manifest with one line per cleaner, and pass each role label as the agent's `description`. A last wave with a single cleaner is a single dispatch and needs neither manifest nor rollup.
+
+```
+Dispatching cleanup wave <N> — <K> agents in parallel
+Purpose: remove leftover artifacts from <F> files per the approved detection plan
+- expert-leftover-cleaner — work unit <M>, <files> files
+- expert-leftover-cleaner — work unit <M>, <files> files
+```
+
 Each cleaner gets this dispatch (compressed — the agent definition carries the full process / status protocol / preservation rules; this prompt only carries task-specific context):
 
 ```
@@ -46,6 +55,15 @@ Status protocol: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED —
 Replace `<task_name>`, `<N>` (wave number), `<M>` (agent index in wave) per dispatch.
 
 ## 3.3 Per-wave checkpoint
+
+Once every cleaner of the wave has reported, failed or been stopped, emit the post-wave rollup:
+
+```
+Wave complete (cleanup wave <N>) — <returned>/<dispatched> agents returned
+- expert-leftover-cleaner: <STATUS> — <summary, ≤8 words>
+```
+
+A cleaner that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 After all agents in the wave return:
 

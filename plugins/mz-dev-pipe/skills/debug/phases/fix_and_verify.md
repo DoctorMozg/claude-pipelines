@@ -209,6 +209,15 @@ ______________________________________________________________________
 
 ### 5.1 Full verification
 
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching final verification — 2 agents in parallel
+Purpose: confirm tests and lint pass after the fix
+- pipeline-test-runner — full test suite
+- pipeline-lint-runner — lint and format checks
+```
+
 Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls):
 
 ```
@@ -223,6 +232,16 @@ lint_command: <lint_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md,
 format_command: <format_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md, or "none detected">
 output_path: <PROJECT_ROOT>/.mz/task/<task_name>/final_lint_results.md
 ```
+
+When both agents have reported, emit the post-wave rollup:
+
+```
+Wave complete (final verification) — <returned>/<dispatched> agents returned
+- pipeline-test-runner: <STATUS> — <summary, ≤8 words>
+- pipeline-lint-runner: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Read both artifacts. All must pass (or match pre-existing failure state). If anything new fails, return to Phase 4 for another fix iteration.
 

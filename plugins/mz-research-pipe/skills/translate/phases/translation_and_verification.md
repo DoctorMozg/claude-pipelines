@@ -31,6 +31,15 @@ For each wave, dispatch all N translator agents in a **single orchestrator messa
 
 Wave-sizing: `MAX_PARALLEL_TRANSLATORS` is the hard upper bound. With 14 units and `MAX_PARALLEL_TRANSLATORS = 6`, the schedule is `[6, 6, 2]` — three sequential waves, each a single parallel message. Do not reshuffle mid-run; the smallest-chunks-first order from 2.1 is the execution order.
 
+Before each wave of two or more translators, emit the pre-dispatch manifest and pass each role label as the agent's `description`:
+
+```
+Dispatching translation, wave <w> of <K> — <N> agents in parallel
+Purpose: translate <N> chunks from <source_lang> to <target_lang>
+- pipeline-translator — chunk <chunk_id>
+- pipeline-translator — chunk <chunk_id>
+```
+
 Each dispatch description contains only:
 
 - `task_dir` (absolute path), unit spec (source path + optional `chunk_range` + `chunk_id`), `source_lang` / `target_lang` (ISO 639-1), `output_path`, `output_mode`.
@@ -60,6 +69,15 @@ Collect every response from the wave. Parse the terminal `STATUS:` line per disp
 - **`DONE_WITH_CONCERNS`** — append the agent's `## Concerns` block to `<task_dir>/concerns.md` under a heading for this `chunk_id`. Still advance the chunk — Tier-2 may judge the concern harmless. Do not treat `DONE_WITH_CONCERNS` as a failure.
 - **`NEEDS_CONTEXT`** — re-dispatch **once** with the agent's `## Required Context` block resolved in the new prompt (e.g. missing glossary entry, ambiguous output path). The re-dispatch counts against a separate per-chunk `MAX_CONTEXT_RETRIES` counter (not `MAX_VERIFICATION_ATTEMPTS`) so an early context miss does not exhaust the Phase 6 budget. If the re-dispatch also returns `NEEDS_CONTEXT`, escalate via AskUserQuestion.
 - **`BLOCKED`** — **never auto-retry**. Escalate immediately via AskUserQuestion, pasting the agent's `## Blocker` section verbatim. Halt the wave until the user responds.
+
+Once every translator of a wave has reported, emit the post-wave rollup before the next wave:
+
+```
+Wave complete (wave <w> of <K>) — <returned>/<dispatched> agents returned
+- pipeline-translator (<chunk_id>): <STATUS> — <summary, ≤8 words>
+```
+
+A translator that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 Worked example for a 4-dispatch wave: three `DONE`, one `DONE_WITH_CONCERNS` (two untranslated idioms). Record all four paths in `wave_results.md`, append the concerns block to `concerns.md` under the chunk id, advance all four to Phase 3. Do not stop the pipeline — Tier-2 may still accept, Phase 6 retries on `Critical:`.
 
@@ -98,6 +116,8 @@ Terms with frequency ≤ 3 are excluded: drift on tiny counts is statistical noi
 
 For each flagged chunk, re-dispatch `pipeline-translator` in `mode: translate` with a task-specific prompt naming the divergent terms, their required target translations from the merged glossary, and the output file to rewrite. Include the standard reminder to run Tier-1 and emit a fresh confidence report. Re-dispatches count against `MAX_VERIFICATION_ATTEMPTS` per chunk. Group into waves of ≤ `MAX_PARALLEL_TRANSLATORS`, emit each wave in a single parallel message. Status handling follows the four-status protocol from Phase 2.2.
 
+For each wave of two or more re-dispatches, emit the pre-dispatch manifest and the post-wave rollup in the same form as Phase 2.2, headed `Dispatching consistency re-translation` with `Purpose: fix glossary term drift in <N> chunks`. Pass each role label as the agent's `description`.
+
 Update `state.md` Phase → `consistency_complete`.
 
 ______________________________________________________________________
@@ -108,9 +128,18 @@ ______________________________________________________________________
 
 ### 4.1 Judge Wave-Split
 
-Compute `judge_batches = ceil(total_chunks / MAX_JUDGE_BATCH)`. If `judge_batches == 1`, dispatch a single `pipeline-code-reviewer`. Otherwise dispatch `judge_batches` reviewers as parallel tool calls in one orchestrator message. Never sequentialize — parallel dispatch + finding merge is the only way to avoid context blowup on long jobs.
+Compute `judge_batches = ceil(total_chunks / MAX_JUDGE_BATCH)`. If `judge_batches == 1`, dispatch a single `pipeline-code-reviewer`. Otherwise dispatch the `judge_batches` reviewers as parallel tool calls, at most 6 per orchestrator message; more than 6 batches run as sequential waves of 6. Within a wave, never sequentialize — parallel dispatch + finding merge is the only way to avoid context blowup on long jobs.
 
 Group chunks into batches by shared source file when possible so a reviewer can cross-reference neighboring sections. Break ties by chunk order from `wave_results.md`.
+
+When `judge_batches` is greater than 1, emit the pre-dispatch manifest before launching the reviewers, with role labels passed as `description` as in Phase 2.2:
+
+```
+Dispatching translation judging, wave <w> of <K> — <N> agents in parallel
+Purpose: review translated chunks for meaning, glossary and structure
+- pipeline-code-reviewer — batch <i> of <judge_batches>
+- pipeline-code-reviewer — batch <j> of <judge_batches>
+```
 
 ### 4.2 Reviewer Dispatch Prompt
 
@@ -138,6 +167,8 @@ verdict: PASS only if zero Critical. Concise output.
 ```
 
 Status handling follows the four-status protocol: `DONE` = normal; `DONE_WITH_CONCERNS` (operational issues, e.g. unreadable chunk) → `<task_dir>/concerns.md`; `NEEDS_CONTEXT` → one re-dispatch with missing files attached; `BLOCKED` → escalate via AskUserQuestion, halt Phase 4.
+
+When `judge_batches` is greater than 1 and every reviewer of a wave has reported, emit the post-wave rollup in the same form as Phase 2.2, with a `pipeline-code-reviewer (batch <i>)` line per agent, before merging findings.
 
 ### 4.3 Finding Merge
 
@@ -213,7 +244,18 @@ Dispatch `pipeline-translator` with `mode: back_translate` and a task-specific p
 - The reversed language pair (`source_lang` becomes the target, original `target_lang` becomes the source).
 - An explicit line: `mode: back_translate — plain text only, no glossary, no structural checks, no confidence report`.
 
+When more than one chunk needs back-translation, emit the pre-dispatch manifest before launching, with role labels passed as `description` as in Phase 2.2:
+
+```
+Dispatching back-translation — <N> agents in parallel
+Purpose: round-trip check chunks with Critical findings
+- pipeline-translator — back-translate chunk <chunk_id>
+- pipeline-translator — back-translate chunk <chunk_id>
+```
+
 Batch the back-translation dispatches for a single Phase-5 pass into a **single orchestrator message** as parallel tool calls when more than one chunk needs it, bounded by `MAX_PARALLEL_TRANSLATORS`.
+
+When more than one back-translation was dispatched and every agent has reported, emit the post-wave rollup in the same form as Phase 2.2 before computing similarity.
 
 Collect each response (the agent returns plain back-translated text inline). Compute similarity against the original source chunk:
 
@@ -246,6 +288,8 @@ For each chunk whose merged finding set (Tier-2 + Tier-3) contains at least one 
 - A one-line instruction: `re-translate the affected spans targeting these findings, preserve all structural elements, run Tier-1 verification, and emit a fresh confidence report before returning`.
 
 Emit all Phase-6 dispatches for a single iteration in a **single orchestrator message** as parallel tool calls, bounded by `MAX_PARALLEL_TRANSLATORS`. Apply the four-status protocol exactly as in Phase 2.2 (`DONE` / `DONE_WITH_CONCERNS` / `NEEDS_CONTEXT` / `BLOCKED`).
+
+For each wave of two or more re-dispatches, emit the pre-dispatch manifest and the post-wave rollup in the same form as Phase 2.2, headed `Dispatching finding-driven re-translation` with `Purpose: fix chunks with unresolved Critical findings`. Label each with the iteration and wave (for example "iteration 2, wave 1 of 2") and pass each role label as the agent's `description`.
 
 Every Phase-6 re-dispatch counts against `MAX_VERIFICATION_ATTEMPTS` for its chunk. Once a chunk hits the cap, stop re-dispatching it: keep the current translation on disk, write a `DONE_WITH_CONCERNS` entry into `<task_dir>/concerns.md` listing the unresolved findings, and let it flow into the Phase 7 summary.
 

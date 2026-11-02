@@ -56,7 +56,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 | 3   | Execution                   | `phases/checks.md` | —     |
 | 4   | Coverage & Quality Analysis | `phases/checks.md` | —     |
 | 5   | Failure Diagnosis           | `phases/checks.md` | —     |
-| 6   | Report                      | `phases/checks.md` | —     |
+| 6   | Report                      | `phases/report.md` | —     |
 
 ### Phase 0: Setup
 
@@ -74,7 +74,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 - **Phase 3 — Execution**: run all detected tools, capture results. See `phases/checks.md` → Phase 3. Set `Phase: checks_executed`.
 - **Phase 4 — Coverage & Quality Analysis**: dispatch coverage and quality reviewer agents for code in scope. See `phases/checks.md` → Phase 4. Set `Phase: analysis_complete`.
 - **Phase 5 — Failure Diagnosis**: if any Phase 3 check failed, dispatch researchers; skip if green. See `phases/checks.md` → Phase 5. Set `Phase: diagnosis_complete`.
-- **Phase 6 — Report**: compile results, write to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_test_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Set `Status: complete`, `phase_complete: true`, `what_remains: []`.
+- **Phase 6 — Report**: compile results, write to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_test_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/report.md`. Set `Status: complete`, `phase_complete: true`, `what_remains: []`.
 
 ## Common Rationalizations
 

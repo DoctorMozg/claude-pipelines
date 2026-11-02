@@ -216,7 +216,14 @@ If both **Test command** and **Lint command** are "none detected": ask the user 
 
 ### 2.2 Run baseline
 
-Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls):
+Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls). Emit the pre-dispatch manifest right before the calls, and pass each role label as the call's `description`:
+
+```
+Dispatching baseline snapshot — 2 agents in parallel
+Purpose: capture pre-optimization test and lint state
+- pipeline-test-runner — baseline test run
+- pipeline-lint-runner — baseline lint run
+```
 
 ```
 Run the baseline test suite.
@@ -231,6 +238,16 @@ lint_command: <Lint command from tooling.md, or "none detected">
 scope_files: <source files from scan.md>
 output_path: <PROJECT_ROOT>/.mz/task/<task_name>/baseline_lint_results.md
 ```
+
+When both runners have reported, emit the post-wave rollup:
+
+```
+Wave complete (baseline snapshot) — <returned>/2 agents returned
+- pipeline-test-runner: <STATUS> — <summary, ≤8 words>
+- pipeline-lint-runner: <STATUS> — <summary, ≤8 words>
+```
+
+A runner that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Read both artifacts when done. Use these results to populate the baseline.md artifact.
 

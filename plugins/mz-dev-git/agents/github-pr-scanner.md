@@ -143,6 +143,15 @@ Create the `pr_info/` directory once before dispatching.
 
 **Dispatch in parallel waves of up to 6 concurrent agents.** In a single assistant message, launch up to 6 `Agent(github-pr-info-scorer)` calls. Wait for every agent in the wave to report, then check that each artifact exists on disk before using it. Then launch the next wave.
 
+For every wave of two or more scorers, emit the pre-dispatch manifest right before the `Agent` calls, with one line per PR, and pass each role label as the call's `description`. A last wave holding a single PR is a single dispatch and needs no manifest:
+
+```
+Dispatching PR scoring wave <K> — <N> agents in parallel
+Purpose: triage-score the PRs the fetcher returned
+- github-pr-info-scorer — <owner/repo>#<number> triage score
+- github-pr-info-scorer — <owner/repo>#<number> triage score
+```
+
 For each dispatch, the prompt contains:
 
 ```
@@ -152,6 +161,15 @@ github_username: <github_username>
 output_path: .mz/task/<task_name>/pr_info/<owner>_<repo>_<number>.md
 category: <mapped category>
 ```
+
+Once every scorer of a wave has reported, failed or been stopped, emit that wave's post-wave rollup, one line per scorer:
+
+```
+Wave complete — <returned>/<dispatched> agents returned
+- github-pr-info-scorer: <STATUS> — <owner/repo>#<number>, <summary, ≤8 words>
+```
+
+A scorer that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 After every wave completes, verify each expected artifact file exists. If any is missing, re-dispatch that single PR once; if still missing, note the gap in the final report and continue.
 

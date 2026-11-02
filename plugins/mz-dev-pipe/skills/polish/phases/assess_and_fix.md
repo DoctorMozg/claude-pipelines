@@ -82,6 +82,15 @@ Only enter this phase if there are **complex** failures OR if moderate failures 
 
 ### 3.1 Codebase exploration
 
+When 3.2 also applies, the two researchers go out together as one wave. Emit the pre-dispatch manifest before spawning either one, and pass each role label as the agent's `description`:
+
+```
+Dispatching polish research — 2 agents in parallel
+Purpose: root causes and external context for failing criteria
+- pipeline-researcher — codebase exploration of failures
+- pipeline-researcher — external context research
+```
+
 Spawn a `pipeline-researcher` agent (model: **sonnet**) with:
 
 ```
@@ -122,6 +131,15 @@ Report concise, actionable findings.
 **Minimalism gate.** When proposing fix approaches above, climb the minimalism ladder: prefer deleting code or using a standard-library / native / already-installed-dependency solution over writing new custom code, and don't introduce an abstraction a single fix doesn't yet need. For a non-trivial fix, web-validate the approach before writing it. Code health — validation, error handling, security, tests — is exempt. See `<PLUGIN_ROOT>/shared/minimalism.md`.
 
 ### 3.3 Save research
+
+When both researchers ran, emit the post-wave rollup once both have reported:
+
+```
+Wave complete (polish research) — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Write findings to `<PROJECT_ROOT>/.mz/task/<task_name>/research.md`.
 Update state phase to `researched`.

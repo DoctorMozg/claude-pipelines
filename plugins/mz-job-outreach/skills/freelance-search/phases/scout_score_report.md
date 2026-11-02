@@ -9,6 +9,15 @@ Read `<RUN_DIR>/sources.json`. Split into two lists:
 
 Set per-source cap: `ceil(limit / scrape_source_count)`, minimum 5, maximum 12.
 
+Before each wave of two or more scouts, emit the pre-dispatch manifest. When the sources need several waves, number them (for example "wave 2 of 3") and pass each role label as the agent's `description`:
+
+```
+Dispatching freelance scouts, wave <w> of <K> — <N> agents in parallel
+Purpose: extract gig listings from <N> sources
+- freelance-scout — <source name>
+- freelance-scout — <source name>
+```
+
 Dispatch one `freelance-scout` per `scrape_sources` entry in parallel waves of up to 6 concurrent agents:
 
 ```
@@ -41,6 +50,15 @@ expansion details.
 
 Wait for all scouts to complete. Append `Errors:` bullets in `state.md` for any non-DONE statuses.
 
+Once every scout of a wave has reported, emit the post-wave rollup before the next wave:
+
+```
+Wave complete (wave <w> of <K>) — <returned>/<dispatched> agents returned
+- freelance-scout (<source name>): <STATUS> — <summary, ≤8 words>
+```
+
+A scout that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
+
 Update `state.md` `Phase` to `scouts_complete`.
 
 ______________________________________________________________________
@@ -64,6 +82,15 @@ ______________________________________________________________________
 
 ## Phase 4.5: Cheap pre-score (LLM 0/1/2)
 
+Before each wave of two or more prescorers, emit the pre-dispatch manifest, numbered and with role labels passed as `description` as in Phase 3:
+
+```
+Dispatching gig pre-scoring, wave <w> of <K> — <N> agents in parallel
+Purpose: rate gigs for must-have skill presence
+- job-prescorer — pre-score gig <gig_slug>
+- job-prescorer — pre-score gig <gig_slug>
+```
+
 Dispatch `job-prescorer` (reused as-is, format-agnostic skill matcher) in parallel waves of 6:
 
 ```
@@ -78,6 +105,8 @@ synonym_clusters. Emit 0 (no must-haves found), 1 (some must-haves), or 2
 (all must-haves found).
 ```
 
+Once every prescorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `job-prescorer (<gig_slug>)` line per agent.
+
 Keep only gigs with prescore ≥ 1. Drop the rest into `scored_excluded.json` with `excluded_reason: "prescore_below_threshold"`.
 
 Update `state.md` `Phase` to `prescore_complete`.
@@ -85,6 +114,15 @@ Update `state.md` `Phase` to `prescore_complete`.
 ______________________________________________________________________
 
 ## Phase 5: Full score & rank
+
+Before each wave of two or more scorers, emit the pre-dispatch manifest, numbered and with role labels passed as `description` as in Phase 3:
+
+```
+Dispatching gig scoring, wave <w> of <K> — <N> agents in parallel
+Purpose: score prescore-survivor gigs against the strategy
+- freelance-scorer — score gig <gig_slug>
+- freelance-scorer — score gig <gig_slug>
+```
 
 Dispatch `freelance-scorer` in parallel waves of 6 over the prescore-survivors:
 
@@ -99,6 +137,8 @@ Apply hard gate (missing must-have = score 0). Score seven axes per
 strategy.scoring_weights. Compare budget_fit in the gig's native rate
 format; surface conversion math verbatim in score_reason.
 ```
+
+Once every scorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `freelance-scorer (<gig_slug>)` line per agent.
 
 After all scorers complete, read `<RUN_DIR>/scored.json`, sort by `score` descending, take top-`limit` entries, and write the sorted array back.
 

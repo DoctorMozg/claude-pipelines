@@ -110,6 +110,17 @@ If **domain research needed**: proceed to Phase 2.
 
 **Early parallel dispatch**: If the hypothesis obviously involves external dependencies (clear from the hypothesis text itself — e.g., "OAuth", "gRPC deadline", "Redis WATCH"), dispatch Phase 1 and Phase 2 researchers in parallel. Otherwise, run sequentially.
 
+In the parallel case the codebase researcher and the domain researchers form one wave. Emit the pre-dispatch manifest before launching them, pass each role label as the agent's `description`, and skip the separate Phase 2.2 manifest:
+
+```
+Dispatching early parallel research — <N> agents in parallel
+Purpose: assess hypothesis "<hypothesis, trimmed>"
+- pipeline-researcher — codebase evidence for hypothesis
+- pipeline-researcher — <domain topic, ≤6 words>
+```
+
+When all of them have reported, emit the post-wave rollup in the same form as Phase 2.3, labeled `early parallel research`.
+
 Update state phase to `analyzed`.
 
 ______________________________________________________________________
@@ -164,9 +175,25 @@ Use WebSearch and WebFetch to find:
 - Confidence: high (docs are clear) / medium (inferred from examples) / low (ambiguous or undocumented)
 ```
 
-If dispatching multiple researchers, send them in a **single message** as parallel tool calls.
+If dispatching multiple researchers, send them in a **single message** as parallel tool calls. Emit the pre-dispatch manifest before the Agent calls and pass each role label as the agent's `description`:
+
+```
+Dispatching domain research — <N> agents in parallel
+Purpose: external context for hypothesis "<hypothesis, trimmed>"
+- pipeline-researcher — <topic, ≤6 words>
+- pipeline-researcher — <topic, ≤6 words>
+```
 
 ### 2.3 Merge domain findings
+
+When two or more researchers were dispatched, emit the post-wave rollup once all of them have reported, before merging:
+
+```
+Wave complete (domain research) — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Save to `<PROJECT_ROOT>/.mz/task/<task_name>/domain_research.md`:
 

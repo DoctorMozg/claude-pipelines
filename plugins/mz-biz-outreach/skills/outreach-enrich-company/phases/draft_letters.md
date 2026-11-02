@@ -120,6 +120,15 @@ This wave calibrates each letter to how the recipient prefers to be addressed, u
 
 For each brief whose `chosen_channel` is not `skip` (dedupe by contact — one profile per person even when both an email and a DM brief exist), dispatch one `outreach-personality-profiler`. Dispatch in parallel waves of at most 6 concurrent agents per wave; up to 5 contacts fit in one wave. Wait for every agent in the wave to report, then check that each profile exists on disk before using it.
 
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`. Skip both blocks when only one profiler is dispatched:
+
+```
+Dispatching reader-style profiling — <N> agents in parallel
+Purpose: profile each contact's communication style for letter calibration
+- outreach-personality-profiler — style profile, contact <n>
+- outreach-personality-profiler — style profile, contact <n>
+```
+
 Output path per contact: `<PROJECT_ROOT>/.mz/task/<task_name>/profiles/<contact_slug>.json`.
 
 Dispatch prompt (`subagent_type: outreach-personality-profiler`):
@@ -144,6 +153,15 @@ angle leads - never naming or alluding to the trait, never touching the salutati
 sign-off, or voice register. At most 3 web calls. Professional signal only.
 ```
 
+Once every profiler has reported, failed or been stopped, emit the post-wave rollup before merging any profile:
+
+```
+Wave complete (reader-style profiling) — <returned>/<dispatched> agents returned
+- outreach-personality-profiler: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
+
 After each profiler returns: read its `profiles/<contact_slug>.json` and merge `social_style`, `role_priorities`, `confidence`, `calibration_directive`, and `evidence` into the `reader_style` block of every brief for that contact (both channels if two exist). On `BLOCKED` / `NEEDS_CONTEXT`, leave that contact's `reader_style` as the null placeholder (the letter falls back to neutral structure) and record `profile_failed: <contact_slug>` in `state.md` — do not auto-retry, do not block the run.
 
 Update `state.md`: append a `Profiles` list (one path per profiled contact with its `social_style`/`confidence` or `fallback:role_priorities`), and record `ProfilesFootprint` (count with a citable style) and `ProfilesRolePriority` (count that fell back).
@@ -153,6 +171,15 @@ Update `state.md`: append a `Profiles` list (one path per profiled contact with 
 Read every brief file under `<PROJECT_ROOT>/.mz/task/<task_name>/briefs/`. For each brief whose `chosen_channel` is not `skip`, dispatch one `expert-copywriter` agent. Dispatch in parallel waves of at most 6 concurrent agents per wave. Wait for every agent in the wave to report, then check that each draft exists on disk before using it. Start the next wave only after that.
 
 Per-brief output path: `<PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md` (use `<channel>_<contact_slug>` from the brief filename).
+
+Emit the pre-dispatch manifest right before each wave, and pass each role label as the agent's `description`. Skip both blocks for a wave of one agent:
+
+```
+Dispatching letter drafting, wave <k> — <N> agents in parallel
+Purpose: draft one cold outreach letter per contact and channel
+- expert-copywriter — email draft, contact <n>
+- expert-copywriter — LinkedIn DM draft, contact <n>
+```
 
 ### 3.2 Channel rules table
 
@@ -249,6 +276,15 @@ Open questions / gaps: if brief.personalization_hooks contains zero items
 The brief file already carries `channel_format_rules` (a verbatim copy of the channel rules row); the dispatch above also embeds the rules to be safe.
 
 ### 3.4 Validate each draft
+
+Once every agent of a wave has reported, failed or been stopped, emit that wave's post-wave rollup before validating:
+
+```
+Wave complete (letter drafting, wave <k>) — <returned>/<dispatched> agents returned
+- expert-copywriter: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 After every agent in a wave returns:
 

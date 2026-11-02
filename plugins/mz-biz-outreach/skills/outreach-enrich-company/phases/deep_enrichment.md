@@ -37,6 +37,18 @@ Dispatch all five subagents in **one parallel wave** via the Agent tool. The cap
 | `outreach-scanner`        | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/reputation.json` | `scanner`               |
 | `outreach-contact-finder` | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/contacts.json`   | `contacts`              |
 
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching deep enrichment — 5 agents in parallel
+Purpose: fill gaps in the card's company dossier
+- outreach-news-finder — recent news gap-fill
+- outreach-tech-analyst — technology profile gap-fill
+- outreach-growth-analyst — growth signals gap-fill
+- outreach-scanner — reputation and reviews gap-fill
+- outreach-contact-finder — additional contacts and activity
+```
+
 ## 2.3 Dispatch template (one Agent call per subagent, all 5 sent in a single message)
 
 Use `subagent_type: <agent name>`. Dispatch prompt skeleton (adapt the per-agent verbs and the existing-findings slice):
@@ -157,6 +169,15 @@ Paste only the matching block into each agent's dispatch.
 ```
 
 ## 2.4 Validate each subagent result
+
+Once all five agents have reported, failed or been stopped, emit the post-wave rollup before validating:
+
+```
+Wave complete — <returned>/5 agents returned
+- <agent>: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 After the wave returns, for each of the five outputs:
 

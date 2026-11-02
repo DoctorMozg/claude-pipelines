@@ -18,6 +18,15 @@ ______________________________________________________________________
 
 **Goal**: One last validation pass over all code (implementation + tests) together.
 
+This phase dispatches two agents in one message: the final reviewer and the over-engineering lens described below. Emit the pre-dispatch manifest before launching them, and pass each role label as the agent's `description`:
+
+```
+Dispatching final review — 2 agents in parallel
+Purpose: last correctness pass and over-engineering check over all changes
+- pipeline-code-reviewer — final review of all changes
+- code-lens-over-engineering — over-engineering check of the diff
+```
+
 Spawn a `pipeline-code-reviewer` agent (model: **opus**) with:
 
 ```
@@ -41,6 +50,16 @@ Output:
 - **VERDICT**: PASS or FAIL
 - **Issues** (if FAIL): numbered list with file:line references
 ```
+
+When both agents have reported, failed or been stopped, emit the post-wave rollup before acting on the verdict:
+
+```
+Wave complete (final review) — <returned>/<dispatched> agents returned
+- pipeline-code-reviewer: <VERDICT> — <summary, ≤8 words>
+- code-lens-over-engineering: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 **If FAIL**: Spawn `pipeline-coder` agent(s) to fix issues, then re-run linters and tests (Phase 8.2-8.4), then re-do this final review. Max 2 retries before escalating. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
@@ -104,6 +123,25 @@ Save report to `<PROJECT_ROOT>/.mz/task/<task_name>/optimization.md`.
 ### 10.2 Verify after refactor
 
 Re-dispatch `pipeline-lint-runner` and `pipeline-test-runner` (the full suite) in parallel, as in Phase 8.2-8.4, to ensure the refactor didn't break anything.
+
+Emit the pre-dispatch manifest before launching the pair, and pass each role label as the agent's `description`:
+
+```
+Dispatching post-refactor checks — 2 agents in parallel
+Purpose: confirm lint and the full suite stay green after the refactor
+- pipeline-lint-runner — lint and format check
+- pipeline-test-runner — full test suite run
+```
+
+Once both have reported, failed or been stopped, emit the post-wave rollup before acting on the results:
+
+```
+Wave complete (post-refactor checks) — <returned>/<dispatched> agents returned
+- pipeline-lint-runner: <STATUS> — <summary, ≤8 words>
+- pipeline-test-runner: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 **If any test regressed**: identify which refactor change caused the regression from the report, revert that specific change, and re-run checks. The green bar wins; the refactor loses.
 

@@ -50,14 +50,14 @@ For **every** wave (including a lone wave of one or more), follow this loop. The
 **Pre-dispatch manifest** — emit immediately before launching the wave:
 
 ```
-Dispatching gov-audit review — wave <w>/<K>, <n> agents in parallel
+Dispatching gov-audit review, wave <w> of <K> — <n> agents in parallel
 Purpose: score each artifact against the 6-axis governance rubric
 - gov-audit-reviewer — <artifact filename>
 - gov-audit-reviewer — <artifact filename>
 ...
 ```
 
-Use the artifact's filename (not its absolute path) as the role label — paths must not appear in the manifest.
+Use the artifact's filename (not its absolute path) as the role label — paths must not appear in the manifest. Pass the same label as each `Agent` call's `description`.
 
 **Launch the wave**: in a **single message**, issue one `Agent(gov-audit-reviewer)` call per artifact in the wave (parallel tool calls). Each dispatch prompt carries only task-specific context — the agent already owns its process, rubric-loading discipline, severity rules, and output format:
 
@@ -76,7 +76,7 @@ One artifact path per dispatch — never hand a reviewer a directory or more tha
 **Post-wave rollup** — emit once every agent in the wave has returned, before launching the next wave:
 
 ```
-Wave <w>/<K> complete — <returned>/<dispatched> agents returned
+Wave complete (wave <w> of <K>) — <returned>/<dispatched> agents returned
 - <artifact filename>: <VERDICT or STATUS> — <≤8-word summary of the worst finding>
 ```
 

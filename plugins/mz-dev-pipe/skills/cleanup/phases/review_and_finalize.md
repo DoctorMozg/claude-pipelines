@@ -28,6 +28,15 @@ ______________________________________________________________________
 
 Spawn M = N `pipeline-code-reviewer` agents (model: **opus**) in a **single message** using parallel tool calls. One reviewer per chunk (1:1 mirror with optimizers).
 
+When M is 2 or more, emit the pre-dispatch manifest right before the Agent calls, and pass each role label as the call's `description`:
+
+```
+Dispatching chunk review (iteration <iteration>) — <M> agents in parallel
+Purpose: verify behavior preservation per chunk
+- pipeline-code-reviewer — chunk <k>: <files, ≤6 words>
+- pipeline-code-reviewer — chunk <k>: <files, ≤6 words>
+```
+
 Each reviewer's prompt:
 
 ```
@@ -63,6 +72,15 @@ Output:
 **Important**: reviewers only run for chunks that were optimized in the current iteration. Previously-approved chunks are frozen and not re-reviewed.
 
 ### 5.2 Collect verdicts
+
+When every reviewer has reported, failed or been stopped, emit the post-wave rollup before merging:
+
+```
+Wave complete (chunk review, iteration <iteration>) — <returned>/<dispatched> agents returned
+- pipeline-code-reviewer: <VERDICT> — chunk <k>: <summary, ≤8 words>
+```
+
+A reviewer that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 After all reviewers complete, merge their verdicts into `<PROJECT_ROOT>/.mz/task/<task_name>/review_<iteration>.md`:
 
@@ -176,6 +194,25 @@ ______________________________________________________________________
 ### 7.1 Final verification
 
 Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel one last time to confirm the final state is still green after the last iteration. If any regression appears at this stage (should not, since Phase 4 ran per iteration), treat it as an escalation — do not try to auto-fix it here; ask the user.
+
+Emit the pre-dispatch manifest right before the two Agent calls, passing each role label as the call's `description`:
+
+```
+Dispatching final verification — 2 agents in parallel
+Purpose: confirm tests and lint are still green
+- pipeline-test-runner — final test run
+- pipeline-lint-runner — final lint run
+```
+
+When both runners have reported, emit the post-wave rollup before judging the result:
+
+```
+Wave complete (final verification) — <returned>/2 agents returned
+- pipeline-test-runner: <STATUS> — <summary, ≤8 words>
+- pipeline-lint-runner: <STATUS> — <summary, ≤8 words>
+```
+
+A runner that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 ### 7.2 Write summary
 

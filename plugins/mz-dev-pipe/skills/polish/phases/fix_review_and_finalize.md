@@ -102,6 +102,24 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/research.md if it exists for root cause
 Focus on making the criteria pass. Nothing more.
 ```
 
+In the multiple-failure case the coders form one wave. Emit the pre-dispatch manifest before spawning them, and pass each role label as the agent's `description`:
+
+```
+Dispatching fix coders — <N> agents in parallel
+Purpose: fix failing criteria, one file group per agent
+- pipeline-coder — <file group, ≤6 words>
+- pipeline-coder — <file group, ≤6 words>
+```
+
+When all of them have reported, emit the post-wave rollup before verifying:
+
+```
+Wave complete (fix coders) — <returned>/<dispatched> agents returned
+- pipeline-coder: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
+
 ### 4.3 Verify
 
 Re-run all criterion checks (not just the ones you tried to fix — fixes can cause regressions).
@@ -150,7 +168,7 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/review_<iteration>.md`.
 
 **If review FAIL**:
 
-- Spawn `pipeline-coder` agent(s) to fix review issues. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
+- Spawn `pipeline-coder` agent(s) to fix review issues. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. When more than one coder is spawned together, emit the manifest and rollup in the same form as 4.2, labeled `review-fix coders`.
 - Check the coder's terminal STATUS before proceeding:
   - **BLOCKED** → escalate to user immediately via AskUserQuestion. Do not increment the review-retry counter.
   - **NEEDS_CONTEXT** → re-dispatch the coder once with the requested context. Do not increment the counter until the re-dispatch returns DONE or DONE_WITH_CONCERNS.
@@ -216,6 +234,15 @@ Re-run all criterion checks to ensure optimization didn't break anything.
 
 ### 5.3 Review optimization
 
+The reviewer and the over-engineering lens (the simplification pass below) go out together as one wave. Emit the pre-dispatch manifest before spawning them, and pass each role label as the agent's `description`:
+
+```
+Dispatching optimization review — 2 agents in parallel
+Purpose: review optimization changes and scan for over-engineering
+- pipeline-code-reviewer — behavior-preservation review of optimizations
+- code-lens-over-engineering — over-engineering scan of diff
+```
+
 Spawn a `pipeline-code-reviewer` agent (use the agent's declared default model) with:
 
 ```
@@ -231,6 +258,16 @@ Read all modified files. Check each removal against grep results.
 
 VERDICT: PASS | FAIL
 ```
+
+Once the reviewer and the lens below have both reported, emit the post-wave rollup before acting on the verdict. The reviewer's line shows its VERDICT in place of STATUS:
+
+```
+Wave complete (optimization review) — <returned>/<dispatched> agents returned
+- pipeline-code-reviewer: <VERDICT> — <summary, ≤8 words>
+- code-lens-over-engineering: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 **If FAIL**: Spawn `pipeline-coder` to fix issues, re-run checks, re-review. Max 2 retries.
 

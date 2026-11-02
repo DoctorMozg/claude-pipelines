@@ -1,7 +1,8 @@
 import re
 from pathlib import Path
 
-from .conftest import PLUGINS_DIR, PluginFile, assert_no_violations, split_fences
+from .conftest import PLUGINS_DIR, REPO_ROOT, PluginFile, assert_no_violations, split_fences
+from .dispatch_scan import AGENT_NAME
 
 ROOTED_PATH = re.compile(
     r"(?P<root><SKILL_DIR>|\$\{CLAUDE_SKILL_DIR\}|<PLUGIN_ROOT>|\$\{CLAUDE_PLUGIN_ROOT\})"
@@ -19,12 +20,45 @@ NOT_EMPHASIS = re.compile(
 )
 
 
+MANIFEST_LINE = re.compile(r"^\s*Dispatching .* in parallel\s*$", re.MULTILINE)
+MANIFEST = re.compile(r"Dispatching [^—\n]+ — (?:\d+|<[^>]+>) agents in parallel")
+ROLLUP_LINE = re.compile(r"^\s*Wave complete.*$", re.MULTILINE)
+ROLLUP = re.compile(r"Wave complete(?: \([^()\n]+\))? — <returned>/(?:\d+|<[^>]+>) agents returned")
+_PARALLEL = r"(?:in parallel|single message|parallel tool calls)"
+PARALLEL_DISPATCH = re.compile(
+    rf"\b(?:[Dd]ispatch|[Ss]pawn|[Ll]aunch)\w*\b[^\n]*`{AGENT_NAME}`[^\n]*{_PARALLEL}"
+    rf"|{_PARALLEL}[^\n]*`{AGENT_NAME}`"
+)
+# Skills whose parallel wording isn't a wave: one agent beside inline work, or a quoted shortcut.
+NOT_A_WAVE = {
+    "plugins/mz-knowledge/skills/vault-review": "moc-gap-detector runs alone beside inline scoring",
+    "plugins/mz-knowledge/skills/vault-research": "the wording quotes a rationalization it rejects",
+}
+
+
 def _body_lines(text: str) -> list[tuple[int, str]]:
     """Numbered lines after the frontmatter."""
     head = FRONTMATTER.match(text)
     offset = head.end() if head else 0
     first = text[:offset].count("\n") + 1
     return list(enumerate(text[offset:].splitlines(), start=first))
+
+
+def _wave_units(files: tuple[PluginFile, ...]) -> dict[str, str]:
+    """Text per skill directory or per other file, since a SKILL.md may leave waves to phases."""
+    units: dict[str, list[str]] = {}
+    for source in files:
+        key = source.skill_dir or source.path
+        units.setdefault(key.relative_to(REPO_ROOT).as_posix(), []).append(source.text)
+    return {key: "\n".join(texts) for key, texts in units.items()}
+
+
+def _has_manifest(text: str) -> bool:
+    return bool(MANIFEST_LINE.search(text)) or "pre-dispatch manifest" in text
+
+
+def _has_rollup(text: str) -> bool:
+    return bool(ROLLUP_LINE.search(text)) or "post-wave rollup" in text
 
 
 def _inside(target: Path, root: Path) -> bool:
@@ -104,3 +138,40 @@ class TestMarkdown:
             if (match := EMPHASIS.search(NOT_EMPHASIS.sub("", line)))
         ]
         assert_no_violations(violations)
+
+
+class TestWaves:
+    def test_wave_headers_follow_the_form(self, plugin_files: tuple[PluginFile, ...]) -> None:
+        violations = [
+            f"{source.relative}: {match[0].strip()!r} doesn't follow the {form.pattern!r} form"
+            for source in plugin_files
+            for line, form in ((MANIFEST_LINE, MANIFEST), (ROLLUP_LINE, ROLLUP))
+            for match in line.finditer(source.text)
+            if not form.fullmatch(match[0].strip())
+        ]
+        assert_no_violations(violations)
+
+    def test_manifest_and_rollup_come_in_pairs(self, plugin_files: tuple[PluginFile, ...]) -> None:
+        violations = [
+            f"{unit}: has a {'manifest' if _has_manifest(text) else 'rollup'} but not the other"
+            for unit, text in _wave_units(plugin_files).items()
+            if _has_manifest(text) != _has_rollup(text)
+        ]
+        assert_no_violations(violations)
+
+    def test_parallel_dispatch_has_a_manifest(self, plugin_files: tuple[PluginFile, ...]) -> None:
+        violations = [
+            f"{unit}: dispatches agents in parallel without a pre-dispatch manifest"
+            for unit, text in _wave_units(plugin_files).items()
+            if unit not in NOT_A_WAVE and PARALLEL_DISPATCH.search(text) and not _has_manifest(text)
+        ]
+        assert_no_violations(violations)
+
+    def test_not_a_wave_exemptions_are_current(self, plugin_files: tuple[PluginFile, ...]) -> None:
+        units = _wave_units(plugin_files)
+        stale = sorted(
+            unit
+            for unit in NOT_A_WAVE
+            if unit not in units or not PARALLEL_DISPATCH.search(units[unit])
+        )
+        assert not stale, f"exempt units no longer match the parallel pattern: {stale}"

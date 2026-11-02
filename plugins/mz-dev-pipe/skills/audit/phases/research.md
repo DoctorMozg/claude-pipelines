@@ -185,7 +185,17 @@ ______________________________________________________________________
 
 ### 2.1 Dispatch researchers
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per lens researcher with its role — so the wave is visible to the user.
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`. List one bullet per selected lens:
+
+```
+Dispatching multi-lens audit research — <N> agents in parallel
+Purpose: locate candidate problems in the audit scope
+- pipeline-researcher — correctness lens scan
+- pipeline-researcher — security lens scan
+- pipeline-researcher — performance lens scan
+- pipeline-researcher — maintainability lens scan
+- pipeline-researcher — reliability lens scan
+```
 
 Spawn N `pipeline-researcher` agents (model: **sonnet**) in a **single message** using parallel tool calls — one per selected lens. Each researcher reads `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md` for the file list, severity/confidence scales, and output format.
 
@@ -314,7 +324,14 @@ Return findings as markdown in your response — the orchestrator persists to `<
 
 Each dispatched `pipeline-researcher` is read-only and returns its findings in its response text. After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to the corresponding `findings_<lens>.md` artifact using the Write tool. One Write call per lens, in a single message if the responses are available simultaneously.
 
-When the wave returns, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before consolidation. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every researcher has reported, failed or been stopped, emit the post-wave rollup before consolidation, one bullet per lens researcher:
+
+```
+Wave complete — <returned>/<dispatched> agents returned
+- pipeline-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Mapping:
 

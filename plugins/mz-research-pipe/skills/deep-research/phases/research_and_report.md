@@ -28,7 +28,14 @@ Output format:
 - End with "Gaps" — what you could not find or verify.
 ```
 
-Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its subtopic — so the wave is visible to the user.
+Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+
+```
+Dispatching deep research — <N> agents in parallel
+Purpose: research "<original topic, trimmed>" across its subtopics
+- pipeline-web-researcher — <subtopic, ≤6 words>
+- pipeline-web-researcher — <subtopic, ≤6 words>
+```
 
 Launch all pipeline-web-researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
 
@@ -36,7 +43,15 @@ Launch all pipeline-web-researcher agents in a single message using parallel too
 
 After all agents complete:
 
-Emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before synthesizing. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
+Once every agent has reported, failed or been stopped, emit the post-wave rollup before synthesizing:
+
+```
+Wave complete — <returned>/<dispatched> agents returned
+- pipeline-web-researcher: <STATUS> — <summary, ≤8 words>
+- pipeline-web-researcher: <STATUS> — <summary, ≤8 words>
+```
+
+A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count, and counts as not-returned.
 
 1. **Read all agent outputs** carefully.
 1. **Cross-reference between subtopics** — identify findings that appear in multiple agents' results (higher confidence) and contradictions between them.

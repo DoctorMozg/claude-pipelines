@@ -48,6 +48,15 @@ For each company JSON file, one company at a time:
 1. Read the company JSON
 1. Derive the slug from the `slug` field in the JSON
 1. Create the company's temp directory: `mkdir -p <temp_dir>/<slug>`
+1. Emit the pre-dispatch manifest for this company's wave and pass each role label as the agent's `description`:
+   ```
+   Dispatching enrichment for company <n>/<total> — 4 agents in parallel
+   Purpose: gather contacts, news, growth and tech signals
+   - outreach-contact-finder — decision-maker contacts
+   - outreach-news-finder — recent news and press
+   - outreach-growth-analyst — growth signals
+   - outreach-tech-analyst — technology profile
+   ```
 1. Spawn **4 agents in parallel** (single message, 4 tool calls):
 
 **`outreach-contact-finder`**:
@@ -85,6 +94,18 @@ Write results to: <temp_dir>/<slug>/tech.json
 ```
 
 5. Wait for all 4 agents to complete
+
+Once all 4 agents have reported, failed or been stopped, emit the post-wave rollup before merging:
+
+```
+Wave complete (enrichment for company <n>/<total>) — <returned>/4 agents returned
+- outreach-contact-finder: <STATUS> — <summary, ≤8 words>
+- outreach-news-finder: <STATUS> — <summary, ≤8 words>
+- outreach-growth-analyst: <STATUS> — <summary, ≤8 words>
+- outreach-tech-analyst: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `<agent>: NO RETURN BLOCK` and counted as not returned.
 
 ### Step 3: Merge Results Into Company JSON
 

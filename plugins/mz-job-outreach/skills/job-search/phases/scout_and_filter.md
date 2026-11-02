@@ -8,6 +8,15 @@
 
 Spawn one `job-scout` per source from `sources.json`, in parallel **waves of ≤MAX_SCOUTS_PER_WAVE (6) concurrent agents per single assistant message**. If `sources.json` contains more than 6 sources, dispatch in sequential waves until every source has been scouted. Scouts are writer agents (they write `<RUN_DIR>/_scout/<source_slug>.json`). Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
+Before each wave of two or more scouts, emit the pre-dispatch manifest. When there are several waves, number them (for example "wave 2 of 3") and pass each role label as the agent's `description`:
+
+```
+Dispatching job scouts, wave <w> of <K> — <N> agents in parallel
+Purpose: scrape job listings from <N> sources
+- job-scout — <source name>
+- job-scout — <source name>
+```
+
 Per-source dispatch prompt:
 
 ```
@@ -34,6 +43,15 @@ If the source returns zero results for every query, run a smoke test
 the smoke test also returns nothing; ZERO RESULTS UNVERIFIED if the
 smoke test was blocked; never emit a silent empty.
 ```
+
+Once every scout of a wave has reported, emit the post-wave rollup before the next wave:
+
+```
+Wave complete (wave <w> of <K>) — <returned>/<dispatched> agents returned
+- job-scout (<source name>): <STATUS> — <summary, ≤8 words>
+```
+
+A scout that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 ### 3.2 Wait and validate
 
@@ -221,6 +239,15 @@ Write each batch to `_prescore_batches/batch_<i>.json` (one array of listing obj
 
 Spawn `job-prescorer` agents in parallel waves of ≤6 concurrent agents per assistant message. Prescorers are writer agents (they write `_prescore_batches/batch_<i>_rated.json`). Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
+Before each wave of two or more prescorers, emit the pre-dispatch manifest, numbered and with role labels passed as `description` as in Phase 3:
+
+```
+Dispatching job pre-scoring, wave <w> of <K> — <N> agents in parallel
+Purpose: rate listings against the CV's must-have skills
+- job-prescorer — batch <i> of <batch_count>
+- job-prescorer — batch <i> of <batch_count>
+```
+
 Per-batch dispatch prompt:
 
 ```
@@ -242,6 +269,8 @@ Emit one record per input listing with url, rating, matched_must_haves,
 matched_or_groups, and a one-phrase reason (≤ 12 words). Recall-biased —
 when uncertain, rate 1 not 0.
 ```
+
+Once every prescorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `job-prescorer (batch <i>)` line per agent.
 
 ### 4.5.3 Merge and filter
 

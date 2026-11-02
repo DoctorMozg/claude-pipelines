@@ -120,6 +120,19 @@ Before any web query, detect the project stack from manifests (`package.json`, `
 
 Dispatch all 6 code-lens agents in a **single assistant message** as parallel tool-use blocks. Do not await one before dispatching the next.
 
+Emit the pre-dispatch manifest right before the `Agent` calls, and pass each role label as the call's `description`:
+
+```
+Dispatching Wave A code lenses — 6 agents in parallel
+Purpose: context-aware lens review of the branch diff
+- code-lens-bugs — bugs and correctness
+- code-lens-security — security and privacy
+- code-lens-architecture — architecture and design
+- code-lens-performance — performance and efficiency
+- code-lens-maintainability — maintainability and code quality
+- code-lens-over-engineering — over-engineering and speculative generality
+```
+
 For each lens, pass this dispatch prompt (task-specific context only — each lens file contains its own process and format):
 
 ```
@@ -153,6 +166,20 @@ Return STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED and the one-l
 ```
 
 **Wave size**: 6 in a single wave — at the 6-agent concurrency cap, still a single wave. The lens workload is a read-only scan (light weight).
+
+Once every lens has reported, failed or been stopped, and before Phase 3.5, emit the post-wave rollup:
+
+```
+Wave complete (Wave A code lenses) — <returned>/6 agents returned
+- code-lens-bugs: <STATUS> — <summary, ≤8 words>
+- code-lens-security: <STATUS> — <summary, ≤8 words>
+- code-lens-architecture: <STATUS> — <summary, ≤8 words>
+- code-lens-performance: <STATUS> — <summary, ≤8 words>
+- code-lens-maintainability: <STATUS> — <summary, ≤8 words>
+- code-lens-over-engineering: <STATUS> — <summary, ≤8 words>
+```
+
+A lens that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned. The rollup ratio counts valid `STATUS:` returns, while the thresholds below count only `DONE` and `DONE_WITH_CONCERNS`.
 
 **Partial-completion contract**:
 
@@ -207,6 +234,16 @@ The three-dot form diffs from the merge base, so commits that landed on the base
 
 In a SINGLE new assistant message, dispatch all three `pipeline-researcher` agents in parallel tool-use blocks. For each role, the agent's prompt is the role's extracted block from `blinded_lenses.md` with the literal placeholder `<raw diff output>` replaced by the captured diff (still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template). Do not add scope, the Known Concerns Map, Wave A findings, or any consolidated artifact — those would defeat the blind.
 
+Emit the pre-dispatch manifest right before the `Agent` calls, and pass each role label as the call's `description`:
+
+```
+Dispatching Wave B blind audit — 3 agents in parallel
+Purpose: diff-only adversarial audit of the same branch
+- pipeline-researcher — blinded production review
+- pipeline-researcher — blinded security review
+- pipeline-researcher — blinded ops review
+```
+
 After Wave B returns, write each researcher's response to:
 
 | Researcher           | Artifact                                                           |
@@ -216,6 +253,17 @@ After Wave B returns, write each researcher's response to:
 | `blinded_ops`        | `$ARTIFACT_ROOT/.mz/task/<task_name>/phase3_blinded_ops.md`        |
 
 #### 3.6.4 Wave B partial-completion contract
+
+Once all three researchers have reported, failed or been stopped, emit the post-wave rollup before Phase 3.7:
+
+```
+Wave complete (Wave B blind audit) — <returned>/3 agents returned
+- pipeline-researcher (blinded_production): <STATUS> — <summary, ≤8 words>
+- pipeline-researcher (blinded_security): <STATUS> — <summary, ≤8 words>
+- pipeline-researcher (blinded_ops): <STATUS> — <summary, ≤8 words>
+```
+
+A researcher that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 - 3 of 3 returned → proceed to Phase 3.7 with `wave_b_completed: 3/3`, `blind_audit: full`.
 - 2 of 3 returned → proceed with `wave_b_completed: 2/3`, `blind_audit: partial`.

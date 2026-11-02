@@ -30,6 +30,17 @@ loop:
 
 Spawn **four agents in one message** (single tool-use block with four Agent calls):
 
+Emit the pre-dispatch manifest right before the `Agent` calls on every iteration, and pass each role label as the call's `description`:
+
+```
+Dispatching design critics, iteration <N> — 4 agents in parallel
+Purpose: critique the design draft from four specialist lenses
+- ui-designer — layout and visual hierarchy
+- ux-designer — flows and usability heuristics
+- art-designer — color, type, and mood
+- accessibility-specialist — WCAG contrast and accessibility
+```
+
 ### ui-designer
 
 Model: **opus**. Prompt:
@@ -138,6 +149,18 @@ Write to <PROJECT_ROOT>/.mz/design/<task_name>/iter_<N>_accessibility-specialist
 All four critics are fully independent — they must be dispatched as **one message with four parallel Agent tool calls**, not sequentially.
 
 ## Step 3.2 — Synthesize
+
+Once all four critics have reported, failed or been stopped, emit the post-wave rollup before dispatching the synthesizer:
+
+```
+Wave complete (design critics, iteration <N>) — <returned>/4 agents returned
+- ui-designer: <VERDICT> — <summary, ≤8 words>
+- ux-designer: <VERDICT> — <summary, ≤8 words>
+- art-designer: <VERDICT> — <summary, ≤8 words>
+- accessibility-specialist: <VERDICT>, WCAG_GATE <PASS|FAIL> — <summary, ≤8 words>
+```
+
+Critics end with a `VERDICT:` line instead of `STATUS:`, so a critic that returns no `VERDICT:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 Once all four critics return, spawn `design-critique-synthesizer` (model: **sonnet**):
 

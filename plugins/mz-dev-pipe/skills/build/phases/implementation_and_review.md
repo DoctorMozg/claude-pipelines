@@ -41,6 +41,15 @@ For each wave, spawn **one agent per work unit** in parallel.
 
 Use `pipeline-coder` agent type for all work units. Model: **opus** for all coders.
 
+Before each wave with two or more work units, emit the pre-dispatch manifest with one line per coder, and pass each role label as the agent's `description`. A wave with a single work unit is a single dispatch and needs neither manifest nor rollup.
+
+```
+Dispatching implementation wave <W> — <N> agents in parallel
+Purpose: make the failing tests of the wave <W> work units pass
+- pipeline-coder — <work unit, ≤6 words>
+- pipeline-coder — <work unit, ≤6 words>
+```
+
 Each coder agent prompt:
 
 ```
@@ -79,6 +88,15 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/red_run.md for the current failure outp
 
 Be precise. Don't add features not in the plan. Don't refactor unrelated code.
 ```
+
+When every coder of the wave has reported, failed or been stopped, emit the post-wave rollup before updating state:
+
+```
+Wave complete (implementation wave <W>) — <returned>/<dispatched> agents returned
+- pipeline-coder: <STATUS> — <work unit and outcome, ≤8 words>
+```
+
+A coder that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
 
 **After each wave completes (all coders in the wave return), update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:**
 
@@ -147,6 +165,7 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<iteration>.md`.
 - Increment `code_review_iteration`
 - Group critical issues by file/work-unit
 - Spawn `pipeline-coder` agents in parallel to fix issues, giving each agent the specific issues for its files. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
+- With two or more fix agents, emit the pre-dispatch manifest right before launching them, in the form of Phase 6.2 with the label `review fixes` and one `pipeline-coder — <file group, ≤6 words>` line per agent, and pass each role label as the agent's `description`. Once every fix agent has reported, failed or been stopped, emit the post-wave rollup in the same form as Phase 6.2, labeled `review fixes`, before checking STATUS. A single fix agent needs neither.
 - Each fix agent gets: the review feedback for its files, the plan for context, the failing-test list, and the instruction to fix only the flagged issues. Restate the no-test-modification rule.
 - **After each coder dispatch, check the coder's STATUS.** If the coder returns `BLOCKED`: break the review loop immediately. Escalate via AskUserQuestion with: the coder's blocker message, the review iteration count consumed, and the current review failure details. Do not continue iterating. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Only proceed with the review loop on `DONE` or `DONE_WITH_CONCERNS`.

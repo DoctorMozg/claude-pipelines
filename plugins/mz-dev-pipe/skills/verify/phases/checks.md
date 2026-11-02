@@ -1,6 +1,6 @@
-# Phases 3-6: Execution, Analysis, Diagnosis, and Report
+# Phases 3-5: Execution, Analysis, and Diagnosis
 
-Full detail for the verification and reporting phases of the verify skill. Covers running all detected tools, analyzing test coverage and quality, diagnosing failures, and compiling the final report.
+Full detail for the verification phases of the verify skill. Covers running all detected tools, analyzing test coverage and quality, and diagnosing failures. The report is in `phases/report.md`.
 
 ## Contents
 
@@ -18,9 +18,6 @@ Full detail for the verification and reporting phases of the verify skill. Cover
 - [Phase 5: Failure Diagnosis](#phase-5-failure-diagnosis)
   - 5.1 Triage failures
   - 5.2 Dispatch diagnosticians
-- [Phase 6: Report](#phase-6-report)
-  - 6.1 Report template
-  - 6.2 Verdict logic
 
 ______________________________________________________________________
 
@@ -36,6 +33,26 @@ Run checks in this order. Run independent checks in parallel where possible.
 - Linter (on scope files)
 - Formatter check (on scope files)
 - Type checker (on scope files or full project depending on tool)
+
+The three agent-run checks of wave 1 (tests, linter, formatter check) go out together. Emit the pre-dispatch manifest before launching them, and pass each role label as the agent's `description`:
+
+```
+Dispatching verification checks — 3 agents in parallel
+Purpose: run tests, lint and format checks on scope
+- pipeline-test-runner — test suite run
+- pipeline-lint-runner — linter on scope files
+- pipeline-lint-runner — formatter check on scope files
+```
+
+When all three have reported, emit the post-wave rollup before starting wave 2:
+
+```
+Wave complete (verification checks) — <returned>/<dispatched> agents returned
+- pipeline-test-runner: <STATUS> — <summary, ≤8 words>
+- pipeline-lint-runner: <STATUS> — <summary, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned. When 3.2 runs a scoped test run first, the full run that follows is a single dispatch outside this wave.
 
 **Wave 2** (after wave 1, parallel):
 
@@ -254,6 +271,15 @@ Group failures by category:
 
 For categories that need a researcher, spawn `pipeline-researcher` agents (model: **sonnet**). Dispatch in parallel if multiple categories need diagnosis.
 
+When both categories need diagnosis, the two researchers form one wave. Emit the pre-dispatch manifest before spawning them, and pass each role label as the agent's `description`:
+
+```
+Dispatching failure diagnosis — 2 agents in parallel
+Purpose: diagnose test failures and type errors
+- pipeline-researcher — test failure diagnosis
+- pipeline-researcher — type error diagnosis
+```
+
 **Test failure diagnosis**:
 
 ```
@@ -286,114 +312,8 @@ For each error, determine if it's: genuine type mismatch (real bug), missing typ
 Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/diagnosis_types.md` using the same grouped format.
 ```
 
-After either diagnostician returns, the orchestrator writes the response to the corresponding artifact via the Write tool before proceeding to Phase 6.
+When both were dispatched, emit the post-wave rollup once both have reported, in the same form as in 3.1 and labeled `failure diagnosis`.
+
+After either diagnostician returns, the orchestrator writes the response to the corresponding artifact via the Write tool before proceeding to Phase 6 in `phases/report.md`.
 
 Update state phase to `diagnosis_complete`.
-
-______________________________________________________________________
-
-## Phase 6: Report
-
-### 6.1 Report template
-
-Read all artifacts from `<PROJECT_ROOT>/.mz/task/<task_name>/`. Compile into a single report using the naming convention from SKILL.md (`<YYYY_MM_DD>_test_<detailed_name><_vN>.md` in `<PROJECT_ROOT>/.mz/reports/`):
-
-```markdown
-# Verification Report: <scope summary>
-
-**Date**: <timestamp>
-**Scope**: <mode> — N source files, M test files, K examples
-**Tools**: <test framework>, <linter>, <formatter>, <type checker or "none">
-
-## Verdict: PASS | FAIL
-
-Verdict vocabulary is strictly binary. There is no `PARTIAL`. A run that is green on tests but carries non-critical hygiene issues (lint, format, type, coverage, quality) is still **PASS** — express the remaining issues as `Nit:` or `FYI:` severity findings in the body per the severity rubric. Only elevate to **FAIL** when a blocking issue is present.
-
-<One-paragraph summary: what passed, what failed, most important finding.>
-
-### Scorecard
-
-| Check | Status | Details |
-|---|---|---|
-| Tests | PASS/FAIL | P passed, F failed, S skipped of T total |
-| Linter | CLEAN/WARN/ERROR | E errors, W warnings |
-| Formatter | OK/ISSUES | N files need formatting |
-| Type Checker | PASS/FAIL/SKIP | E errors (or "not configured") |
-| Examples | PASS/FAIL/SKIP | N passed, M failed, K skipped |
-| Test Coverage | PASS/FAIL | <verdict summary> |
-| Test Quality | PASS/FAIL | <verdict summary> |
-
----
-
-## Test Results
-
-<If all pass: "All N tests passed.">
-<If failures, for each failed test:>
-- **`<test_name>`** (`<file:line>`) — <error type>: <message>
-  - Root cause: <from diagnosis> | Category: <logic_bug / test_bug / config / environment / flaky>
-<Include key failure output in fenced code blocks. List skipped tests with reasons.>
-
-## Lint Findings
-
-<If clean: "No lint issues." If findings:>
-
-| File | Line | Rule | Severity | Message |
-|---|---|---|---|---|
-| `<path>` | N | <rule-id> | error/warning | <message> |
-
-## Formatting
-
-<If clean: "All files formatted." If issues: list unformatted files + fix command.>
-
-## Type Checking
-
-<If not configured: "No type checker configured. Skipped." If clean: "No type errors." If errors: table of file/line/code/message. If diagnosis performed: include root cause groups.>
-
-## Examples & Samples
-
-<If none: "No examples detected." If present:>
-
-| Example | Status | Notes |
-|---|---|---|
-| `<path>` | PASS/FAIL/SKIP | <failure/skip reason> |
-
-<For failed examples: include error output. For README blocks: line number, language, status.>
-
-## Test Coverage Analysis
-
-<Coverage reviewer verdict. Top coverage gaps:>
-- **`<file:function>`** — <what's untested, risk level>
-<Well-covered areas acknowledgment.>
-
-## Test Quality Analysis
-
-<Quality reviewer verdict. Top quality issues:>
-- **`<test_file:test_name>`** — <category>: <what's wrong>
-<Well-written tests acknowledgment.>
-
----
-
-## Summary
-
-### What's working
-<Bulleted list of clean passes>
-
-### What needs attention
-<Ranked by severity — most impactful first>
-
-### Recommendations
-<Prioritized fix list based on all findings>
-```
-
-### 6.2 Verdict logic
-
-The overall verdict follows this logic:
-
-| Condition                                                    | Verdict                                                                                                                     |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| All checks PASS, coverage PASS, quality PASS                 | **PASS**                                                                                                                    |
-| Tests PASS but lint/format/type/coverage/quality have issues | **PASS** with a Nit-severity finding for each hygiene issue                                                                 |
-| Any test failure                                             | **FAIL**                                                                                                                    |
-| Examples fail                                                | **FAIL** (or **PASS** with a Nit-severity FYI if failures are demonstrably environment-specific and not reproducible in CI) |
-
-Present the verdict and a one-paragraph summary to the user after writing the report. Include the path to the full report.

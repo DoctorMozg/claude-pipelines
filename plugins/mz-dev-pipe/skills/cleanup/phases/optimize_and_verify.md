@@ -24,6 +24,15 @@ Set `iteration` to the current review iteration (starts at 0; increments when th
 
 Spawn N `pipeline-optimizer` agents (model: **opus**) in a **single message** using parallel tool calls. One agent per chunk.
 
+When N is 2 or more, emit the pre-dispatch manifest right before the Agent calls, and pass each role label as the call's `description`:
+
+```
+Dispatching chunk optimization (iteration <iteration>) — <N> agents in parallel
+Purpose: behavior-preserving cleanup of <N> chunks
+- pipeline-optimizer — chunk <k>: <files, ≤6 words>
+- pipeline-optimizer — chunk <k>: <files, ≤6 words>
+```
+
 Each optimizer's prompt:
 
 ```
@@ -47,6 +56,15 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/baseline.md for pre-optimization test/l
 Do not dispatch optimizers for chunks that previously passed review — they are frozen for the remainder of this run.
 
 ### 3.2 Collect reports and detect conflicts
+
+When every optimizer has reported, failed or been stopped, emit the post-wave rollup before merging:
+
+```
+Wave complete (chunk optimization, iteration <iteration>) — <returned>/<dispatched> agents returned
+- pipeline-optimizer: <STATUS> — chunk <k>: <summary, ≤8 words>
+```
+
+An optimizer that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 After all optimizers complete, merge their reports into `<PROJECT_ROOT>/.mz/task/<task_name>/optimization_<iteration>.md`:
 
@@ -81,7 +99,14 @@ ______________________________________________________________________
 
 ### 4.1 Run tests and linters
 
-Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls):
+Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single message, two agent calls). Emit the pre-dispatch manifest right before the calls, and pass each role label as the call's `description`:
+
+```
+Dispatching verification (iteration <iteration>) — 2 agents in parallel
+Purpose: check tests and lint against the baseline
+- pipeline-test-runner — post-optimization test run
+- pipeline-lint-runner — post-optimization lint run
+```
 
 ```
 Run tests to check for regressions after optimization.
@@ -94,6 +119,16 @@ Run linters to check for regressions after optimization.
 lint_command: <Lint command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md, or "none detected">
 output_path: <PROJECT_ROOT>/.mz/task/<task_name>/verify_lint_results_<iteration>.md
 ```
+
+When both runners have reported, emit the post-wave rollup:
+
+```
+Wave complete (verification, iteration <iteration>) — <returned>/2 agents returned
+- pipeline-test-runner: <STATUS> — <summary, ≤8 words>
+- pipeline-lint-runner: <STATUS> — <summary, ≤8 words>
+```
+
+A runner that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
 Read both artifacts. Compare against `baseline.md`:
 
@@ -142,7 +177,7 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/optimization_<iteration>.md for full re
    - If `BLOCKED`: break the loop immediately. Do not re-run tests. Escalate via AskUserQuestion with: the blocker message from the coder, the number of `fix_attempts` consumed, the specific regression(s) still failing, and the optimization chunk that caused them.
    - Only proceed to step 5 (re-run tests and linters) when the coder's STATUS is `DONE` or `DONE_WITH_CONCERNS`.
 
-1. Re-dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel, as in step 4.1.
+1. Re-dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel, as in step 4.1. Emit the manifest and rollup in the same form as 4.1, labeled `fix attempt <fix_attempt> verification`.
 
 1. If green → exit the inner loop, proceed to Phase 4.3.
 
