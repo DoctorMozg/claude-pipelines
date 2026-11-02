@@ -23,6 +23,19 @@ write_memory() {
   } > .mz/memory/MEMORY.md
 }
 
+# write_lessons CURATED INBOX: "- [L-…]" and "- [I-…]" lines for lessons.md's two regions; either may be empty.
+write_lessons() {
+  mkdir -p .mz/memory
+  {
+    printf '# Project Lessons\n\n<!-- Auto-managed by mz-memory. Curated lessons first; new lessons wait in the Inbox. -->\n\n'
+    printf '## Lessons\n\n<!-- mz-lessons-start -->\n'
+    [[ -n "$1" ]] && printf '%s\n' "$1"
+    printf '<!-- mz-lessons-end -->\n\n## Inbox\n\n<!-- mz-inbox-start -->\n'
+    [[ -n "$2" ]] && printf '%s\n' "$2"
+    printf '<!-- mz-inbox-end -->\n'
+  } > .mz/memory/lessons.md
+}
+
 # write_task NAME STATUS: writes .mz/task/NAME/state.md; the sections after the header come from stdin.
 write_task() {
   mkdir -p ".mz/task/$1"

@@ -39,6 +39,10 @@ TASK = "2026_11_02_build_smoke_capture"
 MEMORY = Path(".mz/memory/MEMORY.md")
 TOOLING = Path(".mz/tooling.json")
 RECORDS = Path(".hook-recorder/sessionstart.log")
+# Plugin eval traces omit UserPromptSubmit output, so the correction nudge is only observable here.
+NUDGE = "If this corrects something you did"
+STARTUP_PROMPT = "Reply with just OK. Don't search the files, and you must never call a tool here."
+RESUME_PROMPT = "No, that's not what I asked. Reply with just OK again."
 
 # Reuses the eval fixture helpers, so the smoke project has the same layout as the eval cases.
 SEED = f"""set -euo pipefail
@@ -160,6 +164,9 @@ def startup_checks(session: Session, harness: Harness) -> list[Check]:
             True,
             any(PINNED in out for out in prompt),
         ),
+        Check(
+            "no correction nudge on a plain instruction", False, any(NUDGE in out for out in prompt)
+        ),
         Check("every hook exited successfully", [], failed_hooks),
         # SessionEnd runs as `claude -p` exits, so its write is on disk by now.
         Check(
@@ -172,8 +179,10 @@ def startup_checks(session: Session, harness: Harness) -> list[Check]:
 
 def resume_checks(session: Session, harness: Harness, tooling_mtime: int) -> list[Check]:
     start = session.hook_outputs("SessionStart:resume")
+    prompt = session.hook_outputs("UserPromptSubmit")
     return [
         Check("recorder saw source=resume", "resume", harness.last_source()),
+        Check("correction nudge on a correction", True, any(NUDGE in out for out in prompt)),
         Check(
             "memory not re-injected on resume", False, any("Project memory" in out for out in start)
         ),
@@ -207,10 +216,10 @@ def forget_session(session_id: str, repo: Path) -> None:
 def run_all(harness: Harness) -> list[tuple[Session, list[Check]]]:
     session_id = str(uuid.uuid4())
     try:
-        startup = harness.run("startup", "Reply with just OK.", ["--session-id", session_id])
+        startup = harness.run("startup", STARTUP_PROMPT, ["--session-id", session_id])
         results = [(startup, startup_checks(startup, harness))]
         tooling_mtime = harness.tooling_mtime()
-        resume = harness.run("resume", "Reply with just OK again.", ["--resume", session_id])
+        resume = harness.run("resume", RESUME_PROMPT, ["--resume", session_id])
         results.append((resume, resume_checks(resume, harness, tooling_mtime)))
         compact = harness.run("compact", "/compact", ["--resume", session_id])
         results.append((compact, compact_checks(compact, harness)))
