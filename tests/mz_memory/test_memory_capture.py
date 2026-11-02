@@ -1,7 +1,9 @@
 import json
 import os
 import shlex
+import shutil
 import time
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
@@ -12,6 +14,34 @@ LOG_START = "<!-- mz-log-start -->"
 LOG_END = "<!-- mz-log-end -->"
 MAX_LOG_LINES = 400
 COMPRESS_THRESHOLD = 300
+# Every external command capture may run; each gets a counting shim on an otherwise empty PATH.
+COUNTED_TOOLS = (
+    "awk",
+    "basename",
+    "cat",
+    "cp",
+    "cut",
+    "date",
+    "dirname",
+    "find",
+    "flock",
+    "git",
+    "grep",
+    "head",
+    "ls",
+    "mkdir",
+    "mktemp",
+    "mv",
+    "perl",
+    "rm",
+    "rmdir",
+    "sed",
+    "sort",
+    "tail",
+    "touch",
+    "tr",
+    "wc",
+)
 
 type CaptureRunner = Callable[[dict[str, str]], None]
 type MarkChanged = Callable[[Path], None]
@@ -265,6 +295,17 @@ class TestMalformedState:
 
         assert _logged_tasks(project) == ["2026_11_02_debug_crash"]
 
+    @pytest.mark.skipif(os.geteuid() == 0, reason="root reads files whatever their mode")
+    def test_unreadable_file_is_skipped(
+        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+    ) -> None:
+        write_task("2026_11_01_a_locked", "complete").chmod(0)
+        write_task("2026_11_01_b_done", "complete")
+
+        run_capture()
+
+        assert _logged_tasks(project) == ["2026_11_01_b_done"]
+
     def test_long_decisions_section_is_cut_to_ten_lines(
         self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
     ) -> None:
@@ -371,3 +412,130 @@ class TestBackgroundCompression:
 
         assert not _wait_until(lambda: self._compression_finished(project), seconds=1.5)
         assert len(_log_region(project)) > COMPRESS_THRESHOLD
+
+
+class TestOnePass:
+    def test_status_and_phase_stay_with_their_own_file(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        write_raw_task: RawTaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_task("2026_11_01_a_done", "complete")
+        write_raw_task("2026_11_01_b_draft", "schema_version: 2\n")
+        write_raw_task("2026_11_01_c_done", "Status: complete\n")
+
+        run_capture()
+
+        assert _logged_tasks(project) == ["2026_11_01_a_done", "2026_11_01_c_done"]
+        # A phase carried over from a_done would end the line with "(phase=3)".
+        assert _log_region(project)[-1].endswith(" 2026_11_01_c_done")
+
+    def test_a_decisions_section_open_at_the_end_of_one_file_stops_there(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        write_raw_task: RawTaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_task("2026_11_01_a_done", "complete", "\n## Decisions\n- the last line of a")
+        write_raw_task("2026_11_01_b_done", "- a bullet before any heading\nStatus: complete\n")
+
+        run_capture()
+
+        log = _log_region(project)
+        assert " - the last line of a" in log
+        assert not any("a bullet before any heading" in line for line in log)
+
+
+class TestAgentBridge:
+    @pytest.fixture
+    def agent_memory(self, project: Path) -> Path:
+        agents = project / ".claude" / "agent-memory"
+        (agents / "reviewer").mkdir(parents=True)
+        (agents / "planner").mkdir()
+        return agents
+
+    def test_a_finished_task_reaches_each_agent_it_mentions(
+        self,
+        agent_memory: Path,
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_task("2026_11_01_build_auth", "complete", "\nReviewed by [Reviewer].\n")
+
+        run_capture()
+
+        reviewer = (agent_memory / "reviewer" / "MEMORY.md").read_text(encoding="utf-8")
+        assert reviewer.startswith("# reviewer memory\n\n- [")
+        assert reviewer.rstrip().endswith(" 2026_11_01_build_auth (phase=3)")
+        assert not (agent_memory / "planner" / "MEMORY.md").exists()
+
+    def test_an_unfinished_task_reaches_no_agent(
+        self,
+        agent_memory: Path,
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_task("2026_11_01_build_auth", "running", "\nReviewed by [reviewer].\n")
+
+        run_capture()
+
+        assert not (agent_memory / "reviewer" / "MEMORY.md").exists()
+
+
+class TestCaptureCost:
+    @pytest.fixture
+    def counted_capture(
+        self, tmp_path: Path, capture_env: dict[str, str], capture_runner: CaptureRunner
+    ) -> Callable[[], Counter[str]]:
+        """Run capture with every external command behind a shim that records its name."""
+        bin_dir = tmp_path / "counting-bin"
+        bin_dir.mkdir()
+        calls = tmp_path / "calls.log"
+        bash = shutil.which("bash")
+        assert bash is not None
+        (bin_dir / "bash").symlink_to(bash)
+        for tool in COUNTED_TOOLS:
+            real = shutil.which(tool)
+            if real is None:
+                continue
+            shim = bin_dir / tool
+            shim.write_text(
+                f"#!{bash}\nprintf '%s\\n' {tool} >>{shlex.quote(str(calls))}\n"
+                f'exec {shlex.quote(real)} "$@"\n',
+                encoding="utf-8",
+            )
+            shim.chmod(0o755)
+        env = {**capture_env, "PATH": str(bin_dir), "MZ_MEMORY_COMPRESS": "0"}
+
+        def run() -> Counter[str]:
+            calls.write_text("", encoding="utf-8")
+            capture_runner(env)
+            return Counter(calls.read_text(encoding="utf-8").split())
+
+        return run
+
+    def test_external_commands_do_not_grow_with_the_number_of_tasks(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        counted_capture: Callable[[], Counter[str]],
+    ) -> None:
+        # SessionEnd hooks share 1.5 s; a few forks per task pushed a 50-task first run past it.
+        (project / ".claude" / "agent-memory" / "reviewer").mkdir(parents=True)
+        body = (
+            "\n## Decisions\n- chose A\n\n## Lessons\n- (review) WHEN x → y — WHY z\n[reviewer]\n"
+        )
+
+        def first_run_with(count: int) -> Counter[str]:
+            shutil.rmtree(project / ".mz" / "memory", ignore_errors=True)
+            for index in range(count):
+                write_task(f"2026_11_01_build_{index:03d}", "complete", body)
+            return counted_capture()
+
+        few, many = first_run_with(5), first_run_with(40)
+
+        assert len(_logged_tasks(project)) == 40
+        assert many == few

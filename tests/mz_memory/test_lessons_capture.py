@@ -154,6 +154,30 @@ class TestHarvest:
 
         assert _texts(_inbox(project)) == ["a lesson"]
 
+    def test_a_repeated_heading_extends_the_section_only_right_after_it(
+        self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
+    ) -> None:
+        sections = "\n## Lessons\n- one\n## Lessons\n- two\n## Notes\n## Lessons\n- three\n"
+        write_task("t1", "complete", sections)
+
+        run_capture()
+
+        assert sorted(_texts(_inbox(project))) == ["one", "two"]
+
+    def test_a_section_open_at_the_end_of_one_task_stops_there(
+        self,
+        project: Path,
+        write_task: TaskWriter,
+        write_raw_task: RawTaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        write_task("t1", "complete", "\n## Lessons\n- the last line of t1")
+        write_raw_task("t2", "- a bullet before any heading\nStatus: running\n")
+
+        run_capture()
+
+        assert _texts(_inbox(project)) == ["the last line of t1"]
+
     def test_at_most_ten_lessons_are_taken_per_task(
         self, project: Path, write_lessons: LessonTaskWriter, run_capture: Callable[[], None]
     ) -> None:

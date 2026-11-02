@@ -6,7 +6,6 @@ MZ_LESSONS_START="<!-- mz-lessons-start -->"
 MZ_LESSONS_END="<!-- mz-lessons-end -->"
 MZ_INBOX_START="<!-- mz-inbox-start -->"
 MZ_INBOX_END="<!-- mz-inbox-end -->"
-MZ_LESSONS_PER_TASK=10
 MZ_LESSON_MAX_CHARS=400
 # The seen list only has to outlive re-reads of recently edited state files.
 MZ_LESSONS_SEEN_MAX=2000
@@ -50,21 +49,6 @@ _emit_lessons_file() {
   printf '%s\n\n## Inbox\n\n%s\n' "$MZ_LESSONS_END" "$MZ_INBOX_START"
   [[ -n "$inbox" ]] && printf '%s\n' "$inbox"
   printf '%s\n' "$MZ_INBOX_END"
-}
-
-# extract_state_lessons <state_file> <task> <status> — print one record per bullet under
-# "## Lessons": task, status and text joined by MZ_LESSON_FS. Prose lines are skipped.
-extract_state_lessons() {
-  local state_file="$1" task="$2" status="$3"
-  awk -v task="$task" -v status="$status" -v fs="$MZ_LESSON_FS" -v max="$MZ_LESSONS_PER_TASK" '
-    /^##[[:space:]]+Lessons[[:space:]]*$/ { capture = 1; next }
-    /^##[[:space:]]/ && capture { exit }
-    capture && /^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+[^[:space:]]/ {
-      sub(/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+/, "")
-      print task fs status fs $0
-      if (++count >= max) exit
-    }
-  ' "$state_file" 2>/dev/null || true
 }
 
 # next_lesson_number <prefix> <file>... — one past the highest <prefix>-NNNN id in the files

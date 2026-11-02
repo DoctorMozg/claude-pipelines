@@ -21,6 +21,9 @@ AGENT_MEMORY_DIR="${PROJECT_DIR}/.claude/agent-memory"
 
 # Parsing a long task history would exceed the 1.5 s SessionEnd budget, and a killed run never advances the marker.
 MAX_FIRST_RUN_TASKS=50
+# Decisions and Notes lines copied under each log entry, and lesson bullets taken per task.
+EXTRA_LINES=10
+LESSONS_PER_TASK=10
 
 [[ -d "$TASK_DIR" ]] || exit 0
 
@@ -46,68 +49,122 @@ else
   CHANGED=$(ls -t "$TASK_DIR"/*/state.md 2>/dev/null | head -n "$MAX_FIRST_RUN_TASKS" | sort || true)
 fi
 
-NEW_BLOCK=""
-LESSON_RECORDS=""
+# scan_state_files <out_dir> <state_file>... — read every changed state file in one awk pass and
+# write <out_dir>/log (entries and their Decisions lines), /lessons (records) and /agents (bridge lines).
+# A few processes per task cost about 9 ms each, which pushed a 50-task backlog past the budget.
+scan_state_files() {
+  local out_dir="$1"
+  shift
+  MZ_MEMORY_FILE="$MEMORY_FILE" MZ_AGENTS="$AGENTS" awk -v out="$out_dir" -v first_run="$FIRST_RUN" \
+    -v today="$TODAY" -v branch="$GIT_BRANCH" -v sha="$GIT_SHA" -v fs="$MZ_LESSON_FS" \
+    -v max_lessons="$LESSONS_PER_TASK" -v max_extra="$EXTRA_LINES" '
+    function start(   parts, count, a) {
+      count = split(FILENAME, parts, "/")
+      task = parts[count - 1]
+      status = ""; has_status = 0; phase = ""; has_phase = 0
+      decisions = 0; extras = 0; lessons = 0; harvested = 0
+      for (a = 1; a <= agents; a++) mentioned[a] = 0
+    }
+    function finish(   i, a, entry) {
+      if (task == "") return
+      # Lessons are read whatever the status: failed and blocked runs are where most of them come from.
+      for (i = 1; i <= harvested; i++) print task fs (status == "" ? "unknown" : status) fs lesson[i] > (out "/lessons")
+      # Writers use `complete`; `completed` is still read because older skills wrote it.
+      if (status != "complete" && status != "completed") return
+      # Without a marker we cannot tell what the old date-keyed dedup already logged.
+      if (first_run && (task in logged)) return
+      entry = "- [" today "] " task
+      if (phase != "") entry = entry " (phase=" phase ")"
+      if (branch != "" && sha != "") entry = entry " [" branch "@" sha "]"
+      print entry > (out "/log")
+      for (i = 1; i <= extras; i++) print extra[i] > (out "/log")
+      for (a = 1; a <= agents; a++) if (mentioned[a]) print agent[a] "\t" entry > (out "/agents")
+    }
+    BEGIN {
+      count = split(ENVIRON["MZ_AGENTS"], names, "\n")
+      for (i = 1; i <= count; i++) if (names[i] != "") { agent[++agents] = names[i]; tag[agents] = "[" tolower(names[i]) "]" }
+      if (first_run) {
+        while ((getline line < ENVIRON["MZ_MEMORY_FILE"]) > 0) {
+          split(line, field, " ")
+          if (field[1] == "-") logged[field[3]] = 1
+        }
+      }
+    }
+    FNR == 1 { finish(); start() }
+    {
+      if (!has_status && match($0, /Status[*]*: [a-z_]*/)) {
+        has_status = 1; status = substr($0, RSTART, RLENGTH); sub(/.*: /, "", status)
+      }
+      if (!has_phase && match($0, /Phase[*]*: [A-Za-z0-9_.-]*/)) {
+        has_phase = 1; phase = substr($0, RSTART, RLENGTH); sub(/.*: /, "", phase)
+      }
+      heading = ($0 ~ /^##[[:space:]]/)
 
+      # The first non-blank lines of Decisions and Notes, counted together in file order. Lessons go
+      # to lessons.md instead, so they do not age out with the log.
+      if ($0 ~ /^##[[:space:]]+(Decisions|Notes)[[:space:]]*$/) decisions = 1
+      else if (heading) decisions = 0
+      else if (decisions && NF && extras < max_extra) extra[++extras] = "  " $0
+
+      # Bullets under the first "## Lessons" only, which a repeated heading right after it extends;
+      # prose lines are skipped.
+      if (lessons != 2 && $0 ~ /^##[[:space:]]+Lessons[[:space:]]*$/) lessons = 1
+      else if (lessons == 1 && heading) lessons = 2
+      else if (lessons == 1 && harvested < max_lessons && $0 ~ /^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+[^[:space:]]/) {
+        text = $0
+        sub(/^[[:space:]]*([-*]|[0-9]+\.)[[:space:]]+/, "", text)
+        lesson[++harvested] = text
+      }
+
+      # The agent bridge: an entry whose state file mentions [agent-name] is copied to that agent.
+      if (agents) {
+        low = tolower($0)
+        for (a = 1; a <= agents; a++) if (!mentioned[a] && index(low, tag[a])) mentioned[a] = 1
+      }
+    }
+    END { finish() }
+  ' "$@"
+}
+
+# An unreadable file is skipped here: mawk stops at one, which would fail the capture every session.
+STATE_FILES=()
 while IFS= read -r state_file; do
-  [[ -n "$state_file" && -f "$state_file" ]] || continue
-
-  TASK_NAME=$(basename "$(dirname "$state_file")")
-  STATUS=$(grep -o 'Status[*]*: [a-z_]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //' || true)
-
-  # Lessons are read whatever the status: failed and blocked runs are where most of them come from.
-  TASK_LESSONS=$(extract_state_lessons "$state_file" "$TASK_NAME" "${STATUS:-unknown}")
-  [[ -n "$TASK_LESSONS" ]] && LESSON_RECORDS="${LESSON_RECORDS}${TASK_LESSONS}"$'\n'
-
-  # Writers use `complete`; `completed` is still read because older skills wrote it.
-  [[ "$STATUS" == "complete" || "$STATUS" == "completed" ]] || continue
-
-  # Without a marker we can't tell what the old date-keyed dedup already logged.
-  if [[ "$FIRST_RUN" == 1 ]] && awk -v task="$TASK_NAME" '$1 == "-" && $3 == task { found = 1; exit } END { exit !found }' "$MEMORY_FILE"; then
-    continue
-  fi
-
-  PHASE=$(grep -o 'Phase[*]*: [A-Za-z0-9_.-]*' "$state_file" 2>/dev/null | head -1 | sed 's/.*: //' || true)
-
-  ENTRY="- [${TODAY}] ${TASK_NAME}"
-  [[ -n "$PHASE" ]] && ENTRY="${ENTRY} (phase=${PHASE})"
-  if [[ -n "$GIT_BRANCH" && -n "$GIT_SHA" ]]; then
-    ENTRY="${ENTRY} [${GIT_BRANCH}@${GIT_SHA}]"
-  fi
-
-  # Copy the first 10 non-blank lines of the Decisions and Notes sections, counted together in file order.
-  # Lessons go to lessons.md instead, so they don't age out with the log.
-  EXTRA=$(awk '
-    /^##[[:space:]]+(Decisions|Notes)[[:space:]]*$/ { capture = 1; next }
-    /^##[[:space:]]/ && capture { capture = 0 }
-    capture && NF { print "  " $0 }
-  ' "$state_file" 2>/dev/null | head -10 || true)
-
-  NEW_BLOCK="${NEW_BLOCK}${ENTRY}"$'\n'
-  [[ -n "$EXTRA" ]] && NEW_BLOCK="${NEW_BLOCK}${EXTRA}"$'\n'
-
-  # Per-agent bridge: if the state file mentions [agent-name] for any agent
-  # under .claude/agent-memory, copy the entry into that agent's MEMORY.md.
-  if [[ -d "$AGENT_MEMORY_DIR" ]]; then
-    for agent_dir in "$AGENT_MEMORY_DIR"/*/; do
-      [[ -d "$agent_dir" ]] || continue
-      AGENT_NAME=$(basename "$agent_dir")
-      if grep -qiF "[${AGENT_NAME}]" "$state_file" 2>/dev/null; then
-        AGENT_FILE="${agent_dir}MEMORY.md"
-        [[ -f "$AGENT_FILE" ]] || printf '# %s memory\n\n' "$AGENT_NAME" > "$AGENT_FILE"
-        printf '%s\n' "$ENTRY" >> "$AGENT_FILE"
-      fi
-    done
-  fi
+  if [[ -n "$state_file" && -f "$state_file" && -r "$state_file" ]]; then STATE_FILES+=("$state_file"); fi
 done <<<"$CHANGED"
 
+AGENTS=""
+if [[ -d "$AGENT_MEMORY_DIR" ]]; then
+  for agent_dir in "$AGENT_MEMORY_DIR"/*/; do
+    [[ -d "$agent_dir" ]] || continue
+    agent_dir="${agent_dir%/}"
+    AGENTS+="${agent_dir##*/}"$'\n'
+  done
+fi
+
+SCAN_DIR=$(mktemp -d)
+trap 'rm -rf -- "$SCAN_DIR"' EXIT
+if [[ ${#STATE_FILES[@]} -gt 0 ]]; then
+  scan_state_files "$SCAN_DIR" "${STATE_FILES[@]}"
+fi
+
+if [[ -s "${SCAN_DIR}/agents" ]]; then
+  while IFS=$'\t' read -r agent entry; do
+    agent_file="${AGENT_MEMORY_DIR}/${agent}/MEMORY.md"
+    [[ -f "$agent_file" ]] || printf '# %s memory\n\n' "$agent" >"$agent_file"
+    printf '%s\n' "$entry" >>"$agent_file"
+  done <"${SCAN_DIR}/agents"
+fi
+
 # Lessons are written before the log: a retry after a failed log write skips lessons already seen.
-if [[ -n "$LESSON_RECORDS" ]]; then
-  printf '%s' "$LESSON_RECORDS" | strip_private | add_lessons_to_inbox "$LESSONS_FILE" "$TODAY" "$GIT_SHA"
+if [[ -s "${SCAN_DIR}/lessons" ]]; then
+  strip_private <"${SCAN_DIR}/lessons" | add_lessons_to_inbox "$LESSONS_FILE" "$TODAY" "$GIT_SHA"
 fi
 
 # Strip <private>...</private> regions before persisting.
-NEW_BLOCK=$(printf '%s' "$NEW_BLOCK" | strip_private)
+NEW_BLOCK=""
+if [[ -s "${SCAN_DIR}/log" ]]; then
+  NEW_BLOCK=$(strip_private <"${SCAN_DIR}/log")
+fi
 
 if [[ -n "$NEW_BLOCK" ]]; then
   printf '%s' "$NEW_BLOCK" | prepend_to_log "$MEMORY_FILE" "$MZ_LOG_MAX_LINES"
