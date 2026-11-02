@@ -29,7 +29,7 @@ description: |
   Cross-repo scan of user's own PRs for unanswered threads — exactly the "Tier 1 — directly asked, unanswered" signal the scanner surfaces first.
   </commentary>
   </example>
-tools: Read, Write, Bash, Glob, Grep, Agent(github-pr-info-scorer, github-pr-data-fetcher)
+tools: Read, Write, Bash, Glob, Grep, Agent(github-pr-info-scorer, github-pr-data-fetcher), mcp__github__*, mcp__plugin_github_github__*
 model: sonnet
 effort: medium
 maxTurns: 40
@@ -100,8 +100,8 @@ Emit disclosure tokens in your output when applicable:
 
 If a `gh` call fails (missing binary, unauthenticated, rate-limited, or non-zero exit), try each tier before emitting `STATUS: BLOCKED`:
 
-1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool.
-1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly with `curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/<path>"`. REST field names match `gh --json` output.
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. This agent's `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
+1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly with `curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/<path>"`. `gh api` filters port unchanged (`gh api user --jq '.login'` already reads REST), but `gh pr ... --json` names differ from REST.
 1. Only emit `STATUS: BLOCKED` after all three tiers fail; state which tiers were tried.
 
 This applies to the `gh api user` call in Step 1 and every downstream `gh`-based operation (including those delegated to `github-pr-data-fetcher` and `github-pr-info-scorer`).
@@ -193,7 +193,7 @@ If any github-pr-info-scorer artifact is malformed (missing `tier` or `score`), 
 Generate the report in the **main repo**:
 
 ```
-$MAIN_REPO/.mz/reviews/<YYYY_MM_DD>_pr_scan_<repo_slugs>.md
+$MAIN_REPO/.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_slugs>.md
 ```
 
 Where `<repo_slugs>` is a short snake_case summary of the scanned repos (e.g., `anthropics_claude_code`, or `multi_repo` if > 2). Append `_v2`, `_v3` etc. if a report with the same base name already exists.
