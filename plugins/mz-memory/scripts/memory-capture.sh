@@ -157,7 +157,7 @@ fi
 
 # Lessons are written before the log: a retry after a failed log write skips lessons already seen.
 if [[ -s "${SCAN_DIR}/lessons" ]]; then
-  strip_private <"${SCAN_DIR}/lessons" | add_lessons_to_inbox "$LESSONS_FILE" "$TODAY" "$GIT_SHA"
+  strip_private <"${SCAN_DIR}/lessons" | add_lessons_to_inbox "$LESSONS_FILE" "$TODAY" "$GIT_SHA" >/dev/null
 fi
 
 # Strip <private>...</private> regions before persisting.

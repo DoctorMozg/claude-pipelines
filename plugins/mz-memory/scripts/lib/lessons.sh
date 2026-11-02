@@ -70,12 +70,10 @@ next_lesson_number() {
   '
 }
 
-# add_lessons_to_inbox <lessons_file> <date> <sha> — read records from stdin and prepend the
-# new ones to the Inbox, newest first. A task's lesson is skipped once seen, so re-reading an
-# edited state file adds only its new lines, while the same lesson from another task still
-# counts as a recurrence.
+# add_lessons_to_inbox <file> <date> <sha> [trig] — prepend stdin's records to the Inbox; print the lines written.
+# Untagged records get [trig] (default other). A lesson seen from the same task is skipped; from another, it recurs.
 add_lessons_to_inbox() {
-  local lessons_file="$1" today="$2" sha="$3"
+  local lessons_file="$1" today="$2" sha="$3" default_trig="${4:-other}"
   local records
   records=$(cat)
   [[ -n "$records" ]] || return 0
@@ -94,14 +92,14 @@ add_lessons_to_inbox() {
     # shellcheck disable=SC1112 # the curly quotes sit inside the awk program on purpose
     block=$(MZ_RECORDS="$records" awk \
       -v today="$today" -v sha="$sha" -v next_id="$first_id" -v fs="$MZ_LESSON_FS" \
-      -v max_chars="$MZ_LESSON_MAX_CHARS" -v keys_path="$keys_file" '
+      -v max_chars="$MZ_LESSON_MAX_CHARS" -v keys_path="$keys_file" -v default_trig="$default_trig" '
       { seen[$0] = 1 }
       END {
         total = split(ENVIRON["MZ_RECORDS"], records, "\n")
         for (i = 1; i <= total; i++) {
           if (split(records[i], field, fs) < 3) continue
           task = field[1]; status = field[2]; text = field[3]
-          trig = "other"
+          trig = default_trig
           if (match(text, /^\([a-z]+\)/)) {
             tag = substr(text, 2, RLENGTH - 2)
             if (tag ~ /^(review|failure|correction|change)$/) {
@@ -136,13 +134,18 @@ add_lessons_to_inbox() {
       }
     ' "$seen_file")
 
+    # Lines are marked seen only after the Inbox write, so a failed write retries them next time.
+    # The check is explicit: a caller's $(...) may run with errexit off.
     if [[ -n "$block" ]]; then
-      MZ_NEW_BLOCK="$block" awk -v start="$MZ_INBOX_START" '
+      if ! MZ_NEW_BLOCK="$block" awk -v start="$MZ_INBOX_START" '
         $0 == start { print; print ENVIRON["MZ_NEW_BLOCK"]; next }
         { print }
-      ' "$lessons_file" | atomic_write "$lessons_file"
+      ' "$lessons_file" | atomic_write "$lessons_file"; then
+        rm -f "$keys_file"
+        return 1
+      fi
+      printf '%s\n' "$block"
     fi
-    # Mark lines as seen only after the Inbox write, so a failed write retries them next time.
     cat "$keys_file" >>"$seen_file"
     rm -f "$keys_file"
     _trim_seen "$seen_file"
