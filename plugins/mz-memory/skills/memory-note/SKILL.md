@@ -1,7 +1,7 @@
 ---
 name: memory-note
 description: ALWAYS invoke when the user wants to manually save a note, decision, or convention into project memory. Triggers "remember that", "note this", "save to memory", "pin this decision", "add to memory". Pins go to the persistent Pinned section; activity entries go to the rolling Activity Log.
-argument-hint: <note body>  [--log to append to Activity Log instead of Pinned]
+argument-hint: '<the note, verbatim as the user wrote it>  [--log to append to Activity Log instead of Pinned]'
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory-note.sh *), Bash(date *), Read, AskUserQuestion
 model: haiku
 ---
@@ -36,7 +36,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion`. Never guess.
 
 - **MEMORY_FILE**: `.mz/memory/MEMORY.md`
 - **NOTE_SCRIPT**: `${CLAUDE_PLUGIN_ROOT}/scripts/memory-note.sh`
-- **MAX_BODY_CHARS**: 500 (longer notes get rejected — split or summarize)
+- **MAX_BODY_CHARS**: 500 (longer notes go back to the user to shorten or split; never shorten them yourself)
 
 ## Core Process
 
@@ -45,7 +45,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion`. Never guess.
 1. Strip `--log` if present; remember it as `target=log`, otherwise `target=pinned`.
 1. Trim whitespace from the remaining body.
 1. If body is empty → `AskUserQuestion` for the note text. Never guess.
-1. If body length > MAX_BODY_CHARS → ask user to shorten or split. Never silently truncate.
+1. Count the characters of the note as the user wrote it in their message, not the Skill arguments, which may already be condensed. If it is longer than MAX_BODY_CHARS, ask the user to shorten or split it. Never shorten it yourself.
 
 ### Phase 1: Confirmation Gate
 
@@ -100,20 +100,20 @@ If the script exited non-zero, surface the stderr message and stop.
 | Rationalization                | Rebuttal                                                        |
 | ------------------------------ | --------------------------------------------------------------- |
 | "skip the gate, just write it" | a wrong note pollutes pinned memory across every future session |
-| "truncate the body silently"   | the user will not notice the loss until the lost detail matters |
+| "shorten the note to fit"      | the user will not notice the loss until the lost detail matters |
 | "default to Activity Log"      | log entries roll off; user-driven notes belong in Pinned        |
 
 ## Red Flags
 
 - You wrote to `MEMORY.md` directly with Edit/Write instead of the helper script.
 - You skipped the approval gate.
-- You silently truncated a too-long body.
+- You truncated or condensed a too-long note instead of handing it back to the user.
 - You guessed the note body when `$ARGUMENTS` was empty.
 
 ## Error Handling
 
 - Empty body → `AskUserQuestion` for the text. Never guess.
-- Body > MAX_BODY_CHARS → ask user to shorten; do not truncate.
+- The user's note > MAX_BODY_CHARS → ask the user to shorten or split it; do not truncate or condense it yourself.
 - `memory-note.sh` exits 2 → surface stderr and stop.
 - `memory-note.sh` reports duplicate → surface the message; do not retry.
 
