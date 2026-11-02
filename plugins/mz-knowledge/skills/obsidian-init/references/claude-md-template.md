@@ -128,7 +128,7 @@ No build / test / lint is configured. When health checks become recurring, add a
 
 ## Mozg Skill Routing in This Vault
 
-The routing map from `using-mozg-pipelines` is loaded every session, but most entries target code workflows. Skills useful inside this vault:
+The `using-mozg-pipelines` routing map covers every mz plugin, but most entries target code workflows. Skills useful inside this vault:
 
 - `mz-knowledge:obsidian-init` — bootstrap vault structure (already ran).
 - `mz-knowledge:vault-ingest` — capture voice, image, PDF, YouTube into fleeting notes.

@@ -242,7 +242,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | **init-rules**      | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
 | **construct-skill** | `/construct-skill <intent>`                                | Drafts a new skill through a RED/GREEN/REFACTOR authoring loop      |
 
-2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map loaded into every session.
+2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
 
 **[Full documentation →](plugins/mz-dev-base/)**
 
