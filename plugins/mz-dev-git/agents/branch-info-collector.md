@@ -1,8 +1,6 @@
 ---
 name: branch-info-collector
-description: Pipeline-only collector agent dispatched by branch-reviewer. Runs all git metadata commands, scans for prior review reports, and writes a structured branch_info.md artifact. All git content is wrapped in untrusted-content delimiters. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch when branch diff data is already available in the task directory from a prior phase.
+description: 'Pipeline-only collector agent dispatched by branch-reviewer. Runs all git metadata commands, scans for prior review reports, and writes a structured branch_info.md artifact. All git content is wrapped in untrusted-content delimiters. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch when branch diff data is already available in the task directory from a prior phase.'
 tools: Bash, Read, Glob, Write
 model: haiku
 effort: low

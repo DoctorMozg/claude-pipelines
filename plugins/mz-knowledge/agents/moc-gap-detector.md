@@ -1,8 +1,6 @@
 ---
 name: moc-gap-detector
-description: Pipeline-only agent dispatched by vault-review. Scans vault for topic clusters lacking Maps of Content (MOCs). Uses tag+folder+title clustering to detect coverage gaps. Writes moc_gaps.md artifact. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch for general vault health metrics (use vault-audit-collector), do not dispatch for vault content modification — this agent reads vault files and writes only the gap report artifact.
+description: 'Pipeline-only agent dispatched by vault-review. Scans vault for topic clusters lacking Maps of Content (MOCs). Uses tag+folder+title clustering to detect coverage gaps. Writes moc_gaps.md artifact. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch for general vault health metrics (use vault-audit-collector), do not dispatch for vault content modification — this agent reads vault files and writes only the gap report artifact.'
 tools: Read, Glob, Grep, Write
 model: sonnet
 effort: medium

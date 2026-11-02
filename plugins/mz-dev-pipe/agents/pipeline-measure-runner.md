@@ -1,8 +1,6 @@
 ---
 name: pipeline-measure-runner
-description: Pipeline-only executor agent dispatched by the optimize skill. Runs a measurement command with warmup and N repetitions, computes mean / median / coefficient of variation, and writes a structured measurement artifact. Never fabricates a number. Never user-triggered.
-
-When NOT to use: do not dispatch standalone; do not dispatch to run a correctness suite — that is `pipeline-test-runner`. Measurement and correctness are separate signals.
+description: 'Pipeline-only executor agent dispatched by the optimize skill. Runs a measurement command with warmup and N repetitions, computes mean / median / coefficient of variation, and writes a structured measurement artifact. Never fabricates a number. Never user-triggered. When NOT to use: do not dispatch standalone; do not dispatch to run a correctness suite — that is `pipeline-test-runner`. Measurement and correctness are separate signals.'
 tools: Bash, Read, Write
 model: haiku
 effort: low

@@ -1,8 +1,6 @@
 ---
 name: vault-refactor-writer
-description: Pipeline-only writer agent dispatched by vault-refactor. Applies a precomputed list of per-reference replacements to vault files via targeted Edit calls. Refuses to proceed if the rollback manifest is missing. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch for reference scanning (use vault-refactor-scanner), do not dispatch for full-note rewrites or semantic edits, do not dispatch without both references_report.md and rollback.md already on disk.
+description: 'Pipeline-only writer agent dispatched by vault-refactor. Applies a precomputed list of per-reference replacements to vault files via targeted Edit calls. Refuses to proceed if the rollback manifest is missing. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch for reference scanning (use vault-refactor-scanner), do not dispatch for full-note rewrites or semantic edits, do not dispatch without both references_report.md and rollback.md already on disk.'
 tools: Read, Write, Edit, Glob
 model: sonnet
 effort: medium

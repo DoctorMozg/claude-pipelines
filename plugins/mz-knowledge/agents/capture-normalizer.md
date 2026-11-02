@@ -1,8 +1,6 @@
 ---
 name: capture-normalizer
-description: Pipeline-only agent dispatched by vault-ingest. Invokes the right transcription or OCR tool for a captured modality (voice, image, PDF, YouTube), cleans the output, and writes a single transcript artifact. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch to write vault notes (the orchestrator handles frontmatter + inbox placement), do not dispatch for atomization (use atomization-proposer for that), do not dispatch when the tool path has not been resolved to an absolute path.
+description: 'Pipeline-only agent dispatched by vault-ingest. Invokes the right transcription or OCR tool for a captured modality (voice, image, PDF, YouTube), cleans the output, and writes a single transcript artifact. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch to write vault notes (the orchestrator handles frontmatter + inbox placement), do not dispatch for atomization (use atomization-proposer for that), do not dispatch when the tool path has not been resolved to an absolute path.'
 tools: Read, Bash, Write
 model: haiku
 effort: low

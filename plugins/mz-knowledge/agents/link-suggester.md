@@ -1,8 +1,6 @@
 ---
 name: link-suggester
-description: Pipeline-only agent dispatched by process-notes and vault-connect. Searches vault for existing notes that should be linked to or from target notes. Produces typed relationship proposals. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch to create or write wikilinks into vault notes (the orchestrator applies approved links), do not dispatch for atomization — use atomization-proposer for that.
+description: 'Pipeline-only agent dispatched by process-notes and vault-connect. Searches vault for existing notes that should be linked to or from target notes. Produces typed relationship proposals. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch to create or write wikilinks into vault notes (the orchestrator applies approved links), do not dispatch for atomization — use atomization-proposer for that.'
 tools: Read, Grep, Glob, Write
 model: sonnet
 effort: medium

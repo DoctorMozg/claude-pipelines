@@ -1,8 +1,6 @@
 ---
 name: pipeline-tooling-detector
-description: Pipeline-only detector agent dispatched by skill orchestrators. Reads project manifests to detect test, lint, format, and type-check tooling and writes a structured tooling.md artifact. Returns cached `.mz/tooling.json` when present unless `force_refresh: true` is specified. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch when tooling is already confirmed in a prior phase artifact.
+description: 'Pipeline-only detector agent dispatched by skill orchestrators. Reads project manifests to detect test, lint, format, and type-check tooling and writes a structured tooling.md artifact. Returns cached `.mz/tooling.json` when present unless `force_refresh: true` is specified. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch when tooling is already confirmed in a prior phase artifact.'
 tools: Read, Glob, Bash, Write
 model: haiku
 effort: low

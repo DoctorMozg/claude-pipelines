@@ -1,8 +1,6 @@
 ---
 name: vault-refactor-scanner
-description: Pipeline-only scanner agent dispatched by vault-refactor. Enumerates every reference to a given note across an Obsidian vault — covering every OFM wikilink form, quoted YAML frontmatter wikilinks, and Bases link() formulas. Writes a structured references_report.md. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch for vault content modification (this agent is read-only on the vault), do not dispatch for orphan/broken-link detection (use vault-audit-collector), do not dispatch without an `old_basename` and `new_value` in the prompt.
+description: 'Pipeline-only scanner agent dispatched by vault-refactor. Enumerates every reference to a given note across an Obsidian vault — covering every OFM wikilink form, quoted YAML frontmatter wikilinks, and Bases link() formulas. Writes a structured references_report.md. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch for vault content modification (this agent is read-only on the vault), do not dispatch for orphan/broken-link detection (use vault-audit-collector), do not dispatch without an `old_basename` and `new_value` in the prompt.'
 tools: Read, Grep, Glob, Write
 model: sonnet
 effort: medium

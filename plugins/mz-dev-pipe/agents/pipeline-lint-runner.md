@@ -1,8 +1,6 @@
 ---
 name: pipeline-lint-runner
-description: Pipeline-only executor agent dispatched by skill orchestrators. Runs lint and/or format commands, parses per-file issues, and writes a structured lint_results.md artifact. Missing or unconfigured tools are noted but never block. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch when you already have fresh lint results from a prior phase in the same task directory.
+description: 'Pipeline-only executor agent dispatched by skill orchestrators. Runs lint and/or format commands, parses per-file issues, and writes a structured lint_results.md artifact. Missing or unconfigured tools are noted but never block. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch when you already have fresh lint results from a prior phase in the same task directory.'
 tools: Bash, Read, Write
 model: haiku
 effort: low

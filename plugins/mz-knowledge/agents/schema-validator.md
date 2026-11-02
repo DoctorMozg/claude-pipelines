@@ -1,8 +1,6 @@
 ---
 name: schema-validator
-description: Pipeline-only agent dispatched by vault-schema. Validates every note frontmatter in an Obsidian vault against a YAML DSL declaration at `.mz/vault-schema.yml` and emits severity-labeled findings. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch for content editing or link fixes, do not dispatch without a declared schema file — this agent is read-only on the vault and writes only to the task directory.
+description: 'Pipeline-only agent dispatched by vault-schema. Validates every note frontmatter in an Obsidian vault against a YAML DSL declaration at `.mz/vault-schema.yml` and emits severity-labeled findings. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch for content editing or link fixes, do not dispatch without a declared schema file — this agent is read-only on the vault and writes only to the task directory.'
 tools: Read, Glob, Write
 model: haiku
 effort: low

@@ -1,8 +1,6 @@
 ---
 name: github-pr-info-scorer
-description: Pipeline-only collector agent dispatched by github-pr-scanner. Given a single PR, gathers lightweight metadata (title, author, age, labels), complexity signals (files changed, ±LOC), and answered/unanswered state, then classifies into a triage tier and writes a scored artifact. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch for a deep code review (that belongs to github-pr-reviewer via the /github-review-pr skill), do not read diff content — only metadata and counts.
+description: 'Pipeline-only collector agent dispatched by github-pr-scanner. Given a single PR, gathers lightweight metadata (title, author, age, labels), complexity signals (files changed, ±LOC), and answered/unanswered state, then classifies into a triage tier and writes a scored artifact. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch for a deep code review (that belongs to github-pr-reviewer via the /github-review-pr skill), do not read diff content — only metadata and counts.'
 tools: Bash, Read, Write, mcp__github__*, mcp__plugin_github_github__*
 model: haiku
 effort: low

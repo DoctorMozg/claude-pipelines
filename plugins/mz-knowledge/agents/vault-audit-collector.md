@@ -1,8 +1,6 @@
 ---
 name: vault-audit-collector
-description: Pipeline-only collector agent dispatched by vault-health. Scans an Obsidian vault for orphan notes, broken wikilinks, stub notes, stale notes, and tag statistics. Writes structured audit_data.md. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch when the audit artifact already exists for this task directory, do not dispatch for vault content modification — this agent is read-only.
+description: 'Pipeline-only collector agent dispatched by vault-health. Scans an Obsidian vault for orphan notes, broken wikilinks, stub notes, stale notes, and tag statistics. Writes structured audit_data.md. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch when the audit artifact already exists for this task directory, do not dispatch for vault content modification — this agent is read-only.'
 tools: Read, Bash, Glob, Grep, Write
 model: sonnet
 effort: medium

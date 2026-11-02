@@ -1,8 +1,6 @@
 ---
 name: pipeline-test-runner
-description: Pipeline-only executor agent dispatched by skill orchestrators. Runs the project test suite (or a subset), parses per-test results, and writes a structured test_results.md artifact. Handles scoped runs and specific test file lists. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch when no test command is available — that is a BLOCKED condition that the orchestrator must resolve via AskUserQuestion before dispatching.
+description: 'Pipeline-only executor agent dispatched by skill orchestrators. Runs the project test suite (or a subset), parses per-test results, and writes a structured test_results.md artifact. Handles scoped runs and specific test file lists. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch when no test command is available — that is a BLOCKED condition that the orchestrator must resolve via AskUserQuestion before dispatching.'
 tools: Bash, Read, Write
 model: haiku
 effort: low

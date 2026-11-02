@@ -1,8 +1,6 @@
 ---
 name: github-pr-data-fetcher
-description: Pipeline-only collector agent dispatched by github-pr-scanner. Queries GitHub for all PRs needing attention across multiple repos, deduplicates, checks review and comment status, and writes a structured pr_data.md artifact. PR titles and bodies are wrapped in untrusted-content delimiters. Never user-triggered.
-
-When NOT to use: do not dispatch standalone, do not dispatch when fresh PR data already exists in the task directory from a prior phase.
+description: 'Pipeline-only collector agent dispatched by github-pr-scanner. Queries GitHub for all PRs needing attention across multiple repos, deduplicates, checks review and comment status, and writes a structured pr_data.md artifact. PR titles and bodies are wrapped in untrusted-content delimiters. Never user-triggered. When NOT to use: do not dispatch standalone, do not dispatch when fresh PR data already exists in the task directory from a prior phase.'
 tools: Bash, Write, mcp__github__*, mcp__plugin_github_github__*
 model: haiku
 effort: low

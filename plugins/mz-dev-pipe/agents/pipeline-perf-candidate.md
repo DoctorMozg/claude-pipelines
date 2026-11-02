@@ -1,8 +1,6 @@
 ---
 name: pipeline-perf-candidate
-description: Pipeline-only implementer agent dispatched by the optimize skill. Implements exactly one performance-optimization hypothesis as one diversified candidate change in an isolated worktree, runs the correctness command, and STOPS before measuring. Never user-triggered.
-
-When NOT to use: do not dispatch standalone; do not dispatch to measure a candidate — measurement is serial and runs through `pipeline-measure-runner`; do not dispatch for general feature work — use `pipeline-coder`.
+description: 'Pipeline-only implementer agent dispatched by the optimize skill. Implements exactly one performance-optimization hypothesis as one diversified candidate change in an isolated worktree, runs the correctness command, and STOPS before measuring. Never user-triggered. When NOT to use: do not dispatch standalone; do not dispatch to measure a candidate — measurement is serial and runs through `pipeline-measure-runner`; do not dispatch for general feature work — use `pipeline-coder`.'
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: high
