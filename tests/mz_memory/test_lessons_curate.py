@@ -13,6 +13,7 @@ from .memory_helpers import (
     BASH,
     CALLER_VARS,
     INBOX_START,
+    LESSON_MAX_CHARS,
     SCRIPTS,
     FakeCurator,
     SeedLessons,
@@ -36,7 +37,6 @@ EVICT_TO = 480
 MAX_OPS = 30
 MAX_REMOVED = 10
 OPS_LOG_MAX = 1000
-LESSON_MAX_CHARS = 400
 HOOK_SCRIPTS = (
     "memory-capture.sh",
     "memory-inject.sh",

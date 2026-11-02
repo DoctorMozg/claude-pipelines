@@ -1,7 +1,6 @@
 import json
 import os
 import re
-import shutil
 import subprocess
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
@@ -9,10 +8,9 @@ from pathlib import Path
 
 import pytest
 
-SCRIPT = (
-    Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts" / "journal-capture.sh"
-)
-BASH = shutil.which("bash") or "/bin/bash"
+from .memory_helpers import BASH, SCRIPTS
+
+SCRIPT = SCRIPTS / "journal-capture.sh"
 # Everything the script runs except jq, so a PATH built from these hides jq only.
 TOOLS_WITHOUT_JQ = ("dirname", "cat", "date", "mkdir", "perl", "sed", "flock")
 SESSION = "3f2b6c1e-8a4d-4f7e-9c2a-1b5d7e9f0a12"
