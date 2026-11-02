@@ -1,6 +1,6 @@
 ---
 name: vault-triage
-description: 'ALWAYS invoke when triaging inbox fleeting notes in a fast batch with promote/merge/discard/defer decisions. Triggers: triage inbox, fleeting review, clear inbox, batch decide.'
+description: 'Triages inbox fleeting notes with promote, merge, discard or defer decisions. Use when the user wants the inbox cleared fast ("triage inbox", "fleeting review", "clear inbox", "batch decide"). Not for resurfacing permanent notes (use vault-review).'
 argument-hint: '[vault path]'
 model: sonnet
 allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(rm *), Bash(sha256sum *), Bash(shasum *), Glob, AskUserQuestion
@@ -14,11 +14,11 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 ## When to Use
 
-- Weekly inbox review to clear backlog after bursty capture sessions.
-- Post-capture cleanup when several fleeting notes have accumulated.
+Clearing a backlog of fleeting inbox notes in small fast batches, such as after a bursty capture session.
 
 ### When NOT to use
 
+- Resurfacing permanent notes already in the vault for review — use `vault-review`.
 - Editing a single known note — use `Edit` directly.
 - Atomizing a long fleeting note into multiple permanent notes — use `process-notes`.
 - Proposing `[[wikilinks]]` between existing notes — use `vault-connect`.

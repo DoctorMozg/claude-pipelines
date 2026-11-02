@@ -1,6 +1,6 @@
 ---
 name: vault-review
-description: ALWAYS invoke when starting a knowledge review session, surfacing notes to review, checking which notes are due for review, or running the weekly/monthly review ritual.
+description: 'Builds a ranked queue of permanent notes and runs a daily, weekly or monthly review session. Use when the user wants notes surfaced for review ("review session", "notes due for review", "weekly review"). Not for clearing the inbox (use vault-triage).'
 argument-hint: '[optional: review mode — daily|weekly|monthly, or leave empty for smart queue]'
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(mv *), Read, Write, Glob, Grep, AskUserQuestion
@@ -14,12 +14,11 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 ## When to Use
 
-- Starting a review session.
-- Checking which permanent notes need attention.
-- Running the daily/weekly/monthly review ritual.
+Resurfacing permanent notes that need attention, ranked in a queue, for a daily, weekly or monthly review session.
 
 ### When NOT to use
 
+- For clearing new fleeting notes out of the inbox — use `vault-triage`.
 - For vault maintenance (orphans, broken links, stale sweeps) — use `vault-health`.
 - For processing new notes into atomic form — use `process-notes`.
 - For quick single-note review without the queue system — just `Read` and `Edit` directly.

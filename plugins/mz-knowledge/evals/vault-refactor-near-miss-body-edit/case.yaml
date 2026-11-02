@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: vault-refactor-near-miss-body-edit
+description: Replacing a word inside one note's body while the file name and every other note stay untouched is a plain Edit, not a rename or move.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    In Projects/Falcon/Kickoff notes.md the last paragraph still calls the project
+    Falcon. Change those mentions to Meridian in that paragraph only. Leave the
+    file name, the title and every other note exactly as they are.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-refactor-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-refactor"'
+    min: 0
+    max: 0
+    arm: both

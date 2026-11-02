@@ -1,6 +1,6 @@
 ---
 name: vault-refactor
-description: 'ALWAYS invoke when renaming a vault note, moving a note to a different folder, or refactoring wikilink references across the vault. Triggers: rename note, move note, vault refactor, update wikilinks.'
+description: 'Renames or moves a vault note and rewrites every reference to it. Use when the user wants a note renamed or moved with wikilinks updated ("rename note", "move note", "vault refactor", "update wikilinks"). Not for bulk link cleanup (use vault-health).'
 argument-hint: '<old_name>::<new_name_or_path> [vault path]'
 model: opus
 allowed-tools: Agent, Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(mv *), Bash(sha256sum *), Bash(shasum *), AskUserQuestion
@@ -14,9 +14,7 @@ Discipline skill that performs a safe rename or move of an Obsidian note with a 
 
 ## When to Use
 
-- Renaming a permanent or fleeting note to a new claim-style title.
-- Moving a note to a different folder (with or without rename).
-- Merging-variant: renaming a note into an existing folder structure so referrers update to the new path.
+Renaming a permanent or fleeting note (for example to a new claim-style title), moving it to a different folder, or both, with every reference in the vault rewritten to the new name or path.
 
 ### When NOT to use
 

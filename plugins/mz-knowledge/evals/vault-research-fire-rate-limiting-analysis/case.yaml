@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: vault-research-fire-rate-limiting-analysis
+description: Moving the findings of a long agent-written analysis into the vault as linkable notes that point back to the source file is vault-research work, even with no path given.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    The long analysis my agents wrote up yesterday on rate-limiting strategies
+    for our public API is too big to ever reread, and I don't want it rotting
+    in a project folder. I want its findings in my Obsidian vault for good,
+    each as its own linkable note that points back to where it came from. Show
+    me the split before anything is saved.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-research"'

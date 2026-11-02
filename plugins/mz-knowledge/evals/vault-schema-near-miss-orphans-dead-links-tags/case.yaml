@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: vault-schema-near-miss-orphans-dead-links-tags
+description: A whole-vault sweep for orphans, dead wikilinks and tag spelling drift is a hygiene audit, so it belongs to vault-health.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Tags in my vault are a mess: #ml, #machine-learning and #ML all exist. I also
+    suspect a pile of orphans and dead wikilinks. Audit the whole vault at
+    ~/Obsidian/Main and give me a report.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-schema-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-schema"'
+    min: 0
+    max: 0
+    arm: both

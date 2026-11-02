@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: vault-triage-fire-oldest-capture-folder
+description: Getting a quick keep, fold-in, delete or postpone verdict on each of the oldest notes in the vault's inbox folder is a batch triage pass, so it belongs to vault-triage.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    The seven oldest notes in ~/notes/vault/inbox/ have been sitting there since
+    the start of October and I'm sick of looking at them. Walk me through them
+    one by one with a suggested verdict for each: move it to my permanent folder,
+    fold it into a note I already have, delete it, or leave it for another couple
+    of weeks. I'll pick the target note myself for anything that gets folded in.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-triage-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-triage"'

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: vault-review-fire-weekly-ritual
+description: Asking for the weekly review ritual and the notes that are due is the core vault-review job.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    It's Friday, time for my weekly review ritual. Surface the notes in
+    ~/Documents/Obsidian/Zettel that are due for review and we'll go through them.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-review"'

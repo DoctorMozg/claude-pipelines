@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: vault-research-near-miss-own-literature-notes
+description: Splitting the user's own typed notes that already sit in the vault inbox into claim-titled permanent notes belongs to process-notes, not vault-research.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    My thesis literature review scratch file is Inbox/lit-review scratch.md. It's
+    my own research notes, typed as I read papers over the last month, around
+    1,500 words with a pile of different ideas mixed together. Break it into
+    separate permanent notes with claim-style titles. Nothing gets saved until
+    I've seen the drafts.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-research-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-research"'
+    min: 0
+    max: 0
+    arm: both

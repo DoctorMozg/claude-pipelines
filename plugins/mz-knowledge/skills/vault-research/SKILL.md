@@ -1,6 +1,6 @@
 ---
 name: vault-research
-description: 'ALWAYS invoke when injecting a research report or brainstorm report from .mz/research or .mz/reports into the vault as atomized notes. Triggers: ingest research, import report, atomize report, research to notes.'
+description: 'Atomizes a research or brainstorm report from .mz/ into permanent vault notes. Use when the user wants a report imported ("ingest research", "import report", "atomize report", "research to notes"). Not for the user''s own captures (use process-notes).'
 argument-hint: <report path>
 model: opus
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Grep, AskUserQuestion
@@ -14,8 +14,7 @@ Discipline skill that atomizes a long research report into permanent notes, pre-
 
 ## When to Use
 
-- Importing research outputs, brainstorm reports, or deep-research reports from `.mz/research/` or `.mz/reports/`.
-- Converting long structured reports (panel deliberations, methodology sections, cut ideas) into separately linkable permanent notes while discarding pre-known noise sections.
+Turning a generated research, brainstorm or deep-research report from `.mz/research/` or `.mz/reports/` into separately linkable permanent notes, discarding known noise sections (panel deliberations, methodology, cut ideas).
 
 ### When NOT to use
 

@@ -1,6 +1,6 @@
 ---
 name: vault-schema
-description: 'ALWAYS invoke when validating vault frontmatter schema, migrating vault notes to a new schema, or checking note-type frontmatter compliance. Triggers: vault schema, frontmatter validation, schema migration.'
+description: 'Validates vault frontmatter against a note-type schema and migrates notes to match. Use when the user wants frontmatter checked ("vault schema", "frontmatter validation", "schema migration"). Not for links, orphans, stubs or tags (use vault-health).'
 argument-hint: '<validate|migrate> [vault path]'
 model: sonnet
 allowed-tools: Agent, Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(sha256sum *), Bash(awk *), Bash(cut *), AskUserQuestion
@@ -14,7 +14,7 @@ Discipline skill that manages a flat YAML schema DSL at `.mz/vault-schema.yml` a
 
 ## When to Use
 
-Invoke when declaring a vault schema, checking notes against an existing schema, or back-filling missing frontmatter after a schema change. Trigger phrases: "validate my vault schema", "run schema migration", "check frontmatter compliance".
+Declaring a vault schema, checking notes against it, or back-filling missing frontmatter after a schema change.
 
 ### When NOT to use
 

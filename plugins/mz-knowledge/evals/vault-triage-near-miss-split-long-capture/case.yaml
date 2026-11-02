@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: vault-triage-near-miss-split-long-capture
+description: Splitting one long multi-idea fleeting note into several atomic permanent notes with claim-style titles is the fleeting-to-permanent pipeline, so it belongs to process-notes.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    inbox/2026-10-28 DDIA chapter 5 reading.md is one long fleeting note, around
+    1,800 words, with replication lag, leader election and quorum reads all mixed
+    together. I want it broken up into separate atomic notes, each with a
+    claim-style title and proper frontmatter, written into 04 - Permanent/ once
+    I've signed off on the drafts.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-triage-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-triage"'
+    min: 0
+    max: 0
+    arm: both
