@@ -105,3 +105,10 @@ def agents() -> DocSet:
     doc_set = _load_doc_set("*/agents/*.md")
     assert doc_set.docs, f"no agent files found under {PLUGINS_DIR}"
     return doc_set
+
+
+@pytest.fixture(scope="session")
+def skills() -> DocSet:
+    doc_set = _load_doc_set("*/skills/*/SKILL.md")
+    assert doc_set.docs, f"no SKILL.md files found under {PLUGINS_DIR}"
+    return doc_set
