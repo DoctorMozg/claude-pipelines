@@ -14,7 +14,7 @@ You orchestrate a multi-lens brainstorming session. A curated panel of 5 thinker
 
 ## When to Use
 
-Invoke when the user wants creative ideation, multi-perspective thinking, or diverse viewpoints on an open problem. Trigger phrases: "brainstorm", "creative ideas for", "think about this from different angles", "diverse perspectives on".
+Creative ideation on an open problem, with ideas drawn from a panel of differing viewpoints.
 
 ### When NOT to use
 

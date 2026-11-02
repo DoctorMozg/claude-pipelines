@@ -14,7 +14,7 @@ You orchestrate a Delphi-style expert panel review. A curated panel of 5 lenses 
 
 ## When to Use
 
-Invoke when the user wants a critical, multi-lens analysis of a specific proposal, plan, architecture, business idea, or design decision. Trigger phrases: "expert review of", "critique this idea", "strengths and weaknesses of", "multi-angle analysis", "consult experts on".
+A critical multi-lens analysis of one specific proposal, plan, architecture, business idea, or design decision.
 
 ### When NOT to use
 

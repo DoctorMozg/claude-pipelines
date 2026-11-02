@@ -14,9 +14,7 @@ Produces promotional and persuasive copy — landing pages, launch emails, annou
 
 ## When to Use
 
-- User wants a landing page, email, announcement, social post, changelog entry, or pitch
-- User wants to rewrite existing marketing copy with sharper positioning
-- Triggers: "write a landing page", "draft a launch email", "release-notes for X", "social post about Y", "pitch one-pager", "marketing copy for"
+Promotional copy (landing page, email, announcement, social post, changelog entry, pitch), written fresh or as a rewrite of existing marketing copy with sharper positioning.
 
 ### When NOT to use
 

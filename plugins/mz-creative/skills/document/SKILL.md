@@ -14,9 +14,7 @@ Creates or polishes technical documentation for a project. Researches the codeba
 
 ## When to Use
 
-- User asks to create docs (README, API reference, guide, tutorial, how-to, explanation)
-- User asks to polish or rewrite existing documentation
-- Triggers: "write docs for X", "document this module", "draft API reference", "polish the README", "create a tutorial"
+Technical documentation (README, API reference, guide, tutorial, how-to, explanation), written from scratch or polished from an existing document.
 
 ### When NOT to use
 
