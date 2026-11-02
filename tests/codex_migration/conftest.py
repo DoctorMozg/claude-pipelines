@@ -118,10 +118,18 @@ class SourceTree:
 
     def link(self, name: str, target: Path) -> Path:
         """Create a relative symlink at skill/<name>, the way a marketplace would commit it."""
-        link = self.skill / name
-        link.parent.mkdir(parents=True, exist_ok=True)
-        link.symlink_to(os.path.relpath(target, link.parent))
-        return link
+        return _relative_link(self.skill / name, target)
+
+    def link_plugin_shared(self, plugin: str) -> str:
+        """Link plugins/<plugin>/shared to mz-base's shared folder; returns its repository path."""
+        link = _relative_link(self.root / "plugins" / plugin / "shared", self.shared)
+        return link.relative_to(self.root).as_posix()
+
+
+def _relative_link(link: Path, target: Path) -> Path:
+    link.parent.mkdir(parents=True, exist_ok=True)
+    link.symlink_to(os.path.relpath(target, link.parent))
+    return link
 
 
 @pytest.fixture
@@ -135,7 +143,7 @@ def source_tree(
     skill = root / valid_catalog.skills[0].source
     write_skill(skill / "SKILL.md", "Read references/scope.md.\n")
     write_role(root / valid_catalog.roles[0].source)
-    shared = root / "plugins/mz-base/skills/shared"
+    shared = root / "plugins/mz-base/shared"
     (shared / "nested").mkdir(parents=True)
     (shared / "scope.md").write_text("Scope from ${CLAUDE_PLUGIN_ROOT}.\n", encoding="utf-8")
     (shared / "nested/deep.md").write_text("Deep reference.\n", encoding="utf-8")

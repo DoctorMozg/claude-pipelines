@@ -172,6 +172,34 @@ class TestSymlinkedSources:
         assert validate_catalog(valid_catalog, source_tree.root).issues == ()
 
 
+class TestSharedRoot:
+    def test_missing_shared_folder_is_reported(
+        self, source_tree: SourceTree, valid_catalog: Catalog
+    ) -> None:
+        catalog = valid_catalog.model_copy(update={"shared_root": "plugins/mz-dev-pipe/shared"})
+
+        report = validate_catalog(catalog, source_tree.root)
+
+        assert tuple((issue.code, issue.subject) for issue in report.issues) == (
+            ("missing-shared-source", "shared"),
+        )
+
+    def test_escape_inside_the_shared_folder_is_reported(
+        self, source_tree: SourceTree, valid_catalog: Catalog, tmp_path: Path
+    ) -> None:
+        outside = tmp_path / "outside.md"
+        outside.write_text("Outside.\n", encoding="utf-8")
+        (source_tree.shared / "escape.md").symlink_to(outside)
+        shared_root = source_tree.link_plugin_shared("mz-dev-pipe")
+        catalog = valid_catalog.model_copy(update={"shared_root": shared_root})
+
+        report = validate_catalog(catalog, source_tree.root)
+
+        assert tuple((issue.code, issue.subject) for issue in report.issues) == (
+            ("path-escape", "shared"),
+        )
+
+
 def test_package_validation_reports_each_forbidden_token(
     tmp_path: Path,
     valid_catalog: Catalog,

@@ -225,6 +225,8 @@ class Catalog(FrozenModel):
     role_resources: tuple[RoleResourceSpec, ...] = ()
     hooks: tuple[HookSpec, ...] = ()
     transforms: tuple[ExactTransformSpec, ...] = ()
+    # The plugin's shared/ folder (often a link to mz-base's); it renders to shared/ in the package.
+    shared_root: RepositoryPath | None = None
 
     @model_validator(mode="after")
     def names_are_unique(self) -> Self:

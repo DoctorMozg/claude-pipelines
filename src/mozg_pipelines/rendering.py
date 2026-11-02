@@ -121,6 +121,7 @@ class RenderResult(FrozenModel):
     role_resource_paths: tuple[Path, ...]
     hook_paths: tuple[Path, ...]
     hook_script_paths: tuple[Path, ...]
+    shared_path: Path | None
     dependency_contract_path: Path | None
 
 
@@ -169,6 +170,7 @@ def render_codex_package(spec: CodexPackageSpec) -> RenderResult:
             skill_paths = _render_skills(spec, staging_root)
             role_resource_paths = _render_role_resources(spec, staging_root)
             hook_paths, hook_script_paths = _render_hooks(spec, staging_root)
+            shared_path = _render_shared(spec, staging_root)
             dependency_contract_path = _render_dependency_contract(spec, staging_root)
             _write_manifest(spec, staging_root)
 
@@ -190,6 +192,7 @@ def render_codex_package(spec: CodexPackageSpec) -> RenderResult:
         role_resource_paths=role_resource_paths,
         hook_paths=hook_paths,
         hook_script_paths=hook_script_paths,
+        shared_path=shared_path,
         dependency_contract_path=dependency_contract_path,
     )
     logger.info("Rendered Codex package successfully at %s", result.package_root)
@@ -217,6 +220,15 @@ def _render_skills(spec: CodexPackageSpec, staging_root: Path) -> tuple[Path, ..
         )
         rendered_paths.append(target_path.relative_to(staging_root))
     return tuple(rendered_paths)
+
+
+def _render_shared(spec: CodexPackageSpec, staging_root: Path) -> Path | None:
+    if spec.catalog.shared_root is None:
+        return None
+    target = Path("shared")
+    _copy_source_tree(spec, spec.source_root / spec.catalog.shared_root, staging_root / target)
+    logger.info("Rendered shared folder %s", spec.catalog.shared_root)
+    return target
 
 
 def _render_role_resources(spec: CodexPackageSpec, staging_root: Path) -> tuple[Path, ...]:

@@ -435,3 +435,36 @@ class TestSymlinkedSources:
 
         assert caught.value.kind is RenderFailure.INVALID_SOURCE
         assert not spec.package_root.exists()
+
+
+class TestSharedFolder:
+    @pytest.fixture
+    def spec(
+        self,
+        tmp_path: Path,
+        source_tree: SourceTree,
+        package_spec_factory: Callable[[Path, str], CodexPackageSpec],
+    ) -> CodexPackageSpec:
+        return package_spec_factory(tmp_path, "0.49.0")
+
+    def test_linked_shared_folder_renders_at_package_root(
+        self, spec: CodexPackageSpec, source_tree: SourceTree
+    ) -> None:
+        shared_root = source_tree.link_plugin_shared("mz-dev-pipe")
+        catalog = spec.catalog.model_copy(update={"shared_root": shared_root})
+
+        result = render_codex_package(spec.model_copy(update={"catalog": catalog}))
+
+        rendered = spec.package_root / "shared"
+        assert result.shared_path == Path("shared")
+        assert not rendered.is_symlink()
+        assert (rendered / "scope.md").read_text(encoding="utf-8") == "Scope from ${PLUGIN_ROOT}.\n"
+        assert (rendered / "nested/deep.md").is_file()
+
+    def test_catalog_without_shared_root_renders_no_shared_folder(
+        self, spec: CodexPackageSpec
+    ) -> None:
+        result = render_codex_package(spec)
+
+        assert result.shared_path is None
+        assert not (spec.package_root / "shared").exists()

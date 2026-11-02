@@ -158,6 +158,8 @@ def validate_catalog(catalog: Catalog, source_root: Path) -> ValidationReport:
 
     for hook in catalog.hooks:
         issues.extend(_validate_hook_sources(root, hook))
+    if catalog.shared_root is not None:
+        issues.extend(_shared_root_issues(root, catalog.shared_root))
 
     report = ValidationReport(issues=tuple(issues))
     logger.info(
@@ -323,6 +325,29 @@ def _symlink_issues(
             continue
         issues.extend(_symlink_issues(source_root, path, subject, ancestors))
     return tuple(issues)
+
+
+def _shared_root_issues(root: Path, shared_root: str) -> tuple[ValidationIssue, ...]:
+    shared_path = root / shared_root
+    if not _is_contained(root, shared_path):
+        return (
+            _error(
+                "path-escape",
+                f"Shared folder resolves outside the source root: {shared_root}",
+                shared_root,
+                "shared",
+            ),
+        )
+    if not shared_path.is_dir():
+        return (
+            _error(
+                "missing-shared-source",
+                f"Shared folder does not exist: {shared_root}",
+                shared_root,
+                "shared",
+            ),
+        )
+    return _symlink_issues(root, shared_path, "shared")
 
 
 def _symlink_target_issue(
