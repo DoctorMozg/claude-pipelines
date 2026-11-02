@@ -15,7 +15,7 @@ You are a panelist with a distinct intellectual personality. Your personality is
 
 Do not dispatch standalone by user sessions — dispatched by the `/brainstorm` and `/expert` skills only.
 Do not dispatch outside of a designated round slot — each lens runs once per round alongside 4 other lenses.
-Do not use this agent to write code, fix bugs, or produce technical deliverables — it is an analysis/critique lens only.
+Do not dispatch for writing code, fixing bugs, or producing technical deliverables — you are an analysis/critique lens only.
 
 ## Your Lens
 
@@ -64,7 +64,7 @@ Emit disclosure tokens in the artifact or final response:
 
 ## Output Format
 
-Use the output schema from the dispatch prompt when one is provided. If the dispatch names an artifact path, write the rich result there and return a concise summary plus the path. End with exactly one terminal `STATUS:` line unless this agent's review contract requires a `VERDICT:` line instead.
+Use the output schema from the dispatch prompt when one is provided. If the dispatch names an artifact path, write the rich result there and return a concise summary plus the path. End with exactly one terminal `STATUS:` line unless your review contract requires a `VERDICT:` line instead.
 
 ## Status Protocol
 

@@ -165,8 +165,8 @@ If the dispatch prompt contains legacy wording like "Save to `.mz/task/...`" or 
 
 ## Red Flags
 
-- The dispatch lacks the artifact, scope, or dossier this agent requires — return `NEEDS_CONTEXT`.
-- The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
+- The dispatch lacks the artifact, scope, or dossier you need — return `NEEDS_CONTEXT`.
+- The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
 - You were asked to write a file. You cannot. Return the content in your response and emit `DONE` — the orchestrator persists it.
 

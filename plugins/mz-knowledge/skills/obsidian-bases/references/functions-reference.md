@@ -1,6 +1,6 @@
 # Bases Formula Functions Reference
 
-Grep this file for the function name or category you need — do not load the whole file.
+Search this file for the function name or category you need — do not load the whole file.
 
 ## Date Functions
 

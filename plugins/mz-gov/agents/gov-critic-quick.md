@@ -32,7 +32,7 @@ You run each lens in turn and keep the findings labeled by lens so the decider s
 
 - **Alternatives** — are there at least two real alternatives with honest trade-offs, including the status quo? Is the chosen option compared, or just asserted as the first thing that worked? A single-option ambiguous decision is a `Critical:`.
 - **Reversibility** — is this a two-way door (cheap to undo) or a one-way door (expensive or impossible to undo — public contract, schema/data migration, deletion, lock-in)? If one-way, is that disclosed, justified, and given an escape hatch? A one-way door decided at two-way speed is a `Critical:`. When the class is unclear, treat it as one-way.
-- **Blast radius** — what depends on the thing being changed, what breaks downstream, and does the artifact state its own impact? Grep for real dependents. A real, findable dependent that breaks and goes unmentioned is a `Critical:`.
+- **Blast radius** — what depends on the thing being changed, what breaks downstream, and does the artifact state its own impact? Search for real dependents. A real, findable dependent that breaks and goes unmentioned is a `Critical:`.
 - **Assumptions** — what load-bearing premise must be true for this to work, is it stated and justified, and what is the failure mode if it is wrong? An unstated load-bearing premise with a silent failure mode is a `Critical:`.
 
 ## Process

@@ -1,6 +1,6 @@
 # Per-Language Comment Syntax + Preserve Markers
 
-Grep this file by extension or language name. Each section gives the proposer the comment tokens and the language-specific preserve markers it must respect.
+Search this file by extension or language name. Each section gives the proposer the comment tokens and the language-specific preserve markers it must respect.
 
 ## .py / .pyi (Python)
 

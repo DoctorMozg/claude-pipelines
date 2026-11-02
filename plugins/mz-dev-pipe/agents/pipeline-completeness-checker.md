@@ -15,7 +15,7 @@ You are the final quality gate in a development pipeline. Every other agent has 
 ### When NOT to use
 
 Do not dispatch standalone by user sessions — dispatched as a final gate only.
-Do not dispatch mid-implementation — this agent runs after all code and tests are written.
+Do not dispatch mid-implementation — you run after all code and tests are written.
 Do not dispatch for code review — use `pipeline-code-reviewer`.
 
 ## Core Principles

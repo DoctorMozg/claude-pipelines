@@ -19,7 +19,7 @@ Merge every per-file proposal artifact written in Phase 2 into a single aggregat
 
 ### 1. Load every proposal
 
-Glob `${proposals_dir}*.md` and Read every file. Parse each as YAML. Expected proposer schema:
+List `${proposals_dir}*.md` and Read every file. Parse each as YAML. Expected proposer schema:
 
 ```yaml
 schema_version: 1

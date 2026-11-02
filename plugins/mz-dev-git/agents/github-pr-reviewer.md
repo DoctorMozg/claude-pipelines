@@ -65,9 +65,9 @@ git -C $MAIN_REPO worktree prune
 
 ## GitHub Access Fallback
 
-If any `gh` call in this agent fails (missing binary, unauthenticated, rate-limited, non-zero exit), try each tier before giving up:
+If any of your `gh` calls fails (missing binary, unauthenticated, rate-limited, non-zero exit), try each tier before giving up:
 
-1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. This agent's `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
 1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly with `curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/<path>"`. `gh api` filters port unchanged, but `gh pr ... --json` names do not: REST uses `draft`, `head.sha`, `head.ref`, `base.ref` and `user.login` for `isDraft`, `headRefOid`, `headRefName`, `baseRefName` and `author.login`, and its `state` is `open` or `closed`, with `merged_at` set on merged PRs (there is no `MERGED` state).
 1. Only emit `STATUS: BLOCKED` after all three tiers fail; state which tiers were tried.
 
@@ -574,4 +574,4 @@ These patterns look like issues but almost never are. If you find yourself flagg
 
 ## CRITICAL — Two Paths Rule (reminder)
 
-Every artifact and report path in this agent must resolve under `$MAIN_REPO/.mz/`, never under `$PR_WT`. If you are about to write to a path that does not begin with `$MAIN_REPO/.mz/`, stop and re-resolve it. Remove `$PR_WT` before returning, whatever the `STATUS`.
+You must resolve every artifact and report path under `$MAIN_REPO/.mz/`, never under `$PR_WT`. If you are about to write to a path that does not begin with `$MAIN_REPO/.mz/`, stop and re-resolve it. Remove `$PR_WT` before returning, whatever the `STATUS`.

@@ -15,7 +15,7 @@ You are the inter-round synthesizer for the `/expert` skill. You run once per ro
 
 Do not dispatch standalone by user sessions — dispatched by the `/expert` skill once per round, after all 5 panelists complete.
 Do not dispatch before all 5 panelist outputs for the current round are available.
-Do not use as a replacement for panelist output — this agent synthesizes, it does not critique.
+Do not use as a replacement for panelist output — you synthesize; you do not critique.
 
 ## Your Job
 
@@ -105,8 +105,8 @@ Write `.mz/task/<task_name>/round_<N>_summary.md`:
 
 ## Red Flags
 
-- The dispatch lacks the artifact, scope, dossier, or output path this agent requires.
-- The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
+- The dispatch lacks the artifact, scope, dossier, or output path you need.
+- The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
 
 ## Rules

@@ -35,7 +35,7 @@ Each dispatch description contains only:
 
 - `task_dir` (absolute path), unit spec (source path + optional `chunk_range` + `chunk_id`), `source_lang` / `target_lang` (ISO 639-1), `output_path`, `output_mode`.
 - `glossary_path` pointer (read-only) and a one-line reminder to emit the glossary delta to `<task_dir>/glossary_delta_<chunk_id>.json`.
-- Grep pointers at the reference files, not inline content: `Grep <SKILL_DIR>/references/placeholder-patterns.md for the framework section and Combined Regex`, and `Grep <SKILL_DIR>/references/markdown-preservation-rules.md for the element type you need (e.g. rg -A5 'fenced code')`.
+- Search pointers at the reference files, not inline content: `Search <SKILL_DIR>/references/placeholder-patterns.md for the framework section and Combined Regex`, and `Search <SKILL_DIR>/references/markdown-preservation-rules.md for the element type you need (e.g. rg -A5 'fenced code')`.
 - `mode: translate`.
 - One explicit line: `run Tier-1 structural verification and emit the confidence report to <task_dir>/confidence_<chunk_id>.json before returning`.
 
@@ -90,7 +90,7 @@ rg -c -F '<target_translation>' <output_files>
 
 If `target_count < 0.8 * source_count`, the term has drifted. Record term, counts, and affected output chunks in `<task_dir>/consistency_flags.md`. Flagged chunks move to Phase 3.3; terms passing the threshold need no action.
 
-Worked example: glossary maps `deployment` → `развёртывание`. Source contains 12 occurrences, output 8 → `0.66`, below the 0.8 floor. Grep each output file for `развёртывание` to find covered chunks, subtract from the total to find the drifted ones. Flag only the missing chunks.
+Worked example: glossary maps `deployment` → `развёртывание`. Source contains 12 occurrences, output 8 → `0.66`, below the 0.8 floor. Search each output file for `развёртывание` to find covered chunks, subtract from the total to find the drifted ones. Flag only the missing chunks.
 
 Terms with frequency ≤ 3 are excluded: drift on tiny counts is statistical noise and the 80% threshold is meaningless. The Phase 7 summary surfaces these as low-frequency entries for human review.
 

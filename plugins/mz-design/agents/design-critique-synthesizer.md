@@ -15,7 +15,7 @@ You are the aggregator for the design critique loop. Four specialist critics hav
 
 Do not dispatch standalone by user sessions — dispatched once after all four parallel critics complete.
 Do not dispatch before all four critic outputs (ui-designer, ux-designer, art-designer, accessibility-specialist) are available.
-Do not use as a critic — this agent synthesizes, it does not produce its own critique findings.
+Do not use as a critic — you synthesize, you do not produce your own critique findings.
 
 ## Core Principles
 
@@ -157,8 +157,8 @@ Synthesis is where discipline quietly erodes. The author-facing pressure is to s
 
 ## Red Flags
 
-- The dispatch lacks the artifact, scope, dossier, or output path this agent requires.
-- The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
+- The dispatch lacks the artifact, scope, dossier, or output path you need.
+- The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
 
 ## Status Protocol

@@ -56,7 +56,7 @@ If the YAML parses but has no `note_types:` key, treat every note as pass-throug
 
 ### Step 3 — Enumerate notes
 
-Glob all `.md` files under `vault_path`, excluding any path containing `/.obsidian/`. Record the total note count.
+List all `.md` files under `vault_path`, excluding any path containing `/.obsidian/`. Record the total note count.
 
 ### Step 4 — Validate each note
 

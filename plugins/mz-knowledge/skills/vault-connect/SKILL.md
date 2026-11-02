@@ -22,7 +22,7 @@ Discipline skill that finds existing vault notes that should be linked to or fro
 ### When NOT to use
 
 - Immediately after `process-notes` on the same note — link suggestions are already part of that pipeline.
-- For semantic search or content retrieval — use direct `Grep`/`Read` or an MCP-based search tool.
+- For semantic search or content retrieval — search and read the vault files directly, or use an MCP-based search tool.
 - For note content editing unrelated to links — just use `Edit` directly.
 
 ## Constants

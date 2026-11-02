@@ -73,5 +73,5 @@ Format the counts from `audit_data.md` for the Phase 1.5 approval gate defined i
 ## Error handling
 
 - **Agent returns empty or malformed `audit_data.md`** → retry the dispatch once with a clarified prompt. If still empty, note the gap in `state.md` and escalate via AskUserQuestion before the approval gate.
-- **Obsidian CLI missing** → record the fallback to file-scan mode in `state.md` and proceed — the collector should still produce findings via Bash/Glob/Grep.
+- **Obsidian CLI missing** → record the fallback to file-scan mode in `state.md` and proceed — the collector should still produce findings by listing and searching vault files.
 - **Vault path unreadable** → escalate via AskUserQuestion; never guess a substitute path.

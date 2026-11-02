@@ -43,7 +43,7 @@ ______________________________________________________________________
 
 | Token type found             | Scope resolution                                                                          |
 | ---------------------------- | ----------------------------------------------------------------------------------------- |
-| One or more path-like tokens | Expand them (Glob or directory walk) into a concrete file list                            |
+| One or more path-like tokens | Expand them (list the matching files or walk the directory) into a concrete file list     |
 | No path-like tokens          | Roam scope: entire repo minus `.gitignore`, vendored deps, generated code, and test files |
 
 **Roam-mode exclusions** (always applied):
@@ -62,7 +62,7 @@ If the final file list is empty, report to the user and exit.
 
 **Run this step if scope is bounded** — `scope:branch`, `scope:working`, or path-list (one or more path-like tokens). Bounded scopes risk silently missing downstream callers that the scoped change might break; computing blast-radius before lens dispatch lets researchers see the impacted files too.
 
-Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** using the orchestrator's Grep/Read/Bash tools (no agent dispatch — the calls are cheap and stay in the orchestrator window). Pass the resolved file list from §1.2 as `input_files`.
+Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** in the orchestrator, using code searches, Read and Bash (no agent dispatch — the calls are cheap and stay in the orchestrator window). Pass the resolved file list from §1.2 as `input_files`.
 
 Persist the YAML output to `.mz/task/<task_name>/blast_radius.yml`.
 

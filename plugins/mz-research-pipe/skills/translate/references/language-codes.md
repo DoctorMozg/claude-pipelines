@@ -17,7 +17,7 @@ Rationale: MyMemory (`langpair=en|ru`), LibreTranslate (`source`/`target`), and 
 
 ## Normalization Table
 
-Grep for the specific input form the user supplied. Matching is case-insensitive — lowercase the input before grepping. The `Notes` column records lossy collapses and edge cases.
+Search for the specific input form the user supplied. Matching is case-insensitive — lowercase the input before searching. The `Notes` column records lossy collapses and edge cases.
 
 | Input form                                                                       | Canonical | Notes                                                                            |
 | -------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------- |

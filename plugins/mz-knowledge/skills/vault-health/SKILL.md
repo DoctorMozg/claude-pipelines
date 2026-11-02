@@ -111,7 +111,7 @@ Confirm `_vault_audit_YYYY-MM-DD.md` was written to the vault root. Print the or
 ## Error Handling
 
 - **Vault path missing or invalid** → escalate via AskUserQuestion; never guess a default.
-- **Obsidian CLI unavailable** → fall back to file scanning via Bash/Glob/Grep; record the fallback in `state.md`.
+- **Obsidian CLI unavailable** → fall back to file scanning by listing and searching vault files; record the fallback in `state.md`.
 - **Empty collector result** (agent returns nothing) → retry once with a clarified prompt; if still empty, note the gap in `state.md` and escalate via AskUserQuestion before writing.
 - Never guess — on any ambiguity (ambiguous vault path, missing tooling, conflicting results) escalate via AskUserQuestion rather than fabricate.
 

@@ -27,7 +27,7 @@ Do not dispatch for fresh document creation — use `design-document-writer` for
 
 ## Reference Files
 
-Grep these when needed:
+Search these when needed:
 
 - `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/design-spec-template.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/wcag-contrast-thresholds.md`
@@ -86,8 +86,8 @@ Before emitting the status line, cross-check:
 
 ## Red Flags
 
-- The dispatch lacks the artifact, scope, dossier, or output path this agent requires.
-- The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
+- The dispatch lacks the artifact, scope, dossier, or output path you need.
+- The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
 
 ## Four-Status Protocol

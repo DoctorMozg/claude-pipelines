@@ -40,7 +40,7 @@ Your focus areas:
 
 ## Reference
 
-Grep `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/nielsen-heuristics.md` for the specific heuristic being applied. Do not load the whole file. Example queries:
+Search `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/nielsen-heuristics.md` for the specific heuristic being applied. Do not load the whole file. Example queries:
 
 - `grep -n "Visibility of system status" nielsen-heuristics.md`
 - `grep -n "Error prevention" nielsen-heuristics.md`
@@ -119,6 +119,6 @@ Flow and heuristic findings attract a specific family of push-back. Name the rat
 
 ## Red Flags
 
-- The dispatch lacks the artifact, scope, dossier, or output path this agent requires.
-- The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
+- The dispatch lacks the artifact, scope, dossier, or output path you need.
+- The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.

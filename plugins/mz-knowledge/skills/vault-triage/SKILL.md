@@ -46,7 +46,7 @@ Discipline skill that runs a 30-second triage pump over a small batch of fleetin
 
 1. **Resolve the permanent-notes folder.** Read `<vault>/CLAUDE.md`. Extract the permanent-notes folder name from it (e.g., `04 - Permanent/`). If `CLAUDE.md` is absent or does not declare the permanent-notes folder, ask the user via AskUserQuestion: `What is your vault's permanent-notes folder path (relative to vault root)?` Store the answer in `state.md` under the key `PERMANENT_FOLDER`. Never hardcode a fallback path.
 
-1. **Resolve the batch.** Glob `<vault>/<INBOX_FOLDER>/*.md` sorted by mtime ascending; take the first `BATCH_SIZE` notes. If zero notes are found, update `state.md` to `Status: empty_inbox` and tell the user the inbox is empty, then stop.
+1. **Resolve the batch.** List `<vault>/<INBOX_FOLDER>/*.md` sorted by mtime ascending; take the first `BATCH_SIZE` notes. If zero notes are found, update `state.md` to `Status: empty_inbox` and tell the user the inbox is empty, then stop.
 
 1. **Create the task directory.** Derive `task_name = <YYYY_MM_DD>_vault-triage_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a short mode tag (e.g., `weekly`); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <absolute path>`, `PERMANENT_FOLDER: <resolved path>`, `BatchPaths: <list of absolute paths>`.
 

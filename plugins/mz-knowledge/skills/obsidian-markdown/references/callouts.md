@@ -1,6 +1,6 @@
 # Callout Types Reference
 
-Source: Obsidian Flavored Markdown callouts. Grep this file for the specific callout type you need — do not load the whole file.
+Source: Obsidian Flavored Markdown callouts. Search this file for the specific callout type you need — do not load the whole file.
 
 ## Syntax
 

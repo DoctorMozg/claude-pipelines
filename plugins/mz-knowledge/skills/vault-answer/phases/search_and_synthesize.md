@@ -26,7 +26,7 @@ Answer the question using only vault content. Every factual claim must cite a va
 Steps:
 
 1. Extract anchor keywords from the question (key nouns, concepts, named entities).
-2. Grep the vault for each anchor across filenames and note bodies (exclude .obsidian/).
+2. Search the vault for each anchor across filenames and note bodies (exclude .obsidian/).
 3. Rank found notes by match density. Take top 20.
 4. For each selected note, read the first 300 words.
 5. Synthesize the answer:

@@ -48,7 +48,7 @@ Emit disclosure tokens when applicable:
 
 ### Step 1 — Read everything
 
-Read every input artifact end-to-end. Glob the `letters/` directory to confirm each top-N entry has a corresponding letter file. For each top-N job, capture the relative path to its letter file (`letters/<job_slug>.md`).
+Read every input artifact end-to-end. List the `letters/` directory to confirm each top-N entry has a corresponding letter file. For each top-N job, capture the relative path to its letter file (`letters/<job_slug>.md`).
 
 ### Step 2 — Compute summary stats
 

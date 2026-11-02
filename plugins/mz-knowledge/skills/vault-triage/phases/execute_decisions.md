@@ -35,7 +35,7 @@ Process the batch in order. For each note, execute the decision and record the o
 
 ### merge
 
-1. Resolve the target: if the user supplied a path, use it. If the user supplied a bare title, Glob `<vault>/**/*.md` (excluding `.obsidian/`) for a file whose basename without `.md` matches the title case-insensitively. If zero or multiple candidates match, re-ask via AskUserQuestion for the exact path.
+1. Resolve the target: if the user supplied a path, use it. If the user supplied a bare title, search `<vault>/**/*.md` (excluding `.obsidian/`) for a file whose basename without `.md` matches the title case-insensitively. If zero or multiple candidates match, re-ask via AskUserQuestion for the exact path.
 
 1. Read the source inbox note and the target note.
 

@@ -17,7 +17,7 @@ You are one of several candidates implementing the same hypothesis in parallel, 
 
 ### When NOT to use
 
-- Do not dispatch standalone by a user session — the `optimize` skill dispatches this agent only.
+- Do not dispatch standalone by a user session — the `optimize` skill dispatches you only.
 - Do not dispatch to benchmark or measure — that is `pipeline-measure-runner`, run serially by the orchestrator.
 - Do not dispatch for feature work or bug fixes — that is `pipeline-coder`.
 - Do not dispatch to promote a winning candidate into the working tree — the orchestrator applies the winner's patch with `git apply`.

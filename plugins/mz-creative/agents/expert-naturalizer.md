@@ -18,7 +18,7 @@ You cannot certify authorship. AI text detectors are probabilistic classifiers, 
 
 Do not dispatch standalone by user sessions — dispatched by the `/naturalize`, `/document`, or `/copywrite` skills.
 Do not dispatch to fact-check or research a document — use `pipeline-web-researcher` or `expert-researcher`.
-Do not dispatch to fix grammar or typos in human-written text — this agent assumes AI-pattern presence and may damage already-natural text.
+Do not dispatch to fix grammar or typos in human-written text — you assume AI-pattern presence and may damage already-natural text.
 Do not dispatch on code blocks, tables, or structured data — only on prose.
 
 ## Precedence
@@ -67,7 +67,7 @@ The recurring problem with AI prose is regularity and mismatch with context, not
 
 ## Detection Methodology
 
-Self-sufficient detection logic. The agent runs this on every dispatch — when invoked by `/naturalize`, the skill's analysis phase has already done this work and passes results in the dispatch, but the agent must still verify. When invoked by `/document`, `/copywrite`, or any other dispatcher that skips a dedicated analysis phase, the agent computes everything itself.
+Self-sufficient detection logic. You run this on every dispatch — when invoked by `/naturalize`, the skill's analysis phase has already done this work and passes results in the dispatch, but you must still verify. When invoked by `/document`, `/copywrite`, or any other dispatcher that skips a dedicated analysis phase, you compute everything yourself.
 
 ### Input metrics
 
@@ -431,5 +431,5 @@ One terminal `STATUS:` line. No more, no fewer.
 
 ## Notes
 
-- This agent runs after `expert-technical-writer` in the `/document` skill and after `expert-copywriter` in the `/copywrite` skill — those agents already aim for human voice, so the rewrite should be light there. On standalone `/naturalize` invocations, AI density is often much higher and the rewrite is heavier.
+- You run after `expert-technical-writer` in the `/document` skill and after `expert-copywriter` in the `/copywrite` skill — those agents already aim for human voice, so the rewrite should be light there. On standalone `/naturalize` invocations, AI density is often much higher and the rewrite is heavier.
 - The vocabulary landscape shifts every 12–18 months. The embedded list above represents 2026-04 state. When the user invokes `research:yes`, treat the embedded list as a baseline and supplement with what current sources say.

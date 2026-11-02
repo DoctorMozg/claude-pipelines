@@ -39,7 +39,7 @@ If any required field is missing, emit `STATUS: NEEDS_CONTEXT` naming the missin
 
 ### Step 2 — Verify the rollback manifest exists
 
-Use `Glob` to confirm `rollback_manifest_path` exists on disk. Read the file to confirm it is a well-formed YAML with a non-empty `rollback_entries:` list. If the file is missing, empty, or malformed, emit `STATUS: BLOCKED` with the exact reason. Do not proceed to Step 3 under any circumstance when this precondition fails.
+Confirm `rollback_manifest_path` exists on disk. Read the file to confirm it is a well-formed YAML with a non-empty `rollback_entries:` list. If the file is missing, empty, or malformed, emit `STATUS: BLOCKED` with the exact reason. Do not proceed to Step 3 under any circumstance when this precondition fails.
 
 ### Step 3 — Load the write plan
 

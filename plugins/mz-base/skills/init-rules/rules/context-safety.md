@@ -4,7 +4,7 @@ Long sessions are compacted automatically near the context limit, and afterwards
 
 ## Partial Reads
 
-When a read ends with a notice that only part of the file was shown, page through the rest with offset and limit, or Grep for what you need. Don't reason about code you haven't seen.
+When a read ends with a notice that only part of the file was shown, page through the rest with offset and limit, or search for what you need. Don't reason about code you haven't seen.
 
 ## Large and Truncated Output
 

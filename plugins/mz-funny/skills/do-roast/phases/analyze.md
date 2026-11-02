@@ -29,7 +29,7 @@ result. Emit both `resolved_target_kind` and `resolved_target_list` into
    each token, treat it as path-like if it contains `/` or ends in a common
    source extension (`.py`, `.ts`, `.tsx`, `.js`, `.jsx`, `.go`, `.rs`,
    `.java`, `.cpp`, `.c`, `.h`, `.md`, `.json`, `.yaml`, `.toml`). Test each
-   with `Glob` (for wildcards) or `Read` (for exact paths). Collect existing
+   by listing wildcard matches or reading exact paths. Collect existing
    matches. If at least one matches, set `resolved_target_kind = files` (or
    `dirs` if all matches are directories) and use the matched list.
 1. **Branch diff**. If the remainder contains the literal token `--diff <branch>` OR the prefix `branch:<name>`, run `git diff <branch>...HEAD --stat` via Bash and parse the changed file list. Set
@@ -40,8 +40,8 @@ result. Emit both `resolved_target_kind` and `resolved_target_list` into
 1. **Natural language**. Otherwise the remainder is a natural-language
    description like "the auth module". Tokenize on whitespace, lowercase,
    strip English stopwords (a, an, the, of, in, on, at, to, for, with, and,
-   or). For each remaining content word, run `Glob` for files whose stem
-   matches, then `Grep` for symbol references matching the same word inside
+   or). For each remaining content word, list files whose stem
+   matches, then search for symbol references matching the same word inside
    files. Rank candidates by combined match frequency. Keep the top 5. Set
    `resolved_target_kind = candidates` and use that list.
 1. **State emission**. Append to `TASK_DIR<task_name>/state.md`:
@@ -59,8 +59,8 @@ ______________________________________________________________________
 
 Read-only analysis of the resolved target list. No linters, no type-checkers,
 no shell-based analyzers. The user excluded tooling-dependent checks in the
-locked requirements — all structural signal must come from `Read`, `Grep`,
-and `Glob`.
+locked requirements — all structural signal must come from reading,
+searching, and listing the code.
 
 ### Source hierarchy — static analysis tier
 
@@ -99,8 +99,8 @@ quote — the quote may appear in the dossier, the name may not.
 ### Structural signals to record
 
 For each file in the resolved list (or each file chunk if `target_kind = raw_text`), measure and record these signals. Every measurement is sourced
-by `Read` and counted by inspection — no tool invocations beyond `Read`,
-`Grep`, `Glob`.
+by `Read` and counted by inspection — no tool invocations beyond reading,
+searching, and listing files.
 
 - **Total LOC**: whole file line count.
 - **Longest function LOC**: scan function boundaries (language-appropriate
@@ -112,7 +112,7 @@ by `Read` and counted by inspection — no tool invocations beyond `Read`,
 - **Max nesting depth**: deepest indentation level of control flow inside
   any function body.
 - **Dead code**: unreachable blocks after `return`/`raise`/`throw`; unused
-  exports (symbols exported but with zero hits from `Grep` across sibling
+  exports (symbols exported but with zero search hits across sibling
   files); commented-out code blocks larger than 3 lines.
 - **Naming smells**: single-letter arguments in public API surfaces;
   Hungarian-notation prefixes (`strX`, `iX`, `bX`); type-in-name
@@ -160,8 +160,8 @@ locked requirements — a README that lies to the user is as roastable as a
 1. Read each input. Extract claimed behaviors: bullet points in feature
    lists, code examples, usage instructions, parameter descriptions,
    "supported" / "returns" / "raises" statements.
-1. For each claim, locate the referenced code via `Grep` for the symbol or
-   quoted example. Record the search query and the hits.
+1. For each claim, search for the symbol or quoted example to locate the
+   referenced code. Record the search query and the hits.
 1. Compare the claim to the located code and assign `coherence_status`:
    - `confirmed` — code matches the claim exactly. No finding.
    - `contradicted` — code does the opposite or a materially different
@@ -254,7 +254,7 @@ a finding without that token attached.
    ```
    Body contains one section per query: query text, source URL, tier,
    extracted best-practice summary, applicable file:line in the target.
-1. **Delta comparison**. For each best practice extracted, `Grep` the
+1. **Delta comparison**. For each best practice extracted, search the
    target files for the pattern. Record a delta finding when the target
    code diverges. Severity rule: `Nit` or `Optional` by default; `Critical`
    only for anti-patterns with concrete bug or security potential

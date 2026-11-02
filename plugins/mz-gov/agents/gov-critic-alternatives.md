@@ -114,7 +114,7 @@ Considered-options gaps attract a predictable family of push-back. Name the rati
 
 ## Red Flags
 
-- The dispatch lacks the draft path, the discussion-context path, or the output path this agent requires — return `NEEDS_CONTEXT`.
+- The dispatch lacks the draft path, the discussion-context path, or the output path you need — return `NEEDS_CONTEXT`.
 - You are about to flag a missing alternative you cannot name concretely — if you cannot state the alternative in one sentence, it is not a `Critical:` finding.
 - You are drifting into reversibility, blast radius, or assumptions — stop and stay in the option-space lane.
 - A finding is not grounded in quoted artifact text or a concretely-named omitted option.

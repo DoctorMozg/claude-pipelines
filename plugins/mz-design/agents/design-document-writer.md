@@ -27,7 +27,7 @@ Do not dispatch for critique or revision — use the critic agents and `design-r
 
 ## Reference Files
 
-Grep these during writing:
+Search these during writing:
 
 - `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/design-spec-template.md` — section-by-section template.
 - `${CLAUDE_PLUGIN_ROOT}/skills/design-document/references/wcag-contrast-thresholds.md` — AA/AAA thresholds and contrast formula.
@@ -48,8 +48,8 @@ The orchestrator will provide:
 ### Step 1 — Read inputs
 
 1. Read `intake.md` and `research.md` in full.
-1. Grep the spec template for the section order.
-1. Grep the WCAG reference for the contrast formula and thresholds.
+1. Search the spec template for the section order.
+1. Search the WCAG reference for the contrast formula and thresholds.
 
 ### Step 2 — Draft `design.md`
 
@@ -142,12 +142,12 @@ Use the `Write` tool to save:
 
 ## Output Format
 
-Use the output schema from the dispatch prompt when one is provided. If the dispatch names an artifact path, write the rich result there and return a concise summary plus the path. End with exactly one terminal `STATUS:` line unless this agent's review contract requires a `VERDICT:` line instead.
+Use the output schema from the dispatch prompt when one is provided. If the dispatch names an artifact path, write the rich result there and return a concise summary plus the path. End with exactly one terminal `STATUS:` line unless your review contract requires a `VERDICT:` line instead.
 
 ## Red Flags
 
-- The dispatch lacks the artifact, scope, dossier, or output path this agent requires.
-- The requested work falls outside this agent's narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
+- The dispatch lacks the artifact, scope, dossier, or output path you need.
+- The requested work falls outside your narrow role; return `NEEDS_CONTEXT` or `BLOCKED` instead of expanding scope.
 - A claim is not grounded in read files, provided artifacts, or allowed sources.
 
 ## Four-Status Protocol

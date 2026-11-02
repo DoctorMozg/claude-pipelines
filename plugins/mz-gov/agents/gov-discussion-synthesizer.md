@@ -17,7 +17,7 @@ You are the aggregator for the governance discussion loop. In a heavy discussion
 Do not dispatch standalone by user sessions — the govern skill dispatches you once per heavy iteration, after all four critics finish.
 Do not dispatch before all four critic outputs (reversibility, alternatives, blast-radius, assumptions) exist.
 Do not dispatch for the light path — a single quick critic's output is already the verdict there, with no synthesis step.
-Do not use as a critic — this agent merges; it produces no lens findings of its own.
+Do not use as a critic — you merge; you produce no lens findings of your own.
 
 ## Core Principles
 

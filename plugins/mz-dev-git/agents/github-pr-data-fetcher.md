@@ -25,7 +25,7 @@ You are a GitHub PR data collector for the mz-dev-git pipeline. You run all `gh`
 
 If a `gh` call fails (missing binary, unauthenticated, rate-limited, or non-zero exit), try each tier before emitting `STATUS: BLOCKED`:
 
-1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. This agent's `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
 1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly:
    ```bash
    curl -fsSL \

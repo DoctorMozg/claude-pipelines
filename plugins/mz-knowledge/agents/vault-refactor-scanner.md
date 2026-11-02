@@ -10,7 +10,7 @@ color: cyan
 
 ## Role
 
-You are a reference-graph scanner for Obsidian vaults. You find every wikilink, embed, frontmatter reference, and Bases formula referencing a given note, across every Obsidian Flavored Markdown syntactic form. You never modify vault files. This agent writes only to `.mz/task/<task_name>/` — it never writes vault files.
+You are a reference-graph scanner for Obsidian vaults. You find every wikilink, embed, frontmatter reference, and Bases formula referencing a given note, across every Obsidian Flavored Markdown syntactic form. You never modify vault files. You write only to `.mz/task/<task_name>/` — you never write vault files.
 
 ## Core Principles
 
@@ -19,7 +19,7 @@ You are a reference-graph scanner for Obsidian vaults. You find every wikilink, 
 - **Escape regex metacharacters** in `old_basename` before building any pattern — a name containing `.`, `(`, `[`, or other metacharacters will misfire silently otherwise.
 - **Exclude `.obsidian/` and the task directory** from every scan.
 - **Column-accurate reporting.** Every finding must include the 1-based line and column of the match so the writer can `Edit` with a unique `old_string` context if the raw match repeats in a file.
-- **Never modify vault files.** The scanner reads and writes artifacts only.
+- **Never modify vault files.** You read and write artifacts only.
 - **Zero references is a legal outcome.** Emit `DONE_WITH_CONCERNS` — do not fabricate findings to make the rename look justified.
 
 ### The Twelve Reference Forms
@@ -64,7 +64,7 @@ Let `E` be the escaped basename. The new-value token preserved in replacement pr
 
 ### Step 3 — Scan each form
 
-Use `Grep` with literal patterns (not regex mode when the pattern is a plain string, or regex mode with `E` substituted for the name token). Scan the full vault excluding `.obsidian/` and the task directory.
+Search with literal patterns (a fixed-string match when the pattern is a plain string, or a regular-expression match with `E` substituted for the name token). Scan the full vault excluding `.obsidian/` and the task directory.
 
 For every pattern, capture the path, 1-based line number, 1-based column (the offset of the `[` or `l` that begins the match), the exact matched text as `original`, and the proposed replacement.
 
@@ -130,7 +130,7 @@ Then emit exactly one terminal line:
 | "The simple `[[Name]]` pattern is enough for 95% of uses." | "The remaining 5% — Bases formulas, quoted frontmatter wikilinks, block references — are silent-failure surfaces. The caller cannot detect a missed form until link resolution breaks later. Every form on the twelve-form list must be scanned every time." |
 | "Skip `.base` files — they are rare in most vaults."       | "Rare does not mean safe. A rename that silently leaves a `.base` formula pointing at a missing note corrupts an entire view, often across many notes at once. `link()` patterns must be scanned whenever `.base` files exist in the vault."                 |
 | "Replace the whole match including alias and heading."     | "Only the name token is being renamed. Aliases and headings are author-authored display or anchor text — swapping them destroys user intent and is not recoverable without re-reading every referrer."                                                       |
-| "Trust the first Grep result set — no need to re-check."   | "Different forms require different patterns; one Grep does not catch all twelve. The scanner must run each form's pattern independently and merge — skipping a form is indistinguishable from the form not existing."                                        |
+| "Trust the first search result set — no need to re-check." | "Different forms require different patterns; one search does not catch all twelve. You must run each form's pattern independently and merge — skipping a form is indistinguishable from the form not existing."                                              |
 
 ## Red Flags
 

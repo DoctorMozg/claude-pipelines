@@ -83,7 +83,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/references_report.md` �
 
 ### Phase 2.5: Post-write verification
 
-After `phases/rewrite_and_rollback.md` returns, run `Grep` for the old basename (and, for full-path moves, the old path) across the entire vault, excluding `.obsidian/` and the task directory. Output the Grep result block before concluding — silent verification gets skipped.
+After `phases/rewrite_and_rollback.md` returns, search for the old basename (and, for full-path moves, the old path) across the entire vault, excluding `.obsidian/` and the task directory. Output the search result block before concluding — silent verification gets skipped.
 
 - **Zero remaining occurrences** → update state `Status: complete`, `Completed: <ISO timestamp>`, print the verification block, emit `STATUS: DONE`.
 - **Any remaining occurrence** → update state `Status: post-write-verification-failed`, print the failing paths and line numbers verbatim, print the rollback manifest path from state, emit `STATUS: BLOCKED` with rollback instructions. Never silently ignore a residual reference.
@@ -101,7 +101,7 @@ After `phases/rewrite_and_rollback.md` returns, run `Grep` for the old basename 
 - Writing the rollback manifest after the first vault edit, rather than before.
 - Presenting the Phase 1.5 gate with a path or summary instead of the verbatim references report.
 - Using `Write` for any per-reference replacement — wholesale rewrites mask corruption; `Edit` fails loudly on drift.
-- Proceeding after Phase 2.5 Grep shows remaining occurrences of the old name.
+- Proceeding after Phase 2.5 search shows remaining occurrences of the old name.
 - Renaming the original file before all referrer rewrites complete — creates a window where both old and new are broken.
 
 ## Verification
@@ -114,7 +114,7 @@ vault-refactor verification:
   [ ] rollback.md written BEFORE first vault edit
   [ ] Every per-reference replacement applied via `Edit` (not `Write`)
   [ ] Original file renamed/moved only after all referrer rewrites succeeded
-  [ ] Post-write Grep for old name returned zero occurrences (excluding task dir + .obsidian/)
+  [ ] Post-write search for old name returned zero occurrences (excluding task dir + .obsidian/)
   [ ] state.md Status is `complete` with Completed timestamp
 ```
 

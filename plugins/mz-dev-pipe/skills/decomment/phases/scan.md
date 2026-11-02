@@ -121,6 +121,6 @@ If `candidates.md` has zero candidate rows (every path was filtered out), emit t
 
 - `wc -l scope_files.txt` matches the `scope_files` count written to `state.md` (or the post-filter row count if the field tracks survivors).
 - The candidates.md table row count matches the file set Phase 2 dispatch will iterate over.
-- Grep `candidates.md` for `node_modules`, `dist`, `target`, `__pycache__`, `.next`, `vendor` — zero matches expected.
+- Search `candidates.md` for `node_modules`, `dist`, `target`, `__pycache__`, `.next`, `vendor` — zero matches expected.
 - Every `path` column entry is absolute (starts with `/`).
 - `state.md` `Phase` field is `1_complete` or `aborted_empty_scope` before Phase 2 begins.

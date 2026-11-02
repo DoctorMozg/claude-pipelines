@@ -39,7 +39,7 @@ Read .mz/task/<task_name>/baseline.md for pre-optimization test/lint state.
 1. Work through your full optimization checklist on these files.
 2. OWN the files above. If you MUST edit a file in another chunk or outside scope to keep code compiling, report it in a "Cross-Scope Edits" section with the reason.
 3. Never change test-observable behavior.
-4. Grep before removing — verify "dead code" is unreferenced across the full project.
+4. Search before removing — verify "dead code" is unreferenced across the full project.
 ```
 
 **If this is a rejection re-run** (iteration > 0, dispatched for rejected chunks only): include in the prompt the specific reviewer feedback for this chunk from `review_<iteration-1>.md`, and instruct the optimizer to address that feedback while preserving any changes that were already approved.

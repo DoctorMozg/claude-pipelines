@@ -21,13 +21,13 @@ If the **Test command** field is "none detected": ask the user via AskUserQuesti
 
 Based on the input type classified in Phase 0:
 
-| Input type      | Strategy                                                                                           |
-| --------------- | -------------------------------------------------------------------------------------------------- |
-| `failing_test`  | Run the test directly. If it fails, reproduction is done. If it passes, investigate why.           |
-| `stack_trace`   | Extract file:line references, read code at those locations, identify the trigger condition.        |
-| `error_message` | Grep for the error string across the codebase, trace to the origin function, identify the trigger. |
-| `free_text`     | Dispatch researcher to locate relevant code and attempt reproduction.                              |
-| `github_issue`  | Parse issue for steps/tests/error messages, then apply the matching strategy above.                |
+| Input type      | Strategy                                                                                      |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| `failing_test`  | Run the test directly. If it fails, reproduction is done. If it passes, investigate why.      |
+| `stack_trace`   | Extract file:line references, read code at those locations, identify the trigger condition.   |
+| `error_message` | Search the codebase for the error string, trace to the origin function, identify the trigger. |
+| `free_text`     | Dispatch researcher to locate relevant code and attempt reproduction.                         |
+| `github_issue`  | Parse issue for steps/tests/error messages, then apply the matching strategy above.           |
 
 ### 1.3 Direct reproduction (failing_test, stack_trace, error_message)
 
@@ -35,7 +35,7 @@ For these input types, attempt reproduction directly:
 
 1. **failing_test**: Run the specific test. Capture full output.
 1. **stack_trace**: Read the code at each frame. Identify the failing condition. If a test exercises that path, run it. If not, check if you can write a minimal trigger command.
-1. **error_message**: Grep for the exact string. Read the function that raises/throws it. Trace callers to find how to trigger it. Run any existing test that covers the path.
+1. **error_message**: Search for the exact string. Read the function that raises/throws it. Trace callers to find how to trigger it. Run any existing test that covers the path.
 
 If direct reproduction succeeds, save results and skip to 1.5.
 

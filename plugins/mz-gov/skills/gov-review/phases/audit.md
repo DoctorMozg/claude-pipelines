@@ -17,7 +17,7 @@ ______________________________________________________________________
 
 Turn the Phase 0 artifact source into a concrete file list.
 
-- **A path/glob/dir was parsed in Phase 0** → expand it with Glob (or list the directory). A single file resolves to a one-element list.
+- **A path/glob/dir was parsed in Phase 0** → expand it by listing the matching files, or the files in the directory. A single file resolves to a one-element list.
 - **No path/glob token** → glob the default set from the SKILL constant **ARTIFACT_DIRS**: `docs/decisions/*.md`, `docs/rfcs/*.md`, `docs/design/*.md`. Union the matches.
 
 Drop obvious non-artifacts from the list so reviewers are not dispatched against scaffolding: a `README.md`, `index.md`, `template*.md`, or a `0000-template.md` sitting in an artifact directory is not a decision record. Keep everything else.

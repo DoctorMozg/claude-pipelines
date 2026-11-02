@@ -101,7 +101,7 @@ Update `state.md` `Phase` to `draft_v1_written`.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `<run_dir>/_pitch_temp/draft_v1.md` (or the current `draft_vN.md`) with the Read tool. Capture its full contents into context, along with the word count, tone, engagement type assumed, and any `MILESTONE_UNGROUNDED:` warnings surfaced by the writer. Grep the draft for AI-artifact punctuation (`grep -lP "[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]" <run_dir>/_pitch_temp/draft_vN.md`); if any is present, re-dispatch the proposal-writer once with a fix instruction and overwrite the draft before emitting Surface 1.
+**Pre-read**: Read `<run_dir>/_pitch_temp/draft_v1.md` (or the current `draft_vN.md`) with the Read tool. Capture its full contents into context, along with the word count, tone, engagement type assumed, and any `MILESTONE_UNGROUNDED:` warnings surfaced by the writer. Search the draft for AI-artifact punctuation (`grep -lP "[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]" <run_dir>/_pitch_temp/draft_vN.md`); if any is present, re-dispatch the proposal-writer once with a fix instruction and overwrite the draft before emitting Surface 1.
 
 **Surface 1 — emit the plan message.** Output the proposal draft verbatim as a normal markdown chat message. Emit the full verbatim contents of `<run_dir>/_pitch_temp/draft_vN.md` — do not substitute a path, summary, or placeholder. Structure:
 

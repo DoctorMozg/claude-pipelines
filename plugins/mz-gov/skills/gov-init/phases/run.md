@@ -45,7 +45,7 @@ Exactly one block per file. If duplicates exist (manual edit or prior bug), stop
 
 ## Step 4: Branch on idempotency state
 
-Grep the resolved `CLAUDE.md` for the start sentinel and branch.
+Search the resolved `CLAUDE.md` for the start sentinel and branch.
 
 ### State matrix
 

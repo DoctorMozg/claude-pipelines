@@ -10,11 +10,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for route handlers lacking an auth middleware: `(router\.(get|post|put|delete)|@(app|router)\.(route|get|post))` cross-referenced with missing `auth_required` / `@login_required` / `authenticate` decorators.
-- Grep for object IDs used directly from request without ownership check: `request.params.id`, `req.body.userId`, `params\["id"\]` followed by `.find_by_id` / `.get(` without a `user_id = current_user` filter.
-- Grep for role checks done on the client: `if (user.role === "admin")` in frontend code that controls UI but not server enforcement.
-- Grep for `Authorization: Bearer` parsing that doesn't validate signature: `jwt.decode(` without `verify=True` / `jwt.verify(`.
-- Grep for CORS wildcards on authenticated endpoints: `Access-Control-Allow-Origin: *` alongside `Access-Control-Allow-Credentials: true`.
+- Search for route handlers lacking an auth middleware: `(router\.(get|post|put|delete)|@(app|router)\.(route|get|post))` cross-referenced with missing `auth_required` / `@login_required` / `authenticate` decorators.
+- Search for object IDs used directly from request without ownership check: `request.params.id`, `req.body.userId`, `params\["id"\]` followed by `.find_by_id` / `.get(` without a `user_id = current_user` filter.
+- Search for role checks done on the client: `if (user.role === "admin")` in frontend code that controls UI but not server enforcement.
+- Search for `Authorization: Bearer` parsing that doesn't validate signature: `jwt.decode(` without `verify=True` / `jwt.verify(`.
+- Search for CORS wildcards on authenticated endpoints: `Access-Control-Allow-Origin: *` alongside `Access-Control-Allow-Credentials: true`.
 
 **Concrete examples**:
 
@@ -30,11 +30,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for weak algorithms: `MD5`, `SHA1`, `DES`, `RC4`, `Blowfish`, `md5\(`, `hashlib\.sha1`, `CryptoJS\.MD5`, `createHash\(["']md5["']\)`.
-- Grep for hardcoded keys/IVs: `AES_KEY\s*=\s*["'][A-Za-z0-9+/=]{16,}`, `iv\s*=\s*b?["'][^"']+["']`, `password\s*=\s*["'][^"']+["']` in non-test paths.
-- Grep for non-HTTPS endpoints in config: `http://` in production config files, `verify=False` on `requests.get`, `rejectUnauthorized: false` on Node TLS.
-- Grep for password hashes without salt/work factor: `hashlib\.sha256\(password`, `crypto\.createHash\(["']sha256["']\)\.update\(password`, or bcrypt with work factor \<10.
-- Grep for secrets in logs: `logger\.(debug|info).*password`, `console\.log.*token`, `print.*api_key`.
+- Search for weak algorithms: `MD5`, `SHA1`, `DES`, `RC4`, `Blowfish`, `md5\(`, `hashlib\.sha1`, `CryptoJS\.MD5`, `createHash\(["']md5["']\)`.
+- Search for hardcoded keys/IVs: `AES_KEY\s*=\s*["'][A-Za-z0-9+/=]{16,}`, `iv\s*=\s*b?["'][^"']+["']`, `password\s*=\s*["'][^"']+["']` in non-test paths.
+- Search for non-HTTPS endpoints in config: `http://` in production config files, `verify=False` on `requests.get`, `rejectUnauthorized: false` on Node TLS.
+- Search for password hashes without salt/work factor: `hashlib\.sha256\(password`, `crypto\.createHash\(["']sha256["']\)\.update\(password`, or bcrypt with work factor \<10.
+- Search for secrets in logs: `logger\.(debug|info).*password`, `console\.log.*token`, `print.*api_key`.
 
 **Concrete examples**:
 
@@ -50,12 +50,12 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for string concatenation into SQL: `["']SELECT.*["']\s*\+`, `f["']SELECT.*\{`, `execute\([^,]+\+`, `\.raw\(.*\$\{`.
-- Grep for `exec`/`system`/`shell`: `os\.system\(`, `subprocess\..*shell=True`, `child_process\.exec\(`, `Runtime\.exec\(` with any variable input.
-- Grep for `eval`: `\beval\(`, `Function\(`, `setTimeout\([^,]*["']`, `document\.write\(`.
-- Grep for template-engine misuse: `render\(.*\+\s*user`, `Template\(.*\+`, Jinja `{% raw %}` around user input.
-- Grep for unsanitized LDAP/XPath: `ldap_search\(.*\+`, `xpath\(.*\+`, `evaluate\(.*\+`.
-- Grep for HTTP header injection: `redirect\(` / `Location:` headers built from request data.
+- Search for string concatenation into SQL: `["']SELECT.*["']\s*\+`, `f["']SELECT.*\{`, `execute\([^,]+\+`, `\.raw\(.*\$\{`.
+- Search for `exec`/`system`/`shell`: `os\.system\(`, `subprocess\..*shell=True`, `child_process\.exec\(`, `Runtime\.exec\(` with any variable input.
+- Search for `eval`: `\beval\(`, `Function\(`, `setTimeout\([^,]*["']`, `document\.write\(`.
+- Search for template-engine misuse: `render\(.*\+\s*user`, `Template\(.*\+`, Jinja `{% raw %}` around user input.
+- Search for unsanitized LDAP/XPath: `ldap_search\(.*\+`, `xpath\(.*\+`, `evaluate\(.*\+`.
+- Search for HTTP header injection: `redirect\(` / `Location:` headers built from request data.
 
 **Concrete examples**:
 
@@ -71,11 +71,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for missing rate limits on auth endpoints: `login`, `reset-password`, `signup` routes without `rate_limit` / `throttle` middleware.
-- Grep for password reset flows with predictable tokens: `Math\.random\(`, `random\.randint\(`, timestamp-based tokens in `reset_token =`.
-- Grep for business logic that trusts client-computed totals: `amount = req.body.total`, `price = request.json\["price"\]`.
-- Grep for TOCTOU races: `if (file.exists()) { ... file.read() }` without lock; `if (balance >= amount) { balance -= amount }` without transaction.
-- Grep for missing CAPTCHA/MFA on sensitive actions: password reset, money transfer, account deletion.
+- Search for missing rate limits on auth endpoints: `login`, `reset-password`, `signup` routes without `rate_limit` / `throttle` middleware.
+- Search for password reset flows with predictable tokens: `Math\.random\(`, `random\.randint\(`, timestamp-based tokens in `reset_token =`.
+- Search for business logic that trusts client-computed totals: `amount = req.body.total`, `price = request.json\["price"\]`.
+- Search for TOCTOU races: `if (file.exists()) { ... file.read() }` without lock; `if (balance >= amount) { balance -= amount }` without transaction.
+- Search for missing CAPTCHA/MFA on sensitive actions: password reset, money transfer, account deletion.
 
 **Concrete examples**:
 
@@ -91,11 +91,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for stack traces leaked to users: `DEBUG\s*=\s*True` in Django/Flask settings, `app\.use\(errorhandler\(` without production branch, `NODE_ENV` not pinned.
-- Grep for default credentials: `admin/admin`, `root/root`, `postgres/postgres` in config, compose files, init scripts.
-- Grep for exposed management endpoints: `/actuator`, `/metrics`, `/debug`, `/phpmyadmin`, `/.git/`, `/.env` with no auth.
-- Grep for permissive security headers: missing `Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`, `X-Content-Type-Options`.
-- Grep for wildcard firewall/ingress: `0.0.0.0/0` in CloudFormation / Terraform / k8s NetworkPolicy, `allowAll: true`.
+- Search for stack traces leaked to users: `DEBUG\s*=\s*True` in Django/Flask settings, `app\.use\(errorhandler\(` without production branch, `NODE_ENV` not pinned.
+- Search for default credentials: `admin/admin`, `root/root`, `postgres/postgres` in config, compose files, init scripts.
+- Search for exposed management endpoints: `/actuator`, `/metrics`, `/debug`, `/phpmyadmin`, `/.git/`, `/.env` with no auth.
+- Search for permissive security headers: missing `Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`, `X-Content-Type-Options`.
+- Search for wildcard firewall/ingress: `0.0.0.0/0` in CloudFormation / Terraform / k8s NetworkPolicy, `allowAll: true`.
 
 **Concrete examples**:
 
@@ -111,11 +111,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep manifest files for old pinned versions: `package.json`, `package-lock.json`, `requirements.txt`, `Pipfile.lock`, `Cargo.lock`, `go.sum`, `pom.xml`, `Gemfile.lock`.
+- Search manifest files for old pinned versions: `package.json`, `package-lock.json`, `requirements.txt`, `Pipfile.lock`, `Cargo.lock`, `go.sum`, `pom.xml`, `Gemfile.lock`.
 - Run SCA tools: `npm audit`, `pip-audit`, `cargo audit`, `govulncheck`, `bundler-audit`, `trivy fs .`, `grype dir:.`.
-- Grep for EOL runtimes: Python 2.x, Node ≤16, Java 8, PHP 7.x, Ruby 2.x in CI configs and Dockerfiles.
-- Grep `Dockerfile` for unpinned base images: `FROM node:latest`, `FROM python`, `FROM ubuntu`.
-- Grep for archived/unmaintained repos — check the project README and last commit date before adding any new dep.
+- Search for EOL runtimes: Python 2.x, Node ≤16, Java 8, PHP 7.x, Ruby 2.x in CI configs and Dockerfiles.
+- Search `Dockerfile` for unpinned base images: `FROM node:latest`, `FROM python`, `FROM ubuntu`.
+- Search for archived/unmaintained repos — check the project README and last commit date before adding any new dep.
 
 **Concrete examples**:
 
@@ -131,12 +131,12 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for sessions that never expire: `expires: null`, `maxAge: Infinity`, `session_lifetime = 0`.
-- Grep for session IDs passed in URLs: `?sessionid=`, `?jwt=`.
-- Grep for missing lockout / rate limit on login: `def login(` with no rate_limit decorator, no failed-attempt counter.
-- Grep for weak password policy: `min_length < 8`, no complexity check, no breach-list check (haveibeenpwned API).
-- Grep for JWTs without algorithm pinning: `jwt.decode(token, key)` missing `algorithms=["RS256"]` (allows `alg: none` attack).
-- Grep for custom password hashing: `sha256(password + salt)` — should use bcrypt/argon2.
+- Search for sessions that never expire: `expires: null`, `maxAge: Infinity`, `session_lifetime = 0`.
+- Search for session IDs passed in URLs: `?sessionid=`, `?jwt=`.
+- Search for missing lockout / rate limit on login: `def login(` with no rate_limit decorator, no failed-attempt counter.
+- Search for weak password policy: `min_length < 8`, no complexity check, no breach-list check (haveibeenpwned API).
+- Search for JWTs without algorithm pinning: `jwt.decode(token, key)` missing `algorithms=["RS256"]` (allows `alg: none` attack).
+- Search for custom password hashing: `sha256(password + salt)` — should use bcrypt/argon2.
 
 **Concrete examples**:
 
@@ -152,11 +152,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for unsafe deserialization: `pickle\.loads\(`, `yaml\.load\(` without `Loader=SafeLoader`, `ObjectInputStream\.readObject\(`, `Marshal\.load\(` with user input, `unserialize\(` in PHP.
-- Grep for package downloads without signature/hash: `curl .* | sh`, `wget .* | bash`, `npm install` without `--ignore-scripts` in CI, missing `integrity=` in `package-lock.json`.
-- Grep for CI step that executes arbitrary user branches: `uses: <action>@master` / `@main` instead of pinned SHA in GitHub Actions.
-- Grep for auto-update channels without signing: `update.downloadUrl`, `fetch('https://...').then(r => r.text()).then(eval)`.
-- Grep for disabled TLS verification during download: `curl -k`, `wget --no-check-certificate`, `NODE_TLS_REJECT_UNAUTHORIZED=0`.
+- Search for unsafe deserialization: `pickle\.loads\(`, `yaml\.load\(` without `Loader=SafeLoader`, `ObjectInputStream\.readObject\(`, `Marshal\.load\(` with user input, `unserialize\(` in PHP.
+- Search for package downloads without signature/hash: `curl .* | sh`, `wget .* | bash`, `npm install` without `--ignore-scripts` in CI, missing `integrity=` in `package-lock.json`.
+- Search for CI step that executes arbitrary user branches: `uses: <action>@master` / `@main` instead of pinned SHA in GitHub Actions.
+- Search for auto-update channels without signing: `update.downloadUrl`, `fetch('https://...').then(r => r.text()).then(eval)`.
+- Search for disabled TLS verification during download: `curl -k`, `wget --no-check-certificate`, `NODE_TLS_REJECT_UNAUTHORIZED=0`.
 
 **Concrete examples**:
 
@@ -172,11 +172,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for silent exception swallowing: `except:\s*pass`, `catch\s*\([^)]*\)\s*\{\s*\}`, `.catch\(\(\)\s*=>\s*\{\}\)`.
-- Grep for auth events without audit log: `login`, `logout`, `password_reset`, `role_change` handlers that don't call an audit logger.
-- Grep for missing structured logging: raw `print` / `console.log` in server code (breaks SIEM ingestion).
-- Grep for PII in logs: `logger.info.*user.email`, `logger.debug.*credit_card` — shouldn't log, but also shouldn't fail silently.
-- Grep for absent log-level guards on hot paths: `logger.debug(expensive_call())` without `isEnabledFor(DEBUG)` check.
+- Search for silent exception swallowing: `except:\s*pass`, `catch\s*\([^)]*\)\s*\{\s*\}`, `.catch\(\(\)\s*=>\s*\{\}\)`.
+- Search for auth events without audit log: `login`, `logout`, `password_reset`, `role_change` handlers that don't call an audit logger.
+- Search for missing structured logging: raw `print` / `console.log` in server code (breaks SIEM ingestion).
+- Search for PII in logs: `logger.info.*user.email`, `logger.debug.*credit_card` — shouldn't log, but also shouldn't fail silently.
+- Search for absent log-level guards on hot paths: `logger.debug(expensive_call())` without `isEnabledFor(DEBUG)` check.
 
 **Concrete examples**:
 
@@ -192,11 +192,11 @@ Use via grep — locate the category, apply its detection patterns to the scope.
 
 **Detection patterns**:
 
-- Grep for HTTP clients fed with user-supplied URLs: `requests\.get\(request`, `fetch\(req\.body\.url`, `httpClient\.get\(user_input`, `urllib\.urlopen\(`.
-- Grep for image/PDF preview features: `load_image_from_url`, `render_pdf_from_url`, `webhook_url` fields.
-- Grep for cloud metadata exposure: `169\.254\.169\.254`, `metadata\.google\.internal`, `169\.254\.170\.2` in allow-lists or proxies.
-- Grep for missing URL scheme allow-lists: `requests\.get\(url` where `url` is unchecked — attacker can pass `file://`, `gopher://`, `ftp://`.
-- Grep for redirect-follow without allow-list: HTTP client with `allow_redirects=True` and no hostname check after redirect.
+- Search for HTTP clients fed with user-supplied URLs: `requests\.get\(request`, `fetch\(req\.body\.url`, `httpClient\.get\(user_input`, `urllib\.urlopen\(`.
+- Search for image/PDF preview features: `load_image_from_url`, `render_pdf_from_url`, `webhook_url` fields.
+- Search for cloud metadata exposure: `169\.254\.169\.254`, `metadata\.google\.internal`, `169\.254\.170\.2` in allow-lists or proxies.
+- Search for missing URL scheme allow-lists: `requests\.get\(url` where `url` is unchecked — attacker can pass `file://`, `gopher://`, `ftp://`.
+- Search for redirect-follow without allow-list: HTTP client with `allow_redirects=True` and no hostname check after redirect.
 
 **Concrete examples**:
 

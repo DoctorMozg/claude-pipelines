@@ -150,7 +150,7 @@ action items, and conflicts. End with AGGREGATE: PASS|FAIL then STATUS:.
 
 ### H.4 — Read the aggregate
 
-Grep the verdict from `discussion_<N>.md`:
+Find the verdict line in `discussion_<N>.md`:
 
 ```bash
 grep -E '^(reversibility|alternatives|blast-radius|assumptions|AGGREGATE):' .mz/task/<task_name>/discussion_<N>.md

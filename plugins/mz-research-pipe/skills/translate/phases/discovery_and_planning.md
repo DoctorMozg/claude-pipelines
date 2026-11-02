@@ -64,7 +64,7 @@ Raw tokens stay in state after normalization as an audit trail — the approval 
 
 You dispatch one `pipeline-researcher` agent (model: **sonnet**) to expand globs, detect formats, and produce a tabular inventory. The dispatch prompt is task-specific only and instructs the researcher to:
 
-- Glob-expand every file token supplied in 1.1 against the worktree.
+- Expand every file token supplied in 1.1 into the matching files in the worktree.
 - For each resolved file, detect the format using extension first, then a `file` probe, then the first line (YAML frontmatter `---`, JSON `{`, `<?xml`). Supported formats: `md`, `mdx`, `json`, `yaml`, `yml`, `po`, `properties`, `strings`, `xliff`, `txt`.
 - Record byte size and translatable-line count per file. Translatable lines means prose lines for markdown, value-side lines for JSON/YAML, `msgstr` for PO.
 - Flag and exclude any file that looks binary, is a lockfile (`*.lock`, `*-lock.json`, `*.sum`), lives under a vendored or generated directory (`node_modules/`, `vendor/`, `dist/`, `build/`, `target/`, `.venv/`), or was produced by a code generator (header comment matches `(?i)generated|do not edit`).
@@ -118,7 +118,7 @@ Validation sequence (fail closed on the first failure):
 
 1. Anti-injection allow-list (`^[A-Za-z0-9_-]+$`) on the raw input.
 1. Length cap ≤ 32 characters on the raw input.
-1. Grep the normalization table for the raw input (case-insensitive).
+1. Search the normalization table for the raw input (case-insensitive).
 1. If the user supplied a BCP 47 tag with a region or script subtag (`zh-Hans`, `pt-BR`, `sr-Latn`), store the original tag in a separate `target_variant` field alongside the canonical `target_lang`. The canonical code drives every downstream call; the variant is a translator hint only.
 1. Reject identical source and target after normalization.
 

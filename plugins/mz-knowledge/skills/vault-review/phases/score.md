@@ -6,7 +6,7 @@ Build a composite-scored review queue. Dispatch `moc-gap-detector` in parallel s
 
 ## Step 1: Scan permanent notes
 
-Glob all `.md` files in the vault's permanent notes folder. Typical layouts:
+List all `.md` files in the vault's permanent notes folder. Typical layouts:
 
 - `<vault>/04 - Permanent/**/*.md`
 - `<vault>/permanent/**/*.md`

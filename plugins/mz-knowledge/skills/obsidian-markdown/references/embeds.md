@@ -1,6 +1,6 @@
 # Embeds Reference
 
-Source: Obsidian Flavored Markdown embeds. Grep this file for the specific embed variant you need — do not load the whole file.
+Source: Obsidian Flavored Markdown embeds. Search this file for the specific embed variant you need — do not load the whole file.
 
 ## Basic Note Embed
 

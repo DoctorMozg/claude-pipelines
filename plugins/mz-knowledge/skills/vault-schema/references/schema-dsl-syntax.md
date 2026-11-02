@@ -1,6 +1,6 @@
 # vault-schema DSL v1 Syntax Reference
 
-Lazy-loaded reference for the YAML schema DSL consumed by `vault-schema`. Grep this file for the specific construct you need — do not load the whole file into context.
+Lazy-loaded reference for the YAML schema DSL consumed by `vault-schema`. Search this file for the specific construct you need — do not load the whole file into context.
 
 ## File location
 

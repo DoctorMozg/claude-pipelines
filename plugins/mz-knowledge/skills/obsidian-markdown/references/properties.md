@@ -1,6 +1,6 @@
 # Properties Reference
 
-Source: Obsidian Flavored Markdown frontmatter properties. Grep this file for the specific property type you need — do not load the whole file.
+Source: Obsidian Flavored Markdown frontmatter properties. Search this file for the specific property type you need — do not load the whole file.
 
 ## Default Built-in Properties (Obsidian 1.9+)
 

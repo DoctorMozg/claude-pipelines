@@ -284,7 +284,7 @@ Write a JSON object to the output file path:
 
 ## Red Flags
 
-- The dispatch lacks the CV path, preferences, or output path this agent requires.
+- The dispatch lacks the CV path, preferences, or output path you need.
 - A skill or title is invented that does not appear in the CV.
 - `remote_required=true` and `current_location=null` and you proceeded anyway — that is a `NEEDS_CONTEXT` return, never a guess.
 - Scoring weights do not sum to 100.

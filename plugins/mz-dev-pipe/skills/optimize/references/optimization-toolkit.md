@@ -2,7 +2,7 @@
 
 The domain-agnostic vocabulary the `optimize` pipeline reasons with — a shared framework so every run classifies bottlenecks, generates hypotheses, and prioritizes them the same way, whatever the target. It is **not** a per-domain playbook and not a command catalog. The model already knows the domains (code, containers, LLM hyperparameters, build pipelines); what this file supplies is the disciplined frame. Anything genuinely unfamiliar is filled by a live `pipeline-researcher` pass in Phase 2, not from here.
 
-Grep this file per section — never load the whole thing:
+Search this file per section — never load the whole thing:
 
 - **Phase 2** classifies the bottleneck with §1 and reads the profile with §3.
 - **Phase 3** generates hypotheses from §2 and ranks them with §4.

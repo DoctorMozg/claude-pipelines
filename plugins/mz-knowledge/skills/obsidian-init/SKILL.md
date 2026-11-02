@@ -118,7 +118,7 @@ Create folders, write CLAUDE.md, schema, and templates. See `phases/scaffold_vau
 
 ### Phase 2: Verify
 
-1. Glob `<vault>/**/*.md` and `<vault>/.mz/**` to confirm all planned files exist.
+1. List `<vault>/**/*.md` and `<vault>/.mz/**` to confirm all planned files exist.
 1. Read `CLAUDE.md` and verify it contains: Vault Context, Obsidian Syntax, Folder Layout, Note Conventions, Frontmatter, Compounding Wiki Principle, Don'ts sections.
 1. Read `.mz/vault-schema.yml` and verify YAML parses with `note_types:` key.
 1. Confirm no existing files were overwritten (compare against Phase 0 scan).

@@ -38,7 +38,7 @@ If the file list is empty after materialisation, report to the user and exit. Do
 
 **Run for `scope:branch` and `scope:working`** (the two bounded modes). Deep-audit decisions about tier, reversibility, and trust-boundary impact are stronger when downstream callers are visible to the lenses.
 
-Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** using the orchestrator's Grep/Read/Bash tools. Pass the file list materialised in §1.2 as `input_files`.
+Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** in the orchestrator, using code searches, Read and Bash. Pass the file list materialised in §1.2 as `input_files`.
 
 Persist YAML output to `.mz/task/<task_name>/blast_radius.yml`.
 

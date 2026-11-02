@@ -59,7 +59,7 @@ None. This skill is read-only — it scores artifacts and writes a report under 
 
 ### Phase 1: Audit
 
-Glob the artifact source, dispatch `gov-audit-reviewer` per artifact (parallel up to **MAX_REVIEWERS**, sequential overflow waves, each wave with a pre-dispatch manifest and a post-wave rollup), collect every `VERDICT:`, and write the review report to **REPORT_DIR**. See `phases/audit.md`. If zero artifacts are found, report that clearly and stop — do not fabricate findings.
+List the files in the artifact source, dispatch `gov-audit-reviewer` per artifact (parallel up to **MAX_REVIEWERS**, sequential overflow waves, each wave with a pre-dispatch manifest and a post-wave rollup), collect every `VERDICT:`, and write the review report to **REPORT_DIR**. See `phases/audit.md`. If zero artifacts are found, report that clearly and stop — do not fabricate findings.
 
 ## Techniques
 

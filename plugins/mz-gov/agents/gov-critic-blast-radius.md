@@ -45,7 +45,7 @@ Your focus areas:
 1. Read the draft artifact in full at the orchestrator-provided path.
 1. Read the discussion-context file if a path was given.
 1. Identify the concrete thing being changed — the symbol, module, endpoint, table, contract, dependency, or config key.
-1. Grep the repository for direct references to that thing — callers, imports, consumers, config lookups, test fixtures. Build a list of real dependents with file paths.
+1. Search the repository for direct references to that thing — callers, imports, consumers, config lookups, test fixtures. Build a list of real dependents with file paths.
 1. Trace at least one ring of transitive reach: for the most-referenced dependents, check what in turn depends on them.
 1. Inspect data, contract, and cross-cutting surfaces specifically — these carry the radius the prose most often understates.
 1. Compare your discovered impact map against any impact/consequences section in the artifact. Every real dependent the artifact omits is a finding.

@@ -100,15 +100,15 @@ Lens derivation is a two-step process: **seed** from structural defaults, then *
 
 Start with these five structural default lenses. A default lens is seeded only if its bucket has at least one fresh-or-slug-matched file from §1.2.
 
-| Lens              | Source glob                                      | Threshold constant         | Notes                                                                             |
-| ----------------- | ------------------------------------------------ | -------------------------- | --------------------------------------------------------------------------------- |
-| `research`        | `.mz/research/*.md`                              | `RESEARCH_STALE_DAYS`      | Deep-research outputs                                                             |
-| `tasks`           | `.mz/task/*/`                                    | `TASK_ARTIFACT_STALE_DAYS` | Pre-filtered by Fresh + Slug-matched; never dispatch an agent on all 40 task dirs |
-| `reports_reviews` | `.mz/reports/*.md` + `.mz/reviews/*.md`          | `REPORT_STALE_DAYS`        | Merged because neither alone usually justifies a full lens                        |
-| `codebase`        | project root, narrowed by `scope:` or task hints | n/a (code is always fresh) | Use `scope:` param if set; else Grep/Glob against filename hints in the task text |
-| `git_history`     | `git log` slice                                  | n/a                        | Skipped entirely if marked unavailable in §1.1                                    |
+| Lens              | Source glob                                      | Threshold constant         | Notes                                                                                                   |
+| ----------------- | ------------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `research`        | `.mz/research/*.md`                              | `RESEARCH_STALE_DAYS`      | Deep-research outputs                                                                                   |
+| `tasks`           | `.mz/task/*/`                                    | `TASK_ARTIFACT_STALE_DAYS` | Pre-filtered by Fresh + Slug-matched; never dispatch an agent on all 40 task dirs                       |
+| `reports_reviews` | `.mz/reports/*.md` + `.mz/reviews/*.md`          | `REPORT_STALE_DAYS`        | Merged because neither alone usually justifies a full lens                                              |
+| `codebase`        | project root, narrowed by `scope:` or task hints | n/a (code is always fresh) | Use `scope:` param if set; else search for and list matching files from filename hints in the task text |
+| `git_history`     | `git log` slice                                  | n/a                        | Skipped entirely if marked unavailable in §1.1                                                          |
 
-For the `codebase` lens, if `scope:` was set in Phase 0, use the resolved file list directly. Otherwise, extract filename-looking tokens from the task text (e.g., `auth.py`, `WebSocketManager`, `src/payments/`) and run Glob/Grep to resolve them into a concrete list. If neither yields files, drop the `codebase` lens entirely — better than dispatching an agent to scan the whole repo.
+For the `codebase` lens, if `scope:` was set in Phase 0, use the resolved file list directly. Otherwise, extract filename-looking tokens from the task text (e.g., `auth.py`, `WebSocketManager`, `src/payments/`) and search for matching files to resolve them into a concrete list. If neither yields files, drop the `codebase` lens entirely — better than dispatching an agent to scan the whole repo.
 
 ### Step 2 — Augment (task-adaptive)
 
