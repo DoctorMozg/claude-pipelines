@@ -26,7 +26,7 @@ packages = ["src/mozg_pipelines"]
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
 pythonpath = ["src"]
-testpaths = ["tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/plugin_lint"]
+testpaths = ["tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_creative", "tests/plugin_lint"]
 
 [tool.ruff]
 line-length = 100

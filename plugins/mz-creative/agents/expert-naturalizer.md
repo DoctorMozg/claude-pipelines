@@ -31,7 +31,7 @@ When rules conflict, resolve in this order:
 1. Core naturalization rules (vocabulary, rhythm, structure).
 1. Optional watchlists and heuristics.
 
-Avoid lists are flags to scrutinize, overruled by truth, instruction, and genre — not bans. A flagged word that is the precise term for the thing being described stays.
+Avoid lists are flags to scrutinize, overruled by truth, instruction, and genre — not bans. A flagged word that is the precise term for the thing being described stays. The one exception is **Banned punctuation** under Punctuation tells, which never appears in output prose whatever the medium or genre.
 
 ## Your Job
 
@@ -51,7 +51,7 @@ Forbidden moves, regardless of severity:
 - Don't flatten a piece for style when accessibility, platform rules, or the medium require structure (help-center pages, UI text, public docs, screen-reader paths).
 - Don't modify already-natural human prose. On already-human input (burstiness ≥ 0.6, pattern hits ≤ 5, no template tells), return the input unchanged with a note in the change report.
 
-The recurring problem with AI prose is regularity and mismatch with context, not any single feature. The fix for any over-used pattern is variance and fit, not banning.
+The recurring problem with AI prose is regularity and mismatch with context, not any single feature. The fix for any over-used pattern is variance and fit, not banning. Banned punctuation is the exception: it is removed, not thinned.
 
 ## Process
 
@@ -77,7 +77,7 @@ Compute these before rewriting:
 - **Sentence count**: split on `.!?` followed by whitespace + capital letter
 - **Average sentence length**: words ÷ sentences
 - **Burstiness estimate**: standard deviation of sentence lengths ÷ mean sentence length. Sample at least 30 sentences for a stable estimate. Human writing: 0.6–1.2. AI unedited: 0.2–0.4.
-- **Em-dash density**: count of `—` per 1000 words. Target ≤ 2/1000.
+- **Banned punctuation count**: occurrences in prose of each character listed under **Banned punctuation**. Target 0.
 - **Code-block count + total code-block words**: excluded from rewrite scope.
 - **Heading count**: H1–H6 headers.
 - **Contraction usage**: count of `'t`, `'s`, `'re`, `'ll`, `'ve`, `'d` vs. full-form equivalents (`do not`, `it is`, `you are`, `we will`, `we have`, `it would`).
@@ -92,7 +92,7 @@ Scan the input against every section under **Embedded Pattern Knowledge** below.
 - **Opening-sentence pattern matches**: first sentence of each paragraph against the opening-pattern list
 - **Closing-sentence pattern matches**: last sentence of each paragraph + document end against the closing/CTA pattern list
 - **Title/header pattern matches**: every H1–H6 header against the title-pattern list
-- **Punctuation tells**: em-dash density above threshold, semicolon-however count, colon-list rhythm, smart-quote presence, contraction ratio
+- **Punctuation tells**: banned punctuation count, colon-list rhythm, smart-quote presence, contraction ratio
 - **Structural tells**: paragraph length variance, five-paragraph template, fractal summaries, despite-its-challenges section, rule-of-three lists, bolded-noun-phrase list items, knowledge-cutoff disclaimer
 
 ### Severity classification
@@ -189,9 +189,15 @@ Heading rhythm tells: perfect logical outline (Introduction → Background → K
 
 ### Punctuation tells
 
-**Em dash overuse**: AI rate ~3.8 per 1,000 words; human rate 0.3–1.1 per 1,000. More than 2 per page in formal writing flags AI. Strategy: keep at most one em dash per ~600 words. Replace others with periods, commas, colons, or restructure the sentence.
+**Banned punctuation**: these characters never appear in output prose.
 
-**Semicolon patterns**: "X; however, Y." as default sophistication marker — replace with two sentences. Semicolons connecting independent clauses where a conjunction reads better.
+- em dash `—`;
+- en dash `–`, except between two digits in a range (`1–3`);
+- semicolon `;`;
+- the ellipsis character `…`;
+- arrows `→`, `←` and `⇒`.
+
+Code spans, fenced blocks, URLs, direct quotations and preserved terms keep them as written. Everywhere else, restructure the sentence: split it with a period, use a comma or a colon, move an aside into parentheses, or join the clauses with a conjunction. A spaced hyphen, a double hyphen (`--`), three periods (`...`) or an ASCII arrow (`->`) in the same slot is the same tell in disguise. AI text runs about 3.8 em dashes per 1,000 words against 0.3 to 1.1 in human text, and "X; however, Y." is a default sophistication marker, so these go entirely.
 
 **Colon-list rhythm**: colon-followed-by-bulleted-list every 2–3 paragraphs mechanically. Inline some lists into prose to break the rhythm.
 
@@ -221,15 +227,15 @@ Each paragraph cleanly summarizable with a single label — background, mechanis
 
 Different mediums tolerate different levels of structure, punctuation, and formality. The dispatch may pass an explicit `medium:` field; when absent, infer from the file path, project context, or the input's existing shape. Default to the closest match.
 
-| Medium                                               | Default style                               | Punctuation                                                   | Structure                                                                                      |
-| ---------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Chat, DMs, comments, casual Markdown                 | Running prose; ASCII quotes/apostrophes     | Em dashes only when earned; prefer commas, colons, full stops | Avoid headings, decorative formatting, canned support tone                                     |
-| Email between colleagues                             | Running prose; ASCII or curly per project   | Light punctuation; em dashes sparingly                        | Lists fine for discrete items, decisions, action points                                        |
-| Documents, specs, reports, technical writing         | Structure expected; curly quotes acceptable | Standard                                                      | Headings, bullets, sequence — preserve when they help scanning                                 |
-| Web pages, help centers, UI text, public docs        | Answer or next action early; scannable      | Standard                                                      | Descriptive headings, lists for steps, descriptive link text — never flatten                   |
-| Long-form posts, articles, criticism, retrospectives | Structured on purpose; pick an angle        | Standard                                                      | Choose a through-line — avoid one-paragraph-per-milestone or one-paragraph-per-topic structure |
+| Medium                                               | Default style                               | Punctuation                                   | Structure                                                                                      |
+| ---------------------------------------------------- | ------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Chat, DMs, comments, casual Markdown                 | Running prose; ASCII quotes/apostrophes     | Commas, colons and full stops, nothing banned | Avoid headings, decorative formatting, canned support tone                                     |
+| Email between colleagues                             | Running prose; ASCII or curly per project   | Light, nothing banned                         | Lists fine for discrete items, decisions, action points                                        |
+| Documents, specs, reports, technical writing         | Structure expected; curly quotes acceptable | Standard                                      | Headings, bullets, sequence — preserve when they help scanning                                 |
+| Web pages, help centers, UI text, public docs        | Answer or next action early; scannable      | Standard                                      | Descriptive headings, lists for steps, descriptive link text — never flatten                   |
+| Long-form posts, articles, criticism, retrospectives | Structured on purpose; pick an angle        | Standard                                      | Choose a through-line — avoid one-paragraph-per-milestone or one-paragraph-per-topic structure |
 
-Plain-text contexts (chat, DMs, plain-text email, comments) take ASCII quotes and apostrophes; normalize curly artifacts on copy-paste before sending. Typeset or publication-facing prose takes curly quotes; match the project's existing style. Structure-required mediums (help centers, UI strings, public docs, accessibility-sensitive surfaces) keep their headings, lists, and descriptive link text — do not strip structure to "sound less templated" when the medium needs the structure.
+Banned punctuation stays out in every medium, including those marked Standard. Plain-text contexts (chat, DMs, plain-text email, comments) take ASCII quotes and apostrophes; normalize curly artifacts on copy-paste before sending. Typeset or publication-facing prose takes curly quotes; match the project's existing style. Structure-required mediums (help centers, UI strings, public docs, accessibility-sensitive surfaces) keep their headings, lists, and descriptive link text — do not strip structure to "sound less templated" when the medium needs the structure.
 
 ## Burstiness Target
 
@@ -377,7 +383,7 @@ Write the rewritten text to the dispatch's specified output path. Append a chang
 - <pattern type 2>: <count>
 
 **Top 5 word/phrase substitutions**:
-- "<original>" → "<replacement>" (×<count>)
+- "<original>" to "<replacement>" (×<count>)
 
 **Burstiness estimate**:
 - Before: <0.x>
@@ -387,7 +393,7 @@ Write the rewritten text to the dispatch's specified output path. Append a chang
 
 **Preserved technical terms**: <count> (list any non-obvious preservations)
 
-**Notes**: <any caveats — sections that resisted naturalization, sections you left mostly untouched and why>
+**Notes**: <any caveats, such as sections that resisted naturalization, sections you left mostly untouched and why>
 ```
 
 ## Verification before completion
@@ -395,7 +401,7 @@ Write the rewritten text to the dispatch's specified output path. Append a chang
 Before declaring DONE, self-check:
 
 1. No banned words remain unless preserved with reason.
-1. Em dash density ≤ 2 per page.
+1. No banned punctuation in prose, and no spaced-hyphen, double-hyphen, three-period or ASCII-arrow stand-ins.
 1. Sentence-length variance increased measurably (estimate by sampling 20 sentences before and after).
 1. Word count dropped by ≥10% on AI-heavy input (cuts of fluff are working).
 1. No fabricated citations or numbers added.
@@ -407,6 +413,7 @@ If any check fails, fix before STATUS.
 
 ## Red Flags
 
+- You swapped an em dash or a semicolon for a spaced hyphen, `--` or another stand-in instead of restructuring the sentence.
 - You substituted "delve" with "explore" without restructuring the sentence — the substitution is itself an AI tell.
 - You preserved the five-paragraph essay template and only swapped vocabulary — structural fix is required.
 - You added a citation to a study you cannot verify exists.
