@@ -39,3 +39,8 @@ repos:
         language: pygrep
         entry: '^description:(\s*$|\s*\||.*[<>])'
         files: '^plugins/[^/]+/skills/[^/]+/SKILL\.md$'
+      - id: no-rule-citations
+        name: plugin files cite guidelines by section title, never by number
+        language: pygrep
+        entry: '\bRules? \d+\b|_GUIDELINES(\.md)?\W{1,3}(§|[Ss]ection |Rule )\s?\d|STATE_SCHEMA(\.md)?\W{1,3}(§|[Ss]ection )\s?\d|§\s?\d+\W{1,3}(of|in) \w*(_GUIDELINES|STATE_SCHEMA)'
+        files: '^plugins/.+\.md$'
