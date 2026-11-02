@@ -14,7 +14,7 @@ Dispatch the `github-pr-reviewer` agent to perform a thorough review of a GitHub
 
 ## When to Use
 
-Triggers: "review PR", "review pull request", "check this PR", "PR review".
+Reviewing a GitHub pull request, given by URL or `owner/repo#number`, and writing a findings report with a verdict.
 
 ### When NOT to use
 

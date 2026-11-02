@@ -14,10 +14,11 @@ Conduct exhaustive, multi-agent research on a topic by decomposing it into indep
 
 ## When to Use
 
-Triggers: "research X", "deep dive into", "comprehensive analysis of", "what is the state of".
+Exhaustive multi-source web research on a topic, synthesized into a single sourced report.
 
 ### When NOT to use
 
+- Research that already exists on disk and only needs consolidating — use `combine`.
 - The user wants a one-line factual answer — use plain web search.
 - The topic is narrow enough for a single pipeline-web-researcher agent — dispatch directly.
 - The user wants a code review or audit — use `review-branch` or `audit`.

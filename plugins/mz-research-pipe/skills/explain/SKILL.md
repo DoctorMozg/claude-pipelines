@@ -14,10 +14,11 @@ You orchestrate a deep-dive code analysis that produces a comprehensive, diagram
 
 ## When to Use
 
-Invoke when the user asks to understand, document, diagram, or walk through existing code. Trigger phrases: "explain X", "how does X work", "diagram this", "walk me through", "visualize the flow".
+Understanding existing code through a read-only, diagram-rich report on how it works, why it is designed that way, and where it may break.
 
 ### When NOT to use
 
+- The user wants a short sourced answer to a question, not a full report — use `ask`.
 - The user wants code modified, debugged, or fixed — use `debug` or `build` instead.
 - The user wants a hypothesis verified — use `debug certainty:low` instead.
 - The user asks a one-line clarifying question answerable without opening files.

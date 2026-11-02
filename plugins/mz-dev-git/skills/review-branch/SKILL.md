@@ -16,7 +16,7 @@ The agent runs a two-wave analysis: Wave A is a 6-lens parallel fan-out (bugs, s
 
 ## When to Use
 
-Triggers: "review branch", "review my changes", "check my branch", "what did I change", "branch review".
+Reviewing every change on the current git branch against a base branch and writing a findings report.
 
 ### When NOT to use
 
