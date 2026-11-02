@@ -1,11 +1,6 @@
 ---
 name: optimize
-description: >-
-  ALWAYS invoke when the user wants to make something faster / smaller / cheaper —
-  "optimize", "make it faster", "profile the hotspot", "reduce the image size",
-  "tune LLM hyperparameters", "speed up the build". Iterative, measurement-driven
-  performance optimization for code, containers, LLM hyperparameters, and build
-  pipelines. NOT for removing dead code / unused imports — that is the cleanup skill.
+description: 'ALWAYS invoke when the user wants to make something faster / smaller / cheaper — "optimize", "make it faster", "profile the hotspot", "reduce the image size", "tune LLM hyperparameters", "speed up the build". Iterative, measurement-driven performance optimization for code, containers, LLM hyperparameters, and build pipelines. NOT for removing dead code / unused imports — that is the cleanup skill.'
 argument-hint: '[scope:branch|global|working] [type:code|container|llm_hyperparams|build_pipeline|system] <target + metric + goal>'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch

@@ -22,3 +22,20 @@ repos:
     hooks:
       - id: shfmt
         args: [-i, "2", -ci]
+  - repo: local
+    hooks:
+      - id: hook-script-head-guard
+        name: hook scripts end `| head` pipelines with `|| true`
+        language: pygrep
+        entry: '\|\s*head\b(?!.*\|\|\s*true)'
+        files: '^plugins/[^/]+/scripts/.+\.sh$'
+      - id: skill-reference-path
+        name: skills reach reference files through SKILL_DIR
+        language: pygrep
+        entry: '(^|[^/>}A-Za-z_-])references/[a-z0-9_-]+\.md'
+        files: '^plugins/[^/]+/skills/[^/]+/(SKILL|phases/[^/]+)\.md$'
+      - id: skill-description-shape
+        name: skill descriptions are one line with no < or >
+        language: pygrep
+        entry: '^description:(\s*$|\s*\||.*[<>])'
+        files: '^plugins/[^/]+/skills/[^/]+/SKILL\.md$'
