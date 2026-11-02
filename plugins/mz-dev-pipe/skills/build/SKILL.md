@@ -40,7 +40,8 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ## Constants
 
-- **MAX_REVIEW_ITERATIONS**: 3 | **MAX_RED_ITERATIONS**: 2 | **MAX_GREEN_ITERATIONS**: 3 | **TASK_DIR**: `.mz/task/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **MAX_REVIEW_ITERATIONS**: 3 | **MAX_RED_ITERATIONS**: 2 | **MAX_GREEN_ITERATIONS**: 3 | **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
@@ -64,17 +65,19 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase 0: Setup
 
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+
 Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars) of the description; on same-day collision append `_v2`, `_v3`.
 
 **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
 
-**Fresh-task setup**: create `.mz/task/<task_name>/`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
+**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
 
-Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Write to `.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
+Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Pass `project_root: <PROJECT_ROOT>` and write to `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
 
 ### Phase 1: Research
 
-Gather codebase context, assess feasibility, compare 2-3 approaches in parallel. See `phases/research_and_planning.md` → Phase 1. Update state to `research_complete`.
+Gather codebase context, assess feasibility, compare 2-3 approaches in parallel. See `phases/research_and_planning.md` → Phase 1. Set `Phase: research_complete`.
 
 ### Phase 2: Planning
 
@@ -86,7 +89,7 @@ Generate detailed plan, run plan-review loop, get user approval. See `phases/res
 
 See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-**Pre-read**: Read `.mz/task/<task_name>/plan.md` with the Read tool. Capture the full plan body (work units, test strategy, risks, verification criteria) into context. The plan must already have passed automated review before this gate fires.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md` with the Read tool. Capture the full plan body (work units, test strategy, risks, verification criteria) into context. The plan must already have passed automated review before this gate fires.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: plan gate]`; `Status` stays `running`.
 
@@ -96,7 +99,7 @@ See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface patter
 - Default per-agent budget: ~20k tokens (mixed Sonnet + Opus). For a typical 5-work-unit plan, `N ≈ 12`, total ≈ 240k tokens.
 - Use the formula in `<PLUGIN_ROOT>/shared/approval-gate.md` to convert to a dollar estimate at the active price.
 
-**Surface 1 — emit the plan message.** Output the plan verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/plan.md` — do not substitute a path, summary, or placeholder. Structure:
+**Surface 1 — emit the plan message.** Output the plan verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
 ## Plan ready for review — build
@@ -117,9 +120,9 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet
 
 **Response handling**:
 
-- **Approve** → proceed to Phase 3.
+- **Approve** → add `- plan approved: .mz/task/<task_name>/plan.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: plan_approved`, and proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Any other reply (feedback)** → spawn `pipeline-planner` with feedback, overwrite `plan.md`. Do NOT re-run plan review — user's word is final. Return to Surface 1, re-read `.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **Any other reply (feedback)** → spawn `pipeline-planner` with feedback, overwrite `plan.md`. Do NOT re-run plan review — user's word is final. Return to Surface 1, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
@@ -129,31 +132,31 @@ Create tests **before any implementation** with `pipeline-test-writer` (model: o
 
 ### Phase 4: Test Review
 
-Spawn TWO review agents in parallel (model: sonnet): the unified `pipeline-test-reviewer` (covers gaps + quality in one pass) and `pipeline-code-reviewer` (test-code craftsmanship). The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Update state to `test_review_passed`.
+Spawn TWO review agents in parallel (model: sonnet): the unified `pipeline-test-reviewer` (covers gaps + quality in one pass) and `pipeline-code-reviewer` (test-code craftsmanship). The reviewers verify the tests cover every work unit from the plan and that they would catch real regressions. See `phases/testing.md` → Phase 4. Set `Phase: test_review_passed`.
 
 ### Phase 5: Verify RED
 
-Run the new tests and confirm they FAIL (or error with `not implemented` / missing-symbol errors). A test that passes against zero implementation is broken — it would not catch a regression. Re-dispatch `pipeline-test-writer` with the unexpectedly-passing test names if any pass. See `phases/testing.md` → Phase 5. Update state to `red_verified`.
+Run the new tests and confirm they FAIL (or error with `not implemented` / missing-symbol errors). A test that passes against zero implementation is broken — it would not catch a regression. Re-dispatch `pipeline-test-writer` with the unexpectedly-passing test names if any pass. See `phases/testing.md` → Phase 5. Set `Phase: red_verified`.
 
 ### Phase 6: Implementation (GREEN)
 
-Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). Each coder is told the relevant failing tests and instructed to make them pass **without modifying any test file**. After each wave, update state with `current_wave: N`, per-coder STATUS, and cumulative files modified — required for safe resumption if context compacts. See `phases/implementation_and_review.md` → Phase 6. Update state to `implementation_complete`.
+Parse work units into execution waves and dispatch parallel `pipeline-coder` agents (model: opus). Each coder is told the relevant failing tests and instructed to make them pass **without modifying any test file**. After each wave, update state with `current_wave: N`, per-coder STATUS, and cumulative files modified — required for safe resumption if context compacts. See `phases/implementation_and_review.md` → Phase 6. Set `Phase: implementation_complete`.
 
 ### Phase 7: Code Review
 
-Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 7. Update state to `code_review_passed`.
+Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 7. Set `Phase: code_review_passed`.
 
 ### Phase 8: Lint, Format, and Verify GREEN
 
-Detect tooling, run linters/formatters, then run the **full test suite** including the Phase 3 tests. All target tests must now pass; no pre-existing tests may regress. See `phases/implementation_and_review.md` → Phase 8. Update state to `tests_passing`.
+Detect tooling, run linters/formatters, then run the **full test suite** including the Phase 3 tests. All target tests must now pass; no pre-existing tests may regress. See `phases/implementation_and_review.md` → Phase 8. Set `Phase: tests_passing`.
 
 ### Phase 9: Final Code Review
 
-Last validation pass over ALL code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 9. Update state to `final_review_passed`.
+Last validation pass over ALL code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 9. Set `Phase: final_review_passed`.
 
 ### Phase 10: Refactor (Optimization)
 
-Clean up dead code, debug artifacts, unused imports — the refactor leg of red-green-refactor. Tests must remain green; no behavior change. Re-verify then review. See `phases/finalization.md` → Phase 10. Update state to `optimized`.
+Clean up dead code, debug artifacts, unused imports — the refactor leg of red-green-refactor. Tests must remain green; no behavior change. Re-verify then review. See `phases/finalization.md` → Phase 10. Set `Phase: optimized`.
 
 ### Phase 11: Completeness Check
 

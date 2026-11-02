@@ -47,10 +47,14 @@ Extract from `$ARGUMENTS`:
 
 ## Directory Structure
 
-- **State** — `.mz/task/<task_name>/state.md`. Source of truth across phases.
-- **Output** — `.mz/outreach/<run_name>/` holds `target.json` (parsed target), `contacts.json` (raw agent output), and the final `<YYYY_MM_DD>_recruiter_info_<slug>.md` report.
+- **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. Source of truth across phases.
+- **Output** — `<PROJECT_ROOT>/.mz/outreach/<run_name>/` (called `<RUN_DIR>` in phase files) holds `target.json` (parsed target), `contacts.json` (raw agent output), and the final `<YYYY_MM_DD>_recruiter_info_<slug>.md` report.
 
 `task_name` follows `<YYYY_MM_DD>_job_recruiter_info_<slug>`; `run_name` is `<YYYY_MM_DD>_job_recruiter_info_<slug>` (same leading-date convention; max 40 chars). Same-day collisions append `_v2`, `_v3`.
+
+## Constants
+
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 
 ## Core Process
 
@@ -66,14 +70,16 @@ Read `phases/lookup_and_report.md` when you reach Phase 1.
 
 ### Phase 0: Setup + target parsing
 
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+
 Parse arguments. Derive:
 
 - `task_name` (state dir) = `<YYYY_MM_DD>_job_recruiter_info_<slug>` where `<slug>` is a snake_case summary of the target (max 20 chars, derived from company name or listing host).
 - `run_name` (outreach output dir) = `<YYYY_MM_DD>_job_recruiter_info_<slug>` (max 40 chars).
 
 ```bash
-mkdir -p .mz/task/<task_name>
-mkdir -p .mz/outreach/<run_name>
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/<run_name>"
 ```
 
 Detect input shape:
@@ -81,7 +87,7 @@ Detect input shape:
 - **URL** — `target` matches `^https?://`. WebFetch the page once to extract: `company`, `role_title`, `location_string`, `summary_snippet`. If WebFetch fails, fall back to the URL host as the company hint and surface the failure as a `DONE_WITH_CONCERNS` note in the final report.
 - **Company name (with optional role hint)** — Use `target` as `company`; use `role_hint` as `role_title` if provided. Derive the company domain via WebSearch (`"<company>" official site`); first authoritative result is the domain.
 
-Write `.mz/outreach/<run_name>/target.json`:
+Write `<PROJECT_ROOT>/.mz/outreach/<run_name>/target.json`:
 
 ```json
 {
@@ -98,7 +104,7 @@ Write `.mz/outreach/<run_name>/target.json`:
 }
 ```
 
-Write `.mz/task/<task_name>/state.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 ```yaml
 schema_version: 2
@@ -130,16 +136,16 @@ Before completing, output a visible block showing: target (company + role if kno
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ## Resume Support
 
-Before creating anything in Phase 0, check if `.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` field and resume from the next incomplete phase. All phases are idempotent — re-running overwrites output files.
+Before creating anything in Phase 0, check if `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` field and resume from the next incomplete phase. All phases are idempotent — re-running overwrites output files.
 
 ## Error Handling
 
 - Agent returns empty: append an `Errors:` bullet in `state.md`, write a report that explicitly says "no contacts surfaced" with the `ZERO RESULTS VERIFIED` or `ZERO RESULTS UNVERIFIED` disclosure tag from the agent.
 - Agent returns `STATUS: NEEDS_CONTEXT`: invoke `AskUserQuestion` to fill the missing field (typically the company domain), then re-dispatch.
-- Agent returns `STATUS: BLOCKED`: stop the pipeline, set state `Status` to `failed_blocked`, surface the cause to the user.
+- Agent returns `STATUS: BLOCKED`: stop the pipeline, set `Status: blocked` with the cause in `what_remains`, surface the cause to the user.
 - Never fabricate data — incomplete results are better than false results.
 - Listing URL was provided but unreachable: degrade to `input_type: company`, surface the WebFetch failure in the final report.

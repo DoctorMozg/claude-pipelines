@@ -4,7 +4,7 @@ Subject the draft to adversarial review, scaled to the decision's weight. A `hea
 
 ## Inputs (from Phase 1)
 
-- `.mz/task/<task_name>/draft.md` — the populated artifact, the single thing critics read.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the populated artifact, the single thing critics read.
 - `WEIGHT` (`light` | `heavy`) and the resolved artifact type, recorded in `state.md`.
 - `routing.md`, `provenance.md` — available as discussion context.
 
@@ -28,17 +28,17 @@ Dispatch prompt (`<N>` is the current iteration):
 Run the fast governance review on this light-weight decision draft.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/task/<task_name>/draft.md
-- .mz/task/<task_name>/routing.md   (discussion context)
+- <PROJECT_ROOT>/.mz/task/<task_name>/draft.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/routing.md   (discussion context)
 
 ## Output
-Write your consolidated four-lens review to .mz/task/<task_name>/discuss_<N>_quick.md.
+Write your consolidated four-lens review to <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_quick.md.
 End with VERDICT: PASS|FAIL then STATUS:.
 ```
 
@@ -88,17 +88,17 @@ Then spawn **all four agents in one message** (a single tool block with four par
 Critique this decision draft from the considered-options lens only.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read
-- .mz/task/<task_name>/draft.md
-- .mz/task/<task_name>/routing.md   (discussion context)
+- <PROJECT_ROOT>/.mz/task/<task_name>/draft.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/routing.md   (discussion context)
 
 ## Output
-Write findings to .mz/task/<task_name>/discuss_<N>_alternatives.md.
+Write findings to <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_alternatives.md.
 End with VERDICT: PASS|FAIL then STATUS:.
 ```
 
@@ -132,19 +132,19 @@ Dispatch `gov-discussion-synthesizer` (sonnet). It reads the four critic files a
 Synthesize this iteration's four governance critics into one verdict.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Iteration
 <N>
 
 ## Read (the four critic outputs)
-- .mz/task/<task_name>/discuss_<N>_reversibility.md
-- .mz/task/<task_name>/discuss_<N>_alternatives.md
-- .mz/task/<task_name>/discuss_<N>_blast-radius.md
-- .mz/task/<task_name>/discuss_<N>_assumptions.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_reversibility.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_alternatives.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_blast-radius.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_assumptions.md
 
 ## Output
-Write .mz/task/<task_name>/discussion_<N>.md with the verdict block, merged
+Write <PROJECT_ROOT>/.mz/task/<task_name>/discussion_<N>.md with the verdict block, merged
 action items, and conflicts. End with AGGREGATE: PASS|FAIL then STATUS:.
 ```
 
@@ -153,7 +153,7 @@ action items, and conflicts. End with AGGREGATE: PASS|FAIL then STATUS:.
 Find the verdict line in `discussion_<N>.md`:
 
 ```bash
-grep -E '^(reversibility|alternatives|blast-radius|assumptions|AGGREGATE):' .mz/task/<task_name>/discussion_<N>.md
+grep -E '^(reversibility|alternatives|blast-radius|assumptions|AGGREGATE):' "<PROJECT_ROOT>/.mz/task/<task_name>/discussion_<N>.md"
 ```
 
 Emit a visible block:

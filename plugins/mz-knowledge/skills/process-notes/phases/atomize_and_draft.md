@@ -40,7 +40,7 @@ Your task:
    - Body: 150-400 words in the user's own words, self-contained, directly claiming what the title asserts.
    - Do NOT write wikilinks in the body — linking is a later phase.
 
-3. OUTPUT: Write a single YAML file to `.mz/task/<task_name>/proposals.md` using exactly this shape:
+3. OUTPUT: Write a single YAML file to `<PROJECT_ROOT>/.mz/task/<task_name>/proposals.md` using exactly this shape:
 
 proposals:
   - title: "First claim-style title"
@@ -72,7 +72,7 @@ Terminal status:
 
 ## After the agent returns
 
-1. Read `.mz/task/<task_name>/proposals.md`.
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/proposals.md`.
 1. Validate structurally:
    - File parses as YAML with a `proposals:` list.
    - Every proposal has `title`, `summary`, and `draft`.
@@ -80,7 +80,7 @@ Terminal status:
    - No proposal title exceeds `MAX_TITLE_CHARS` (70).
    - Proposal count is ≤ `MAX_ATOMIC_NOTES_PER_RUN` (10).
 1. If any validation fails, re-dispatch the agent once with a corrective note referencing the specific failure. If it still fails, escalate to the user via AskUserQuestion — do not proceed to the approval gate with malformed proposals.
-1. Update `state.md`: `Phase: 1`, `Status: proposals_ready`, `ProposalsPath: .mz/task/<task_name>/proposals.md`, `ProposalCount: <N>`.
+1. Update `state.md`: `Phase: 1`, `ProposalsPath: .mz/task/<task_name>/proposals.md`, `ProposalCount: <N>`.
 1. Return to SKILL.md Phase 1.5 with the proposal list formatted for the user-facing presentation.
 
 ## Constraints

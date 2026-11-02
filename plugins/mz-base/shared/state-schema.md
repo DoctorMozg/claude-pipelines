@@ -94,7 +94,7 @@ Write for it this way:
 - `<private>…</private>` spans are removed after the 10 lines are chosen, so a private line still uses one of them.
 - Editing a finished `state.md` logs the task again at the next SessionEnd.
 - A task that never reaches `complete` is never harvested. If a decision from a `failed`, `blocked` or `aborted_by_user` task matters, pin it with `/memory-note`.
-- One changed file without a plain `Status:` line, or a `complete` one without a `Phase:` line, stops the capture. Every later capture then fails until that file is fixed. `**Status:** running`, `status: running`, `Status:running` and a missing `Status` key all stop it.
+- A file without a plain `Status:` line is skipped, so its task is never logged, even when it finished: `**Status:** complete`, `status: complete`, `Status:complete` and a missing `Status` key all miss. A `complete` file without a `Phase:` line is logged without its phase. Neither stops the capture of other files.
 
 ## Compaction
 

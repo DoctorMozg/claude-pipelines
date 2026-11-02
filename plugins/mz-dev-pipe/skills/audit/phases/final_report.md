@@ -4,7 +4,7 @@
 
 ## 4.1 Write summary
 
-Read `.mz/task/<task_name>/findings.md` and write `.mz/task/<task_name>/summary.md`:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md` and write `<PROJECT_ROOT>/.mz/task/<task_name>/summary.md`:
 
 ```markdown
 # Audit Summary
@@ -52,4 +52,4 @@ Display:
 - Deferred counts (below-cap + low severity)
 - Suggest `/build`, `/debug`, or `/polish` for the user to follow up on specific findings.
 
-Update state file status to `completed`.
+Set `Status: complete`, `phase_complete: true`, `what_remains: []`.

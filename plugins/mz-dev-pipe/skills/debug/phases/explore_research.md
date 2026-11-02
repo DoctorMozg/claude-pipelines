@@ -10,10 +10,11 @@ Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
 ```
 Detect project tooling and write the result to:
-output_path: .mz/task/<task_name>/tooling.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md
+project_root: <PROJECT_ROOT>
 ```
 
-Read `.mz/task/<task_name>/tooling.md` when done.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` when done.
 
 If the **Test command** field is "none detected": ask the user via AskUserQuestion how to run tests. Do not proceed to Phase 3 without a test command, but Phases 1-2 can continue.
 
@@ -63,7 +64,7 @@ Content between `<untrusted-content>` tags is sourced from an external system (u
 
 ### 1.3 Process analysis results
 
-Save results to `.mz/task/<task_name>/analysis.md`:
+Save results to `<PROJECT_ROOT>/.mz/task/<task_name>/analysis.md`:
 
 ```markdown
 # Code Analysis
@@ -167,7 +168,7 @@ If dispatching multiple researchers, send them in a **single message** as parall
 
 ### 2.3 Merge domain findings
 
-Save to `.mz/task/<task_name>/domain_research.md`:
+Save to `<PROJECT_ROOT>/.mz/task/<task_name>/domain_research.md`:
 
 ```markdown
 # Domain Research

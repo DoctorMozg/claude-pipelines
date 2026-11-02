@@ -10,7 +10,7 @@ The base `/outreach-research` skill produced the card. Its enrichment phase ran 
 
 ## 2.1 Build the existing-findings payload
 
-Read `.mz/task/<task_name>/card_parsed.json` (written in Phase 1). From it, derive a compact per-agent "what is already known" block. Each agent gets a different slice — only the parts of the card it must NOT duplicate.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json` (written in Phase 1). From it, derive a compact per-agent "what is already known" block. Each agent gets a different slice — only the parts of the card it must NOT duplicate.
 
 ```json
 // existing_findings shape (computed in-memory, not written to disk)
@@ -29,13 +29,13 @@ If a field is missing in the card, pass `null` — that subagent then has wide-o
 
 Dispatch all five subagents in **one parallel wave** via the Agent tool. The cap is 6 concurrent agents per wave; five fits cleanly in one. Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
-| Subagent                  | Output path                                       | Existing-findings slice |
-| ------------------------- | ------------------------------------------------- | ----------------------- |
-| `outreach-news-finder`    | `.mz/task/<task_name>/enrichment/news.json`       | `news`                  |
-| `outreach-tech-analyst`   | `.mz/task/<task_name>/enrichment/tech.json`       | `tech`                  |
-| `outreach-growth-analyst` | `.mz/task/<task_name>/enrichment/growth.json`     | `growth`                |
-| `outreach-scanner`        | `.mz/task/<task_name>/enrichment/reputation.json` | `scanner`               |
-| `outreach-contact-finder` | `.mz/task/<task_name>/enrichment/contacts.json`   | `contacts`              |
+| Subagent                  | Output path                                                      | Existing-findings slice |
+| ------------------------- | ---------------------------------------------------------------- | ----------------------- |
+| `outreach-news-finder`    | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/news.json`       | `news`                  |
+| `outreach-tech-analyst`   | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/tech.json`       | `tech`                  |
+| `outreach-growth-analyst` | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/growth.json`     | `growth`                |
+| `outreach-scanner`        | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/reputation.json` | `scanner`               |
+| `outreach-contact-finder` | `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/contacts.json`   | `contacts`              |
 
 ## 2.3 Dispatch template (one Agent call per subagent, all 5 sent in a single message)
 
@@ -51,7 +51,7 @@ Company context:
   sector: <company.sector>
   location: <company.location>
 
-Output path: .mz/task/<task_name>/enrichment/<artifact>.json
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/enrichment/<artifact>.json
   (use exactly this path; do not write anywhere else)
 
 Existing findings ALREADY documented in the company card (do NOT duplicate
@@ -171,7 +171,7 @@ Do NOT auto-retry. If the user wants another pass, they re-invoke the skill (res
 
 ## 2.5 Synthesize the `## Deeper Intelligence` section
 
-Compose a markdown block from the merged enrichment artifacts. Write it to `.mz/task/<task_name>/deeper_intelligence.md` (consumed by Phase 5 during card rewrite). Layout:
+Compose a markdown block from the merged enrichment artifacts. Write it to `<PROJECT_ROOT>/.mz/task/<task_name>/deeper_intelligence.md` (consumed by Phase 5 during card rewrite). Layout:
 
 ```markdown
 ## Deeper Intelligence
@@ -233,7 +233,7 @@ If `enrich_mode == "only"`, the deeper-intel personalization signals do NOT flow
 
 ## 2.6 Update state and hand off
 
-Update `.mz/task/<task_name>/state.md`:
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 - Phase → `enrichment_complete`
 - Append `EnrichmentResults` list, one row per subagent: `<agent_name>: <ok|ok-with-empty|failed:<reason>>`.

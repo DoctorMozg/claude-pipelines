@@ -121,7 +121,7 @@ Two named options only; feedback (e.g. "use global scope instead") rides the fre
 
 **Response handling:**
 
-- **Approve** → perform the Step 4 write, update `state.md` (`Action:`, `phase_complete: true`), proceed to Step 7 verification.
+- **Approve** → add `- change approved: <resolved target path>` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, perform the Step 4 write, update `state.md` (`Action:`, `phase_complete: true`), and proceed to Step 7 verification.
 - **Reject** → set `Status: aborted_by_user`, write nothing to `CLAUDE.md`, stop.
 - **Any other reply (feedback)** → adjust the scope or flags per the user's input, re-resolve the target, re-build the block, return to Surface 1, and re-emit the entire plan message. This is a loop — repeat until the user explicitly approves. Never write to `CLAUDE.md` without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: change gate`, stop. A missing answer is never approval.
@@ -169,7 +169,7 @@ Action: removed
 - After **uninstall**: grep for the start sentinel — expect **zero** matches. Print the match count.
 - A `skipped` run (already installed, no `--force`) still verifies exactly one sentinel.
 
-If the count is anything other than expected, report it as a failure with the actual count — do not claim success.
+If the count is anything other than expected, report it as a failure with the actual count — do not claim success, and set `Status: failed` with the count in `what_remains`. Otherwise set `Status: complete`, `phase_complete: true` and `what_remains: []`.
 
 ## Red Flags
 

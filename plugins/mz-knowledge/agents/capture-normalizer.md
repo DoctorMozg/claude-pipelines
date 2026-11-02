@@ -34,27 +34,28 @@ The dispatch prompt provides:
 - `fallback_tool`: fallback tool name if the primary fails mid-invocation, or `null`.
 - `transcript_path`: absolute output path, always under `.mz/task/<task_name>/`.
 - `task_name`: identifier for the current orchestrator task.
+- `project_root`: absolute path to the project root; every `.mz/` path in your commands starts from it, never from the shell's working directory.
 
 If any required field is missing, emit `STATUS: NEEDS_CONTEXT` naming the missing field. Do not guess.
 
 ### Step 2 — Invoke the tool
 
-Use the `Bash` tool to run the command matching `modality` + `primary_tool`. Always redirect raw tool output into a file under `.mz/task/<task_name>/` so it can be re-inspected if post-processing goes wrong.
+Use the `Bash` tool to run the command matching `modality` + `primary_tool`. Always redirect raw tool output into a file under `<project_root>/.mz/task/<task_name>/` so it can be re-inspected if post-processing goes wrong.
 
 Exact command recipes:
 
 - **voice + whisper-cpp**:
 
   ```bash
-  whisper-cpp -m <model path> -f "<source>" -otxt -of .mz/task/<task_name>/whisper_raw
+  whisper-cpp -m <model path> -f "<source>" -otxt -of "<project_root>/.mz/task/<task_name>/whisper_raw"
   ```
 
-  If the model path is not provided in the environment, fall back to invoking `whisper` (openai) instead and record the switch. Read `.mz/task/<task_name>/whisper_raw.txt` as raw output.
+  If the model path is not provided in the environment, fall back to invoking `whisper` (openai) instead and record the switch. Read `<project_root>/.mz/task/<task_name>/whisper_raw.txt` as raw output.
 
 - **voice + whisper (openai)**:
 
   ```bash
-  whisper "<source>" --model base --output_format txt --output_dir .mz/task/<task_name>/
+  whisper "<source>" --model base --output_format txt --output_dir "<project_root>/.mz/task/<task_name>/"
   ```
 
   Read the generated `.txt` file from the output dir as raw output.
@@ -62,31 +63,31 @@ Exact command recipes:
 - **image + ocrit**:
 
   ```bash
-  ocrit "<source>" > .mz/task/<task_name>/ocr_raw.txt
+  ocrit "<source>" > "<project_root>/.mz/task/<task_name>/ocr_raw.txt"
   ```
 
 - **image + tesseract**:
 
   ```bash
-  tesseract "<source>" - -l eng > .mz/task/<task_name>/ocr_raw.txt
+  tesseract "<source>" - -l eng > "<project_root>/.mz/task/<task_name>/ocr_raw.txt"
   ```
 
 - **pdf + pdftotext**:
 
   ```bash
-  pdftotext -layout "<source>" .mz/task/<task_name>/pdf_raw.txt
+  pdftotext -layout "<source>" "<project_root>/.mz/task/<task_name>/pdf_raw.txt"
   ```
 
 - **youtube + yt-dlp**:
 
   ```bash
-  yt-dlp --write-auto-sub --sub-lang en --skip-download -o ".mz/task/<task_name>/yt_%(title)s" "<source>"
+  yt-dlp --write-auto-sub --sub-lang en --skip-download -o "<project_root>/.mz/task/<task_name>/yt_%(title)s" "<source>"
   ```
 
   Locate the generated `.en.vtt` file, then deduplicate:
 
   ```bash
-  grep -v "^[0-9]" .mz/task/<task_name>/yt_*.en.vtt | grep -v "^$" | awk '!seen[$0]++' > .mz/task/<task_name>/yt_raw.txt
+  grep -v "^[0-9]" "<project_root>/.mz/task/<task_name>"/yt_*.en.vtt | grep -v "^$" | awk '!seen[$0]++' > "<project_root>/.mz/task/<task_name>/yt_raw.txt"
   ```
 
 After the command completes:
@@ -150,7 +151,7 @@ Then emit exactly one terminal line:
 
 - `STATUS: DONE` — transcript written, body non-empty, tool exited cleanly.
 - `STATUS: DONE_WITH_CONCERNS` — transcript written but the body is under 20 words, or is mostly `[inaudible]` / `[unclear]` / whitespace markers. Name the concern in the line before STATUS.
-- `STATUS: NEEDS_CONTEXT` — dispatch prompt missing a required field (`source`, `modality`, `primary_tool`, `primary_tool_path`, `transcript_path`, or `task_name`).
+- `STATUS: NEEDS_CONTEXT` — dispatch prompt missing a required field (`source`, `modality`, `primary_tool`, `primary_tool_path`, `transcript_path`, `task_name`, or `project_root`).
 - `STATUS: BLOCKED` — tool invocation failed, produced empty output, or the expected output file is missing. Name the exact command that failed and the error surface (last line of stderr, or "file not created").
 
 ## Common Rationalizations

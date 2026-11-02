@@ -4,12 +4,12 @@ The human signed off. Commit the approved decision to the project's durable reco
 
 ## Precondition
 
-`.mz/task/<task_name>/provenance.md` must carry a real `human_signoff: <user>@<ISO>` — not `pending`. If it still reads `pending`, the sign-off gate did not pass; stop and return to Phase 3. `gov-artifact-writer` will itself refuse to write an unsigned decision, but do not even dispatch it without the signature.
+`<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` must carry a real `human_signoff: <user>@<ISO>` — not `pending`. If it still reads `pending`, the sign-off gate did not pass; stop and return to Phase 3. `gov-artifact-writer` will itself refuse to write an unsigned decision, but do not even dispatch it without the signature.
 
 ## Inputs (from Phase 3)
 
-- `.mz/task/<task_name>/draft.md` — the approved artifact body.
-- `.mz/task/<task_name>/provenance.md` — `human_signoff` now set to a real signature.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the approved artifact body.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` — `human_signoff` now set to a real signature.
 - The artifact type (`adr` / `rfd` / `design`) and `STATUS_VOCAB`, recorded in `state.md`.
 
 ## Step 4.1 — Resolve the target directory
@@ -32,13 +32,13 @@ Dispatch `gov-artifact-writer` (sonnet). It computes the next `NNNN` by globbing
 Write the approved decision as a durable, numbered artifact.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Approved draft
-.mz/task/<task_name>/draft.md
+<PROJECT_ROOT>/.mz/task/<task_name>/draft.md
 
 ## Provenance (human_signoff is now a real signature — verify it is not pending)
-.mz/task/<task_name>/provenance.md
+<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md
 
 ## Artifact type and target directory
 type: <adr | rfd | design>
@@ -53,7 +53,7 @@ Sequential NNNN — glob the target dir for the max, zero-pad to four, and
 re-check the exact path immediately before writing (collision-safe).
 
 ## Also
-Append the written path to .mz/task/<task_name>/state.md FilesWritten.
+Append the written path to <PROJECT_ROOT>/.mz/task/<task_name>/state.md FilesWritten.
 Report the absolute path, the number, and the initialized status, then STATUS:.
 ```
 
@@ -78,11 +78,11 @@ Record in `state.md`: the durable artifact path, its number, and its initialized
 
 `mz-memory`'s SessionEnd capture harvests `## Decisions` into the Activity Log, so the decision resurfaces in the next session's injected context with no cross-plugin call. For a load-bearing invariant the user will want enforced for the life of the project, also recommend pinning it via `/memory-note`.
 
-**Record the decision in the interaction journal.** The sign-off gate's question and answer were already captured by the `AskUserQuestion` hook; append a `decision` entry to `.mz/journal.md` that ties the decision to its durable artifact and signature. Wrap any sensitive span in `<private>`:
+**Record the decision in the interaction journal.** The sign-off gate's question and answer are captured by the `AskUserQuestion` hook when mz-memory is installed. Append a `decision` entry to `<PROJECT_ROOT>/.mz/journal.md` that ties the decision to its durable artifact and signature. A direct append isn't redacted, so write any sensitive value as `[redacted]`:
 
 ```bash
-printf '### %s · govern · <task_name> · decision\n- artifact: <docs path> (#<NNNN>, status <status>)\n- door: <one-way | two-way> · signed: <approver>@<ISO>\n\n' \
-  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>.mz/journal.md
+mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · govern · <task_name> · decision\n\n- artifact: <docs path> (#<NNNN>, status <status>)\n- door: <one-way | two-way>\n- signed: <approver>@<ISO>\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"<PROJECT_ROOT>/.mz/journal.md"
 ```
 
 Emit a visible block — the written path, number, status, and the promoted decision line — then read `phases/enforce.md`.

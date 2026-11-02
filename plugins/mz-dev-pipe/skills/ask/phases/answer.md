@@ -4,7 +4,7 @@ Compile the research findings into a direct answer, write a report, and present 
 
 ## 3.1 Synthesize
 
-Read `.mz/task/<task_name>/codebase_findings.md` and, if Phase 2 ran, `.mz/task/<task_name>/web_findings.md`. Then construct the answer:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/codebase_findings.md` and, if Phase 2 ran, `<PROJECT_ROOT>/.mz/task/<task_name>/web_findings.md`. Then construct the answer:
 
 - **Answer the question asked** — lead with a direct response, not a preamble. If the question was comparative ("why X over Y"), the answer states the reason; if a capability question ("does the repo support Z"), it states yes/no/partially first.
 - **Ground every claim** — codebase claims cite `file:line`; external claims cite the official source. A claim with no citation does not belong in the answer.
@@ -13,7 +13,7 @@ Read `.mz/task/<task_name>/codebase_findings.md` and, if Phase 2 ran, `.mz/task/
 
 ## 3.2 Write the report
 
-Write the report to `.mz/reports/<YYYY_MM_DD>_ask_<slug>.md` (append `_v2`, `_v3` on same-day collision). Use this template:
+Write the report to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_ask_<slug>.md` (append `_v2`, `_v3` on same-day collision). Use this template:
 
 ```markdown
 # Answer: <question, verbatim>

@@ -29,7 +29,8 @@ Invoke after drafting a research note, while auditing received-wisdom claims, or
 
 ## Constants
 
-- **TASK_DIR**: `.mz/task/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **MAX_CLAIMS_PER_NOTE**: 25 — hard cap delegated to `provenance-tracer`; if more claims exist, the first 25 are classified and the cap is flagged in the summary.
 - **EPISTEMIC_VOCAB**: `[first-hand, cited, inferred, received, unmarked]` — closed set; no other values.
 
@@ -46,11 +47,12 @@ Invoke after drafting a research note, while auditing received-wisdom claims, or
 
 ### Phase 0: Setup
 
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. Parse `$ARGUMENTS` as `<note name or path>`.
 1. Resolve the note: if the argument is an absolute path, use it; if a relative path or bare name, resolve against the vault. If zero or multiple matches, escalate via AskUserQuestion with the candidate list. Never guess.
 1. Derive `task_name = <YYYY_MM_DD>_vault-provenance_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is the note basename normalised to `[a-z0-9-]`; on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
 1. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `NotePath: <absolute path>`, `TaskName: <task_name>`.
-1. Print a visible setup block showing `task_name`, resolved note path, and the output artifact path `.mz/task/<task_name>/claims_analysis.md`.
+1. Print a visible setup block showing `task_name`, resolved note path, and the output artifact path `<PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md`.
 
 ### Phase 1 — Scan claims
 
@@ -60,7 +62,7 @@ See `phases/scan_claims.md`.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/claims_analysis.md` and capture its full contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md` and capture its full contents into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: claims gate]`; `Status` stays `running`.
 
@@ -69,13 +71,13 @@ See `phases/scan_claims.md`.
 ```
 ## Claims analysis ready for review — vault-provenance
 
-<verbatim contents of .mz/task/<task_name>/claims_analysis.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md>
 
 ---
 **Approve** → proceed to Phase 2 to back-fill frontmatter  ·  **Reject** → abort task, no frontmatter written  ·  reply with feedback to revise
 ```
 
-Emit the full verbatim contents of `.mz/task/<task_name>/claims_analysis.md` — do not substitute a path, summary, or placeholder.
+Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md` — do not substitute a path, summary, or placeholder.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
@@ -85,9 +87,9 @@ Emit the full verbatim contents of `.mz/task/<task_name>/claims_analysis.md` —
 
 **Response handling**:
 
-- **Approve** → update state to `classifications_approved`, proceed to Phase 2.
+- **Approve** → add `- classifications approved: .mz/task/<task_name>/claims_analysis.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: classifications_approved`, and proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. No frontmatter write occurs.
-- **Any other reply (feedback)** → incorporate edits (e.g., "reclassify claim 3 as received", "swap proposed source on claim 7", "enable annotation mode"), re-dispatch `provenance-tracer` if a full re-scan is needed or edit the artifact in place for targeted changes, overwrite `.mz/task/<task_name>/claims_analysis.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
+- **Any other reply (feedback)** → incorporate edits (e.g., "reclassify claim 3 as received", "swap proposed source on claim 7", "enable annotation mode"), re-dispatch `provenance-tracer` if a full re-scan is needed or edit the artifact in place for targeted changes, overwrite `<PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: claims gate`, stop. A missing answer is never approval.
 
 ### Phase 2 — Back-fill sources
@@ -105,4 +107,4 @@ See `phases/backfill_sources.md`.
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.

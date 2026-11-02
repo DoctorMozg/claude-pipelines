@@ -2,7 +2,7 @@
 
 ## Goal
 
-Dispatch the `triage-scorer` agent to apply heuristic rules to the batch of inbox notes resolved in Phase 0, producing a deterministic triage proposal at `.mz/task/<task_name>/triage_batch.md`. Validate the artifact shape before handing control back to SKILL Phase 1.5.
+Dispatch the `triage-scorer` agent to apply heuristic rules to the batch of inbox notes resolved in Phase 0, producing a deterministic triage proposal at `<PROJECT_ROOT>/.mz/task/<task_name>/triage_batch.md`. Validate the artifact shape before handing control back to SKILL Phase 1.5.
 
 ## Step 1: Assemble the note path list
 
@@ -20,7 +20,7 @@ Input:
     - <absolute path 1>
     - <absolute path 2>
     - ...
-  output_path: .mz/task/<task_name>/triage_batch.md
+  output_path: <PROJECT_ROOT>/.mz/task/<task_name>/triage_batch.md
   task_name: <task_name>
   thresholds:
     FLEETING_AGE_DAYS_DEFER_THRESHOLD: 14
@@ -55,7 +55,7 @@ Terminal status:
 
 ## Step 3: Validate the artifact shape
 
-After the agent returns, Read `.mz/task/<task_name>/triage_batch.md` and verify:
+After the agent returns, Read `<PROJECT_ROOT>/.mz/task/<task_name>/triage_batch.md` and verify:
 
 - The file exists and parses as a YAML document.
 - A top-level `decisions:` list exists with one entry per note in the input batch (order preserved).
@@ -79,8 +79,8 @@ Update `state.md`:
 
 ```
 schema_version: 2
-Phase: 1
-Status: batch_scored
+Status: running
+Phase: 1_batch_scored
 phase_complete: true
 what_remains:
   - User approval of the triage batch at Phase 1.5

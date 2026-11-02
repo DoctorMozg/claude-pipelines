@@ -45,7 +45,7 @@ Emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per
 
 ## Step 4: Write the report
 
-Write the final report to `.mz/research/` using the naming convention: `<YYYY_MM_DD>_research_<slugified_topic><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists):
+Write the final report to `<PROJECT_ROOT>/.mz/research/` using the naming convention: `<YYYY_MM_DD>_research_<slugified_topic><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists):
 
 ```markdown
 # Deep Research: <Topic>
@@ -108,3 +108,5 @@ Display:
 - Total number of sources consulted
 - Number of subtopics covered
 - Top 3-5 most significant findings as a preview
+
+Then set `Status: complete`, `Phase: 5`, `phase_complete: true` and `what_remains: []` in `state.md`, and add the report path, relative to the project root, to `FilesWritten`.

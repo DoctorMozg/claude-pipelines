@@ -13,13 +13,13 @@ Phase 1 has completed with a valid `validation_report.md`. The user has NOT yet 
 Constants in use from `SKILL.md`:
 
 - `MAX_MIGRATION_BATCH: 50` — hard cap on notes patched per run.
-- `TASK_DIR: .mz/task/` — root of the task workspace.
+- `TASK_DIR: <PROJECT_ROOT>/.mz/task/` — root of the task workspace.
 
 ## Step 1: Build the migration plan
 
 ### 1.1 Read the validation report
 
-Use the Read tool on `.mz/task/<task_name>/validation_report.md`. Parse the YAML. Filter the `findings:` list to entries where `severity: Critical` — `Nit` findings are advisory and never migrated in v1 (see `references/schema-dsl-syntax.md`).
+Use the Read tool on `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md`. Parse the YAML. Filter the `findings:` list to entries where `severity: Critical` — `Nit` findings are advisory and never migrated in v1 (see `references/schema-dsl-syntax.md`).
 
 ### 1.2 Group findings by note path
 
@@ -48,7 +48,7 @@ On reject, abort the phase cleanly. On approve, continue to Step 1.5.
 
 ### 1.5 Write `migration_plan.md`
 
-Write `.mz/task/<task_name>/migration_plan.md` in YAML format:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/migration_plan.md` in YAML format:
 
 ```yaml
 vault_path: <path>
@@ -78,10 +78,9 @@ deferred:
     reason: "batch cap"
 ```
 
-Update `.mz/task/<task_name>/state.md`:
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
-- `Status: plan_ready`
-- `Phase: 2`
+- `Phase: 2_plan_ready`
 - `MigrationPlanPath: .mz/task/<task_name>/migration_plan.md`
 - `PlannedCount: <total_in_plan>`
 - `DeferredCount: <deferred_count>`
@@ -96,7 +95,7 @@ For every entry in `migrations:`, Read the note file using the Read tool and cap
 
 ### 2.2 Write `rollback.md`
 
-Write `.mz/task/<task_name>/rollback.md` in YAML format:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/rollback.md` in YAML format:
 
 ```yaml
 vault_path: <path>
@@ -118,10 +117,9 @@ Use this Bash pattern to compute each hash before writing the entry:
 sha256sum "<vault>/<path>" | awk '{print $1}' | cut -c1-16
 ```
 
-Update `.mz/task/<task_name>/state.md`:
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
-- `Status: rollback_ready`
-- `Phase: 2`
+- `Phase: 2_rollback_ready`
 - `RollbackPath: .mz/task/<task_name>/rollback.md`
 
 ### 2.3 Verify the manifest is complete
@@ -157,7 +155,7 @@ For each entry in `migrations:`:
 
 ### 4.3 Log each write
 
-Append to `.mz/task/<task_name>/migration_log.md`:
+Append to `<PROJECT_ROOT>/.mz/task/<task_name>/migration_log.md`:
 
 ```
 <ISO timestamp>  PATCHED  <path>  added=<keys> modified=<keys>
@@ -165,10 +163,12 @@ Append to `.mz/task/<task_name>/migration_log.md`:
 
 ### 4.4 Finalize state
 
-After the last patch, update `.mz/task/<task_name>/state.md`:
+After the last patch, update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 - `Status: complete`
 - `Phase: 3`
+- `phase_complete: true`
+- `what_remains: []`
 - `Completed: <ISO timestamp>`
 - `MigratedCount: <count>`
 - `RollbackPath: .mz/task/<task_name>/rollback.md`
@@ -184,10 +184,10 @@ To undo, restore each note's frontmatter from the manifest before further edits.
 ## Error handling
 
 - **Plan contains unresolved placeholders (`<NEEDS_VALUE>` or `<PICK:`)** → halt Step 4 and re-present the plan via Phase 2.5. Never write placeholders.
-- **File drift detected in Step 4.2** (current frontmatter no longer matches `current_frontmatter` in the plan) → halt immediately, update state Status to `blocked_file_drift`, emit rollback instructions pointing to `rollback.md`, and escalate via AskUserQuestion. Do not overwrite a drifted file — re-run validate to pick up the latest state.
-- **Write failure mid-batch** → halt immediately. Print: "Migration halted after <N of M> writes. Restore the partial batch using `.mz/task/<task_name>/rollback.md` — each entry's `original_frontmatter` must be pasted back into the corresponding file before further edits." Update state Status to `halted_mid_batch`. Do not auto-rollback; the user confirms the restore step by step.
-- **Rollback manifest count mismatch in Step 2.3** → halt before Step 3, update state Status to `blocked_rollback_incomplete`, escalate via AskUserQuestion. A partial manifest is worse than no manifest.
-- **Validator report missing required fields** → should never happen if Phase 1 succeeded; if it does, the report is corrupt. Halt, mark state Status `blocked_report_corrupt`, escalate.
+- **File drift detected in Step 4.2** (current frontmatter no longer matches `current_frontmatter` in the plan) → halt immediately, set `what_remains: [awaiting answer: re-run validate or stop for drifted note <path>]`, keep `Status: running`, emit rollback instructions pointing to `rollback.md`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop. Do not overwrite a drifted file — re-run validate to pick up the latest state.
+- **Write failure mid-batch** → halt immediately. Print: "Migration halted after <N of M> writes. Restore the partial batch using `.mz/task/<task_name>/rollback.md` — each entry's `original_frontmatter` must be pasted back into the corresponding file before further edits." Set `Status: failed` and `what_remains: [restore the partial batch from .mz/task/<task_name>/rollback.md]`. Do not auto-rollback; the user confirms the restore step by step.
+- **Rollback manifest count mismatch in Step 2.3** → halt before Step 3, set `what_remains: [awaiting answer: rebuild the rollback manifest or stop]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop. A partial manifest is worse than no manifest.
+- **Validator report missing required fields** → should never happen if Phase 1 succeeded; if it does, the report is corrupt. Halt, set `what_remains: [awaiting answer: validation report is corrupt so re-run validate or stop]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop.
 
 ## Why rollback BEFORE write
 

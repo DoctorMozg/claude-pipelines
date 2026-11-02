@@ -55,7 +55,6 @@ The critique loop terminates successfully only when **all four critics return VE
 
 ```
 .mz/design/<YYYY_MM_DD>_design_<slug>/
-├── state.md
 ├── intake.md
 ├── research.md
 ├── design.md
@@ -63,6 +62,9 @@ The critique loop terminates successfully only when **all four critics return VE
 ├── wcag-report.md
 ├── critique_1.md ... critique_N.md
 └── final-summary.md
+
+.mz/task/<YYYY_MM_DD>_design_<slug>/
+└── state.md
 ```
 
 ## Install

@@ -30,8 +30,8 @@ Write tests for an implementation that does not yet exist (TDD / RED phase).
 <task description>
 
 ## Context
-Read the plan at .mz/task/<task_name>/plan.md (includes work units and the test strategy).
-Read the research at .mz/task/<task_name>/research.md for codebase conventions.
+Read the plan at <PROJECT_ROOT>/.mz/task/<task_name>/plan.md (includes work units and the test strategy).
+Read the research at <PROJECT_ROOT>/.mz/task/<task_name>/research.md for codebase conventions.
 
 ## TDD Mode — Read carefully
 The production code described by the plan has NOT been written. You are in the RED phase of red-green-refactor. Your job:
@@ -59,7 +59,7 @@ The production code described by the plan has NOT been written. You are in the R
 List every test file created or modified, the work unit it covers, and the specific behaviors asserted. Note any test that intentionally crosses work-unit boundaries (integration tests).
 ```
 
-Save test file list and behavior-coverage map to `.mz/task/<task_name>/tests.md`.
+Save test file list and behavior-coverage map to `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md`.
 
 ______________________________________________________________________
 
@@ -82,8 +82,8 @@ Review test COVERAGE and QUALITY for a TDD-mode implementation.
 
 ## Task: <task description>
 
-Read the plan at .mz/task/<task_name>/plan.md (focus on work units and test strategy).
-Read the test file list at .mz/task/<task_name>/tests.md.
+Read the plan at <PROJECT_ROOT>/.mz/task/<task_name>/plan.md (focus on work units and test strategy).
+Read the test file list at <PROJECT_ROOT>/.mz/task/<task_name>/tests.md.
 Then read all test files.
 
 The production code does NOT exist yet. Evaluate coverage against the PLAN, not against any implementation.
@@ -115,7 +115,7 @@ Review the TEST CODE itself for craftsmanship.
 
 ## Task: <task description>
 
-Read the test file list at .mz/task/<task_name>/tests.md, then read all test files.
+Read the test file list at <PROJECT_ROOT>/.mz/task/<task_name>/tests.md, then read all test files.
 
 Evaluate:
 1. Code quality of the tests themselves (readability, structure, DRY where appropriate)
@@ -131,7 +131,7 @@ Output:
 
 ### 4.2 Consolidate reviews
 
-Save both reviews to `.mz/task/<task_name>/test_review_<iteration>.md`.
+Save both reviews to `<PROJECT_ROOT>/.mz/task/<task_name>/test_review_<iteration>.md`.
 
 **If BOTH PASS**: proceed to Phase 5.
 
@@ -156,7 +156,7 @@ ______________________________________________________________________
 
 ### 5.1 Detect tooling
 
-Read `.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If absent, dispatch `pipeline-tooling-detector` (model: **haiku**) as a fallback. Use `<test_command>` from the result.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If absent, dispatch `pipeline-tooling-detector` (model: **haiku**) as a fallback, passing `project_root: <PROJECT_ROOT>`. Use `<test_command>` from the result.
 
 ### 5.2 Run the new tests
 
@@ -165,11 +165,11 @@ Dispatch a `pipeline-test-runner` agent (model: **haiku**):
 ```
 Run the new tests written in Phase 3 to verify they FAIL against the current code (no implementation exists yet).
 test_command: <test_command from tooling.md>
-specific_files: <list of test files from .mz/task/<task_name>/tests.md>
-output_path: .mz/task/<task_name>/red_run.md
+specific_files: <list of test files from <PROJECT_ROOT>/.mz/task/<task_name>/tests.md>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/red_run.md
 ```
 
-Read `.mz/task/<task_name>/red_run.md`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/red_run.md`.
 
 ### 5.3 Handle results
 
@@ -206,7 +206,7 @@ Rewrite each of these tests so they assert the actual behavior the plan promises
 
 ### 5.4 Save RED snapshot
 
-Append to `.mz/task/<task_name>/tests.md`:
+Append to `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md`:
 
 ```markdown
 ## RED Snapshot

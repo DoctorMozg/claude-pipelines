@@ -5,7 +5,7 @@ Decide which governance artifact (if any) this decision needs, then draft a popu
 ## Inputs (from Phase 0)
 
 - The decision text, the `artifact:` override (or `auto`), the `rich` flag.
-- `.mz/task/<task_name>/provenance.md` — already written, `human_signoff: pending`.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` — already written, `human_signoff: pending`.
 - `state.md` at `Phase: 1`.
 
 ## Step 1.1 — Dispatch the router
@@ -16,7 +16,7 @@ Dispatch `gov-router` (sonnet; it writes only `routing.md`). It reads `reference
 Route the governance artifact for this change.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Change to route
 <the decision text verbatim>
@@ -29,7 +29,7 @@ rich: <true | false>
 Read <SKILL_DIR>/references/artifact-router.md and apply Gate A then Gate B verbatim.
 
 ## Output
-Write the routing decision to .mz/task/<task_name>/routing.md and emit the decision block (ARTIFACT / GATE_FIRED / WEIGHT / STATUS_VOCAB / OVERRIDE + rationale), then STATUS:.
+Write the routing decision to <PROJECT_ROOT>/.mz/task/<task_name>/routing.md and emit the decision block (ARTIFACT / GATE_FIRED / WEIGHT / STATUS_VOCAB / OVERRIDE + rationale), then STATUS:.
 ```
 
 This is a single-agent dispatch — no wave manifest needed.
@@ -77,7 +77,7 @@ The orchestrator writes the intake draft itself — this is a small markdown fil
 - Fill every section the template defines from what the decision states. Where a section's content is genuinely not yet known (an RFD's `Determinations`, a still-open trade-off), leave the template's guidance placeholder or write `<to be resolved in discussion>` — do not invent facts to fill a heading.
 - Copy the AgDR provenance fence shape into the header exactly as the template shows it, but leave the fence values as placeholders here — `gov-artifact-writer` embeds the real fence from `provenance.md` at record time. `draft.md` is transient; the durable fence is stamped in Phase 4.
 - Set the artifact's own `status` field to the default for its type from the table above. For an **RFD** that means `prediscussion` — it enters discussion not yet ready for sign-off; the gate advances it.
-- Write the result to `.mz/task/<task_name>/draft.md` (transient — **not** `docs/` yet). Append it to `FilesWritten`.
+- Write the result to `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` (transient — **not** `docs/` yet). Append it to `FilesWritten`.
 
 ## Step 1.6 — Carry weight forward and advance
 

@@ -16,7 +16,7 @@ ______________________________________________________________________
 
 **Goal**: Recover the approved lens list and fan out all lenses in a single parallel wave.
 
-1. **Read the inventory artifact**. Open `.mz/task/<task_name>/inventory.md` and recover the `## Proposed lenses` block — this is the list the user explicitly approved at the Phase 1.5 gate. For each lens you need:
+1. **Read the inventory artifact**. Open `<PROJECT_ROOT>/.mz/task/<task_name>/inventory.md` and recover the `## Proposed lenses` block — this is the list the user explicitly approved at the Phase 1.5 gate. For each lens you need:
    - Lens name (e.g., `research`, `tasks`, `reports_reviews`, `codebase`, `git_history`, or any custom lens the user accepted).
    - One-line purpose.
    - Exhaustive file list (concrete paths — never globs, never discovery instructions).
@@ -33,7 +33,7 @@ ______________________________________________________________________
 
 **Goal**: Give every lens researcher a prompt that is unambiguous, exhaustive, and absolutely forbids off-list reads or any web access.
 
-Fill the `<PLACEHOLDERS>` per lens. The template below is copy-ready — do not rewrite it, only substitute.
+Fill the `<PLACEHOLDERS>` per lens. The template below is copy-ready — do not rewrite it, only substitute. Write each `.mz/` entry of the file list as the absolute path `<PROJECT_ROOT>/.mz/...` so the lens agent can open it from any working directory.
 
 ```
 You are the <LENS_NAME> lens of a /combine synthesis run.
@@ -56,7 +56,7 @@ You are the <LENS_NAME> lens of a /combine synthesis run.
 4. Gaps — facts the task seems to need that your files do not cover. Flag as `GAP: <what is missing>`.
 
 ## Output format
-Return the extract as markdown **inline in your response** — the orchestrator persists it to `.mz/task/<TASK_NAME>/extract_<LENS_NAME>.md`. Use these sections:
+Return the extract as markdown **inline in your response** — the orchestrator persists it to `<PROJECT_ROOT>/.mz/task/<TASK_NAME>/extract_<LENS_NAME>.md`. Use these sections:
 - ## Summary (3-sentence overview of what this lens found)
 - ## Extracts (numbered list: fact, source file:line, confidence)
 - ## Conflicts (from the CONFLICT DETECTED tokens, or "none")
@@ -75,7 +75,7 @@ The five structural default lenses each have characteristic inputs and extract p
 
 **research** — The file list is drawn from `.mz/research/*.md` deep-research reports. These are long, externally-sourced, and usually several weeks old. Favor extracts that capture verdicts, confidence levels, source URLs (leave them as citations — do not re-fetch), and the explicit "Decision" or "Recommendation" sections of each report. Ignore background framing and restatements of the prompt. Flag any claim whose cited source has a publication date older than one year as `GAP: needs fresher source` so the gap-fill phase can re-verify it if approved.
 
-**tasks** — The file list is `.mz/task/<selected>/` artifacts — typically `plan.md`, `research.md`, `state.md`, and review files. These are the pipeline's working memory. Favor extracts that capture chosen approaches, explicitly rejected alternatives (with reasons), blocking risks, and any `STATUS:` or phase checkpoints. Cross-check `state.md` status against the plan: if `state.md` says `completed` but `plan.md` describes work that never appears in any `reports/` file, flag that mismatch as a `CONFLICT DETECTED`.
+**tasks** — The file list is `.mz/task/<selected>/` artifacts — typically `plan.md`, `research.md`, `state.md`, and review files. These are the pipeline's working memory. Favor extracts that capture chosen approaches, explicitly rejected alternatives (with reasons), blocking risks, and any `STATUS:` or phase checkpoints. Cross-check `state.md` status against the plan: if `state.md` says `complete` (or the legacy `completed`) but `plan.md` describes work that never appears in any `reports/` file, flag that mismatch as a `CONFLICT DETECTED`.
 
 **reports_reviews** — The file list merges `.mz/reports/*.md` with `.mz/reviews/*.md`. Reports are the finished outputs of prior runs; reviews are critique artifacts produced against them. Favor extracts that capture final verdicts, acceptance criteria, and any review-surfaced defects that were or were not addressed. When a review file critiques a specific report, quote the critique verbatim alongside the report's relevant claim — that pairing is often the single most valuable piece of cross-reference evidence the synthesis step will use.
 
@@ -91,7 +91,7 @@ ______________________________________________________________________
 
 When the wave returns, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per lens with its status and a short summary — before processing extracts. A lens with no usable extract shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
-1. **Read each extract file**. For every lens dispatched in Phase 2.1, open `.mz/task/<task_name>/extract_<lens>.md`. If the file does not exist, see Error Handling below.
+1. **Read each extract file**. For every lens dispatched in Phase 2.1, open `<PROJECT_ROOT>/.mz/task/<task_name>/extract_<lens>.md`. If the file does not exist, see Error Handling below.
 1. **Check the final `STATUS:` line** of each extract. The agent is required to end its output with one of four exact tokens:
    - **`DONE`** — Accept the extract as-is. Log the path and lens name in `state.md`. Proceed.
    - **`DONE_WITH_CONCERNS`** — Accept the extract, but also parse any concerns the agent listed and log them in `state.md` under `lens_concerns.<lens>` so Phase 3 can surface them. The extract is still usable.
@@ -117,7 +117,7 @@ ______________________________________________________________________
 
 ### 4.1 Dispatch per-gap researchers
 
-1. **Gap intake**. Read the residual gap list that `phases/synthesis.md §Phase 3.4` wrote to `.mz/task/<task_name>/synthesis.md`. Only gaps the user explicitly approved in Phase 3.5 are eligible — any that were dropped or merged by user feedback take effect here, not in the synthesis file.
+1. **Gap intake**. Read the residual gap list that `phases/synthesis.md §Phase 3.4` wrote to `<PROJECT_ROOT>/.mz/task/<task_name>/synthesis.md`. Only gaps the user explicitly approved in Phase 3.5 are eligible — any that were dropped or merged by user feedback take effect here, not in the synthesis file.
 1. **Cap to MAX_LENSES**. If more than `MAX_LENSES = 6` gaps remain after Phase 3.5, merge the two smallest-scope gaps (shortest gap text, narrowest subject) into one combined gap until the total is ≤6. Record each merge in `state.md` under `gapfill_merges` so the final report can credit the correct source.
 1. **Dispatch in a single message**. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per gap researcher with its gap — so the wave is visible to the user. Skip the manifest when only one gap remains. One `Agent` call per gap, all parallel in a single message. Each dispatch targets the `pipeline-web-researcher` agent (not `pipeline-researcher`) at **model: opus**. Opus is the right choice because web gap-fill is an unbounded synthesis task: the agent must hunt primary sources, weigh conflicting documentation, and detect vendor-spec drift — all work that rewards the stronger model.
 
@@ -142,7 +142,7 @@ You are filling a single gap for a /combine synthesis run.
 4. Output budget: <=150 lines.
 
 ## Output format
-Return the gap-fill as markdown **inline in your response** — the orchestrator persists it to `.mz/task/<TASK_NAME>/gapfill_<GAP_ID>.md`. Use these sections:
+Return the gap-fill as markdown **inline in your response** — the orchestrator persists it to `<PROJECT_ROOT>/.mz/task/<TASK_NAME>/gapfill_<GAP_ID>.md`. Use these sections:
 - ## Gap (restated)
 - ## Answer (or UNVERIFIED)
 - ## Sources (primary sources only, cited with URL and publication date)
@@ -174,8 +174,8 @@ ______________________________________________________________________
 
 ## Error Handling for this phase
 
-- **Lens agent's extract file missing** — If `.mz/task/<task_name>/extract_<lens>.md` does not exist after the agent returns, retry the dispatch for that lens exactly once with the same prompt. If the second dispatch also fails to produce the file, mark the lens as `BLOCKED` in `state.md` and escalate via `AskUserQuestion` so the user can choose to drop that lens or abort the run. Do not fabricate an empty extract.
-- **All lens agents return `BLOCKED`** — If every dispatched lens comes back `BLOCKED`, do not attempt Phase 4 gap-fill. There is nothing to fill against. Update `state.md` to `status: aborted_all_blocked`, escalate to the user with the individual block reasons, and stop. Writing a final report over zero extracts would be misleading.
+- **Lens agent's extract file missing** — If `<PROJECT_ROOT>/.mz/task/<task_name>/extract_<lens>.md` does not exist after the agent returns, retry the dispatch for that lens exactly once with the same prompt. If the second dispatch also fails to produce the file, mark the lens as `BLOCKED` in `state.md` and escalate via `AskUserQuestion` so the user can choose to drop that lens or abort the run. Do not fabricate an empty extract.
+- **All lens agents return `BLOCKED`** — If every dispatched lens comes back `BLOCKED`, do not attempt Phase 4 gap-fill. There is nothing to fill against. Set `Status: failed` with `what_remains: [all lenses blocked]`, escalate to the user with the individual block reasons, and stop. Writing a final report over zero extracts would be misleading.
 - **Web `pipeline-web-researcher` agent unavailable (no network)** — If the Phase 4 dispatches fail because WebSearch/WebFetch return network errors for every gap, do not retry. Mark all approved gaps as `gaps_unresolved` in `state.md` with the reason `no_network`, still proceed to `phases/synthesis.md §Phase 5`, and let the final report's `## Gaps` section list them under "Unresolved". The /combine output is still useful — the user explicitly approved gap-fill knowing it might fail.
 - **Second `NEEDS_CONTEXT` on the same lens** — Per Phase 2.3, do not auto-retry beyond the first re-dispatch. Escalate via `AskUserQuestion` with both context requests attached so the user can decide whether the Phase 1.3 decomposition was wrong (add the missing files, re-run Phase 1) or the lens is unworkable (drop it).
 - **Gap list shrinks to zero between Phase 3.5 approval and Phase 4 dispatch** — If the residual gap list is somehow empty by the time Phase 4 starts (e.g., re-classification during state update dropped them all), skip Phase 4 entirely, record `gapfill_wave: skipped_empty` in `state.md`, and return to `phases/synthesis.md §Phase 5`. Do not dispatch zero agents.

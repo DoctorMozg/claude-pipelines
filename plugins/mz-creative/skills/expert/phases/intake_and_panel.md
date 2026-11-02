@@ -56,7 +56,7 @@ You are researching codebase context for an expert panel review.
 <branch|global|working>
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Your Job
 Scan the codebase within the declared scope and write research.md. Capture:
@@ -86,7 +86,7 @@ Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKE
 ### 1.2.2 Verify `research.md`
 
 ```bash
-test -s .mz/task/<task_name>/research.md
+test -s "<PROJECT_ROOT>/.mz/task/<task_name>/research.md"
 ```
 
 If missing or empty, retry once with explicit instruction. If still missing, escalate.
@@ -134,16 +134,16 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/panel.md` and capture the full contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/panel.md` and capture the full contents into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: panel gate]`; `Status` stays `running`.
 
-**Surface 1 — emit the plan message.** Output the full verbatim contents of `.mz/task/<task_name>/panel.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
+**Surface 1 — emit the plan message.** Output the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/panel.md` as a normal markdown chat message. Emit the full verbatim contents — do not substitute a path, summary, or placeholder. Structure:
 
 ```
 ## Panel ready for review — expert
 
-<verbatim contents of .mz/task/<task_name>/panel.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/panel.md>
 
 ---
 **Approve** → begin 3 rounds of expert critique  ·  **Reject** → cancel task, no rounds will run  ·  reply with feedback to revise
@@ -157,7 +157,7 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 
 ### Response handling
 
-- **Approve** → update state to `panel_approved`, proceed to Phase 2.
+- **Approve** → add `- panel approved: .mz/task/<task_name>/panel.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: 1.5` and `PhaseName: panel_approved`, and proceed to Phase 2 (Round Loop).
 - **Reject** → update state to `aborted_by_user`. Stop. Do not run rounds.
 - **Any other reply (feedback)** → apply the swap to `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: panel gate`, stop. A missing answer is never approval.

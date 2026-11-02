@@ -55,11 +55,11 @@ After capping, apply per-tier limits (read from SKILL.md constants):
 
 Within each severity tier, sort by confidence (high > medium > low), breaking ties by lens priority: correctness > security > reliability > stride_delta > performance > maintainability.
 
-Findings over a cap are not dropped. Write them to `.mz/task/<task_name>/findings_capped.md`, next to `findings.md`, in rank order and in the same finding format. Skip the file when nothing is over a cap. The "Deferred" section of `findings.md` gives the counts and names the appendix.
+Findings over a cap are not dropped. Write them to `<PROJECT_ROOT>/.mz/task/<task_name>/findings_capped.md`, next to `findings.md`, in rank order and in the same finding format. Skip the file when nothing is over a cap. The "Deferred" section of `findings.md` gives the counts and names the appendix.
 
 ## 3.4 Rollback Rehearsal
 
-Read the `Reversibility Map` from `.mz/task/<task_name>/scope.md`.
+Read the `Reversibility Map` from `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md`.
 
 For each changed file, apply these rules:
 
@@ -82,7 +82,7 @@ For `contract-breaking` checks, search:
 
 BLOCKING findings from rollback analysis are prepended to the findings list and cannot be capped or deferred — they are always in the report and are appended to the persistent ledger in Phase 4.
 
-Write `.mz/task/<task_name>/rollback_plan.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/rollback_plan.md`:
 
 ```markdown
 # Rollback Plan
@@ -104,7 +104,7 @@ Write `.mz/task/<task_name>/rollback_plan.md`:
 
 ## 3.5 Cognitive-Load Budget
 
-Read `Cognitive-Load Metrics` from `.mz/task/<task_name>/scope.md`.
+Read `Cognitive-Load Metrics` from `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md`.
 
 Compute:
 
@@ -146,7 +146,7 @@ Maintain a running `skeptic_challenges` summary counter with four fields: `chall
 
 ## 3.7 Write findings.md
 
-Write `.mz/task/<task_name>/findings.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md`:
 
 ```markdown
 # Consolidated Findings

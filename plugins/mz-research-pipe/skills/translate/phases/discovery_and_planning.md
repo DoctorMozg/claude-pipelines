@@ -305,7 +305,7 @@ ______________________________________________________________________
 
 **Response handling**:
 
-- **Approve** → state `plan_approved`, record `approved_at` timestamp, proceed to Phase 2.
+- **Approve** → add `- plan approved: .mz/task/<task_name>/translation_plan.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: plan_approved`, record the `approved_at` timestamp, and proceed to Phase 2.
 - **Reject** → state `aborted_by_user`, write a one-line termination note to `state.md`, return control to the user. Do not dispatch anything.
 - **Any other reply (feedback)** → incorporate (drop/add files, change mode, edit glossary, rename paths, change chunking), re-run affected sub-steps (typically 1.2, 1.5, 1.6, 1.7, 1.8 — 1.1 and 1.4 only re-run if the user changes the language or argument shape), overwrite the plan, return to this gate, re-read `<task_dir>/translation_plan.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. Increment `approval_iterations` on every re-present. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.

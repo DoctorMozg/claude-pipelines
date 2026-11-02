@@ -17,8 +17,8 @@ New name/path:
   value: "<new basename or relative path>"
 
 Vault path: <absolute vault path>
-Task dir: .mz/task/<task_name>/
-Output path: .mz/task/<task_name>/references_report.md
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/references_report.md
 
 Your task:
 
@@ -26,7 +26,7 @@ Scan the entire vault (excluding `.obsidian/` and the task directory) for every 
 
 You must cover all twelve reference forms enumerated in your agent system prompt. Do NOT skip form families because you assume they are rare — Bases formulas and quoted frontmatter wikilinks are both silent-failure surfaces if missed.
 
-Write proposals to `.mz/task/<task_name>/references_report.md` using exactly this YAML shape:
+Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/references_report.md` using exactly this YAML shape:
 
 old_basename: "<old>"
 new_value: "<new>"
@@ -55,18 +55,18 @@ Terminal status:
 
 After the agent returns:
 
-1. Read `.mz/task/<task_name>/references_report.md`.
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/references_report.md`.
 1. Validate the top-level keys: `old_basename`, `new_value`, `vault_path`, `scanned_at`, `total_files`, `total_references`, `forms_detected`, `references`.
 1. For each entry under `references:`, validate presence of `path`, `form`, `line`, `column`, `original`, `replacement`.
 1. Validate that every `form` value belongs to the twelve-form enumeration: `bare`, `aliased`, `heading`, `block`, `heading-aliased`, `embed-bare`, `embed-file`, `embed-heading`, `embed-block`, `frontmatter-quoted`, `bases-link`, `bases-link-display`.
 1. If the file is missing, malformed, or a form value is unrecognized, retry the dispatch once with a clarified prompt that lists the twelve-form enumeration verbatim. Log the retry in `state.md`.
-1. Update `state.md`: `Status: references_scanned`, `Phase: 1`, `FilesAffected: <total_files>`, `ReferencesFound: <total_references>`, `FormsDetected: <comma-separated forms_detected>`.
+1. Update `state.md`: `Phase: 1_references_scanned`, `FilesAffected: <total_files>`, `ReferencesFound: <total_references>`, `FormsDetected: <comma-separated forms_detected>`.
 
 ## Step 3: Handoff to approval gate
 
 Return to SKILL Phase 1.5 with the references_report.md ready for verbatim presentation.
 
-The SKILL-level gate requires reading the file into context first, then embedding the full contents inline in the AskUserQuestion body. This phase does NOT invoke AskUserQuestion itself.
+The SKILL-level gate reads the file into context, emits its full contents as a chat message, then calls AskUserQuestion as a short selector. This phase doesn't invoke AskUserQuestion itself.
 
 ## Error handling
 

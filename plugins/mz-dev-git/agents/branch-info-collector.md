@@ -29,9 +29,10 @@ The dispatch prompt provides:
 - `base_branch`: branch to diff against (e.g. `main`, `master`)
 - `output_path`: where to write branch_info.md
 - `repo_root`: absolute path to the repository root (default: current directory)
+- `project_root`: absolute path of the project root that holds `.mz/`; build every `.mz/` path from it, because a relative path follows the shell's working directory
 - `task_name`: identifier for the current orchestrator task
 
-If `output_path` is missing: emit `STATUS: NEEDS_CONTEXT` immediately.
+If `output_path` or `project_root` is missing: emit `STATUS: NEEDS_CONTEXT` immediately.
 
 ### Step 2 — Collect branch metadata
 
@@ -58,7 +59,7 @@ If `git` is not available or the repository has no commits: emit `STATUS: BLOCKE
 ### Step 3 — Scan prior review reports
 
 ```bash
-ls .mz/reviews/ 2>/dev/null
+ls "<project_root>/.mz/reviews/" 2>/dev/null
 ```
 
 Filter filenames that contain the current branch slug (branch name with `/` replaced by `-`). Record only filenames — do not read file contents.
@@ -117,12 +118,12 @@ Emit exactly one terminal line after all other output:
 
 - `STATUS: DONE` — artifact written, diff collected.
 - `STATUS: DONE_WITH_CONCERNS` — artifact written, but empty diff, anomalous state, or merge-base not found.
-- `STATUS: NEEDS_CONTEXT` — required dispatch field missing (output_path).
+- `STATUS: NEEDS_CONTEXT` — required dispatch field missing (output_path or project_root).
 - `STATUS: BLOCKED` — git unavailable, not a git repository, or filesystem error prevented writing artifact.
 
 ## Red Flags
 
-- `output_path` missing from dispatch prompt — emit `STATUS: NEEDS_CONTEXT`.
+- `output_path` or `project_root` missing from dispatch prompt — emit `STATUS: NEEDS_CONTEXT`.
 - `git` command returns exit 127 or "not a git repository" — emit `STATUS: BLOCKED`.
 - Diff output is empty despite commits ahead > 0 — note the anomaly in the artifact, emit `STATUS: DONE_WITH_CONCERNS`.
 - Merge-base cannot be found (unrelated histories) — write what is available, emit `STATUS: DONE_WITH_CONCERNS` with a note.

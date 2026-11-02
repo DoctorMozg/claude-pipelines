@@ -2,7 +2,7 @@
 
 The orchestrator dispatches `pipeline-web-researcher` (mz-base plugin) to refresh the current catalog of AI code-tells and tool watermarks. Research is mandatory because tool watermark strings and AI-signature footers shift on a multi-month cadence; relying on the embedded list alone is how stale detection gets shipped to PR review.
 
-Output: `.mz/task/<task_name>/web_research.md`. The orchestrator merges these findings with `references/artifact-catalog.md` (lazy-loaded by grep in Phase 2) when scanning.
+Output: `<PROJECT_ROOT>/.mz/task/<task_name>/web_research.md`. The orchestrator merges these findings with `references/artifact-catalog.md` (lazy-loaded by grep in Phase 2) when scanning.
 
 ## 1.1 Dispatch the researcher
 
@@ -29,7 +29,7 @@ Output a structured list:
 
 For each item include: the exact regex or substring; one real-world example; the tool/source that emits it; first-observed date if known.
 
-Output path: .mz/task/<task_name>/web_research.md
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md
 
 Banned in output: any item not grounded in a cited source. Mark items with "no source — embed only" if they come from your own knowledge.
 ```
@@ -41,7 +41,7 @@ Wait for completion. The researcher writes `web_research.md` directly.
 If the dispatch returns `BLOCKED` (e.g., no web access in the runtime) or `NEEDS_CONTEXT`:
 
 1. Retry once with the same brief.
-1. If the second attempt fails, write `.mz/task/<task_name>/web_research.md` with the single line `RESEARCH UNAVAILABLE — embedded catalog only.` and continue.
+1. If the second attempt fails, write `<PROJECT_ROOT>/.mz/task/<task_name>/web_research.md` with the single line `RESEARCH UNAVAILABLE — embedded catalog only.` and continue.
 1. Append a flag to `state.md`: `research_status: unavailable`. The final report (`phases/verification.md`) surfaces this so the user knows detection ran without fresh patterns.
 
 Do not block the pipeline on research failure. Stale detection is better than no detection.

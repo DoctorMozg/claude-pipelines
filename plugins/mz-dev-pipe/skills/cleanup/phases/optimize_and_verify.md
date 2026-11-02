@@ -32,8 +32,8 @@ You are optimizing one chunk of a scoped optimization pass.
 ## Chunk: <chunk name>
 Files: <exact file list>
 
-Read .mz/task/<task_name>/scan.md for chunking breakdown and cross-chunk warnings.
-Read .mz/task/<task_name>/baseline.md for pre-optimization test/lint state.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scan.md for chunking breakdown and cross-chunk warnings.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/baseline.md for pre-optimization test/lint state.
 
 ## Rules
 1. Work through your full optimization checklist on these files.
@@ -48,7 +48,7 @@ Do NOT dispatch optimizers for chunks that previously passed review — they are
 
 ### 3.2 Collect reports and detect conflicts
 
-After all optimizers complete, merge their reports into `.mz/task/<task_name>/optimization_<iteration>.md`:
+After all optimizers complete, merge their reports into `<PROJECT_ROOT>/.mz/task/<task_name>/optimization_<iteration>.md`:
 
 ```markdown
 # Optimization Report (Iteration <N>)
@@ -85,14 +85,14 @@ Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single m
 
 ```
 Run tests to check for regressions after optimization.
-test_command: <Test command from .mz/task/<task_name>/tooling.md>
-output_path: .mz/task/<task_name>/verify_test_results_<iteration>.md
+test_command: <Test command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/verify_test_results_<iteration>.md
 ```
 
 ```
 Run linters to check for regressions after optimization.
-lint_command: <Lint command from .mz/task/<task_name>/tooling.md, or "none detected">
-output_path: .mz/task/<task_name>/verify_lint_results_<iteration>.md
+lint_command: <Lint command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md, or "none detected">
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/verify_lint_results_<iteration>.md
 ```
 
 Read both artifacts. Compare against `baseline.md`:
@@ -100,7 +100,7 @@ Read both artifacts. Compare against `baseline.md`:
 - **Tests**: does the pass/fail set match the baseline? Any NEW failing test is a regression.
 - **Lint**: is the error/warning count ≤ baseline?
 
-**If green** (no regressions from baseline): write `verify_<iteration>.md`, update state to `verified_green`, proceed to Phase 5.
+**If green** (no regressions from baseline): write `verify_<iteration>.md`, set `Phase: verified_green`, proceed to Phase 5.
 
 **If regressed**: enter the inner fix loop (4.2).
 
@@ -128,7 +128,7 @@ A regression was introduced during code optimization. Fix it while preserving th
 
 ## Suspected Cause
 <optimization report excerpt for suspect chunk>
-Read .mz/task/<task_name>/optimization_<iteration>.md for full report.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/optimization_<iteration>.md for full report.
 
 ## Instructions
 1. Read failing tests and modified files to understand the break
@@ -173,7 +173,7 @@ Once the inner loop exits green, re-confirm:
 - Tests match the baseline pass/fail set (no new failures)
 - Lint count ≤ baseline
 
-Write `.mz/task/<task_name>/verify_<iteration>.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/verify_<iteration>.md`:
 
 ```markdown
 # Verify (Iteration <N>)

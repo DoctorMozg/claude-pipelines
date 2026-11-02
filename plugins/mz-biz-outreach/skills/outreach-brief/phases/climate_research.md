@@ -4,7 +4,7 @@ Read `SKILL.md` first. This phase picks up after the brief is approved at Phase 
 
 ## 2.0 Build and cap the combo list
 
-Read `.mz/outreach/<run_name>/brief.json`, then build the research set in four explicit steps:
+Read `<PROJECT_ROOT>/.mz/outreach/<run_name>/brief.json`, then build the research set in four explicit steps:
 
 1. **Form** the cross-product of `icp.industries` × `geography.target_regions`, iterating industries in brief order (outer loop) and regions in brief order (inner loop). Brief order *is* priority order — the user lists the most important industries and regions first, so the earliest combos are the most important.
 1. **Filter** out any pair matched by `goal_channels_voice.exclusions`.
@@ -41,7 +41,7 @@ Wave complete — <returned>/<dispatched> agents returned
   …one line per agent; an agent with no/malformed STATUS line is "NO RETURN BLOCK"
 ```
 
-Update `.mz/task/<task_name>/state.md` `Phase` to `climate_sources_complete`.
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` `Phase` to `climate_sources_complete`.
 
 ## 2.2 Wave B — climate research
 
@@ -63,7 +63,7 @@ Emit the post-wave rollup as in 2.1. If a combo's source-discovery returned `BLO
 
 Read every `<RUN_DIR>/_climate/<combo_slug>.json`. Build the two permanent artifacts.
 
-`.mz/outreach/<run_name>/climate.json`:
+`<PROJECT_ROOT>/.mz/outreach/<run_name>/climate.json`:
 
 ```json
 {
@@ -79,7 +79,7 @@ Read every `<RUN_DIR>/_climate/<combo_slug>.json`. Build the two permanent artif
 
 `proposal_hooks` aggregates the strongest `top_outreach_angles` across combos — this is the list the downstream proposal step reads.
 
-`.mz/outreach/<run_name>/climate.md` — the human dossier:
+`<PROJECT_ROOT>/.mz/outreach/<run_name>/climate.md` — the human dossier:
 
 - One `##` section per industry × region combo: the four signal groups (each item dated, with its link and outreach implication), the combo's `overall_climate`, and its outreach angles.
 - A `## Regional summary` section with the cross-cutting read.
@@ -88,7 +88,7 @@ Read every `<RUN_DIR>/_climate/<combo_slug>.json`. Build the two permanent artif
 ## 2.4 Finish
 
 1. Delete the temp directories `<RUN_DIR>/_climate_sources/` and `<RUN_DIR>/_climate/`.
-1. Update `.mz/task/<task_name>/state.md`: set `Phase` to `complete`, `Status` to `complete`, `phase_complete: true`, `what_remains: []`. Append a `## Decisions` section recording that the brief was approved and listing the combos researched.
+1. Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`: set `Phase` to `complete`, `Status` to `complete`, `phase_complete: true`, `what_remains: []`. Append a `## Decisions` section recording that the brief was approved and listing the combos researched.
 1. Emit the verification block required by `SKILL.md`: run name, absolute paths of `brief.md` and `climate.md`, combo count, and per-combo signal counts. Confirm both artifact pairs exist and the temp folders are gone.
 1. Hand off: tell the user the run is ready and how to use it —
    - `/outreach-research brief:<run_name>` to discover companies with the climate folded into strategy, and

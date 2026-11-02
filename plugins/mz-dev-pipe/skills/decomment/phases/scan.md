@@ -7,8 +7,8 @@
 
 ## Outputs
 
-- `.mz/task/<task_name>/scope_files.txt` — one absolute path per line (post-scope, pre-extension-filter)
-- `.mz/task/<task_name>/candidates.md` — markdown table for proposer dispatch
+- `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt` — one absolute path per line (post-scope, pre-extension-filter)
+- `<PROJECT_ROOT>/.mz/task/<task_name>/candidates.md` — markdown table for proposer dispatch
 
 ## Steps
 
@@ -106,7 +106,7 @@ Update `state.md`:
 - `scope_files: <count>` (rows in candidates.md, not raw scope_files.txt)
 - `FilesWritten: [scope_files.txt, candidates.md]`
 
-If `candidates.md` has zero candidate rows (every path was filtered out), emit this chat message: `0 code candidates after filtering. Nothing to do.` Set `state.md` → `Status: completed`, `Phase: aborted_empty_scope`, and exit. Do not dispatch any proposer.
+If `candidates.md` has zero candidate rows (every path was filtered out), emit this chat message: `0 code candidates after filtering. Nothing to do.` Set `state.md` → `Status: complete`, `phase_complete: true`, `what_remains: []`, `Phase: aborted_empty_scope`, and exit. Do not dispatch any proposer.
 
 ## Red Flags
 

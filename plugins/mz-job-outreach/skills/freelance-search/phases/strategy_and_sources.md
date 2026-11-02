@@ -53,7 +53,7 @@ Validate the strategy file contains all required fields before proceeding:
 - `title_aliases` keys match `derived_from_cv.top_titles`.
 - `scoring_weights` values sum to 100.
 
-If validation fails, re-dispatch once with the specific gap; second failure → `Status: aborted_strategy_invalid` and stop.
+If validation fails, re-dispatch once with the specific gap; second failure → `Status: failed` with the failed validation in `what_remains`, and stop.
 
 If the agent returns `STATUS: NEEDS_CONTEXT` with `current_location` missing:
 
@@ -85,7 +85,7 @@ ______________________________________________________________________
 
 ## Phase 1.5: User Approval of Strategy
 
-Handled by the orchestrator per the inline section in `SKILL.md` (two-surface gate, verbatim JSON, loop until approve). After approval, update `state.md` `Phase` to `strategy_approved` and continue here.
+Handled by the orchestrator per the inline section in `SKILL.md` (two-surface gate, verbatim JSON, loop until approve). After approval, record it in `state.md` as `SKILL.md` describes (a `## Decisions` entry, `awaiting approval` removed, `Phase: strategy_approved`) and continue here.
 
 ______________________________________________________________________
 
@@ -107,14 +107,14 @@ jq '.scrape_sources + .guidance_sources' \
 
 Every canonical entry already carries `tier: "canonical"`, `language_hint`, `scrape_allowed` (true for scrape entries, false for guidance entries), and `discipline`.
 
-If the copy fails (file missing, jq unavailable), set `state.md` `Status` to `aborted_canonical_missing` and stop.
+If the copy fails (file missing, jq unavailable), set `state.md` `Status: failed` with the cause in `what_remains` and stop.
 
 ### Step 2.2 — Researcher augmentation (freelance mode)
 
 Compute the CV hash for yield-history lookup if not already in state:
 
 ```bash
-mkdir -p .mz/outreach/_history
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/_history"
 cv_hash=$(tr '[:upper:]' '[:lower:]' < "<CV_PATH>" | tr -s '[:space:]' ' ' | sha1sum | cut -c 1-40)
 ```
 
@@ -127,7 +127,7 @@ Mode: freelance
 Canonical file: <SKILL_DIR>/sources/freelance_canonical.json
 Strategy file: <RUN_DIR>/search_strategy.json
 Existing canonical sources file: <RUN_DIR>/sources.json
-Source-yield history: .mz/outreach/_history/source_quality.json (treat as empty if missing)
+Source-yield history: <PROJECT_ROOT>/.mz/outreach/_history/source_quality.json (treat as empty if missing)
 CV hash: <cv_hash>
 Output: append to <RUN_DIR>/sources.json (read first, merge, write back)
 

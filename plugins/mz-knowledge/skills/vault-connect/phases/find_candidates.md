@@ -20,7 +20,7 @@ Target note:
 <preview>
 
 Vault path: <vault_path>
-Task dir: .mz/task/<task_name>/
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 
 Your task:
 
@@ -43,7 +43,7 @@ Caps:
 - At most 3 inbound proposals (links to add FROM other notes TO the target).
 - Never propose linking the target to itself.
 
-Write proposals to `.mz/task/<task_name>/link_proposals.md` using exactly this YAML shape:
+Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` using exactly this YAML shape:
 
 target:
   title: "Target Title"
@@ -69,10 +69,10 @@ Terminal status:
 
 After the agent returns:
 
-1. Read `.mz/task/<task_name>/link_proposals.md`.
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md`.
 1. Validate structure: top-level `target`, `outbound_links`, and `inbound_links` keys; each entry has `title`, `path`, `relationship`, `reason`; `relationship` is one of the six allowed values.
 1. If the file is missing, malformed, or empty on both link lists, retry the dispatch once with a clarified prompt. If still empty, surface the empty result via AskUserQuestion per the SKILL.md error handling — do not silently claim nothing to link.
-1. Update `state.md`: `Status: candidates_found`, `Phase: 1`, `OutboundProposed: <N>`, `InboundProposed: <N>`.
+1. Update `state.md`: `Phase: 1`, `OutboundProposed: <N>`, `InboundProposed: <N>`.
 
 Return to SKILL.md Phase 1.5 gate with the proposals formatted for the user-facing presentation (letter-labelled list, grouped by direction).
 

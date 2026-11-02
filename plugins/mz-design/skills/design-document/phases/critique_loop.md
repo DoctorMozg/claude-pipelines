@@ -232,6 +232,8 @@ If `iteration == MAX_DESIGN_ITERATIONS` and AGGREGATE is still FAIL:
 
 **Pre-read**: Read `<PROJECT_ROOT>/.mz/design/<task_name>/critique_5.md` and capture the full contents into context.
 
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: cap gate]`; `Status` stays `running`.
+
 **Surface 1 — emit the plan message.** Output the verdict and unresolved findings verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/design/<task_name>/critique_5.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
@@ -257,15 +259,17 @@ Unresolved findings (critique_5.md):
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the critique in the question body:
 
 - question: `The design has hit the iteration cap with unresolved findings. Choose how to proceed.`
+- header: `Critique cap`
 - options:
   - **Accept** — finalize the current state; log unresolved findings into `final-summary.md`, keep `Status: running`, set `Phase: critique_accepted` and `unresolved: <count>`, then go to Phase 4 with the caveat noted.
   - **Abort** — mark state `aborted_by_user`, stop.
 
 **Response handling**:
 
-- **Accept** → log unresolved findings into `final-summary.md`, keep `Status: running`, set `Phase: critique_accepted` and `unresolved: <count>`, then go to Phase 4 with the caveat noted. The task isn't complete until the user approves there.
+- **Accept** → add `- critique accepted: .mz/design/<task_name>/critique_5.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, log unresolved findings into `final-summary.md`, keep `Status: running`, set `Phase: critique_accepted` and `unresolved: <count>`, then go to Phase 4 with the caveat noted. The task isn't complete until the user approves there.
 - **Abort** → mark state `aborted_by_user`, stop.
 - **Any other reply (guidance)** → treat the reply as the action list, dispatch the revision writer with the user's text, then go to Phase 4 directly (no further critique round — the user's word is final).
+- **No answer** → set `Status: blocked`, keep `awaiting approval: cap gate`, stop. A missing answer is never approval.
 
 Never silently loop past iteration 5.
 
@@ -289,11 +293,14 @@ schema_version: 2
 Status: running
 Phase: 3
 PhaseName: critique_loop
+Started: <timestamp from setup>
+Iteration: <N>
+FilesWritten:
+  - ... (append critique_<N>.md and iter_<N>_*.md paths)
 phase_complete: false
 what_remains:
   - converge the critique loop to AGGREGATE PASS
   - run the finalization user approval gate
-Iteration: <N>
 LastVerdict: |
   ui-designer:              <status>
   ux-designer:              <status>
@@ -301,8 +308,6 @@ LastVerdict: |
   accessibility-specialist: <status>
   WCAG_GATE:                <status>
   AGGREGATE:                <status>
-FilesWritten:
-  - ... (append critique_<N>.md and iter_<N>_*.md paths)
 ```
 
 ## Notes

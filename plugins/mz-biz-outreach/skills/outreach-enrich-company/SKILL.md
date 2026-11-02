@@ -59,7 +59,7 @@ Extract from `$ARGUMENTS`:
 - **channels_override** — from `channels:<value>` (default: unset → per-contact auto-detect).
 - **sender_override** — from `sender:<value>` (default: unset → use strategy.json or fallback voice).
 - **enrich_mode** — from `enrich:<value>`: `only`, `skip`, or unset (default unset = both phases run).
-- **brief_run** — optional, from `brief:<run_name>`; resolves to `.mz/outreach/<brief_run>/climate.json` (default: unset).
+- **brief_run** — optional, from `brief:<run_name>`; resolves to `<PROJECT_ROOT>/.mz/outreach/<brief_run>/climate.json` (default: unset).
 - **personality_mode** — from `personality:<value>`: `off` disables reader-style calibration; any other value or absent = `on` (default).
 
 ### Source resolution
@@ -72,8 +72,8 @@ Extract the company slug from `user_path`'s basename:
 Then resolve `source_path` (the file actually read and updated by this run):
 
 ```bash
-mkdir -p .mz/outreach/active
-find .mz/outreach/active -maxdepth 1 -type f \
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/active"
+find "<PROJECT_ROOT>/.mz/outreach/active" -maxdepth 1 -type f \
   -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<company_slug>.md' 2>/dev/null | head -1
 ```
 
@@ -88,17 +88,21 @@ Validate the card at `source_path` before any other work:
 
 ## Directory Structure
 
-- **State** — `.mz/task/<task_name>/state.md`. Source of truth across phases.
-- **Card snapshot** — `.mz/task/<task_name>/card_parsed.json`. Structured extract of the source card, consumed by the deep-enrichment subagents in Phase 2 so they know what is ALREADY documented.
-- **Enrichment artifacts** — `.mz/task/<task_name>/enrichment/<agent_slug>.json`. One JSON per Phase 2 subagent (`news.json`, `tech.json`, `growth.json`, `reputation.json`, `contacts.json`).
-- **Briefs** — `.mz/task/<task_name>/briefs/<contact_slug>.json`. One brief per contact selected for drafting.
-- **Profiles** — `.mz/task/<task_name>/profiles/<contact_slug>.json`. One reader-style read per profiled contact (Social Style or role-priorities, evidence, confidence, calibration directive), written by `outreach-personality-profiler` in Phase 3 and merged into the briefs. Absent when `personality:off`.
-- **Drafts** — `.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md`. One draft file per (contact, channel) pair. Each draft carries YAML frontmatter (`subject`, `channel`, `recipient`) followed by the body.
-- **Card lifecycle** — the card ends this run at `target_path = .mz/outreach/active/<today>_<company_slug>.md`. If `source_path != target_path`, the source file is deleted in the final card-rewrite phase (move semantics). Research-baseline cards at `.mz/outreach/<run>/companies/<slug>.md` and stale-dated active cards (`active/<other-date>_<slug>.md`) are removed by this run.
+- **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. Source of truth across phases.
+- **Card snapshot** — `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json`. Structured extract of the source card, consumed by the deep-enrichment subagents in Phase 2 so they know what is ALREADY documented.
+- **Enrichment artifacts** — `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/<agent_slug>.json`. One JSON per Phase 2 subagent (`news.json`, `tech.json`, `growth.json`, `reputation.json`, `contacts.json`).
+- **Briefs** — `<PROJECT_ROOT>/.mz/task/<task_name>/briefs/<contact_slug>.json`. One brief per contact selected for drafting.
+- **Profiles** — `<PROJECT_ROOT>/.mz/task/<task_name>/profiles/<contact_slug>.json`. One reader-style read per profiled contact (Social Style or role-priorities, evidence, confidence, calibration directive), written by `outreach-personality-profiler` in Phase 3 and merged into the briefs. Absent when `personality:off`.
+- **Drafts** — `<PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md`. One draft file per (contact, channel) pair. Each draft carries YAML frontmatter (`subject`, `channel`, `recipient`) followed by the body.
+- **Card lifecycle** — the card ends this run at `target_path = <PROJECT_ROOT>/.mz/outreach/active/<today>_<company_slug>.md`. If `source_path != target_path`, the source file is deleted in the final card-rewrite phase (move semantics). Research-baseline cards at `.mz/outreach/<run>/companies/<slug>.md` and stale-dated active cards (`active/<other-date>_<slug>.md`) are removed by this run.
 
 `task_name` follows `<YYYY_MM_DD>_outreach_enrich_<company_slug>` where `<company_slug>` is derived in Source Resolution (slug without date prefix or `.md`). Same-day collisions append `_v2`, `_v3`.
 
-`<run_dir>` = the directory containing `source_path` when the card is still at its research-baseline location (typically `.mz/outreach/<run>/companies/`). The sibling `strategy.json` lives at `<run_dir>/../strategy.json` — read it from there for sender voice and outreach angles. When `source_path` is already an active path, `<run_dir>` falls back to the most-recently-modified `.mz/outreach/<run>/` directory containing a `strategy.json` (or `default` voice if none can be located).
+`<run_dir>` = the directory containing `source_path` when the card is still at its research-baseline location (typically `.mz/outreach/<run>/companies/`). The sibling `strategy.json` lives at `<run_dir>/../strategy.json` — read it from there for sender voice and outreach angles. When `source_path` is already an active path, `<run_dir>` falls back to the most-recently-modified `<PROJECT_ROOT>/.mz/outreach/<run>/` directory containing a `strategy.json` (or `default` voice if none can be located).
+
+## Constants
+
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 
 ## Core Process
 
@@ -118,24 +122,26 @@ Read `phases/deep_enrichment.md` when you reach Phase 2 and `phases/draft_and_fi
 
 ### Phase 0: Setup + card validation
 
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+
 Parse arguments. Resolve `user_path`, `channels_override`, `sender_override`, `enrich_mode`. Run Source Resolution (see Argument Parsing) to derive `company_slug` and `source_path`. Verify `source_path` exists and parses as a canonical company card.
 
 Derive:
 
 - `company_slug` — already set by Source Resolution (stripped of any date prefix and `.md`).
 - `task_name` = `<YYYY_MM_DD>_outreach_enrich_<company_slug>` (truncate `<company_slug>` to 30 chars if needed). Collision: `_v2`, `_v3`.
-- `task_dir` = `.mz/task/<task_name>/`.
-- `run_dir` = if `source_path` is under `.mz/outreach/<run>/companies/`, then `dirname(dirname(source_path))`; otherwise (active path) the most-recently-modified `.mz/outreach/<run>/` directory that contains a `strategy.json`, falling back to `default` voice if none found.
+- `task_dir` = `<PROJECT_ROOT>/.mz/task/<task_name>/`.
+- `run_dir` = if `source_path` is under `.mz/outreach/<run>/companies/`, then `dirname(dirname(source_path))`; otherwise (active path) the most-recently-modified `<PROJECT_ROOT>/.mz/outreach/<run>/` directory that contains a `strategy.json`, falling back to `default` voice if none found.
 
 ```bash
-mkdir -p .mz/task/<task_name>/enrichment
-mkdir -p .mz/task/<task_name>/briefs
-mkdir -p .mz/task/<task_name>/profiles
-mkdir -p .mz/task/<task_name>/drafts
-mkdir -p .mz/outreach/active
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/enrichment"
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/briefs"
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/profiles"
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/drafts"
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/active"
 ```
 
-Write `.mz/task/<task_name>/state.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 ```yaml
 schema_version: 2
@@ -168,7 +174,7 @@ Read the card. Extract structured data — do this with normal markdown reading,
 - **Growth Signals**: trajectory, open roles, funding (if present).
 - **Red Flags**: any bulleted items (or "None identified").
 
-Persist the parsed structure to `.mz/task/<task_name>/card_parsed.json` so Phase 2 subagents can read it without re-parsing the markdown:
+Persist the parsed structure to `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json` so Phase 2 subagents can read it without re-parsing the markdown:
 
 ```json
 {
@@ -194,7 +200,7 @@ Record `strategy_source` per brief: `strategy.json` if loaded from disk, `defaul
 
 #### Local-climate context
 
-If `brief_run` was supplied, read `.mz/outreach/<brief_run>/climate.json` and select the combo whose `industry` and `region` best match the card's sector and location (prefer an exact region match, then industry; if none match, skip climate context and letters fall back to company data). Capture the matched combo's `signals` and `top_outreach_angles` as `climate_context`, carried into Phase 3 brief-building. If the file is missing, warn and continue without it.
+If `brief_run` was supplied, read `<PROJECT_ROOT>/.mz/outreach/<brief_run>/climate.json` and select the combo whose `industry` and `region` best match the card's sector and location (prefer an exact region match, then industry; if none match, skip climate context and letters fall back to company data). Capture the matched combo's `signals` and `top_outreach_angles` as `climate_context`, carried into Phase 3 brief-building. If the file is missing, warn and continue without it.
 
 #### Light web enrichment
 
@@ -238,7 +244,7 @@ STATUS: <DONE | DONE_WITH_CONCERNS>
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ## Red Flags
 
@@ -253,7 +259,7 @@ State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's 
 - You dispatched an enrichment subagent without first reading its existing-card-data block from `card_parsed.json`. Subagents must be told what is ALREADY known so they can hunt for gaps, not duplicate findings.
 - You added a `## Outreach Letters` or `## Deeper Intelligence` section to the card without first removing the prior version (re-runs must replace, not duplicate).
 - You modified the card's earlier sections (Overview, Key Contacts, Outreach Recommendation, etc.) — only the new `## Deeper Intelligence` + `## Outreach Letters` sections and their trailing footer lines are this skill's outputs.
-- You wrote the rebuilt card back to `source_path` instead of `target_path = .mz/outreach/active/<today>_<company_slug>.md`. The card must end this run at the active path with today's date prefix.
+- You wrote the rebuilt card back to `source_path` instead of `target_path = <PROJECT_ROOT>/.mz/outreach/active/<today>_<company_slug>.md`. The card must end this run at the active path with today's date prefix.
 - You preserved the source file at its research-baseline or stale-active location after Phase 5 completed (a successful run leaves exactly one card for the slug, at `target_path`).
 - You left multiple active files for the same slug behind — only today's-dated file should remain.
 - You discarded the `## Interaction History` section (if present below the prior `## Outreach Letters` section). Interaction history is owned by `/outreach-update-card` and must be preserved verbatim.
@@ -262,9 +268,9 @@ State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's 
 
 Before emitting `STATUS: DONE`, confirm:
 
-1. The card now lives at `target_path = .mz/outreach/active/<today>_<company_slug>.md`.
+1. The card now lives at `target_path = <PROJECT_ROOT>/.mz/outreach/active/<today>_<company_slug>.md`.
 1. If `source_path != target_path`, the source file no longer exists.
-1. `.mz/outreach/active/` contains exactly one file matching `*_<company_slug>.md`.
+1. `<PROJECT_ROOT>/.mz/outreach/active/` contains exactly one file matching `*_<company_slug>.md`.
 1. If `enrich_mode != "skip"`, the card at `target_path` contains a `## Deeper Intelligence` section with at least one populated subsection.
 1. If `enrich_mode != "only"`, the card at `target_path` contains a `## Outreach Letters` section. Every non-skipped (contact, channel) pair produced one letter under that section. Each email letter shows a `**Subject**:` line; every letter opens with a salutation and closes with a voice-adaptive gratitude sign-off (`Thanks,` / `Best regards,` / `Sincerely,`) plus the sender's first name. No letter body contains em-dashes, en-dashes, curly quotes, or the ellipsis character. When `personality_mode != "off"`, each letter carries a `*Reader calibration: ...*` provenance line and no letter names or alludes to the inferred trait. The `## Naturalization report` block does NOT appear under any letter in the final card.
 1. The card retains its original `*Generated: <date> | Sources: <list>*` footer above the new sections.
@@ -273,7 +279,7 @@ Before emitting `STATUS: DONE`, confirm:
 
 ## Resume Support
 
-Before creating anything in Phase 0, run Source Resolution to derive `company_slug` and `source_path`, then check if `.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` and `SourcePath` fields and resume from the next incomplete phase:
+Before creating anything in Phase 0, run Source Resolution to derive `company_slug` and `source_path`, then check if `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` and `SourcePath` fields and resume from the next incomplete phase:
 
 - `Phase: 0` → restart from Phase 0 with freshly resolved `source_path` (do not trust the stored `SourcePath` since the prior run did not complete validation).
 - `Phase: card_parsed` → resume from Phase 2 (or Phase 3 if `enrich_mode == "skip"`). Use the stored `SourcePath`.

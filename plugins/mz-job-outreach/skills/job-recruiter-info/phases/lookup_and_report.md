@@ -61,8 +61,8 @@ Update `state.md` `Phase` field to `contacts_complete`.
 
 - `STATUS: DONE` — proceed.
 - `STATUS: DONE_WITH_CONCERNS` — surface the concerns in the final report under a `## Concerns` section; proceed.
-- `STATUS: NEEDS_CONTEXT` — invoke `AskUserQuestion` with the missing field (typically `company_domain`), patch `target.json`, re-dispatch once. If it returns `NEEDS_CONTEXT` again, set state `Status` to `failed_missing_context` and stop.
-- `STATUS: BLOCKED` — set state `Status` to `failed_blocked`, surface the cause to the user, stop.
+- `STATUS: NEEDS_CONTEXT` — invoke `AskUserQuestion` with the missing field (typically `company_domain`), patch `target.json`, re-dispatch once. If it returns `NEEDS_CONTEXT` again, set `Status: blocked` with `what_remains: [awaiting answer: <missing field>]` and stop.
+- `STATUS: BLOCKED` — set `Status: blocked` with the cause in `what_remains`, surface the cause to the user, stop.
 
 ______________________________________________________________________
 
@@ -121,7 +121,7 @@ otherwise omit the section entirely.>
 
 After writing the report:
 
-1. Update `state.md` — set `Phase` to `complete` and add `CompletedAt: <ISO timestamp>` and `Confidence: <value>`.
+1. Update `state.md` — set `Phase` to `complete`, `Status: complete`, `phase_complete: true`, `what_remains: []`, and add `CompletedAt: <ISO timestamp>` and `Confidence: <value>`.
 1. Display to the user the verification block from `SKILL.md` §Verification:
    - Target (company + role if known)
    - Confidence level

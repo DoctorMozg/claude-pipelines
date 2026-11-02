@@ -40,7 +40,7 @@ If the file list is empty after materialisation, report to the user and exit. Do
 
 Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** in the orchestrator, using code searches, Read and Bash. Pass the file list materialised in §1.2 as `input_files`.
 
-Persist YAML output to `.mz/task/<task_name>/blast_radius.yml`.
+Persist YAML output to `<PROJECT_ROOT>/.mz/task/<task_name>/blast_radius.yml`.
 
 **Expand the file list before tier classification**: any `impacted[]` entry with `risk_level >= medium` joins the file list for §1.3 (tier classification) and §1.5 (reversibility). This way a `T1` file that calls into a `T2` boundary is correctly assigned `T2` overall, and a `reversible` change that imports a `data-migrating` module is flagged.
 
@@ -133,7 +133,7 @@ This filters out bot commits (patterns: `[bot]`, `dependabot`, `renovate`, `gith
 
 ## 1.8 Write scope.md
 
-Write `.mz/task/<task_name>/scope.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md`:
 
 ```markdown
 # Scope — Deep Audit

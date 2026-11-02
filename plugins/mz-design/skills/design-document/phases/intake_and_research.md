@@ -88,13 +88,14 @@ schema_version: 2
 Status: running
 Phase: 1
 PhaseName: intake_and_research_complete
-phase_complete: true
-what_remains:
-  - run the initial draft phase
+Started: <timestamp from setup>
 Iteration: 0
 FilesWritten:
   - .mz/design/<task_name>/intake.md
   - .mz/design/<task_name>/research.md
+phase_complete: true
+what_remains:
+  - run the initial draft phase
 ```
 
 Proceed to Phase 2.

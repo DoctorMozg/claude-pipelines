@@ -98,7 +98,7 @@ Do **not** re-derive or second-guess a reviewer's verdict — the rubric's rule 
 
 ## 1.5 Write the report
 
-Write the report to **REPORT_DIR** using the leading-date convention: `.mz/reviews/<YYYY_MM_DD>_gov_review_<slug>.md`, where `<YYYY_MM_DD>` is today's date with underscores and `<slug>` matches the task-name slug. On same-day collision append `_v2`, `_v3`.
+Write the report to **REPORT_DIR** using the leading-date convention: `<PROJECT_ROOT>/.mz/reviews/<YYYY_MM_DD>_gov_review_<slug>.md`, where `<YYYY_MM_DD>` is today's date with underscores and `<slug>` matches the task-name slug. On same-day collision append `_v2`, `_v3`.
 
 Use this structure:
 

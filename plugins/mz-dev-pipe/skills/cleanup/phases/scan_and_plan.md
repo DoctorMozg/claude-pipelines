@@ -70,7 +70,7 @@ Cleanup is always bounded by definition (it operates on a specific scope, never 
 
 Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** in the orchestrator, using code searches, Read and Bash. Pass the resolved file list from §1.1 as `input_files`.
 
-Persist the YAML output to `.mz/task/<task_name>/blast_radius.yml`.
+Persist the YAML output to `<PROJECT_ROOT>/.mz/task/<task_name>/blast_radius.yml`.
 
 **How cleanup uses the blast-radius output**:
 
@@ -101,7 +101,7 @@ Detect the project's language(s) and use the appropriate import syntax:
 - C/C++: `#include "X"`
 - Java: `import X.Y`
 
-Return the JSON adjacency list **inline in your response** — the orchestrator persists it to `.mz/task/<task_name>/import_graph.json`. Use this exact shape:
+Return the JSON adjacency list **inline in your response** — the orchestrator persists it to `<PROJECT_ROOT>/.mz/task/<task_name>/import_graph.json`. Use this exact shape:
 
 {
   "files": {
@@ -124,7 +124,7 @@ Wrap the JSON in a ```json fenced block so the orchestrator can extract it relia
 - Any files the graph construction failed on, with reason
 ````
 
-After the researcher returns, the orchestrator extracts the JSON block from the response and writes it to `.mz/task/<task_name>/import_graph.json` via the Write tool.
+After the researcher returns, the orchestrator extracts the JSON block from the response and writes it to `<PROJECT_ROOT>/.mz/task/<task_name>/import_graph.json` via the Write tool.
 
 **Fallback**: if the researcher fails to build the graph (unsupported language mix, parse errors on most files), fall back to **directory-based chunking**: group files by their parent directory. Flag the fallback prominently in the Phase 2.5 approval plan so the user knows the chunking is less principled than an import graph.
 
@@ -152,7 +152,7 @@ Using the import graph, group files into chunks under these rules:
 
 ### 1.4 Write scan artifact
 
-Write `.mz/task/<task_name>/scan.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/scan.md`:
 
 ```markdown
 # Scan: <scope>
@@ -206,10 +206,11 @@ Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
 ```
 Detect project tooling and write the result to:
-output_path: .mz/task/<task_name>/tooling.md
+project_root: <PROJECT_ROOT>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md
 ```
 
-Read `.mz/task/<task_name>/tooling.md` when done.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` when done.
 
 If both **Test command** and **Lint command** are "none detected": ask the user how to verify green state before proceeding. Do not skip the baseline — without it, regressions cannot be detected reliably.
 
@@ -221,21 +222,21 @@ Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single m
 Run the baseline test suite.
 test_command: <Test command from tooling.md>
 specific_files: <test files matching scope from scan.md, if Scoped test command is supported; otherwise omit>
-output_path: .mz/task/<task_name>/baseline_test_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/baseline_test_results.md
 ```
 
 ```
 Run the baseline linters.
 lint_command: <Lint command from tooling.md, or "none detected">
 scope_files: <source files from scan.md>
-output_path: .mz/task/<task_name>/baseline_lint_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/baseline_lint_results.md
 ```
 
 Read both artifacts when done. Use these results to populate the baseline.md artifact.
 
 ### 2.3 Write baseline artifact
 
-Write `.mz/task/<task_name>/baseline.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/baseline.md`:
 
 ```markdown
 # Baseline

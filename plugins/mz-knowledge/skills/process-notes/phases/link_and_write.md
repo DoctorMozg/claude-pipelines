@@ -20,7 +20,7 @@ Filter `proposals.md` by the Phase 1.5 approval decision (all notes if `approve`
 1. Write the draft body (frontmatter + content, exactly as produced in Phase 1) to `<vault>/<target-folder>/<filename>.md`. Preserve `status: draft` in the frontmatter — the user promotes to `evergreen` manually when ready.
 1. Append the written path to `state.md` under `FilesWritten:` (YAML list). Also record each `title -> path` mapping under `TitleToPath:` for the link-suggester dispatch.
 
-Update `state.md` once all approved notes are written: `Phase: 2`, `Status: notes_written`, `NotesWritten: <N>`.
+Update `state.md` once all approved notes are written: `Phase: 2`, `NotesWritten: <N>`.
 
 ## Step 2: Dispatch link-suggester
 
@@ -31,7 +31,7 @@ New notes written (title → path mapping):
 <paste TitleToPath block from state.md as a YAML list>
 
 Vault root: <vault_path>
-Task dir: .mz/task/<task_name>/
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 
 Your task:
 
@@ -46,7 +46,7 @@ Caps:
 - Do not propose links between two new notes at this stage — that is a separate pass.
 - Skip candidates whose relationship you cannot justify in one sentence from read content.
 
-Write proposals to `.mz/task/<task_name>/link_proposals.md` using exactly this YAML shape:
+Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` using exactly this YAML shape:
 
 links:
   - source_title: "First new note title"
@@ -67,7 +67,7 @@ Terminal status:
 - STATUS: NEEDS_CONTEXT only if the vault root is missing or unreadable.
 ```
 
-After the agent returns, read `.mz/task/<task_name>/link_proposals.md` and validate structure (`links:` list, each entry has `source_title`, `source_path`, `targets` list). Update `state.md`: `Status: link_proposals_ready`.
+After the agent returns, read `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` and validate structure (`links:` list, each entry has `source_title`, `source_path`, `targets` list). Update `state.md`: `Phase: link_proposals_ready`.
 
 Return to SKILL.md Phase 2.5 with the proposals formatted for the user-facing presentation.
 

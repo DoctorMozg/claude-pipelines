@@ -58,11 +58,11 @@ Top tags: ...
 
 ## After writing
 
-1. Update `state.md`: `Status: completed`, `Phase: 2`, `Completed: <ISO timestamp>`.
+1. Update `state.md`: `Status: complete`, `phase_complete: true`, `what_remains: []`, `Phase: 2`, `Completed: <ISO timestamp>`.
 1. Print: `Audit written to <vault_path>/_vault_audit_<date>.md — N orphans, N broken links, N stubs.`
 
 ## Error handling
 
 - **Vault root unwritable** → escalate via AskUserQuestion; do not write the audit note to an alternate location without explicit user direction.
 - **Audit file already exists for today** → append `_v2`, `_v3` suffix and note the collision in `state.md`.
-- **Collector data file missing or corrupt at write time** → stop, mark `Status: blocked` in `state.md`, and escalate via AskUserQuestion.
+- **Collector data file missing or corrupt at write time** → stop, set `what_remains: [awaiting answer: re-run the collector, or stop]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop.

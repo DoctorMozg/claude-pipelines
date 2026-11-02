@@ -39,7 +39,15 @@ Cards move through two directories:
 
 A card is "active" the moment any interaction is logged or letters are drafted against it. This skill is one of two entry points that move a card into `active/` (the other is `/outreach-enrich-company`).
 
+## Constants
+
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+
 ## Core Process
+
+### Step 0: Resolve the project root
+
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 
 ### Step 1: Parse arguments
 
@@ -60,12 +68,12 @@ Extract the company slug from the user-supplied path's basename:
 - If the basename matches `<YYYY-MM-DD>_<slug>.md` (active path), `slug` = the part after the date prefix.
 - Otherwise (`<slug>.md`, e.g. a research-baseline path), `slug` = the basename minus the `.md` extension.
 
-Run `mkdir -p .mz/outreach/active` so the directory exists.
+Run `mkdir -p "<PROJECT_ROOT>/.mz/outreach/active"` so the directory exists.
 
 Find any existing active card for this slug:
 
 ```bash
-find .mz/outreach/active -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<slug>.md' 2>/dev/null | head -1
+find "<PROJECT_ROOT>/.mz/outreach/active" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<slug>.md' 2>/dev/null | head -1
 ```
 
 - **If found**: `source_path` = the active path returned. The user-supplied path is ignored in favor of the active version (which has the canonical accumulated history).
@@ -102,7 +110,7 @@ Use an em-dash (`—`, U+2014), not a hyphen. Preserve the action description ex
 
 ### Step 6: Update card content and write to target
 
-Compute `target_path` = `.mz/outreach/active/<today>_<slug>.md`.
+Compute `target_path` = `<PROJECT_ROOT>/.mz/outreach/active/<today>_<slug>.md`.
 
 Detect whether the card body (read in Step 3) already contains a `## Interaction History` H2 section:
 
@@ -132,7 +140,7 @@ rm "<source_path>"
 Also clean up any other stale active entries for this slug (defensive — shouldn't normally exist, but covers manual edits and prior-run corruption):
 
 ```bash
-find .mz/outreach/active -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<slug>.md' ! -path "<target_path>" -delete 2>/dev/null
+find "<PROJECT_ROOT>/.mz/outreach/active" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<slug>.md' ! -path "<target_path>" -delete 2>/dev/null
 ```
 
 If `source_path == target_path`, skip cleanup (the file at the target IS the source).
@@ -178,7 +186,7 @@ After writing, re-read `target_path` and confirm:
 - The new bullet matches the `- **<YYYY-MM-DD>** — <description>` format.
 - The previous card content (every line above the appended/extended section) is byte-identical to the in-memory copy you held before the write.
 
-After cleanup, list `.mz/outreach/active/` and confirm exactly one file matches `*_<slug>.md`.
+After cleanup, list `<PROJECT_ROOT>/.mz/outreach/active/` and confirm exactly one file matches `*_<slug>.md`.
 
 If any check fails, restore the prior content from your in-memory copy with a second `Write` call to the original `source_path`, delete `target_path` if it was newly created, and emit:
 

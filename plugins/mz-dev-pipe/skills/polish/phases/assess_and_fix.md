@@ -46,7 +46,7 @@ Do NOT proceed with unclear criteria. Get clarity first.
 
 ### 1.4 Save assessment
 
-Write `.mz/task/<task_name>/assessment.md` with the triage table, all test/lint output, the verification commands for each criterion, and an explicit **TDD lane** section listing every behavioral criterion marked `uncovered`. The Phase 1.5 user approval gate must surface this section so the user knows which fixes will be preceded by a new test.
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/assessment.md` with the triage table, all test/lint output, the verification commands for each criterion, and an explicit **TDD lane** section listing every behavioral criterion marked `uncovered`. The Phase 1.5 user approval gate must surface this section so the user knows which fixes will be preceded by a new test.
 
 Update state phase to `assessed`.
 
@@ -123,7 +123,7 @@ Report concise, actionable findings.
 
 ### 3.3 Save research
 
-Write findings to `.mz/task/<task_name>/research.md`.
+Write findings to `<PROJECT_ROOT>/.mz/task/<task_name>/research.md`.
 Update state phase to `researched`.
 
 Proceed to Phase 4. Read `phases/fix_review_and_finalize.md`.

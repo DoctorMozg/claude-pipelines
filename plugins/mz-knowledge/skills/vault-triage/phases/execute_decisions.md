@@ -6,7 +6,7 @@ After the user approved the triage batch in Phase 1.5 (with or without overrides
 
 ## Step 1: Parse the approval response
 
-1. Start from the default decision map captured in `.mz/task/<task_name>/triage_batch.md`.
+1. Start from the default decision map captured in `<PROJECT_ROOT>/.mz/task/<task_name>/triage_batch.md`.
 1. If the user replied with plain `approve`, adopt the defaults verbatim — no merge decisions can be present in the defaults because `triage-scorer` leaves `proposed_merge_target: null`. For any default `merge` entry, treat it as a missing-target case and re-ask via AskUserQuestion for the exact target note name per the fallback rule below.
 1. If the user replied with an override list (e.g., `1=discard, 3=merge::Target Note Name`), parse each `index=decision` pair:
    - The index is 1-based and binds to the ordered `decisions` list in `triage_batch.md`.
@@ -71,7 +71,7 @@ Process the batch in order. For each note, execute the decision and record the o
 
 ## Step 3: Write the decision log
 
-Write `.mz/task/<task_name>/decision_log.md` as YAML:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/decision_log.md` as YAML:
 
 ```yaml
 task_name: <task_name>

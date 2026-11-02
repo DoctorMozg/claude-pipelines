@@ -11,8 +11,8 @@ Dispatch the `vault-query-answerer` agent (model: sonnet) with this task-specifi
 ```
 Question: "<verbatim question from state.md>"
 Vault path: <vault_path>
-Output path: .mz/task/<task_name>/answer.md
-Task dir: .mz/task/<task_name>/
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/answer.md
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 
 Parameters:
   max_notes: 20
@@ -62,7 +62,7 @@ Terminal status:
 
 After the agent returns:
 
-1. Read `.mz/task/<task_name>/answer.md`.
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/answer.md`.
 1. Verify the file contains all three required sections:
    - A `# Answer` heading followed by prose.
    - A `## Sources` heading.
@@ -85,11 +85,11 @@ If the resulting ratio is below `CITATION_DENSITY_MIN_RATIO` (0.02):
 
 ## Step 4: Return to user
 
-Read `.mz/task/<task_name>/answer.md` and present the full text verbatim to the user. Do not summarize. Do not return a file path. Do not truncate. The user sees the complete answer body, the `## Sources` list, and the `## Unknowns` list exactly as the agent wrote them.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/answer.md` and present the full text verbatim to the user. Do not summarize. Do not return a file path. Do not truncate. The user sees the complete answer body, the `## Sources` list, and the `## Unknowns` list exactly as the agent wrote them.
 
 ## Step 5: Update state
 
-Update `.mz/task/<task_name>/state.md` with:
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:
 
 - `Status: complete`
 - `Phase: 1`

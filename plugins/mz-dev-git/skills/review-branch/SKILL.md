@@ -30,15 +30,17 @@ Triggers: "review branch", "review my changes", "check my branch", "what did I c
 
 ## Constants
 
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
 ### Phase 0: Setup
 
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. `task_name` = `<YYYY_MM_DD>_review_branch_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is the current branch name (snake_case, max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. Create `.mz/task/<task_name>/`.
-1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `BaseBranch: <base>`, `Branch: <current>`.
+1. Create `<PROJECT_ROOT>/.mz/task/<task_name>/`.
+1. Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `BaseBranch: <base>`, `Branch: <current>`.
 1. Emit a visible setup block: `task_name`, base branch, current branch, report dir.
 
 ### 1. Validate branch state
@@ -49,7 +51,7 @@ Verify the current branch is not `main` or `master`:
 git branch --show-current
 ```
 
-If on main/master, inform the user there is nothing to review and update `state.md` to `Status: aborted`.
+If on main/master, inform the user there is nothing to review and set `state.md` to `Status: complete` with `Phase: nothing_to_review`.
 
 ### 2. Launch the branch-reviewer agent
 
@@ -60,10 +62,10 @@ Review the current branch against <base-branch>.
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
 Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers as their own wave after Phase 3.5 returns, reading the prompts from <PLUGIN_ROOT>/shared/blinded_lenses.md, and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1.
 Use researcher agents for domain research if the implementation topic is complex.
-Save the report to .mz/reviews/ using the naming convention: <YYYY_MM_DD>_review_branch_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
+Save the report to <PROJECT_ROOT>/.mz/reviews/ using the naming convention: <YYYY_MM_DD>_review_branch_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```
 
-Update `state.md` to `Phase: 2` before dispatch and `Phase: 3` after the agent returns.
+Update `state.md` to `Phase: 2` before dispatch, and to `Phase: 3` with `Status: complete` after the agent returns.
 
 ### 3. Report to user
 
@@ -92,4 +94,4 @@ Output the report path (`.mz/reviews/<YYYY_MM_DD>_review_branch_<branch><_vN>.md
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md` with `schema_version: 2` as its first line. This is a single-dispatch skill (setup → dispatch → report in one turn), so the `phase_complete` / `what_remains` progress-ledger fields are not required. On reading a `schema_version: 1` or unversioned file, add `schema_version: 2` and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase` and `Started`. This skill runs setup, one dispatch and its report in a single turn with no approval gate, so it leaves out `phase_complete` and `what_remains`. On reading an older file, put `schema_version: 2` on line 1 and `Status` on line 2, add no other keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.

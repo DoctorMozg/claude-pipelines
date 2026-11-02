@@ -60,13 +60,14 @@ Extract from `$ARGUMENTS`:
 
 Two separate directories are used:
 
-- **State** — `.mz/task/<task_name>/state.md`. Source of truth across phases.
-- **Outreach data** — `.mz/outreach/<run_name>/` holds `search_strategy.json`, `sources.json`, temp `_scout/`, `raw_gigs.json`, `scored.json`, `scored_excluded.json`, and the final `<YYYY_MM_DD>_freelance_search_<slug>.md` report.
+- **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. Source of truth across phases.
+- **Outreach data** — `<PROJECT_ROOT>/.mz/outreach/<run_name>/` (called `<RUN_DIR>` in phase files) holds `search_strategy.json`, `sources.json`, temp `_scout/`, `raw_gigs.json`, `scored.json`, `scored_excluded.json`, and the final `<YYYY_MM_DD>_freelance_search_<slug>.md` report.
 
 `task_name` follows the pattern `<YYYY_MM_DD>_freelance_search_<slug>`; `run_name` is `<YYYY_MM_DD>_freelance_search_<preferences_slug>`. Same-day collisions append `_v2`, `_v3`.
 
 ## Constants
 
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
@@ -104,11 +105,11 @@ Legacy fields shared with job-search (`search_queries`, `title_aliases`, `biling
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/outreach/<run_name>/search_strategy.json` with the Read tool. Capture the full file contents into context. The strategy file is JSON — present it verbatim inside a fenced \`\`\`json block.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: strategy gate]`; `Status` stays `running`.
 
-**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
+**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/outreach/<run_name>/search_strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ````
 ## Strategy ready for review — freelance-search
@@ -133,7 +134,7 @@ Built from your CV plus preferences and selected region. Derived discipline, eng
 
 **Response handling**:
 
-- **Approve** → update `state.md` `Phase` to `strategy_approved`, proceed to Phase 2.
+- **Approve** → add `- strategy approved: .mz/outreach/<run_name>/search_strategy.json` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: strategy_approved`, and proceed to Phase 2.
 - **Reject** → update `state.md` `Status` to `aborted_by_user` and stop.
 - **Any other reply (feedback)** → re-dispatch `freelance-strategist` with the feedback appended, overwrite `search_strategy.json`, return to Surface 1, re-read the updated strategy, and re-emit the full plan message from scratch with the new JSON contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: strategy gate`, stop. A missing answer is never approval.
@@ -155,15 +156,17 @@ ______________________________________________________________________
 
 ## Phase 0: Setup, CV collection, region pick
 
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+
 Parse arguments. Derive:
 
 - `task_name` (state dir) = `<YYYY_MM_DD>_freelance_search_<slug>`, slug is snake_case preferences summary (max 20 chars).
 - `run_name` (outreach dir) = `<YYYY_MM_DD>_freelance_search_<preferences_slug>`, max 40 chars.
 
 ```bash
-mkdir -p .mz/task/<task_name>
-mkdir -p .mz/outreach/<run_name>
-mkdir -p .mz/outreach/_history
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/<run_name>"
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/_history"
 ```
 
 ### CV collection
@@ -175,7 +178,7 @@ Ask: `What is the path to your CV file? Provide an absolute or relative path to 
 Validation:
 
 1. "Cancel" → `Status: aborted_by_user`, stop.
-1. File missing or wrong extension → re-ask once; second failure → `Status: aborted_missing_cv`, stop.
+1. File missing or wrong extension → re-ask once; second failure → `Status: blocked` with `what_remains: [awaiting answer: path to the CV file]`, stop.
 1. Success → read CV, capture absolute path.
 
 ### Region scope pick
@@ -199,7 +202,7 @@ cv_hash=$(tr '[:upper:]' '[:lower:]' < "<CV_PATH>" | tr -s '[:space:]' ' ' | sha
 
 ### State file
 
-Write `.mz/task/<task_name>/state.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 ```yaml
 schema_version: 2
@@ -224,13 +227,13 @@ ______________________________________________________________________
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ______________________________________________________________________
 
 ## Resume Support
 
-Before creating anything in Phase 0, check if `.mz/task/<task_name>/state.md` exists. If it does, read `Phase` and resume from the next incomplete phase. All phases are idempotent.
+Before creating anything in Phase 0, check if `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` exists. If it does, read `Phase` and resume from the next incomplete phase. All phases are idempotent.
 
 ## Error Handling
 

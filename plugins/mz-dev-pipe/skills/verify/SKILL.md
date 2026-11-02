@@ -42,7 +42,8 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ## Constants
 
-- **TASK_DIR**: `.mz/task/` — working artifacts under `.mz/task/<task_name>/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/` — working artifacts under `<PROJECT_ROOT>/.mz/task/<task_name>/`
 - **MAX_RESEARCHERS**: 3 — for failure diagnosis and coverage/quality review
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
@@ -62,20 +63,21 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase 0: Setup
 
+1. **Project root** — resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
 1. **Task name** — `<YYYY_MM_DD>_verify_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
-1. **Task dir & state** — create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
+1. **Task dir & state** — run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 ### Phase 1–6
 
-- **Phase 1 — Scope Resolution**: resolve argument into source, test, and example files. See `phases/setup.md` → Phase 1. Update state to `scope_resolved`.
-- **Phase 2 — Tooling Detection**: detect test frameworks, linters, formatters, type checkers, example runners. See `phases/setup.md` → Phase 2. Update state to `tooling_detected`.
-- **Phase 3 — Execution**: run all detected tools, capture results. See `phases/checks.md` → Phase 3. Update state to `checks_executed`.
-- **Phase 4 — Coverage & Quality Analysis**: dispatch coverage and quality reviewer agents for code in scope. See `phases/checks.md` → Phase 4. Update state to `analysis_complete`.
-- **Phase 5 — Failure Diagnosis**: if any Phase 3 check failed, dispatch researchers; skip if green. See `phases/checks.md` → Phase 5. Update state to `diagnosis_complete`.
-- **Phase 6 — Report**: compile results, write to `.mz/reports/<YYYY_MM_DD>_test_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Update state to `completed`.
+- **Phase 1 — Scope Resolution**: resolve argument into source, test, and example files. See `phases/setup.md` → Phase 1. Set `Phase: scope_resolved`.
+- **Phase 2 — Tooling Detection**: detect test frameworks, linters, formatters, type checkers, example runners. See `phases/setup.md` → Phase 2. Set `Phase: tooling_detected`.
+- **Phase 3 — Execution**: run all detected tools, capture results. See `phases/checks.md` → Phase 3. Set `Phase: checks_executed`.
+- **Phase 4 — Coverage & Quality Analysis**: dispatch coverage and quality reviewer agents for code in scope. See `phases/checks.md` → Phase 4. Set `Phase: analysis_complete`.
+- **Phase 5 — Failure Diagnosis**: if any Phase 3 check failed, dispatch researchers; skip if green. See `phases/checks.md` → Phase 5. Set `Phase: diagnosis_complete`.
+- **Phase 6 — Report**: compile results, write to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_test_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Set `Status: complete`, `phase_complete: true`, `what_remains: []`.
 
 ## Common Rationalizations
 
@@ -108,7 +110,7 @@ Output the final report block: per-check pass/fail status, coverage percentages,
 
 ## State Management
 
-After each phase, update `.mz/task/<task_name>/state.md` with:
+After each phase, update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:
 
 - Current phase
 - Per-check results (pass/fail/skip)

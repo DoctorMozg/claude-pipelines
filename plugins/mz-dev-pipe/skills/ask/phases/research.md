@@ -46,7 +46,7 @@ Wave complete — <returned>/<dispatched> agents returned
 
 An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned. For any `NEEDS_CONTEXT`, supply the missing context and re-dispatch (this does not consume the retry counter). For an empty or errored result, re-dispatch once per **AGENT_RETRY_LIMIT**, then proceed with partial findings and record the gap.
 
-Write each researcher's findings to `.mz/task/<task_name>/codebase_findings.md` under a per-sub-question heading. Update `state.md`: `Phase` → 1, `Researchers dispatched` incremented, `phase_complete: true`.
+Write each researcher's findings to `<PROJECT_ROOT>/.mz/task/<task_name>/codebase_findings.md` under a per-sub-question heading. Update `state.md`: `Phase` → 1, `Researchers dispatched` incremented, `phase_complete: true`.
 
 ## Phase 2: Web Research (conditional)
 
@@ -82,6 +82,6 @@ Emit the post-wave rollup in the same form as Phase 1.3. Re-dispatch `NEEDS_CONT
 
 If web research is blocked or unreachable after the retry, do not stall — record the limitation and let Phase 3 answer from codebase findings alone, flagging the gap.
 
-Write web findings to `.mz/task/<task_name>/web_findings.md`. Update `state.md`: `Phase` → 2, `Researchers dispatched` incremented, source count recorded, `phase_complete: true`.
+Write web findings to `<PROJECT_ROOT>/.mz/task/<task_name>/web_findings.md`. Update `state.md`: `Phase` → 2, `Researchers dispatched` incremented, source count recorded, `phase_complete: true`.
 
 After research completes, read `phases/answer.md` and proceed to Phase 3.

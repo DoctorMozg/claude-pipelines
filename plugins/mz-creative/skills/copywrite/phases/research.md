@@ -1,6 +1,6 @@
 # Phase 1: Positioning + Codebase Research
 
-The orchestrator runs this phase directly (no subagent). The goal is to ground the copywriter in real product details, real audience, real positioning, and the project's existing voice — so it cannot invent metrics, customers, or capabilities. Output: `.mz/task/<task_name>/brief.md`.
+The orchestrator runs this phase directly (no subagent). The goal is to ground the copywriter in real product details, real audience, real positioning, and the project's existing voice — so it cannot invent metrics, customers, or capabilities. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/brief.md`.
 
 ## 1.1 Resolve scope
 
@@ -108,7 +108,7 @@ Capture three tone decisions:
 
 ## 1.9 Write `brief.md`
 
-Write `.mz/task/<task_name>/brief.md` using this structure:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/brief.md` using this structure:
 
 ```markdown
 # Brief — <one-line description, format: <format>>

@@ -53,10 +53,10 @@ State these limits in the gate's settings section:
 
 ## Step 2: Merge (install)
 
-After the gate approves, write the fragment with the approved entries only to `.mz/task/<task_name>/settings_fragment.json` using the Write tool, so the hook command never passes through shell quoting. Then:
+After the gate approves, write the fragment with the approved entries only to `<PROJECT_ROOT>/.mz/task/<task_name>/settings_fragment.json` using the Write tool, so the hook command never passes through shell quoting. Then:
 
 ```bash
-F="<settings file>"; FRAG=".mz/task/<task_name>/settings_fragment.json"
+F="<settings file>"; FRAG="<PROJECT_ROOT>/.mz/task/<task_name>/settings_fragment.json"
 mkdir -p "$(dirname "$F")"
 { [ -f "$F" ] && cat "$F" || echo '{}'; } | jq --slurpfile f "$FRAG" '
   $f[0] as $f
@@ -76,10 +76,10 @@ Keys and entries the fragment doesn't name pass through untouched. Running it tw
 
 ## Step 3: Remove (uninstall)
 
-Write the full fragment to `.mz/task/<task_name>/settings_fragment.json`, then:
+Write the full fragment to `<PROJECT_ROOT>/.mz/task/<task_name>/settings_fragment.json`, then:
 
 ```bash
-F="<settings file>"; FRAG=".mz/task/<task_name>/settings_fragment.json"
+F="<settings file>"; FRAG="<PROJECT_ROOT>/.mz/task/<task_name>/settings_fragment.json"
 jq --slurpfile f "$FRAG" '
   $f[0] as $f
   | [$f.hooks.Stop[]?.hooks[]?.command] as $cmds

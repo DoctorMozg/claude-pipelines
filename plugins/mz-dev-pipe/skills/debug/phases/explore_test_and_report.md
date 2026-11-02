@@ -36,9 +36,9 @@ Write exploratory tests to prove or disprove a hypothesis about the codebase.
 <the user's hypothesis>
 
 ## Analysis
-Read .mz/task/<task_name>/analysis.md for evidence and testable assertions.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/analysis.md for evidence and testable assertions.
 <if domain research exists>
-Read .mz/task/<task_name>/domain_research.md for correct behavior per spec.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/domain_research.md for correct behavior per spec.
 </if>
 
 ## Testable Assertions
@@ -74,12 +74,12 @@ Dispatch a `pipeline-test-runner` agent (model: **haiku**):
 
 ```
 Run the exploratory tests written in the previous step.
-test_command: <test_command from .mz/task/<task_name>/tooling.md>
+test_command: <test_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md>
 specific_files: <test files written by pipeline-test-writer>
-output_path: .mz/task/<task_name>/test_runner_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/test_runner_results.md
 ```
 
-Read `.mz/task/<task_name>/test_runner_results.md` and interpret each result:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/test_runner_results.md` and interpret each result:
 
 | Result     | Interpretation                                                                       |
 | ---------- | ------------------------------------------------------------------------------------ |
@@ -93,7 +93,7 @@ Read `.mz/task/<task_name>/test_runner_results.md` and interpret each result:
 
 ### 3.5 Record test results
 
-Save to `.mz/task/<task_name>/test_results.md`:
+Save to `<PROJECT_ROOT>/.mz/task/<task_name>/test_results.md`:
 
 ```markdown
 # Exploratory Test Results
@@ -154,7 +154,7 @@ Confidence level:
 
 ### 4.2 Generate report
 
-Write to `.mz/reports/<YYYY_MM_DD>_investigate_<hypothesis_summary>.md`.
+Write to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_investigate_<hypothesis_summary>.md`.
 
 If a file with that name exists, append `_v2`, `_v3`, etc.
 
@@ -233,4 +233,4 @@ Summarize the report directly. Include:
 - Recommended next action (fix with `/debug`, monitor, or close)
 - Link to the full report file
 
-Update state status to `completed`.
+Set `Status: complete`, `phase_complete: true`, `what_remains: []`.

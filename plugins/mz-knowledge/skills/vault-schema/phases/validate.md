@@ -2,7 +2,7 @@
 
 ## Goal
 
-Dispatch the `schema-validator` agent with the loaded schema and vault path, then collect severity-labeled findings into `.mz/task/<task_name>/validation_report.md` for the Phase 1.5 approval gate.
+Dispatch the `schema-validator` agent with the loaded schema and vault path, then collect severity-labeled findings into `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md` for the Phase 1.5 approval gate.
 
 ## Preconditions
 
@@ -27,7 +27,7 @@ Dispatch the `schema-validator` agent with this task-specific prompt:
 ```
 Vault path: <vault_path>
 Schema path: <schema_path>
-Output path: .mz/task/<task_name>/validation_report.md
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md
 Task name: <task_name>
 
 Read the schema file, glob every .md file under the vault path (excluding .obsidian/), extract frontmatter between --- delimiters, and validate each note against its declared type's rules.
@@ -41,7 +41,7 @@ Do not repeat the agent's general process, schema semantics, or output schema �
 
 ### 3. Validate the report shape
 
-After the agent completes, Read `.mz/task/<task_name>/validation_report.md` using the Read tool. Confirm:
+After the agent completes, Read `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md` using the Read tool. Confirm:
 
 - The file exists and is non-empty.
 - Top-level keys include at least `vault_path`, `schema_path`, `total_notes`, `findings`, `summary`.
@@ -52,10 +52,9 @@ If any check fails, halt and escalate via AskUserQuestion — never fabricate a 
 
 ### 4. Update state
 
-Patch `.mz/task/<task_name>/state.md`:
+Patch `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
-- `Status: validation_complete`
-- `Phase: 1`
+- `Phase: 1_validation_complete`
 - `ValidationReportPath: .mz/task/<task_name>/validation_report.md`
 - `CriticalCount: <summary.critical>`
 - `NitCount: <summary.nit>`
@@ -68,7 +67,7 @@ Hand control back to `SKILL.md` Phase 1.5. The gate is responsible for the Read 
 
 - **Schema file missing or corrupt** — halt with a pointer to the bootstrap template in `references/schema-dsl-syntax.md` and escalate via AskUserQuestion. Never fabricate a schema.
 - **Validator returns `STATUS: NEEDS_CONTEXT`** — re-dispatch once with the missing field explicitly named in the prompt. If the second attempt still returns `NEEDS_CONTEXT`, escalate via AskUserQuestion.
-- **Validator returns `STATUS: BLOCKED`** — read the reason, update `state.md` with `Status: blocked`, and escalate via AskUserQuestion. Never auto-retry a blocked dispatch.
+- **Validator returns `STATUS: BLOCKED`** — read the reason, set `what_remains: [awaiting answer: <the validator's blocker>]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop. Never auto-retry a blocked dispatch.
 - **Validator returns `STATUS: DONE_WITH_CONCERNS` with `schema_missing: true` or `schema_empty: true`** — surface the absence to the user via AskUserQuestion: "The schema at `<schema_path>` was \<missing|empty>. Every note was treated as pass-through. Provide the schema and re-run validate, or confirm pass-through is acceptable." Do not silently proceed to migration.
 - **Report shape invalid** — do not proceed to Phase 1.5. The approval gate requires a readable report; a broken report is a failed phase, not an approvable artifact.
 

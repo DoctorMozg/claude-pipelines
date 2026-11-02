@@ -6,7 +6,7 @@ Write wikilinks for every proposal that survived the Phase 1.5 gate. Outbound li
 
 ## Step 1: Filter approved proposals
 
-Read `.mz/task/<task_name>/link_proposals.md` and the Phase 1.5 decision (`approve` for all, or a letter-skip list). Drop any proposal whose letter was skipped. The remaining `outbound_links` and `inbound_links` are the write set.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` and the Phase 1.5 decision (`approve` for all, or a letter-skip list). Drop any proposal whose letter was skipped. The remaining `outbound_links` and `inbound_links` are the write set.
 
 ## Step 2: Write outbound links (target note)
 
@@ -39,7 +39,7 @@ Update `state.md`:
 
 ```
 schema_version: 2
-Status: completed
+Status: complete
 Phase: 2
 Completed: <ISO timestamp>
 OutboundWritten: <N>
@@ -49,7 +49,7 @@ phase_complete: true
 what_remains: []
 ```
 
-Write `.mz/task/<task_name>/session_summary.md` with the final list of writes:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/session_summary.md` with the final list of writes:
 
 ```yaml
 target:

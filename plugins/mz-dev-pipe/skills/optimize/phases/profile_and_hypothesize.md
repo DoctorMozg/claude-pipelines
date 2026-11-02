@@ -22,7 +22,7 @@ Research context for a performance-optimization profiling pass.
 Target system:   <target_system from contract.md>
 Target type:     <target_type>
 Metric:          <metric_name> (<metric_unit>), direction <metric_direction>
-Scope files:     .mz/task/<task_name>/scope_files.txt
+Scope files:     <PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt
 
 Report:
 1. How the target is structured — entry points, hot modules, the call / dependency
@@ -47,7 +47,7 @@ Principles that govern reading the profile (grep the toolkit for the full list):
 - **Off-CPU time is real time** — blocked, waiting, and queued time count; a CPU-only profiler misses I/O- and contention-bound work.
 - One **stable metric** guides the loop — the contract's `metric_name`; never switch metrics mid-run.
 
-Write the profile to `.mz/task/<task_name>/profile.md`: the attribution breakdown, the profiling technique used, and the raw profiler output or a path to it.
+Write the profile to `<PROJECT_ROOT>/.mz/task/<task_name>/profile.md`: the attribution breakdown, the profiling technique used, and the raw profiler output or a path to it.
 
 ### 2.3 Component attribution — `target_type: system` only
 
@@ -98,13 +98,13 @@ Score each hypothesis `impact × confidence ÷ effort`, where `impact` is the Am
 
 ### 3.4 Write the backlog
 
-Write the ranked list to `.mz/task/<task_name>/backlog.md`:
+Write the ranked list to `<PROJECT_ROOT>/.mz/task/<task_name>/backlog.md`:
 
 ```markdown
 # Hypothesis Backlog — <task_name>
 
 Bottleneck: <name> (<class>, <share>% of <metric>)
-Profile:    .mz/task/<task_name>/profile.md
+Profile:    <PROJECT_ROOT>/.mz/task/<task_name>/profile.md
 
 ## Ranked hypotheses
 

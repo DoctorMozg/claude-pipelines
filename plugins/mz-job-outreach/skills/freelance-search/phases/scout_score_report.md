@@ -186,7 +186,7 @@ ______________________________________________________________________
 - If results are thin, re-run with a wider region scope (`Global`) or a relaxed rate floor.
 ```
 
-After writing the report, also append a yield-history record to `.mz/outreach/_history/source_quality.json`:
+After writing the report, also append a yield-history record to `<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json`:
 
 ```bash
 # Compute per-source top-N hit counts from scored.json.
@@ -213,8 +213,8 @@ for source in $(jq -r '[.[].source] | unique[]' "<RUN_DIR>/scored.json"); do
     .[$cv][$src].runs = (
       [{run_date: $date, top_n_hits: $tn, primary_hits: $ph, alias_hits: $ah}] +
       (.[$cv][$src].runs // []) | .[:3]
-    )' .mz/outreach/_history/source_quality.json > /tmp/sq.json
-  mv /tmp/sq.json .mz/outreach/_history/source_quality.json
+    )' "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json" > /tmp/sq.json
+  mv /tmp/sq.json "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json"
 done
 ```
 

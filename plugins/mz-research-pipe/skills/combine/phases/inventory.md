@@ -17,13 +17,13 @@ ______________________________________________________________________
 
 **The orchestrator runs these commands inline.** Do NOT delegate this step to a subagent — these are cheap, bounded shell calls whose output is a handful of filenames, and a subagent round-trip would add latency with no benefit.
 
-Run each command and append the raw output to `.mz/task/<task_name>/inventory_raw.txt` (create the file on first write, then append each block with a one-line header of the command string). The orchestrator only reads filenames and mtimes from these results — **never read the body of any listed file in this phase**.
+Run each command and append the raw output to `<PROJECT_ROOT>/.mz/task/<task_name>/inventory_raw.txt` (create the file on first write, then append each block with a one-line header of the command string). The orchestrator only reads filenames and mtimes from these results — **never read the body of any listed file in this phase**.
 
 ```bash
-ls -lt .mz/research/ 2>/dev/null
-ls -lt .mz/reports/ 2>/dev/null
-ls -lt .mz/reviews/ 2>/dev/null
-ls -lt .mz/task/   2>/dev/null | head -40
+ls -lt "<PROJECT_ROOT>/.mz/research/" 2>/dev/null
+ls -lt "<PROJECT_ROOT>/.mz/reports/" 2>/dev/null
+ls -lt "<PROJECT_ROOT>/.mz/reviews/" 2>/dev/null
+ls -lt "<PROJECT_ROOT>/.mz/task/" 2>/dev/null | head -40
 git log --oneline -50 2>/dev/null
 git status --short  2>/dev/null
 ```
@@ -133,7 +133,7 @@ ______________________________________________________________________
 
 ## Phase 1.4: Inventory Artifact
 
-Write the decomposition to `.mz/task/<task_name>/inventory.md` using this template. The artifact is the single source of truth for §Phase 1.5 gate presentation and for §Phase 2 dispatch.
+Write the decomposition to `<PROJECT_ROOT>/.mz/task/<task_name>/inventory.md` using this template. The artifact is the single source of truth for §Phase 1.5 gate presentation and for §Phase 2 dispatch.
 
 ```markdown
 # Inventory
@@ -185,16 +185,16 @@ ______________________________________________________________________
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/inventory.md` with the Read tool. Capture the full contents (source inventory summary with bucket counts, stale-excluded count, unavailable buckets, and the proposed lens decomposition listing 3–6 lenses with names and file counts) into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: decomposition gate]`; `Status` stays `running`.
 
-**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/inventory.md` — do not substitute a path, summary, or placeholder:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/inventory.md` — do not substitute a path, summary, or placeholder:
 
 ```
 ## Inventory ready for review — combine
 
-<verbatim contents of .mz/task/<task_name>/inventory.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/inventory.md>
 
 ---
 **Approve** → proceed to Phase 2 (parallel lens dispatch)  ·  **Reject** → task marked aborted, no further phases run  ·  reply with feedback to revise
@@ -208,7 +208,7 @@ ______________________________________________________________________
 
 ### Response handling
 
-- **Approve** → update `state.md` phase to `decomposition_approved`, then proceed to Phase 2 by reading `phases/lens_dispatch.md`. Do not proceed to Phase 2 on any response other than an explicit Approve.
+- **Approve** → add `- decomposition approved: .mz/task/<task_name>/inventory.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: decomposition_approved`, then proceed to Phase 2 by reading `phases/lens_dispatch.md`. Do not proceed to Phase 2 on any response other than an explicit Approve.
 - **Reject** → update `state.md` status to `aborted_by_user`, write a one-line reason (`user rejected decomposition at Phase 1.5`) to state, and stop. Do not proceed to any later phase. Do not silently restart.
 - **Any other reply (feedback)** → incorporate the user's feedback (add/remove/rename lenses, adjust file lists, re-classify sources, add or drop buckets), re-run §Phase 1.2 and §Phase 1.3 as needed, overwrite `inventory.md` with the revised decomposition, return to this gate, re-read `inventory.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: decomposition gate`, stop. A missing answer is never approval.

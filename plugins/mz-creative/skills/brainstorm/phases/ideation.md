@@ -8,7 +8,7 @@ Read `<SKILL_DIR>/behaviors/ideation.md`. This file defines the dispatch prompt 
 
 ## 2.2 Prepare per-agent context
 
-Read `.mz/task/<task_name>/panel.md` to get the 5 selected `lens-*` agents.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/panel.md` to get the 5 selected `lens-*` agents.
 
 For each selected agent, substitute the behavior template variables:
 
@@ -17,7 +17,7 @@ For each selected agent, substitute the behavior template variables:
 | `{topic}`                 | the brainstorming topic                                                                                                                       |
 | `{round_n}`               | current iteration number (1 for first round)                                                                                                  |
 | `{previous_rounds_block}` | empty string for round 1; `## Previous rounds\n\n<contents of history.md>\n\n## Facilitator guidance\n\n<disagreement summary>` for round > 1 |
-| `{output_path}`           | `.mz/task/<task_name>/ideas_round_<N>_<agent_name>.md` (absolute or repo-relative)                                                            |
+| `{output_path}`           | `<PROJECT_ROOT>/.mz/task/<task_name>/ideas_round_<N>_<agent_name>.md`                                                                         |
 | `{lens_name}`             | the short label derived from the agent name (e.g. `engineer` for `lens-engineer`)                                                             |
 | `{step}`                  | `generate`                                                                                                                                    |
 
@@ -41,7 +41,7 @@ Each agent writes its artifact to `{output_path}`. After dispatch, for each agen
 
 Then emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per agent with its status and a short summary — before merging. An agent with no usable artifact shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
-Merge all agent outputs into `.mz/task/<task_name>/ideas_round_<N>.md`:
+Merge all agent outputs into `<PROJECT_ROOT>/.mz/task/<task_name>/ideas_round_<N>.md`:
 
 ```markdown
 # Ideas — Round <N>
@@ -57,7 +57,7 @@ Merge all agent outputs into `.mz/task/<task_name>/ideas_round_<N>.md`:
 [repeat for each agent that produced output]
 ```
 
-Append a summary to `.mz/task/<task_name>/history.md`:
+Append a summary to `<PROJECT_ROOT>/.mz/task/<task_name>/history.md`:
 
 ```markdown
 ## Round <N> — Ideation

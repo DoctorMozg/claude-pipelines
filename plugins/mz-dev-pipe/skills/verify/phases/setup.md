@@ -28,7 +28,7 @@ Resolve the argument into two file lists:
 - If scope is global/roam, check all examples. If scope is narrowed, only check examples that reference files in scope.
 - Detect README code blocks that contain executable snippets (fenced blocks with language tags)
 
-Write `.mz/task/<task_name>/scope.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md`:
 
 ```markdown
 # Scope
@@ -54,10 +54,11 @@ Dispatch a `pipeline-tooling-detector` agent (model: **haiku**):
 
 ```
 Detect project tooling and write the result to:
-output_path: .mz/task/<task_name>/tooling.md
+project_root: <PROJECT_ROOT>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md
 ```
 
-Read `.mz/task/<task_name>/tooling.md` when done.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` when done.
 
 **If the Test command field is "none detected"**: ask the user how to run tests via AskUserQuestion. Do not skip tests.
 
@@ -72,7 +73,7 @@ Check for runnable example/sample files not covered by the standard test framewo
 - For shell scripts: check for shebang and execute permission
 - Detect README code blocks with fenced language tags that look runnable (not pseudocode or config snippets)
 
-Append to `.mz/task/<task_name>/tooling.md`:
+Append to `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`:
 
 ```markdown
 ## Examples

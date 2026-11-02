@@ -2,7 +2,7 @@
 
 ## Goal
 
-Run all health checks and collect structured findings into `.mz/task/<task_name>/audit_data.md`.
+Run all health checks and collect structured findings into `<PROJECT_ROOT>/.mz/task/<task_name>/audit_data.md`.
 
 ## Actions
 
@@ -12,9 +12,9 @@ Dispatch the `vault-audit-collector` agent with this task-specific prompt:
 
 ```
 Vault path: <vault_path>
-Task dir: .mz/task/<task_name>/
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 
-Run all vault health checks and write findings to .mz/task/<task_name>/audit_data.md.
+Run all vault health checks and write findings to <PROJECT_ROOT>/.mz/task/<task_name>/audit_data.md.
 
 Checks to run:
 
@@ -64,7 +64,7 @@ STATUS: DONE with findings written to audit_data.md, or BLOCKED if the vault is 
 
 ### 2. After the agent completes
 
-Read `.mz/task/<task_name>/audit_data.md`. Update `state.md`: `Status: collection_complete`, `Phase: 1`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/audit_data.md`. Update `state.md`: `Phase: 1`.
 
 ### 3. Present findings for approval
 

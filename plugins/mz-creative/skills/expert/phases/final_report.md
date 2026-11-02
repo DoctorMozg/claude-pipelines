@@ -4,7 +4,7 @@ Full detail for dispatching `expert-report-writer` and producing the polished re
 
 ## Goal
 
-Produce a single structured report at `.mz/reports/<YYYY_MM_DD>_expert_<slug>.md` synthesising the 3 rounds into a multi-sided analysis.
+Produce a single structured report at `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_expert_<slug>.md` synthesising the 3 rounds into a multi-sided analysis.
 
 ## Inputs
 
@@ -21,7 +21,7 @@ From Phase 2:
 Verify all artifacts are on disk. If any round file is missing, log the gap and proceed anyway — the report writer must document gaps rather than block.
 
 ```bash
-ls .mz/task/<task_name>/iter_{1,2,3}_*.md .mz/task/<task_name>/round_{1,2,3}_summary.md
+ls "<PROJECT_ROOT>/.mz/task/<task_name>"/iter_{1,2,3}_*.md "<PROJECT_ROOT>/.mz/task/<task_name>"/round_{1,2,3}_summary.md
 ```
 
 ## Step 3.2 — Compute report filename
@@ -29,10 +29,10 @@ ls .mz/task/<task_name>/iter_{1,2,3}_*.md .mz/task/<task_name>/round_{1,2,3}_sum
 Slug = same as `task_name` slug portion. Date = today's date in `YYYY_MM_DD`.
 
 ```
-report_path = .mz/reports/<YYYY_MM_DD>_expert_<slug>.md
+report_path = <PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_expert_<slug>.md
 ```
 
-If the file already exists, append `_v2`, `_v3`, … until a free slot is found. Ensure `.mz/reports/` exists (`mkdir -p`) before dispatch.
+If the file already exists, append `_v2`, `_v3`, … until a free slot is found. Ensure the reports directory exists (`mkdir -p "<PROJECT_ROOT>/.mz/reports"`) before dispatch.
 
 ## Step 3.3 — Dispatch `expert-report-writer`
 
@@ -42,21 +42,21 @@ Spawn `expert-report-writer` (model: **sonnet**) with this prompt:
 You are producing the final report for an expert panel review.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Output path
 <computed report_path from step 3.2>
 
 ## Read
-- .mz/task/<task_name>/intake.md
-- .mz/task/<task_name>/research.md (if exists)
-- .mz/task/<task_name>/panel.md
-- .mz/task/<task_name>/iter_1_<each panelist>.md  (5 files)
-- .mz/task/<task_name>/round_1_summary.md
-- .mz/task/<task_name>/iter_2_<each panelist>.md  (5 files)
-- .mz/task/<task_name>/round_2_summary.md
-- .mz/task/<task_name>/iter_3_<each panelist>.md  (5 files)
-- .mz/task/<task_name>/round_3_summary.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/intake.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/research.md (if exists)
+- <PROJECT_ROOT>/.mz/task/<task_name>/panel.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/iter_1_<each panelist>.md  (5 files)
+- <PROJECT_ROOT>/.mz/task/<task_name>/round_1_summary.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/iter_2_<each panelist>.md  (5 files)
+- <PROJECT_ROOT>/.mz/task/<task_name>/round_2_summary.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/iter_3_<each panelist>.md  (5 files)
+- <PROJECT_ROOT>/.mz/task/<task_name>/round_3_summary.md
 
 ## Your Job
 Write the final report to the output path following the schema in your agent spec. Key rules:
@@ -89,13 +89,13 @@ Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKE
 ## Step 3.5 — Verify report
 
 ```bash
-test -s <report_path>
+test -s "<report_path>"
 ```
 
 Structural sanity:
 
 ```bash
-grep -c '^## ' <report_path>
+grep -c '^## ' "<report_path>"
 ```
 
 Should be ≥ 8 (Executive Summary, Consensus Findings, Divergent Views, Strengths, Weaknesses, Top Risks, Recommendations, Per-Expert Takes, Methodology). If fewer, dispatch a revision pass with the missing sections listed.
@@ -111,9 +111,9 @@ phase_complete: true
 what_remains: []
 Round: 3
 Completed: <timestamp>
-ReportPath: <report_path>
+ReportPath: <report_path, relative to the project root>
 FilesWritten:
-  - ... (append report_path)
+  - ... (append the relative report path)
 ```
 
 ## Step 3.7 — Emit final completion block

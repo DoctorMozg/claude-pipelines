@@ -6,7 +6,7 @@ Walk the user through each note in the approved queue. Update `last_reviewed` on
 
 ## Process
 
-Read `.mz/task/<task_name>/review_queue.md` and iterate through each entry in order.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/review_queue.md` and iterate through each entry in order.
 
 ### For each note in the queue
 
@@ -38,10 +38,10 @@ Maturity: <seedling|sapling|tree|ancient-tree> | last_reviewed: <date or never> 
 1. Handle the response:
 
 - **Done** → update the note's frontmatter: set `last_reviewed: <today ISO date>`. Preserve all other frontmatter keys and the body untouched. Continue to the next note.
-- **Skip** → append `- title: "<title>" action: skipped` to `.mz/task/<task_name>/session_log.md`. Do NOT touch the note file. Continue.
+- **Skip** → append `- title: "<title>" action: skipped` to `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md`. Do NOT touch the note file. Continue.
 - **Promote** → advance `maturity` one stage: `seedling → sapling → tree → ancient-tree`. If the note is already `ancient-tree`, report that and re-present with Done or Skip as the choices. Update `last_reviewed: <today>` alongside the maturity change. Continue.
-- **Archive** → do NOT move the file mid-session. Append `- title: "<title>" path: "<path>" action: archive_pending` to `.mz/task/<task_name>/session_log.md`. Continue. Archive moves are batched at the end.
-- **Typed reply `abort`** (any case) → update `state.md`: `Status: aborted_mid_session`, `Phase: 2`, `NotesReviewed: <count so far>`. Stop. Skip the summary step.
+- **Archive** → do NOT move the file mid-session. Append `- title: "<title>" path: "<path>" action: archive_pending` to `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md`. Continue. Archive moves are batched at the end.
+- **Typed reply `abort`** (any case) → update `state.md`: `Status: aborted_by_user`, `Phase: 2`, `NotesReviewed: <count so far>`. Stop. Skip the summary step.
 - **Any other typed reply (Edit)** → treat the text as the change to make. Apply it via `Edit` to the note body (never the frontmatter unless the change specifically targets it). Re-read the file. Re-emit the note review message (Surface 1) and re-present the selector (Surface 2) — the user then replies Done, Skip, or another change.
 
 All frontmatter writes must preserve YAML key order and existing keys. If the note has no frontmatter block, create one at the top with only `last_reviewed:` (and `maturity:` for `promote`).
@@ -49,7 +49,7 @@ All frontmatter writes must preserve YAML key order and existing keys. If the no
 ### After the queue is exhausted
 
 1. Count outcomes from `session_log.md`: `reviewed`, `skipped`, `promoted`, `archive_pending`.
-1. Write `.mz/task/<task_name>/session_summary.md`:
+1. Write `<PROJECT_ROOT>/.mz/task/<task_name>/session_summary.md`:
 
 ```yaml
 mode: <mode>
@@ -66,11 +66,15 @@ entries:
     notes: "optional note on promote new maturity or edit description"
 ```
 
-3. Update `state.md`: `Status: completed`, `Phase: 2`, `Completed: <ISO timestamp>`, plus the totals above.
+3. Update `state.md`: `Phase: 2` plus the totals above. If `archive_pending` is 0, also set `Status: complete`, `Completed: <ISO timestamp>`, `phase_complete: true`, `what_remains: []`, and go straight to the final summary below. Otherwise keep `Status: running` until that gate resolves.
 
 ### Archive confirmation (only if any `archive_pending`)
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md` and collect every `archive_pending` entry.
+
+**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: archive gate]`; `Status` stays `running`.
 
 **Surface 1 — emit the archive confirmation message.** Output the list verbatim as a normal markdown chat message:
 
@@ -90,17 +94,19 @@ entries:
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the list in the question body:
 
 - question: `The archive list above is ready for confirmation.`
+- header: `Archive`
 - options:
   - **Approve** — move all flagged notes to `<vault>/archive/`
   - **Reject** — leave all notes in their current locations
 
 **Response handling**:
 
-- **Approve** → for each flagged note, move the file to `<vault>/archive/` (create the folder if absent). Preserve filename. Update `session_log.md` action to `archived`.
+- **Approve** → add `- archive approved: .mz/task/<task_name>/session_log.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: archive_approved`, then for each flagged note move the file to `<vault>/archive/` (create the folder if absent). Preserve filename. Update `session_log.md` action to `archived`.
 - **Reject** → leave all notes in place. Update `session_log.md` action to `archive_cancelled` for each flagged entry.
 - **Any other reply (number list)** → archive only the listed entries; leave the rest. Update `session_log.md` accordingly.
+- **No answer** → set `Status: blocked`, keep `awaiting approval: archive gate`, stop. A missing answer is never approval.
 
-After archive handling, print the final summary:
+After archive handling, set `Status: complete`, `Completed: <ISO timestamp>`, `phase_complete: true`, `what_remains: []`, and print the final summary:
 
 ```
 vault-review complete:

@@ -46,7 +46,8 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ## Constants
 
-- **MAX_OPTIMIZERS**: 6 | **MAX_REVIEWERS**: 6 | **MAX_REVIEW_ITERATIONS**: 3 | **MAX_FIX_ATTEMPTS**: 3 | **TASK_DIR**: `.mz/task/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **MAX_OPTIMIZERS**: 6 | **MAX_REVIEWERS**: 6 | **MAX_REVIEW_ITERATIONS**: 3 | **MAX_FIX_ATTEMPTS**: 3 | **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
@@ -67,9 +68,9 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase 0–2: Setup, Scan & Baseline
 
-- **Phase 0 — Setup**: derive `<YYYY_MM_DD>_cleanup_<slug>`. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
-- **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `<PLUGIN_ROOT>/shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Update state to `scanned`.
-- **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Update state to `baseline_captured`.
+- **Phase 0 — Setup**: resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below. Then derive `<YYYY_MM_DD>_cleanup_<slug>`. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, `review_iteration: 0`, `FixAttempts`, `FilesInScope`, `Chunks`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`. The explicit `review_iteration: 0` initialization allows the counter to be restored from `state.md` after context compaction. TaskCreate per phase. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
+- **Phase 1 — Scan & Chunk**: resolve to file list, auto-invoke `<PLUGIN_ROOT>/shared/blast-radius.md` to compute downstream impact and risk, build import graph, group into 1-6 chunks (SCCs + module boundaries with high-risk files isolated). See `phases/scan_and_plan.md` → Phase 1. Set `Phase: scanned`.
+- **Phase 2 — Baseline Snapshot**: run tests and linters to capture pre-optimization state. Required before optimizers touch code. See `phases/scan_and_plan.md` → Phase 2. Set `Phase: baseline_captured`.
 
 ### Phase 2.5: User Approval Gate
 
@@ -77,13 +78,13 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-**Pre-read**: Read `.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/scan.md` with the Read tool. Capture the full file contents (resolved scope, chunk breakdown with rationale, optimizer/reviewer counts, baseline status, flagged risks) into context. **If baseline was RED**: ensure the RED status is preserved verbatim and prominent in what you present.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: plan gate]`; `Status` stays `running`.
 
 Compute `<N>` as `optimizer_count + reviewer_count + 1 (verify)` from `scan.md`. Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula to convert to a dollar estimate.
 
-**Surface 1 — emit the plan message.** Output the scan report verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/scan.md` — do not substitute a path, summary, or placeholder. Structure:
+**Surface 1 — emit the plan message.** Output the scan report verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/scan.md` — do not substitute a path, summary, or placeholder. Structure:
 
 ```
 ## Cleanup plan ready for review — cleanup
@@ -104,9 +105,9 @@ Approve cost (estimated): <N> agents × ~24k tokens ≈ ~$<Y.YY> on Sonnet
 
 **Response handling**:
 
-- **Approve** → proceed to Phase 3.
+- **Approve** → add `- plan approved: .mz/task/<task_name>/scan.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: plan_approved`, and proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Any other reply (feedback)** → apply changes, overwrite `scan.md`, return to Surface 1, re-read `.mz/task/<task_name>/scan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **Any other reply (feedback)** → apply changes, overwrite `scan.md`, return to Surface 1, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/scan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
@@ -116,7 +117,7 @@ Dispatch N `pipeline-optimizer` agents (model: opus) in a single message, one pe
 
 ### Phase 4: Verify & Auto-Fix
 
-Re-run tests/linters; restore green before Phase 5. See `phases/optimize_and_verify.md` → Phase 4. Update state to `verified_green`.
+Re-run tests/linters; restore green before Phase 5. See `phases/optimize_and_verify.md` → Phase 4. Set `Phase: verified_green`.
 
 ### Phase 5: Parallel Review
 
@@ -124,11 +125,11 @@ Dispatch M = N `pipeline-code-reviewer` agents (opus), 1:1 per chunk. See `phase
 
 ### Phase 6: Handle Verdicts
 
-Re-dispatch rejected chunks only. Approved chunks frozen. See `phases/review_and_finalize.md` → Phase 6. Update state to `review_passed` when all PASS.
+Re-dispatch rejected chunks only. Approved chunks frozen. See `phases/review_and_finalize.md` → Phase 6. Set `Phase: review_passed` when all PASS.
 
 ### Phase 7: Final Summary
 
-Final verification, then write `summary.md` listing chunks, files, iterations, deferred observations. See `phases/review_and_finalize.md` → Phase 7. Update state to `completed`.
+Final verification, then write `summary.md` listing chunks, files, iterations, deferred observations. See `phases/review_and_finalize.md` → Phase 7. Set `Status: complete`, `phase_complete: true`, `what_remains: []`.
 
 ## Techniques
 

@@ -12,8 +12,8 @@ Dispatch a `pipeline-test-writer` agent (model: **opus**):
 Write a regression test for a confirmed bug. The test must FAIL against the current code.
 
 ## Bug
-Read .mz/task/<task_name>/diagnosis.md for root cause and proposed fix.
-Read .mz/task/<task_name>/reproduction.md for how the bug manifests.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/diagnosis.md for root cause and proposed fix.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/reproduction.md for how the bug manifests.
 
 ## Instructions
 1. Read existing tests to understand the project's test conventions (file naming, framework, fixtures, helpers, assertion style).
@@ -43,12 +43,12 @@ Dispatch a `pipeline-test-runner` agent (model: **haiku**):
 
 ```
 Run the new regression test to verify it fails against the current (buggy) code.
-test_command: <test_command from .mz/task/<task_name>/tooling.md>
+test_command: <test_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md>
 specific_files: <regression test file from 3.1>
-output_path: .mz/task/<task_name>/regression_run_initial.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/regression_run_initial.md
 ```
 
-Read `.mz/task/<task_name>/regression_run_initial.md` and check each test result:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/regression_run_initial.md` and check each test result:
 
 | Result                        | Action                                                                                                    |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -75,7 +75,7 @@ How should I proceed?
 
 ### 3.3 Save regression test info
 
-Write `.mz/task/<task_name>/regression_test.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/regression_test.md`:
 
 ```markdown
 # Regression Test
@@ -115,8 +115,8 @@ Dispatch a `pipeline-coder` agent (model: **opus**):
 Fix a diagnosed bug. A regression test already exists and must pass after your fix.
 
 ## Diagnosis
-Read .mz/task/<task_name>/diagnosis.md for root cause and proposed fix.
-Read .mz/task/<task_name>/regression_test.md for the test that must pass.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/diagnosis.md for root cause and proposed fix.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/regression_test.md for the test that must pass.
 
 ## Scope constraint
 <scope file list if set, otherwise "all project files eligible">
@@ -141,9 +141,9 @@ Dispatch a `pipeline-test-runner` agent (model: **haiku**) to run the regression
 
 ```
 Run the regression test to verify the fix.
-test_command: <test_command from .mz/task/<task_name>/tooling.md>
+test_command: <test_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md>
 specific_files: <regression test file from regression_test.md>
-output_path: .mz/task/<task_name>/regression_run_after_fix.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/regression_run_after_fix.md
 ```
 
 Read `regression_run_after_fix.md`:
@@ -155,8 +155,8 @@ Dispatch a second `pipeline-test-runner` for the full suite:
 
 ```
 Run the full test suite to check for regressions.
-test_command: <test_command from .mz/task/<task_name>/tooling.md>
-output_path: .mz/task/<task_name>/full_suite_after_fix.md
+test_command: <test_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/full_suite_after_fix.md
 ```
 
 Read `full_suite_after_fix.md`:
@@ -213,15 +213,15 @@ Dispatch `pipeline-test-runner` and `pipeline-lint-runner` in parallel (single m
 
 ```
 Run the full test suite for final verification.
-test_command: <test_command from .mz/task/<task_name>/tooling.md>
-output_path: .mz/task/<task_name>/final_test_results.md
+test_command: <test_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/final_test_results.md
 ```
 
 ```
 Run linters for final verification.
-lint_command: <lint_command from .mz/task/<task_name>/tooling.md, or "none detected">
-format_command: <format_command from .mz/task/<task_name>/tooling.md, or "none detected">
-output_path: .mz/task/<task_name>/final_lint_results.md
+lint_command: <lint_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md, or "none detected">
+format_command: <format_command from <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md, or "none detected">
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/final_lint_results.md
 ```
 
 Read both artifacts. All must pass (or match pre-existing failure state). If anything new fails, return to Phase 4 for another fix iteration.
@@ -234,9 +234,9 @@ Dispatch a `pipeline-code-reviewer` agent (model: **opus**):
 Review a bug fix and its regression test.
 
 ## Context
-Read .mz/task/<task_name>/diagnosis.md for the root cause.
-Read .mz/task/<task_name>/regression_test.md for the test.
-Read .mz/task/<task_name>/reproduction.md for the bug reproduction.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/diagnosis.md for the root cause.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/regression_test.md for the test.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/reproduction.md for the bug reproduction.
 
 Run `git diff HEAD` to see all changes made.
 
@@ -278,7 +278,7 @@ ______________________________________________________________________
 
 ### 6.1 Generate report
 
-Write to `.mz/reports/<YYYY_MM_DD>_debug_<bug_summary>.md`.
+Write to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_debug_<bug_summary>.md`.
 
 If a file with that name exists, append `_v2`, `_v3`, etc.
 
@@ -336,4 +336,4 @@ Summarize the report to the user directly (not via AskUserQuestion). Include:
 - Similar patterns found (if any) as follow-up suggestions
 - Link to the full report file
 
-Update state status to `completed`.
+Set `Status: complete`, `phase_complete: true`, `what_remains: []`.

@@ -37,7 +37,7 @@ smoke test was blocked; never emit a silent empty.
 
 ### 3.2 Wait and validate
 
-After all scouts return, validate each `_scout/<source_slug>.json` exists and is a valid JSON array. Empty results are recorded but do not abort the phase. If **every** scout returned zero, stop the pipeline and update `state.md` `Status` to `failed_zero_listings`.
+After all scouts return, validate each `_scout/<source_slug>.json` exists and is a valid JSON array. Empty results are recorded but do not abort the phase. If **every** scout returned zero and each reported `ZERO RESULTS VERIFIED`, there is nothing to rank: set `Status: complete` with `Phase: zero_listings` and `what_remains: []`, tell the user, and stop. If any scout reported `ZERO RESULTS UNVERIFIED` or no verdict, set `Status: blocked` with `what_remains: [awaiting answer: widen the search, or stop]` and stop.
 
 Update `state.md` `Phase` to `scout_complete` and add `ListingsScraped: <total>` field.
 
@@ -52,7 +52,7 @@ Sub-step order is fixed: **4.1 URL dedup → 4.2 Fingerprint dedup → 4.3 Recen
 ### 4.1 Concat and URL dedup
 
 ```bash
-cd <RUN_DIR>
+cd "<RUN_DIR>"
 # Merge all scout outputs into one array.
 jq -s 'add' _scout/*.json > raw_listings_all.json
 ```
@@ -258,7 +258,7 @@ After all prescorers return:
 
 Update `state.md` `Phase` to `prescore_complete` and add `PrescoreDropped: <count>`, `PrescoreAdvanced: <count>`.
 
-If `PrescoreAdvanced == 0`, stop the pipeline and update `Status` to `failed_zero_listings_after_prescore`. The user gets every excluded listing in the report footer regardless.
+If `PrescoreAdvanced == 0`, stop the pipeline and set `Status: complete` with `Phase: zero_after_prescore` and `what_remains: []`, since there is nothing left to score. The user gets every excluded listing in the report footer regardless.
 
 ______________________________________________________________________
 
@@ -374,7 +374,7 @@ the body is plain text.
 After all letter-writers return:
 
 1. Verify each `letters/<job_slug>.md` exists and is non-empty.
-1. Search every letter for AI-artifact punctuation: `grep -lP "[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]" <RUN_DIR>/letters/*.md`. For each hit, re-dispatch that one `job-letter-writer` once with a "replace em-dashes/en-dashes/curly-quotes/ellipsis with ASCII, change nothing else" instruction. If artifacts persist, append an `Errors:` line to `state.md` and continue.
+1. Search every letter for AI-artifact punctuation: `grep -lP "[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]" "<RUN_DIR>"/letters/*.md`. For each hit, re-dispatch that one `job-letter-writer` once with a "replace em-dashes/en-dashes/curly-quotes/ellipsis with ASCII, change nothing else" instruction. If artifacts persist, append an `Errors:` line to `state.md` and continue.
 1. Spot-check 2 letters via Read for: word count under 200, a subject line, the salutation, a gratitude sign-off, and no banned cliché phrases. If a letter fails the check, append an `Errors:` line to `state.md` but continue (the report links to it regardless).
 
 Update `state.md` `Phase` to `letters_complete`.
@@ -403,16 +403,16 @@ Report naming convention: <YYYY_MM_DD>_job_search_<slug>[_vN].md
 
 After the reporter completes:
 
-1. Update `state.md` — set `Phase` to `complete` and add `CompletedAt: <ISO timestamp>`.
+1. Update `state.md` — set `Phase` to `complete`, `Status: complete`, `phase_complete: true`, `what_remains: []`, and add `CompletedAt: <ISO timestamp>`.
 
 1. **Write source-yield history** for next-run demotion logic. Group `scored_jobs.json` entries by `source` (a listing's `source` may be a list when fingerprint-deduped — count each source once per listing). For each source, count how many of its listings ended up in the top-N of `scored_jobs.json` (`top_n_hits`). Also gather `primary_hits` and `alias_hits` from each scout's `_scout_notes` record (preserved in `state.md` Errors or `sources.json` if not stored elsewhere — fall back to `0` when unknown).
 
-   Update `.mz/outreach/_history/source_quality.json`:
+   Update `<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json`:
 
    ```bash
-   mkdir -p .mz/outreach/_history
+   mkdir -p "<PROJECT_ROOT>/.mz/outreach/_history"
    # Initialize empty if missing.
-   [ -f .mz/outreach/_history/source_quality.json ] || echo '{}' > .mz/outreach/_history/source_quality.json
+   [ -f "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json" ] || echo '{}' > "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json"
    ```
 
    For each source contributing to this run, append a record to `data[cv_hash][source_name].runs`:
@@ -427,8 +427,8 @@ After the reporter completes:
    jq --arg cv "<cv_hash>" --arg src "<source_name>" \
       --argjson rec '{"run_date":"<YYYY-MM-DD>","top_n_hits":<n>,"primary_hits":<n>,"alias_hits":<n>}' \
       '.[$cv][$src].runs = (((.[$cv][$src].runs // []) + [$rec])[-3:])' \
-      .mz/outreach/_history/source_quality.json > .mz/outreach/_history/source_quality.json.tmp \
-     && mv .mz/outreach/_history/source_quality.json.tmp .mz/outreach/_history/source_quality.json
+      "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json" > "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json.tmp" \
+     && mv "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json.tmp" "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json"
    ```
 
    Repeat the `jq` call once per source from this run.

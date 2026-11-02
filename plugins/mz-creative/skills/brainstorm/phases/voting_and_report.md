@@ -15,8 +15,8 @@ Dispatch the selected personality agent with this prompt:
 ```
 You are the synthesizer for this brainstorming round.
 
-Read the ideas from this round: .mz/task/<task_name>/ideas_round_<N>.md
-Read the full history: .mz/task/<task_name>/history.md
+Read the ideas from this round: <PROJECT_ROOT>/.mz/task/<task_name>/ideas_round_<N>.md
+Read the full history: <PROJECT_ROOT>/.mz/task/<task_name>/history.md
 
 Your task:
 1. Group related ideas into themes (3-5 themes max)
@@ -30,7 +30,7 @@ Apply your own perspective — you're a <agent lens>, so your synthesis will nat
 Write the synthesis as structured markdown. Be concise.
 ```
 
-Save the synthesis to `.mz/task/<task_name>/synthesis_round_<N>.md`.
+Save the synthesis to `<PROJECT_ROOT>/.mz/task/<task_name>/synthesis_round_<N>.md`.
 
 ### 3.3 Dispatch voting round
 
@@ -41,7 +41,7 @@ Load `<SKILL_DIR>/behaviors/ideation.md`. Substitute variables per-voter:
 | `{topic}`                 | the brainstorming topic                                                                          |
 | `{round_n}`               | current iteration                                                                                |
 | `{previous_rounds_block}` | `## Synthesis\n\n<contents of synthesis_round_<N>.md>\n\n## History\n\n<contents of history.md>` |
-| `{output_path}`           | `.mz/task/<task_name>/vote_round_<N>_<agent_name>.md`                                            |
+| `{output_path}`           | `<PROJECT_ROOT>/.mz/task/<task_name>/vote_round_<N>_<agent_name>.md`                             |
 | `{lens_name}`             | short lens label (e.g. `engineer` for `lens-engineer`)                                           |
 | `{step}`                  | `vote`                                                                                           |
 
@@ -75,7 +75,7 @@ Build a vote tally:
 [...]
 ```
 
-Append the tally to `.mz/task/<task_name>/history.md`.
+Append the tally to `<PROJECT_ROOT>/.mz/task/<task_name>/history.md`.
 
 ### 3.5 Convergence check
 
@@ -102,7 +102,7 @@ Append the tally to `.mz/task/<task_name>/history.md`.
 
 ### 4.1 Compile final report
 
-Write the report to `.mz/reports/<YYYY_MM_DD>_brainstorm_<topic_slug>.md` (append `_v2`, `_v3` if exists).
+Write the report to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_brainstorm_<topic_slug>.md` (append `_v2`, `_v3` if exists).
 
 Template:
 
@@ -175,7 +175,7 @@ Brief final statement from each panelist's lens on the winning idea:
 
 ### 4.2 Present to user
 
-Update state to `completed`. Present a summary to the user including:
+Set `Status: complete`, `phase_complete: true`, `what_remains: []`. Present a summary to the user including:
 
 - The winning idea (or top 2-3 if no consensus)
 - How many iterations it took

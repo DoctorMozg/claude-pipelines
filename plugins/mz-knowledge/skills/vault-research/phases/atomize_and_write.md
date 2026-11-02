@@ -14,7 +14,7 @@ Constants used from `SKILL.md`:
 
 - `MAX_NOTES`: 15 — hard cap on total merged proposals.
 - `ATOMIZATION_WAVE_WORD_CAP`: 450 — per-window input ceiling for `atomization-proposer`.
-- `TASK_DIR`: `.mz/task/`.
+- `TASK_DIR`: `<PROJECT_ROOT>/.mz/task/`.
 
 ## Step 1: Sequential window iteration (atomize)
 
@@ -22,7 +22,7 @@ Read `state.md`. The `wave_offset` field is the index of the next window to disp
 
 For each window from `wave_offset` to `AtomizationWindows - 1`, in order:
 
-1. Extract the window's text using the `window_boundaries` entry from `parsed_report.md`. If per-window bodies were cached under `.mz/task/<task_name>/windows/window_<N>.md` in Phase 1, Read that file. Otherwise re-parse the report using the recorded `start_section` / `end_section` / word count.
+1. Extract the window's text using the `window_boundaries` entry from `parsed_report.md`. If per-window bodies were cached under `<PROJECT_ROOT>/.mz/task/<task_name>/windows/window_<N>.md` in Phase 1, Read that file. Otherwise re-parse the report using the recorded `start_section` / `end_section` / word count.
 
 1. Dispatch `atomization-proposer` (model: opus) with the prompt below. Fill placeholders from `state.md`:
 
@@ -42,7 +42,7 @@ For each window from `wave_offset` to `AtomizationWindows - 1`, in order:
      report_path: <ReportPath from state.md>
 
    Output path:
-   .mz/task/<task_name>/proposals_window_<wave_offset>.md
+   <PROJECT_ROOT>/.mz/task/<task_name>/proposals_window_<wave_offset>.md
 
    Your task:
 
@@ -64,7 +64,7 @@ For each window from `wave_offset` to `AtomizationWindows - 1`, in order:
    - STATUS: NEEDS_CONTEXT if the window cannot be atomized (too short, no claims).
    ```
 
-1. After the dispatch returns, Read `.mz/task/<task_name>/proposals_window_<wave_offset>.md` and validate structurally: YAML parses, `proposals:` list present, every proposal has `title`, `summary`, `draft`, and every draft's frontmatter block contains `type: research`, `source_type: research-report`, `report_path`, `status: draft`.
+1. After the dispatch returns, Read `<PROJECT_ROOT>/.mz/task/<task_name>/proposals_window_<wave_offset>.md` and validate structurally: YAML parses, `proposals:` list present, every proposal has `title`, `summary`, `draft`, and every draft's frontmatter block contains `type: research`, `source_type: research-report`, `report_path`, `status: draft`.
 
 1. Update `state.md`: increment `wave_offset` to `<wave_offset + 1>`, append this window's output path to `WindowProposalPaths:` (YAML list).
 
@@ -74,7 +74,7 @@ If any window returns `STATUS: NEEDS_CONTEXT`, record the window index under `st
 
 ## Step 2: Merge per-window proposals
 
-After `wave_offset` equals `AtomizationWindows`, merge every file listed under `WindowProposalPaths` into a single `.mz/task/<task_name>/proposals.md`:
+After `wave_offset` equals `AtomizationWindows`, merge every file listed under `WindowProposalPaths` into a single `<PROJECT_ROOT>/.mz/task/<task_name>/proposals.md`:
 
 1. Read each per-window file and concatenate its `proposals:` entries into a combined list.
 1. If the combined list exceeds `MAX_NOTES` (15), dedupe by title similarity:
@@ -84,7 +84,7 @@ After `wave_offset` equals `AtomizationWindows`, merge every file listed under `
 1. After dedupe, if the count still exceeds `MAX_NOTES`, truncate to the first 15 entries in window order. Record `TruncatedProposals: <dropped count>` in `state.md` and add a top-level `truncation_warning:` key to `proposals.md` naming the dropped titles so Phase 2.5 makes the loss visible.
 1. Add a `proposal_count:` top-level key and a `source_windows:` top-level list recording which window each surviving proposal came from — the user needs this to give per-window feedback in Phase 2.5.
 
-Update `state.md`: `Phase: 2_atomized`, `Status: proposals_ready`, `ProposalsPath: .mz/task/<task_name>/proposals.md`, `ProposalCount: <N>`.
+Update `state.md`: `Phase: 2_atomized`, `ProposalsPath: .mz/task/<task_name>/proposals.md`, `ProposalCount: <N>`.
 
 ## Step 3: Return to Phase 2.5
 
@@ -144,7 +144,7 @@ This step runs only after Phase 2.5 returns `approve`.
    - `FilesWritten:` (YAML list of absolute paths).
    - `TitleToPath:` (YAML mapping of claim title → absolute path). The link-suggester dispatch in Step 5 needs this.
 
-Update `state.md`: `Phase: 2_written`, `Status: notes_written`, `NotesWritten: <N>`.
+Update `state.md`: `Phase: 2_written`, `NotesWritten: <N>`.
 
 ## Step 5: Dispatch link-suggester
 
@@ -155,7 +155,7 @@ New notes written (title → path mapping):
 <paste TitleToPath block from state.md as YAML>
 
 Vault root: <Vault from state.md>
-Task dir: .mz/task/<task_name>/
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 
 Your task:
 
@@ -170,7 +170,7 @@ Caps:
 - Do not propose links between two new notes at this stage.
 - Skip candidates whose relationship you cannot justify in one sentence from read content.
 
-Write proposals to `.mz/task/<task_name>/link_suggestions.md` using the YAML shape documented in the link-suggester agent definition (links list with source_title, source_path, targets).
+Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/link_suggestions.md` using the YAML shape documented in the link-suggester agent definition (links list with source_title, source_path, targets).
 
 Terminal status:
 - STATUS: DONE with the file written.
@@ -178,7 +178,7 @@ Terminal status:
 - STATUS: NEEDS_CONTEXT only if the vault root is missing or unreadable.
 ```
 
-After the agent returns, Read `.mz/task/<task_name>/link_suggestions.md` and validate structure. Update `state.md`: `Phase: 3_links_ready`, `Status: link_suggestions_ready`, `LinkSuggestionsPath: .mz/task/<task_name>/link_suggestions.md`.
+After the agent returns, Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_suggestions.md` and validate structure. Update `state.md`: `Phase: 3_links_ready`, `LinkSuggestionsPath: .mz/task/<task_name>/link_suggestions.md`.
 
 ## Step 6: Return to Phase 3.5
 
@@ -187,7 +187,7 @@ Hand control back to `SKILL.md` Phase 3.5. The gate reads `link_suggestions.md` 
 Gate outcomes:
 
 - `approve` → continue to Step 7 (apply).
-- `reject` → update `state.md` Status to `complete` with `LinksAdded: 0`, `LinksSkipped: true`. Written notes stay on disk without a Related section.
+- `reject` → set `Status: complete`, `phase_complete: true`, `what_remains: []`, `LinksAdded: 0`, `LinksSkipped: true`. Written notes stay on disk without a Related section.
 - Feedback or per-link skip titles → filter the proposals list, re-present via Phase 3.5. Repeat until explicit approval.
 
 ## Step 7: Apply approved links
@@ -208,10 +208,10 @@ After the last link write, update `state.md` to terminal:
 
 ```yaml
 schema_version: 2
-phase_complete: true
-what_remains: []
 Status: complete
 Phase: 3_complete
+phase_complete: true
+what_remains: []
 Completed: <ISO timestamp>
 NotesWritten: <N>
 LinksAdded: <N>

@@ -41,11 +41,12 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ## Constants
 
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **MAX_PARALLEL_TRANSLATORS**: 6 | **MAX_CHUNK_LINES**: 500 | **MAX_VERIFICATION_ATTEMPTS**: 2 | **MAX_CONTEXT_RETRIES**: 1 | **MAX_APPROVAL_ITERATIONS**: 3
 - **MAX_JUDGE_BATCH**: 6 (chunks per parallel judge dispatch)
 - **MAX_WIKTIONARY_LOOKUPS**: 10 (per-run cap across all chunks)
 - **MAX_MYMEMORY_QUERIES**: 9 (per-run cap, under MyMemory 5K-char/day free tier)
-- **TASK_DIR**: `.mz/task/`
+- **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
@@ -67,6 +68,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase 0: Setup
 
+- Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 - Derive task name `<YYYY_MM_DD>_translate_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the raw argument (max 20 chars); on same-day collision append `_v2`, `_v3`.
 - Create `TASK_DIR/<task_name>/` on disk.
 - Write initial `state.md` with, in order: `schema_version: 2` (first line), `Status: running`, `Phase: setup`, `Started: <ISO 8601>`, `phase_complete: false`, `what_remains: []`, `approval_iterations: 0`.
@@ -101,7 +103,7 @@ Read `phases/discovery_and_planning.md` at phase entry and run steps 1.1 through
   - header: `Plan`
   - options: **Approve** — proceed to Phase 2 (parallel translation and Tier-1 verification) · **Reject** — task marked aborted, no files written
 
-- **Approve** → state `plan_approved`, proceed to Phase 2.
+- **Approve** → add `- plan approved: .mz/task/<task_name>/translation_plan.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: plan_approved`, and proceed to Phase 2.
 
 - **Reject** → state `aborted_by_user`, stop. Do not proceed.
 
@@ -124,7 +126,7 @@ Read `phases/translation_and_verification.md` on entry to Phase 2 and keep it lo
 ### Phase 7: Finalization
 
 - Write `<task_dir>/summary.md` per the Phase 7.1 shape in `phases/translation_and_verification.md`.
-- Update `state.md` phase to `complete` with `ended_at`, `final_outputs`, `escalations`, `phase_history`, `tier3_ledger_path`.
+- Set `Status: complete`, `Phase: complete`, `phase_complete: true` and `what_remains: []` in `state.md`, and record `ended_at`, `final_outputs`, `escalations`, `phase_history`, `tier3_ledger_path`.
 - Print the summary block to the user as the terminal orchestrator message.
 
 ## Techniques
@@ -153,4 +155,4 @@ On completion, print the summary block from `<task_dir>/summary.md` covering fil
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.

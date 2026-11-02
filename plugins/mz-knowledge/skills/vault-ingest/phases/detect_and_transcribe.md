@@ -2,11 +2,11 @@
 
 ## Goal
 
-Verify the right transcription or OCR tool is available for the detected modality, record the tool chain to `tooling.md`, dispatch `capture-normalizer` to produce a clean transcript under `.mz/task/<task_name>/transcript.md`, then return to SKILL Phase 1.5 for user approval.
+Verify the right transcription or OCR tool is available for the detected modality, record the tool chain to `tooling.md`, dispatch `capture-normalizer` to produce a clean transcript under `<PROJECT_ROOT>/.mz/task/<task_name>/transcript.md`, then return to SKILL Phase 1.5 for user approval.
 
 ## Step 1: Detect tooling (mandatory before dispatch)
 
-For the modality resolved in Phase 0, run `which` checks in the order below. Record every result — present AND missing — to `.mz/task/<task_name>/tooling.md` so downstream skills can read the same detection instead of re-running it.
+For the modality resolved in Phase 0, run `which` checks in the order below. Record every result — present AND missing — to `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` so downstream skills can read the same detection instead of re-running it.
 
 | Modality | Primary         | Fallback           | Install (primary)          |
 | -------- | --------------- | ------------------ | -------------------------- |
@@ -76,7 +76,7 @@ Selection order:
 
    On `install` response, re-run Step 1 once. If the tool still does not resolve, emit `STATUS: BLOCKED` to the caller with the missing tool and install command. Do not proceed to dispatch.
 
-Update `state.md`: `Phase: 1`, `Status: tooling_selected`, `SelectedTool: <name>`, `ToolingPath: .mz/task/<task_name>/tooling.md`.
+Update `state.md`: `Phase: 1`, `SelectedTool: <name>`, `ToolingPath: .mz/task/<task_name>/tooling.md`.
 
 ## Step 3: Modality-specific sanity checks
 
@@ -98,20 +98,22 @@ Input:
   primary_tool: <tool name from tooling.md.selected_tool>
   primary_tool_path: <resolved absolute path>
   fallback_tool: <fallback name if primary failed in a previous attempt, else null>
+  task_name: <task_name>
+  project_root: <PROJECT_ROOT>
 
 Output:
-  transcript_path: .mz/task/<task_name>/transcript.md
+  transcript_path: <PROJECT_ROOT>/.mz/task/<task_name>/transcript.md
 
 Your task:
 
 1. Invoke the selected tool for the modality using the Bash tool. Use the exact command recipes below:
 
    - voice + whisper-cpp:
-       whisper-cpp -m <model path> -f <source> -otxt -of .mz/task/<task_name>/whisper_raw
+       whisper-cpp -m <model path> -f <source> -otxt -of "<PROJECT_ROOT>/.mz/task/<task_name>/whisper_raw"
        (model path defaults to the environment's configured ggml model; if unknown, fall back to `whisper`)
 
    - voice + whisper (openai):
-       whisper <source> --model base --output_format txt --output_dir .mz/task/<task_name>/
+       whisper <source> --model base --output_format txt --output_dir "<PROJECT_ROOT>/.mz/task/<task_name>/"
 
    - image + ocrit:
        ocrit <source>
@@ -123,9 +125,9 @@ Your task:
        pdftotext -layout <source> -
 
    - youtube + yt-dlp:
-       yt-dlp --write-auto-sub --sub-lang en --skip-download -o ".mz/task/<task_name>/yt_%(title)s" <source>
+       yt-dlp --write-auto-sub --sub-lang en --skip-download -o "<PROJECT_ROOT>/.mz/task/<task_name>/yt_%(title)s" <source>
        then:
-       grep -v "^[0-9]" .mz/task/<task_name>/yt_*.en.vtt | grep -v "^$" | awk '!seen[$0]++'
+       grep -v "^[0-9]" "<PROJECT_ROOT>/.mz/task/<task_name>"/yt_*.en.vtt | grep -v "^$" | awk '!seen[$0]++'
 
 2. Clean the output:
    - Trim leading/trailing whitespace.
@@ -157,14 +159,14 @@ Terminal status:
 
 After the agent returns:
 
-1. Read `.mz/task/<task_name>/transcript.md`.
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/transcript.md`.
 1. Check:
    - File exists and parses as frontmatter + body.
    - Frontmatter contains `modality`, `tool_used`, `duration_or_pages`, `captured_at`.
    - Body is non-empty (at least 1 non-whitespace character after the frontmatter closing `---`).
 1. If the body is empty, do not proceed. Ask via AskUserQuestion whether to retry with the fallback tool (if available and not yet tried) or abort.
 1. If the agent returned `STATUS: DONE_WITH_CONCERNS`, record the concern in `state.md` under `CaptureConcern: "<one-line concern>"`. Continue to Phase 1.5 — the user decides on approval.
-1. Update `state.md`: `Phase: 1`, `Status: transcript_ready`, `TranscriptPath: .mz/task/<task_name>/transcript.md`, `TranscriptWordCount: <N>`.
+1. Update `state.md`: `Phase: 1`, `TranscriptPath: .mz/task/<task_name>/transcript.md`, `TranscriptWordCount: <N>`.
 
 ## Step 6: Return to SKILL Phase 1.5
 

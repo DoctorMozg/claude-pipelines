@@ -7,7 +7,7 @@
 Compute the output path:
 
 ```
-output_path = .mz/reports/<YYYY_MM_DD>_naturalize_<slug>.md
+output_path = <PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_naturalize_<slug>.md
 ```
 
 Use today's date with underscores. Slug from setup. On collision append `_v2`, `_v3`.
@@ -20,7 +20,7 @@ Dispatch prompt template:
 
 ```
 Mode: standalone rewrite
-Input file: .mz/task/<task_name>/input.md
+Input file: <PROJECT_ROOT>/.mz/task/<task_name>/input.md
 Output file: <output_path>
 Severity: <Light|Medium|Heavy AI from analysis.md>
 Strategy: <copy the "Proposed rewriting strategy" section from analysis.md>
@@ -49,7 +49,7 @@ After the agent returns:
    - Word count is in the expected range (±5% of target delta)
 1. On `BLOCKED` or `NEEDS_CONTEXT`, escalate via AskUserQuestion.
 
-Update `state.md`: phase → `rewrite_complete`, append output path to `FilesWritten`.
+Update `state.md`: phase → `rewrite_complete`, append the output path, relative to the project root, to `FilesWritten`.
 
 ## Phase 2.5: Optional In-Place File Update Gate
 
@@ -109,7 +109,7 @@ This gate has no Reject — the rewrite already exists; the question is only whe
 
 ## Final output
 
-Emit the final verification block defined in SKILL.md → Verification:
+Set `Phase: complete`, `Status: complete`, `phase_complete: true` and `what_remains: []` in `state.md`. Then emit the final verification block defined in SKILL.md → Verification:
 
 ```
 Naturalization complete.

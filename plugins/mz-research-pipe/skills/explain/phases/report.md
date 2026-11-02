@@ -16,7 +16,7 @@ ______________________________________________________________________
 
 ### 3.1 Compile findings
 
-Read all `research_*.md` files from `.mz/task/<task_name>/`. Merge into a single coherent report:
+Read all `research_*.md` files from `<PROJECT_ROOT>/.mz/task/<task_name>/`. Merge into a single coherent report:
 
 - **Deduplicate**: if multiple researchers noted the same observation, keep the most detailed version
 - **Cross-reference**: link structure findings to flow findings (e.g., "this middleware chain (Architecture) processes requests as traced in Execution Flow §2")
@@ -237,4 +237,4 @@ Before writing the final report:
 1. **Question answered**: if the user asked a specific question, verify the Overview section directly answers it.
 1. **No fabrication**: every claim about code behavior must be traceable to a specific file and line — do not describe behavior you inferred but didn't verify by reading the code.
 
-Write the report to the output path. Update state to `completed`. Report to the user: one-paragraph summary of what the report covers, plus the path to the full report.
+Write the report to the output path. Set `Status: complete`, `phase_complete: true`, `what_remains: []`. Report to the user: one-paragraph summary of what the report covers, plus the path to the full report.

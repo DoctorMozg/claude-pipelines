@@ -31,7 +31,8 @@ Takes a development decision and runs it through a five-phase lifecycle — rout
 
 ## Constants
 
-- **MAX_DISCUSS_ITERATIONS**: 3 | **MAX_PANEL_AGENTS**: 4 | **TASK_DIR**: `.mz/task/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **MAX_DISCUSS_ITERATIONS**: 3 | **MAX_PANEL_AGENTS**: 4 | **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **DECISIONS_DIR**: `docs/decisions/` | **RFCS_DIR**: `docs/rfcs/` | **DESIGN_DIR**: `docs/design/`
 - **Default statuses**: ADR `proposed` | RFD `prediscussion` | design `draft`
 - **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
@@ -51,22 +52,23 @@ Takes a development decision and runs it through a five-phase lifecycle — rout
 
 ### Phase 0: Setup (inline)
 
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. Parse `$ARGUMENTS`: the decision text, an optional `artifact:` override (`adr`/`rfd`/`design`/`auto`), and the optional `rich` flag. Empty decision → AskUserQuestion; never guess.
 1. Derive `task_name` = `<YYYY_MM_DD>_govern_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and `<slug>` is a snake_case summary of the decision (max 20 chars). On same-day collision append `_v2`, `_v3`.
-1. **Resume check** (before creating the directory) — read `.mz/task/<task_name>/state.md` if it exists:
+1. **Resume check** (before creating the directory) — read `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` if it exists:
    - **No file** → fresh task; proceed.
    - **Status `complete`, `completed` or `aborted_by_user`** → auto-suffix `_v2`/`_v3`, log the bump to chat, proceed fresh.
    - **Status `pending`, `running`, `blocked` or `failed`** → present a Resume gate via AskUserQuestion (`Resume` re-enters at the recorded `Phase`; `Restart` archives the dir to `<task_name>_archived_<YYYY_MM_DD_HHMMSS>/` and starts fresh; `New` suffixes `_v2`). The human sign-off in Phase 3 never auto-resumes — re-present it.
    - **An unfinished status, but the run is unattended or nobody can answer** → report the path, `Status` and `what_remains`, then stop. Leave the file untouched, because it still describes the earlier run.
-1. Create `.mz/task/<task_name>/`. Write `state.md` per the inline v2 contract (State Management below): first line `schema_version: 2`, then `Status: running`, `Phase: 0`, `PhaseName: setup`, `Started: <ISO>`, `Iteration: 0`, `FilesWritten: []`, `phase_complete: false`, `what_remains: []`, plus `Decision: <text>`, `ArtifactOverride: <value|auto>`, `Rich: <bool>`.
-1. Dispatch `gov-provenance-recorder` to write `.mz/task/<task_name>/provenance.md` for *this* run — pass the task dir, the authoring agent (`gov-artifact-writer`, the agent that will write the durable record), the exact model id, the current ISO timestamp, and the trigger origin (`user-prompt` for a direct `/govern`, `automation` when the governance policy directed this invocation). It initializes `human_signoff: pending`. Append `provenance.md` to `FilesWritten`.
+1. Create `<PROJECT_ROOT>/.mz/task/<task_name>/`. Write `state.md` per the inline v2 contract (State Management below): first line `schema_version: 2`, then `Status: running`, `Phase: 0`, `PhaseName: setup`, `Started: <ISO>`, `Iteration: 0`, `FilesWritten: []`, `phase_complete: false`, `what_remains: []`, plus `Decision: <text>`, `ArtifactOverride: <value|auto>`, `Rich: <bool>`.
+1. Dispatch `gov-provenance-recorder` to write `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` for *this* run — pass the task dir, the authoring agent (`gov-artifact-writer`, the agent that will write the durable record), the exact model id, the current ISO timestamp, and the trigger origin (`user-prompt` for a direct `/govern`, `automation` when the governance policy directed this invocation). It initializes `human_signoff: pending`. Append `provenance.md` to `FilesWritten`.
 1. Emit a setup block: task_name, decision summary, override, rich flag, provenance path + derived trigger.
 
 Read `phases/propose.md` and proceed to Phase 1.
 
 ### Phase 1: Propose
 
-Dispatch `gov-router` to run the two-gate selection and write `routing.md`. If `ARTIFACT: none` → record a one-line exemption note, keep provenance, update state, and **stop at Phase 1** (report to the user — no discussion, no gate). Otherwise draft the populated artifact into `.mz/task/<task_name>/draft.md` and carry `WEIGHT` forward. See `phases/propose.md`.
+Dispatch `gov-router` to run the two-gate selection and write `routing.md`. If `ARTIFACT: none` → record a one-line exemption note, keep provenance, update state, and **stop at Phase 1** (report to the user — no discussion, no gate). Otherwise draft the populated artifact into `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` and carry `WEIGHT` forward. See `phases/propose.md`.
 
 ### Phase 2: Discuss
 
@@ -101,6 +103,6 @@ Detect → escalate via AskUserQuestion → never guess. Empty decision, an unre
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 Append every produced artifact to `FilesWritten` (routing.md, provenance.md, draft.md, discuss/discussion files, the `docs/` artifact). Record `human_signoff` only after the Phase 3 gate. Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.

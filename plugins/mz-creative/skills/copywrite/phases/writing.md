@@ -7,7 +7,7 @@
 Compute the output path:
 
 ```
-output_path = .mz/reports/<YYYY_MM_DD>_copywrite_<slug>.md
+output_path = <PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_copywrite_<slug>.md
 ```
 
 Use today's date with underscores. Slug derives from topic + format (snake_case, max 20 chars). On collision append `_v2`, `_v3`.
@@ -21,9 +21,9 @@ Dispatch prompt template:
 ```
 Topic: <one-paragraph summary of what to promote>
 Format: <landing | email | announcement | social | changelog | pitch>
-Output path: <absolute or repo-relative path>
+Output path: <output_path, absolute>
 Source artifacts:
-  - .mz/task/<task_name>/brief.md
+  - <PROJECT_ROOT>/.mz/task/<task_name>/brief.md
   - @brief:<path>  (only if user passed @brief: modifier)
 Audience: <copy from brief.md>
 Value claim: <copy from brief.md>
@@ -51,7 +51,7 @@ After the agent returns:
 
 If the file is malformed (wrong format shape, hallucinated metrics, missing CTA), escalate to the user. Do not auto-retry more than once.
 
-Update `state.md`: phase → `writing_complete`, append output path to `FilesWritten`.
+Update `state.md`: phase → `writing_complete`, append the output path, relative to the project root, to `FilesWritten`.
 
 ## Phase 3: Auto-naturalize Pass (expert-naturalizer)
 
@@ -100,7 +100,7 @@ After the agent returns:
 1. Verify the naturalization report contains: delta word count, patterns broken, burstiness estimate, preserved terms.
 1. If the agent emitted `STATUS: BLOCKED`, the original Phase 2 output is preserved (the naturalizer should not have overwritten on BLOCKED). Warn the user that naturalization did not run.
 
-Update `state.md`: phase → `complete`, naturalize delta recorded.
+Update `state.md`: set `Phase: complete`, `Status: complete`, `phase_complete: true` and `what_remains: []`, and record the naturalize delta.
 
 ## Final output
 

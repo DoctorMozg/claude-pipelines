@@ -8,7 +8,7 @@ Phase 1 is a **hard gate**. Three conditions each stop the run here: a red corre
 
 ## 1.1 Establish correctness ground truth
 
-Read `.mz/task/<task_name>/contract.md` and branch on `correctness_command`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/contract.md` and branch on `correctness_command`.
 
 **Automated** (`correctness_command` is a command) — dispatch `pipeline-test-runner`:
 
@@ -47,7 +47,7 @@ Measurement command:  <measure_command from contract.md>
 Repetitions:          <measure_reps>
 Warmup repetitions:   <measure_warmup>
 Noise ceiling (CV):   <noise_ceiling_cv>
-Output artifact:      .mz/task/<task_name>/measurements/baseline.md
+Output artifact:      <PROJECT_ROOT>/.mz/task/<task_name>/measurements/baseline.md
 
 Run the warmup repetitions and discard them, then run the measured repetitions. Parse
 exactly one scalar per repetition (the JSON field the command emits, or its trailing
@@ -63,7 +63,7 @@ The orchestrator never computes or narrates a baseline number itself — read it
 
 ## 1.4 Hard checks
 
-Read `.mz/task/<task_name>/measurements/baseline.md` and apply, in order:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/measurements/baseline.md` and apply, in order:
 
 1. **Noise check.** If the measured CV exceeds `noise_ceiling_cv` → emit `BENCHMARK UNRELIABLE` and hard-block. A benchmark noisier than the ceiling cannot separate a real speedup from host jitter — every later before / after comparison would be a coin flip. Stop and tell the user to quiesce the measurement host (close background load, pin CPU frequency, disable turbo and power-saving) and re-run, or — only if the noise is genuinely irreducible for this metric — raise `noise_ceiling_cv` in the contract, which returns through the Phase 0.5 gate.
 1. **Already-met check.** If the baseline already satisfies `target_value` in the `metric_direction` sense (≤ target for `minimize`, ≥ target for `maximize`) → emit `ALREADY WITHIN BUDGET` and stop **successfully**. There is nothing to optimize. Report the baseline value against the target and suggest the user either tighten the target or close the task.

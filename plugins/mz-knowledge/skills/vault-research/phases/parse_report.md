@@ -15,7 +15,7 @@ Constants used from `SKILL.md`:
 - `NOISE_SECTIONS`: default pre-known noise headings (case-insensitive substring match).
 - `ATOMIZATION_WAVE_WORD_CAP`: 450 words per atomization window.
 - `LONG_REPORT_THRESHOLD_WORDS`: 2000 (already warned in Phase 0 if exceeded).
-- `TASK_DIR`: `.mz/task/`.
+- `TASK_DIR`: `<PROJECT_ROOT>/.mz/task/`.
 
 ## Step 1: Split the report into H2 sections
 
@@ -51,11 +51,11 @@ For each window, record:
 - `word_count` — final word count of the window (≤ 450 unless a single unsplittable sentence exceeds 450 — log that as `oversize_sentence: true` and warn in `state.md`).
 - `body` — the verbatim window text (preserve the content; Step 4 writes only boundary metadata, but the full windows feed Phase 2).
 
-Store the per-window bodies in memory (or write them to `.mz/task/<task_name>/windows/window_<N>.md` if the orchestrator prefers to cache them on disk) so Phase 2 can extract them without re-parsing the source report.
+Store the per-window bodies in memory (or write them to `<PROJECT_ROOT>/.mz/task/<task_name>/windows/window_<N>.md` if the orchestrator prefers to cache them on disk) so Phase 2 can extract them without re-parsing the source report.
 
 ## Step 4: Write `parsed_report.md`
 
-Write `.mz/task/<task_name>/parsed_report.md` using exactly this YAML shape:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/parsed_report.md` using exactly this YAML shape:
 
 ```yaml
 report_path: <absolute path to the report>
@@ -94,10 +94,9 @@ The `noise_excluded` and `content_retained` lists are deduped strings in documen
 
 ## Step 5: Update state and return
 
-Update `.mz/task/<task_name>/state.md`:
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 - `Phase: 1_complete`
-- `Status: parse_ready`
 - `ParsedReportPath: .mz/task/<task_name>/parsed_report.md`
 - `AtomizationWindows: <N>`
 - `NoiseExcludedCount: <N>`
@@ -114,8 +113,8 @@ Return control to `SKILL.md` Phase 1.5. The gate is responsible for the Read + v
 
 - **Report has zero H2 headings** → the entire body is the synthetic `(preamble)` section. This is valid. Record `HeadingStructure: flat` in `state.md` and proceed to windowing against the single content section.
 - **A single section exceeds 450 words and has no sentence terminators** (e.g., a monolithic code block or a table) → emit `STATUS: BLOCKED` in the orchestrator, record `BlockedSection: "<heading>"` and `BlockerReason: no_sentence_boundaries` in `state.md`, escalate via AskUserQuestion asking whether to force-split on paragraph breaks or skip the section.
-- **All sections classified as noise** → halt with `Status: blocked_all_noise` and escalate via AskUserQuestion — this is almost always a bad noise list and the user should adjust it.
-- **Report file unreadable or missing after Phase 0 resolved it** → halt with `Status: blocked_report_vanished` and escalate.
+- **All sections classified as noise** → set `what_remains: [awaiting answer: adjust the noise list or stop]`, keep `Status: running`, and ask with AskUserQuestion — this is almost always a bad noise list and the user should adjust it. If nobody can answer, set `Status: blocked` and stop.
+- **Report file unreadable or missing after Phase 0 resolved it** → set `what_remains: [awaiting answer: new report path or stop]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop.
 
 ## Common Rationalizations
 

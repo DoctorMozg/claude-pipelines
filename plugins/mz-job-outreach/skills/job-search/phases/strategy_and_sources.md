@@ -45,7 +45,7 @@ Validate the strategy file contains all required fields before proceeding:
 - `title_aliases` keys match `derived_from_cv.top_titles`.
 - If `bilingual_query_variants` is present, the language code is ISO-639-1 and there is at least one non-English entry at B2+ in `languages_spoken`.
 
-If validation fails, re-dispatch the strategist once with the specific gap listed; on a second failure, set `state.md` `Status` to `aborted_strategy_invalid` and stop.
+If validation fails, re-dispatch the strategist once with the specific gap listed; on a second failure, set `state.md` `Status: failed` with the missing or invalid fields in `what_remains` and stop.
 
 If the agent returns `STATUS: NEEDS_CONTEXT` with `current_location` missing:
 
@@ -73,7 +73,7 @@ If the agent returns `STATUS: NEEDS_CONTEXT` with `current_location` missing:
 
 1. Otherwise re-dispatch `job-strategist` with the supplied location appended to the prompt; overwrite `search_strategy.json`.
 
-Update `.mz/task/<task_name>/state.md` `Phase` field to `strategy_complete`.
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` `Phase` field to `strategy_complete`.
 
 Proceed to Phase 1.5 before launching Phase 2.
 
@@ -81,7 +81,7 @@ ______________________________________________________________________
 
 ## Phase 1.5: User Approval of Strategy
 
-Handled by the orchestrator per the inline section in `SKILL.md` (two-surface gate, verbatim JSON, loop until approve). After approval, update `state.md` `Phase` to `strategy_approved` and continue here.
+Handled by the orchestrator per the inline section in `SKILL.md` (two-surface gate, verbatim JSON, loop until approve). After approval, record it in `state.md` as `SKILL.md` describes (a `## Decisions` entry, `awaiting approval` removed, `Phase: strategy_approved`) and continue here.
 
 ______________________________________________________________________
 
@@ -99,19 +99,19 @@ cp "<SKILL_DIR>/sources/job_canonical.json" "<RUN_DIR>/sources.json"
 
 Each entry already carries `tier: "canonical"`, `scrape_allowed: true`, and `language_hint: "en"`. The file currently lists 10 boards: LinkedIn Jobs, Indeed, Wellfound, RemoteOK, WeWorkRemotely, Hacker News Who-Is-Hiring, Otta, Lever ATS (via Google), Greenhouse ATS, and Ashby ATS.
 
-If the copy fails (file missing, unreadable), set `state.md` `Status` to `aborted_canonical_missing` and stop — the canonical list is required.
+If the copy fails (file missing, unreadable), set `state.md` `Status: failed` with the cause in `what_remains` and stop — the canonical list is required.
 
 ### Step 2.2 — Researcher augmentation
 
 Before dispatching the researcher, compute the CV hash for yield-history lookup:
 
 ```bash
-mkdir -p .mz/outreach/_history
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/_history"
 # Normalize CV by lowercasing + collapsing whitespace, then SHA-1.
 cv_hash=$(tr '[:upper:]' '[:lower:]' < "<CV_PATH>" | tr -s '[:space:]' ' ' | sha1sum | cut -c 1-40)
 ```
 
-If `.mz/outreach/_history/source_quality.json` does not exist, the researcher reads an empty file (initialized lazily) — no need to pre-create it.
+If `<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json` does not exist, the researcher reads an empty file (initialized lazily) — no need to pre-create it.
 
 Dispatch `job-source-researcher`:
 
@@ -122,7 +122,7 @@ Mode: job
 Canonical file: <SKILL_DIR>/sources/job_canonical.json
 Strategy file: <RUN_DIR>/search_strategy.json
 Existing canonical sources file: <RUN_DIR>/sources.json
-Source-yield history: .mz/outreach/_history/source_quality.json (treat as empty if missing)
+Source-yield history: <PROJECT_ROOT>/.mz/outreach/_history/source_quality.json (treat as empty if missing)
 CV hash: <cv_hash>
 Output: append to <RUN_DIR>/sources.json (read first, merge, write back)
 
@@ -150,6 +150,6 @@ After the researcher completes, validate `sources.json`:
 
 If the researcher returns fewer than 2 augmentations and the user CV signals a strong niche (specific country language, specialty stack), log a `DONE_WITH_CONCERNS` note in `state.md` Errors but continue — canonical defaults alone are still usable.
 
-Update `.mz/task/<task_name>/state.md` `Phase` field to `sources_complete`.
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` `Phase` field to `sources_complete`.
 
 Proceed to Phase 3. Read `phases/scout_score_enrich_report.md`.

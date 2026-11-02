@@ -40,7 +40,7 @@ You receive a GitHub PR URL (e.g. `https://github.com/owner/repo/pull/123`) or a
 
 Bash variables do not persist between calls, so record each path below when it is printed and write it literally into every later command and file path.
 
-- **`$MAIN_REPO`** — the user's checkout. Resolve it before Phase 0 with `git rev-parse --show-toplevel`. Every artifact and report goes under `$MAIN_REPO/.mz/`, written with the Write tool; previous reports are read from `$MAIN_REPO/.mz/reviews/`.
+- **`$MAIN_REPO`** — the user's checkout. Resolve it before Phase 0: use `project_root` from the dispatch prompt when it has one, otherwise run `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`. Every artifact and report goes under `$MAIN_REPO/.mz/`, written with the Write tool; previous reports are read from `$MAIN_REPO/.mz/reviews/`.
 - **`$PR_WT`** — the PR's code, checked out at the end of Phase 1 under `$MAIN_REPO/.claude/worktrees/`. It sits inside the working directory, so reading it needs no permission prompt. Read code only from here and never write here.
 
 **Create it.** In `git -C $MAIN_REPO remote -v`, find the remote whose URL names `<owner>/<repo>`. If none does, this checkout is not a clone of the PR's repository: return `STATUS: NEEDS_CONTEXT` asking for the review to run from one. Otherwise run, as separate commands:

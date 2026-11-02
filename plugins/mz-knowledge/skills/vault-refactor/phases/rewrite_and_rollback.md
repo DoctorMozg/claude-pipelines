@@ -8,7 +8,7 @@ Apply every approved replacement from `references_report.md` to the vault. The r
 
 Before a single vault file is touched, the orchestrator must capture the pre-edit state of every file that will be modified. This step must complete before Step 2 begins.
 
-1. Read `.mz/task/<task_name>/references_report.md`.
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/references_report.md`.
 
 1. Collect the unique set of file paths from the `references:` list — each path appears once regardless of how many references it contains.
 
@@ -19,7 +19,7 @@ Before a single vault file is touched, the orchestrator must capture the pre-edi
    - Read the full file contents with the Read tool.
    - Compute a content hash (SHA-256 of the file bytes) to detect post-manifest drift.
 
-1. Write `.mz/task/<task_name>/rollback.md` using exactly this YAML shape:
+1. Write `<PROJECT_ROOT>/.mz/task/<task_name>/rollback.md` using exactly this YAML shape:
 
    ```yaml
    task_name: "<task_name>"
@@ -32,7 +32,7 @@ Before a single vault file is touched, the orchestrator must capture the pre-edi
          <full file contents, preserved byte-for-byte>
    ```
 
-1. Update `state.md`: `Status: rollback_manifest_written`, `Phase: 2`, `RollbackPath: .mz/task/<task_name>/rollback.md`, `RollbackFileCount: <N>`.
+1. Update `state.md`: `Phase: 2_rollback_manifest_written`, `RollbackPath: .mz/task/<task_name>/rollback.md`, `RollbackFileCount: <N>`.
 
 This manifest is a hard precondition for Step 2. If this file does not exist on disk when the writer is dispatched, the writer must refuse to proceed and emit `STATUS: BLOCKED`.
 
@@ -41,13 +41,13 @@ This manifest is a hard precondition for Step 2. If this file does not exist on 
 Dispatch the `vault-refactor-writer` agent (model: sonnet) with this task-specific prompt:
 
 ```
-References report: .mz/task/<task_name>/references_report.md
-Rollback manifest: .mz/task/<task_name>/rollback.md
+References report: <PROJECT_ROOT>/.mz/task/<task_name>/references_report.md
+Rollback manifest: <PROJECT_ROOT>/.mz/task/<task_name>/rollback.md
 Old basename: "<old>"
 New value: "<new>"
 Vault path: <absolute vault path>
-Task dir: .mz/task/<task_name>/
-Output path: .mz/task/<task_name>/writer_result.md
+Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/writer_result.md
 
 Your task:
 
@@ -59,7 +59,7 @@ Rules:
 - Group references by file path. For each file, read once, apply each `Edit` in order, then re-read and verify every replacement is present.
 - If `Edit` fails (stale content, `old_string` not found), halt immediately. Record the failure. Do not retry the same Edit on modified input.
 
-Write per-file results to `.mz/task/<task_name>/writer_result.md` using exactly this YAML shape:
+Write per-file results to `<PROJECT_ROOT>/.mz/task/<task_name>/writer_result.md` using exactly this YAML shape:
 
 total_files: N
 total_applied: N
@@ -89,7 +89,7 @@ After the writer reports `STATUS: DONE`:
    - If `new_value` is a bare basename, keep the file in its current folder and change only the filename.
 1. Use `Bash mv <old_path> <new_path>` to perform the rename/move atomically at the filesystem level. Do not use `Write` followed by delete — that widens the failure window.
 1. Re-read the file at its new path to confirm the move succeeded.
-1. Update `state.md`: `Status: original_file_moved`, `NewPath: <new absolute path>`.
+1. Update `state.md`: `Phase: 2_original_file_moved`, `NewPath: <new absolute path>`.
 
 If Step 2 reported any failures, skip Step 3 entirely. The writer's partial state and the rollback manifest together preserve enough information for manual recovery — do not compound the problem by moving the source file on top of broken referrers.
 
@@ -115,7 +115,7 @@ phase_complete: true
 what_remains: []
 ```
 
-Write `.mz/task/<task_name>/session_summary.md` with the final manifest:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/session_summary.md` with the final manifest:
 
 ```yaml
 task_name: "<task_name>"

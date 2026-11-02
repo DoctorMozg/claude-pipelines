@@ -47,7 +47,7 @@ Implement ONE performance-optimization candidate. Do not measure it.
 Hypothesis:        <H# title and prediction from backlog.md>
 Transformation:    <the distinct class assigned to THIS candidate>
 Base commit:       <BASE_SHA>
-Contract:          <repo root>/.mz/task/<task_name>/contract.md
+Contract:          <PROJECT_ROOT>/.mz/task/<task_name>/contract.md
 History buffer:    <the ## History block from state.md — transforms already tried>
 Allowed scope:     <change_space classes + scope paths from the contract>
 
@@ -97,7 +97,7 @@ Run inside worktree:  <candidate worktree path>
 Repetitions:          <measure_reps>
 Warmup repetitions:   <measure_warmup>
 Noise ceiling (CV):   <noise_ceiling_cv>
-Output artifact:      .mz/task/<task_name>/measurements/iter<N>_<H#>_candidate<M>.md
+Output artifact:      <PROJECT_ROOT>/.mz/task/<task_name>/measurements/iter<N>_<H#>_candidate<M>.md
 
 Run the warmup reps and discard them, then the measured reps. Parse exactly one
 scalar per rep. Compute mean, median, and coefficient of variation. Write the
@@ -133,7 +133,7 @@ Among survivors, the winner is the candidate with the best measured value (on a 
 ```bash
 set -eu
 cd "$(git rev-parse --show-toplevel)"
-patch=".mz/task/<task_name>/patches/iter<N>_<H#>.patch"
+patch="<PROJECT_ROOT>/.mz/task/<task_name>/patches/iter<N>_<H#>.patch"
 mkdir -p "$(dirname "$patch")"
 git diff --binary <BASE_SHA> <CANDIDATE_SHA> > "$patch"
 git apply --check "$patch"

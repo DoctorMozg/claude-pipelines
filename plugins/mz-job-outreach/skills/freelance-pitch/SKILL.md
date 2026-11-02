@@ -33,8 +33,12 @@ Invoke when the user wants to draft a proposal for one specific freelance gig. T
 
 ## Directory Structure
 
-- **State** — `.mz/task/<task_name>/state.md`.
-- **Output** — when resolving against an existing freelance-search run: `.mz/outreach/<freelance-search-run-dir>/proposals/<gig_slug>.md`. When operating off-pipeline (URL with no prior run): `.mz/outreach/<YYYY_MM_DD>_freelance_pitch_<slug>/proposals/<gig_slug>.md`.
+- **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`.
+- **Output** — when resolving against an existing freelance-search run: `<PROJECT_ROOT>/.mz/outreach/<freelance-search-run-dir>/proposals/<gig_slug>.md`. When operating off-pipeline (URL with no prior run): `<PROJECT_ROOT>/.mz/outreach/<YYYY_MM_DD>_freelance_pitch_<slug>/proposals/<gig_slug>.md`.
+
+## Constants
+
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 
 ## Core Process
 
@@ -68,6 +72,8 @@ ______________________________________________________________________
 
 ## Phase 0 entry
 
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+
 Parse `$ARGUMENTS`:
 
 - Integer (e.g. `3`) → `rank_arg`.
@@ -78,7 +84,7 @@ Parse `$ARGUMENTS`:
 Discover the most recent freelance-search run:
 
 ```bash
-latest_run=$(ls -dt .mz/outreach/*freelance_search_* 2>/dev/null | head -n 1)
+latest_run=$(ls -dt "<PROJECT_ROOT>"/.mz/outreach/*freelance_search_* 2>/dev/null | head -n 1)
 ```
 
 Branching:
@@ -90,18 +96,18 @@ Branching:
 Set `task_name = <YYYY_MM_DD>_freelance_pitch_<gig_slug>`. Set `run_dir`:
 
 - If gig came from `latest_run`'s `scored.json`: `run_dir = latest_run` (proposals nested under existing run).
-- If gig is off-pipeline (URL with no prior scoring): `run_dir = .mz/outreach/<task_name>` (new sibling directory).
+- If gig is off-pipeline (URL with no prior scoring): `run_dir = <PROJECT_ROOT>/.mz/outreach/<task_name>` (new sibling directory).
 
 ```bash
-mkdir -p .mz/task/<task_name>
-mkdir -p <run_dir>/proposals
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"
+mkdir -p "<run_dir>/proposals"
 ```
 
 Read `phases/resolve_and_pitch.md` for the rest.
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ## Error Handling
 

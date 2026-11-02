@@ -8,7 +8,7 @@ After the user approved the transcript in Phase 1.5, build a fleeting-note file 
 
 The title becomes both the filename and the frontmatter `title:` field.
 
-1. Read `.mz/task/<task_name>/transcript.md` (re-read — context may have shifted since Phase 1.5).
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/transcript.md` (re-read — context may have shifted since Phase 1.5).
 
 1. Extract the transcript body (everything after the closing `---` of the frontmatter block).
 
@@ -92,7 +92,7 @@ Do not append any body content beyond the verbatim transcript. No summaries, no 
    - The body matches the transcript body.
 1. If verification fails, emit a clear error and record `FileWriteError: <one-line error>` in `state.md`. Do not proceed to Step 5.
 
-Update `state.md`: `Phase: 2`, `Status: note_written`, `NotePath: <absolute path to the written file>`.
+Update `state.md`: `Phase: 2`, `NotePath: <absolute path to the written file>`.
 
 ## Step 5: Offer a follow-up
 

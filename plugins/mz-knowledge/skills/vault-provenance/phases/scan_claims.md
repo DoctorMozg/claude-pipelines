@@ -2,7 +2,7 @@
 
 ## Goal
 
-Dispatch the `provenance-tracer` agent against the resolved note, collect its YAML classification artifact into `.mz/task/<task_name>/claims_analysis.md`, validate the artifact's shape, and hand control back to the Phase 1.5 approval gate in `SKILL.md`.
+Dispatch the `provenance-tracer` agent against the resolved note, collect its YAML classification artifact into `<PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md`, validate the artifact's shape, and hand control back to the Phase 1.5 approval gate in `SKILL.md`.
 
 ## Preconditions
 
@@ -10,7 +10,7 @@ Phase 0 has already resolved:
 
 - `note_path` — absolute path to the single vault note under audit.
 - `task_name` — the orchestrator task identifier.
-- `state.md` — written under `.mz/task/<task_name>/` with `Status: running`, `Phase: 0`.
+- `state.md` — written under `<PROJECT_ROOT>/.mz/task/<task_name>/` with `Status: running`, `Phase: 0`.
 
 If `note_path` does not resolve to a readable file, Phase 0 must have escalated via AskUserQuestion. Do not enter Phase 1 without a readable note.
 
@@ -22,7 +22,7 @@ Dispatch the `provenance-tracer` agent with this task-specific prompt:
 
 ```
 Note path: <note_path>
-Output path: .mz/task/<task_name>/claims_analysis.md
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md
 Task name: <task_name>
 Vocabulary: [first-hand, cited, inferred, received, unmarked]
 Max claims: 25
@@ -36,7 +36,7 @@ Do not repeat the agent's general process, vocabulary semantics, or output schem
 
 ### 2. Validate the artifact shape
 
-After the agent completes, Read `.mz/task/<task_name>/claims_analysis.md` using the Read tool. Confirm:
+After the agent completes, Read `<PROJECT_ROOT>/.mz/task/<task_name>/claims_analysis.md` using the Read tool. Confirm:
 
 - The file exists and is non-empty.
 - The top-level YAML contains a `claims:` list and a `summary:` map.
@@ -58,9 +58,8 @@ If the second attempt still fails validation, halt and escalate via AskUserQuest
 
 ### 3. Update state
 
-Patch `.mz/task/<task_name>/state.md`:
+Patch `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
-- `Status: scan_complete`
 - `Phase: 1`
 - `ClaimsAnalysisPath: .mz/task/<task_name>/claims_analysis.md`
 - `ClaimsCount: <summary.total>`
@@ -74,7 +73,7 @@ Hand control back to `SKILL.md` Phase 1.5. The gate is responsible for the Read 
 ## Error handling
 
 - **Tracer returns `STATUS: NEEDS_CONTEXT`** — re-dispatch once with the missing field explicitly named in the prompt. If the second attempt still returns `NEEDS_CONTEXT`, escalate via AskUserQuestion.
-- **Tracer returns `STATUS: BLOCKED`** — read the reason, update `state.md` with `Status: blocked`, and escalate via AskUserQuestion. Never auto-retry a blocked dispatch.
+- **Tracer returns `STATUS: BLOCKED`** — read the reason, set `what_remains: [awaiting answer: how to unblock the tracer, or stop]`, keep `Status: running`, and ask with AskUserQuestion. If nobody can answer, set `Status: blocked` and stop. Never auto-retry a blocked dispatch.
 - **Tracer returns `STATUS: DONE_WITH_CONCERNS`** (note has \<3 claims — low signal) — proceed to Phase 1.5 but surface the low-signal flag in the state file as `LowSignal: true`. The approval gate still runs so the user sees the sparse classification and decides whether to proceed.
 - **Report shape invalid after re-dispatch** — do not proceed to Phase 1.5. The approval gate requires a valid classification artifact; a malformed report is a failed phase, not an approvable artifact.
 

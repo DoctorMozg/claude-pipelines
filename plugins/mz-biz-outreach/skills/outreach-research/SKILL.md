@@ -49,16 +49,20 @@ Extract from `$ARGUMENTS`:
 - **sector** — optional, from `sector:<value>` (default: inferred by strategist)
 - **region** — optional, from `region:<value>` (default: inferred from goal text)
 - **limit** — optional, from `limit:<N>` (default: 20)
-- **brief** — optional, from `brief:<run_name>`; resolves to `.mz/outreach/<brief_run>/brief.json` + `climate.json` (default: none)
+- **brief** — optional, from `brief:<run_name>`; resolves to `<PROJECT_ROOT>/.mz/outreach/<brief_run>/brief.json` + `climate.json` (default: none)
 
 ## Directory Structure
 
 Two separate directories are used:
 
-- **State** — `.mz/task/<task_name>/state.md`. This is the source of truth across phases; never rely on conversation memory.
-- **Outreach data** — `.mz/outreach/<run_name>/` holds `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `<YYYY_MM_DD>_outreach_<goal_slug>.md`.
+- **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. This is the source of truth across phases; never rely on conversation memory.
+- **Outreach data** — `<PROJECT_ROOT>/.mz/outreach/<run_name>/` (called `<RUN_DIR>` in phase files) holds `strategy.json`, `sources.json`, temp `_scout/` and `_enrichment/` folders, permanent `companies/<slug>.json` + `companies/<slug>.md` pairs, `scout_summary.md`, and `<YYYY_MM_DD>_outreach_<goal_slug>.md`.
 
 `task_name` follows the pattern `<YYYY_MM_DD>_outreach_research_<slug>`; `run_name` is `<YYYY_MM_DD>_outreach_research_<goal_slug>` (same leading-date convention). They are independent: `task_name` identifies the pipeline invocation, `run_name` identifies the outreach output bundle.
+
+## Constants
+
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 
 ## Core Process
 
@@ -83,17 +87,17 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents (target profile, sector/geo scope, candidate-source plan, estimated fan-out cost) into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/outreach/<run_name>/strategy.json` with the Read tool. Capture the full file contents (target profile, sector/geo scope, candidate-source plan, estimated fan-out cost) into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: strategy gate]`; `Status` stays `running`.
 
-**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
+**Surface 1 — emit the plan message.** Output the strategy verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/outreach/<run_name>/strategy.json` — do not substitute a path, summary, or placeholder. Structure:
 
 ````
 ## Strategy ready for review — outreach-research
 
 ```json
-<verbatim contents of .mz/outreach/<run_name>/strategy.json>
+<verbatim contents of <PROJECT_ROOT>/.mz/outreach/<run_name>/strategy.json>
 ```
 
 ---
@@ -108,8 +112,8 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 **Response handling**:
 
-- **Approve** → update `.mz/task/<task_name>/state.md` phase to `strategy_approved`, proceed to Phase 2.
-- **Reject** → update `.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
+- **Approve** → add `- strategy approved: .mz/outreach/<run_name>/strategy.json` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: strategy_approved`, and proceed to Phase 2.
+- **Reject** → update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` Status to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → re-dispatch `outreach-strategist` with the feedback appended, overwrite `strategy.json`, return to Surface 1, re-read `strategy.json`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: strategy gate`, stop. A missing answer is never approval.
 
@@ -127,17 +131,19 @@ ______________________________________________________________________
 
 ## Phase 0: Setup
 
+Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+
 Parse arguments. Derive two names:
 
 - `task_name` (state dir) = `<YYYY_MM_DD>_outreach_research_<slug>` where `<slug>` is a snake_case summary of the goal (max 20 chars) and `<YYYY_MM_DD>` is today's date with underscores.
 - `run_name` (outreach output dir) = `<YYYY_MM_DD>_outreach_research_<goal_slug>`, max 40 chars total (keep `<goal_slug>` short to fit). Example: `"find DevOps clients in DACH"` → `2026_05_11_outreach_research_devops_dach`.
 
 ```bash
-mkdir -p .mz/task/<task_name>
-mkdir -p .mz/outreach/<run_name>/companies
+mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"
+mkdir -p "<PROJECT_ROOT>/.mz/outreach/<run_name>/companies"
 ```
 
-Write `.mz/task/<task_name>/state.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 
 ```yaml
 schema_version: 2
@@ -153,7 +159,7 @@ RunName: <run_name> (outreach output dir)
 BriefRun: <brief_run or null>
 ```
 
-If `brief:<run_name>` was supplied, read `.mz/outreach/<brief_run>/brief.json` and `.mz/outreach/<brief_run>/climate.json` and carry their contents into Phase 1. If either file is missing, warn and continue without it — the brief is an enhancement, never a hard dependency. When the goal text is empty but a brief is present, derive the goal from the brief's `offering` and `goal_channels_voice.goal`.
+If `brief:<run_name>` was supplied, read `<PROJECT_ROOT>/.mz/outreach/<brief_run>/brief.json` and `<PROJECT_ROOT>/.mz/outreach/<brief_run>/climate.json` and carry their contents into Phase 1. If either file is missing, warn and continue without it — the brief is an enhancement, never a hard dependency. When the goal text is empty but a brief is present, derive the goal from the brief's `offering` and `goal_channels_voice.goal`.
 
 After setup completes, read `phases/discovery.md` and proceed to Phase 1.
 
@@ -161,15 +167,15 @@ ______________________________________________________________________
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ## Resume Support
 
-Before creating anything in Phase 0, check if `.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` field and resume from the next incomplete phase. All phases are idempotent — re-running overwrites output files.
+Before creating anything in Phase 0, check if `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` field and resume from the next incomplete phase. All phases are idempotent — re-running overwrites output files.
 
 ## Error Handling
 
-- Agent fails or returns empty: append an `Errors:` bullet in `.mz/task/<task_name>/state.md`, continue with available data.
+- Agent fails or returns empty: append an `Errors:` bullet in `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`, continue with available data.
 - ALL agents in a phase fail (zero results): stop the pipeline and report the failure.
 - Never fabricate data — incomplete results are better than false results.
 - Corrupted company JSON during any phase: log the error in state.md, skip that company, continue.

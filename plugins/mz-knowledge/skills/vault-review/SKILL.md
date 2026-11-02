@@ -33,7 +33,8 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 - **SCORE_CAP**: 20
 - **ORPHAN_PENALTY**: 10
 - **NEVER_REVIEWED_DAYS**: 365
-- **TASK_DIR**: `.mz/task/`
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 
 ## Core Process
 
@@ -46,17 +47,18 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 
 ### Phase 0: Setup
 
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. Resolve vault path from `$ARGUMENTS`, then `OBSIDIAN_VAULT_PATH` env, then `MZ_VAULT_PATH` env. If none resolve, ask the user via AskUserQuestion — never guess.
 1. Detect review mode: if `$ARGUMENTS` contains `daily`, `weekly`, or `monthly`, use that mode. Otherwise use `smart`.
 1. `task_name` = `<YYYY_MM_DD>_vault-review_<mode>` where `<YYYY_MM_DD>` is today's date (underscores) and `<mode>` is the resolved review mode; on same-day collision append `_v2`, `_v3`.
 1. Create `TASK_DIR<task_name>/`.
-1. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Vault: <path>`, `Mode: <mode>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `phase_complete: false`, `what_remains: []`, `Vault: <path>`, `Mode: <mode>`.
 
 ### Phase 1.5: User approval — Review Queue
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/review_queue.md` in full and capture its contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/review_queue.md` in full and capture its contents into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: queue gate]`; `Status` stays `running`.
 
@@ -65,7 +67,7 @@ Discipline skill that builds a composite review queue ranking notes by: days sin
 ```
 ## Review queue ready for review — vault-review
 
-<verbatim contents of .mz/task/<task_name>/review_queue.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/review_queue.md>
 
 MOC gaps detected: <N gaps from moc-gap-detector> — details in .mz/task/<task_name>/moc_gaps.md
 
@@ -73,7 +75,7 @@ MOC gaps detected: <N gaps from moc-gap-detector> — details in .mz/task/<task_
 **Approve** → proceed to Phase 2 (review session)  ·  **Reject** → mark task aborted, no notes updated  ·  reply with feedback to revise
 ```
 
-Emit the full verbatim contents of `.mz/task/<task_name>/review_queue.md` — do not substitute a path, summary, or placeholder.
+Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/review_queue.md` — do not substitute a path, summary, or placeholder.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
@@ -83,7 +85,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/review_queue.md` — do
 
 **Response handling**:
 
-- **Approve** → update state to `queue_approved`, proceed to Phase 2.
+- **Approve** → add `- queue approved: .mz/task/<task_name>/review_queue.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: queue_approved`, and proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust queue parameters (exclude a folder, change weights, filter by maturity, resize), re-run Phase 1 if needed, overwrite `review_queue.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: queue gate`, stop. A missing answer is never approval.
@@ -112,14 +114,14 @@ vault-review verification:
   [ ] Ranked queue emitted verbatim as a chat message (Surface 1) and AskUserQuestion selector presented before session started
   [ ] `last_reviewed` updated only for notes the user confirmed reviewing
   [ ] MOC gaps surfaced alongside the queue (from moc-gap-detector)
-  [ ] state.md Status is `completed` with Completed timestamp
+  [ ] state.md Status is `complete` with Completed timestamp
 ```
 
 If any box is unchecked, the skill did not run correctly — report the failure explicitly rather than claiming success.
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ## Error Handling
 

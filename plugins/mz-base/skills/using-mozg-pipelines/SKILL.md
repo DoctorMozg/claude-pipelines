@@ -73,7 +73,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "install governance policy", "init governance", "set up decision records"                                                                            | gov-init                                                  | mz-gov           |
 | "review our ADRs", "audit decision records", "are our design docs sound"                                                                             | gov-review                                                | mz-gov           |
 
-mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
+mz-memory contributes SessionStart, SessionEnd, UserPromptSubmit and PostToolUse (AskUserQuestion) hooks and the `/memory-note` skill; it is referenced by agents that need persistent state.
 
 ## Red Flags
 

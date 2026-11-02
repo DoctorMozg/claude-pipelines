@@ -4,7 +4,7 @@ Full detail for the initial-draft phase. Covers dispatching the writer, verifyin
 
 ## Goal
 
-Produce three files in `.mz/design/<task_name>/`:
+Produce three files in `<PROJECT_ROOT>/.mz/design/<task_name>/`:
 
 1. `design.md` — the comprehensive design document following the canonical 14-section template
 1. `wireframes.md` — ASCII wireframes plus Mermaid user flows, IA, and state diagrams
@@ -14,8 +14,8 @@ Produce three files in `.mz/design/<task_name>/`:
 
 From Phase 1:
 
-- `.mz/design/<task_name>/intake.md`
-- `.mz/design/<task_name>/research.md`
+- `<PROJECT_ROOT>/.mz/design/<task_name>/intake.md`
+- `<PROJECT_ROOT>/.mz/design/<task_name>/research.md`
 
 ## Step 2.1 — Dispatch the writer
 
@@ -25,11 +25,11 @@ Spawn a `design-document-writer` agent (model: **opus**) with this prompt:
 You are producing the initial UI/UX design document.
 
 ## Task Directory
-.mz/design/<task_name>/
+<PROJECT_ROOT>/.mz/design/<task_name>/
 
 ## Inputs
-- Read .mz/design/<task_name>/intake.md in full
-- Read .mz/design/<task_name>/research.md in full
+- Read <PROJECT_ROOT>/.mz/design/<task_name>/intake.md in full
+- Read <PROJECT_ROOT>/.mz/design/<task_name>/research.md in full
 - Search references/design-spec-template.md for each section as you draft it
 - Search references/wcag-contrast-thresholds.md for the contrast formula when computing the report
 - Search references/nielsen-heuristics.md to self-check the interaction design
@@ -75,16 +75,16 @@ Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKE
 Check all three files exist, are non-empty, and have the expected shape:
 
 ```bash
-test -s .mz/design/<task_name>/design.md
-test -s .mz/design/<task_name>/wireframes.md
-test -s .mz/design/<task_name>/wcag-report.md
+test -s "<PROJECT_ROOT>/.mz/design/<task_name>/design.md"
+test -s "<PROJECT_ROOT>/.mz/design/<task_name>/wireframes.md"
+test -s "<PROJECT_ROOT>/.mz/design/<task_name>/wcag-report.md"
 ```
 
 Additional structural checks:
 
-- `grep -c '^## ' .mz/design/<task_name>/design.md` → should be ≥ 14 (one per template section)
-- ```` grep -c '```mermaid' .mz/design/<task_name>/wireframes.md ```` → should be ≥ 3 (at least primary flow + IA + one state diagram)
-- `grep -c '^|' .mz/design/<task_name>/wcag-report.md` → should be ≥ 4 (table header + separator + at least 2 pairs)
+- `grep -c '^## ' "<PROJECT_ROOT>/.mz/design/<task_name>/design.md"` → should be ≥ 14 (one per template section)
+- ```` grep -c '```mermaid' "<PROJECT_ROOT>/.mz/design/<task_name>/wireframes.md" ```` → should be ≥ 3 (at least primary flow + IA + one state diagram)
+- `grep -c '^|' "<PROJECT_ROOT>/.mz/design/<task_name>/wcag-report.md"` → should be ≥ 4 (table header + separator + at least 2 pairs)
 
 If any check fails, retry the writer once with the explicit failing check as the issue. If it still fails, escalate.
 
@@ -111,9 +111,7 @@ schema_version: 2
 Status: running
 Phase: 2
 PhaseName: initial_draft_complete
-phase_complete: true
-what_remains:
-  - run the critique loop until AGGREGATE PASS
+Started: <timestamp from setup>
 Iteration: 0
 FilesWritten:
   - .mz/design/<task_name>/intake.md
@@ -121,6 +119,9 @@ FilesWritten:
   - .mz/design/<task_name>/design.md
   - .mz/design/<task_name>/wireframes.md
   - .mz/design/<task_name>/wcag-report.md
+phase_complete: true
+what_remains:
+  - run the critique loop until AGGREGATE PASS
 ```
 
 Proceed to Phase 3 (Critique Loop).

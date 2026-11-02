@@ -13,9 +13,9 @@ Skipped entirely when `enrich_mode == "only"`.
 
 Brief-building moved out of Phase 1 (which now only parses the card and writes `card_parsed.json`). Read inputs:
 
-1. `.mz/task/<task_name>/card_parsed.json` — written in Phase 1.
-1. `.mz/task/<task_name>/enrichment/*.json` — written in Phase 2 (skip if `enrich_mode == "skip"`; the directory will be empty).
-1. `.mz/task/<task_name>/deeper_intelligence.md` — written in Phase 2 (skip if `enrich_mode == "skip"`).
+1. `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json` — written in Phase 1.
+1. `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/*.json` — written in Phase 2 (skip if `enrich_mode == "skip"`; the directory will be empty).
+1. `<PROJECT_ROOT>/.mz/task/<task_name>/deeper_intelligence.md` — written in Phase 2 (skip if `enrich_mode == "skip"`).
 1. The orchestrator's in-memory light-pass results from Phase 1 (per-contact public-activity strings).
 1. Sender voice + outreach angles resolved in Phase 1.
 
@@ -28,7 +28,7 @@ For each of the (up to 5) Key Contacts from `card_parsed.json`, decide the chann
 
 Per-channel handle resolution: the card lists contact emails in the `## Key Contacts` block's `**Emails**:` line — these are company-level (info@, sales@). Person-specific emails appear in the per-contact line only if the card found one. If only generic emails exist, mark the channel as `email_generic` and target the generic address with the contact named in the body.
 
-For each non-skipped (contact, channel) pair, write `.mz/task/<task_name>/briefs/<channel>_<contact_slug>.json`:
+For each non-skipped (contact, channel) pair, write `<PROJECT_ROOT>/.mz/task/<task_name>/briefs/<channel>_<contact_slug>.json`:
 
 ```json
 {
@@ -120,7 +120,7 @@ This wave calibrates each letter to how the recipient prefers to be addressed, u
 
 For each brief whose `chosen_channel` is not `skip` (dedupe by contact — one profile per person even when both an email and a DM brief exist), dispatch one `outreach-personality-profiler`. Dispatch in parallel waves of at most 6 concurrent agents per wave; up to 5 contacts fit in one wave. Wait for every agent in the wave to report, then check that each profile exists on disk before using it.
 
-Output path per contact: `.mz/task/<task_name>/profiles/<contact_slug>.json`.
+Output path per contact: `<PROJECT_ROOT>/.mz/task/<task_name>/profiles/<contact_slug>.json`.
 
 Dispatch prompt (`subagent_type: outreach-personality-profiler`):
 
@@ -135,7 +135,7 @@ Contact:
 Seed signal (already gathered, may be empty): <the Phase 1 light-pass public-activity
   string for this contact, plus any contacts.json activity reference tagged to this name>
 Recency window: 12 months.
-Output file: .mz/task/<task_name>/profiles/<contact_slug>.json
+Output file: <PROJECT_ROOT>/.mz/task/<task_name>/profiles/<contact_slug>.json
 
 Assert a Social Style ONLY with at least one citable public-footprint cue. With no
 citable cue, leave social_style null and populate role_priorities from the title.
@@ -150,9 +150,9 @@ Update `state.md`: append a `Profiles` list (one path per profiled contact with 
 
 ### 3.1 Dispatch plan
 
-Read every brief file under `.mz/task/<task_name>/briefs/`. For each brief whose `chosen_channel` is not `skip`, dispatch one `expert-copywriter` agent. Dispatch in parallel waves of at most 6 concurrent agents per wave. Wait for every agent in the wave to report, then check that each draft exists on disk before using it. Start the next wave only after that.
+Read every brief file under `<PROJECT_ROOT>/.mz/task/<task_name>/briefs/`. For each brief whose `chosen_channel` is not `skip`, dispatch one `expert-copywriter` agent. Dispatch in parallel waves of at most 6 concurrent agents per wave. Wait for every agent in the wave to report, then check that each draft exists on disk before using it. Start the next wave only after that.
 
-Per-brief output path: `.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md` (use `<channel>_<contact_slug>` from the brief filename).
+Per-brief output path: `<PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md` (use `<channel>_<contact_slug>` from the brief filename).
 
 ### 3.2 Channel rules table
 
@@ -179,9 +179,9 @@ Use `subagent_type: expert-copywriter`. Dispatch prompt:
 ```
 Topic: Cold outreach <channel> letter to <recipient.name>, <recipient.title> at <company.name>.
 Format: <channel>            # email | email_generic | linkedin_dm
-Output path: .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md
 Source artifacts:
-  - .mz/task/<task_name>/briefs/<channel>_<contact_slug>.json
+  - <PROJECT_ROOT>/.mz/task/<task_name>/briefs/<channel>_<contact_slug>.json
 Audience: one named recipient (not a segment). Treat as cold - recipient has
   not heard from sender. Personalization is real and verifiable.
 Value claim: <copy from brief.value_claim>
@@ -273,8 +273,8 @@ Skipped entirely when `enrich_mode == "only"`. Mandatory otherwise. Runs automat
 For every draft that passed Phase 3 validation, copy it aside as a snapshot:
 
 ```bash
-cp .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md \
-   .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md.pre-naturalize
+cp "<PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md" \
+   "<PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md.pre-naturalize"
 ```
 
 The snapshots are used to revert any draft that the naturalizer damages.
@@ -287,7 +287,7 @@ Dispatch one `expert-naturalizer` agent per surviving draft, in parallel waves o
 
 ```
 Mode: in-place rewrite
-Input file: .mz/task/<task_name>/drafts/<channel>_<contact_slug>.md
+Input file: <PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md
 Output file: same path - overwrite
 Severity: Light
   (the copywriter just wrote this; AI-pattern density is bounded;
@@ -346,7 +346,7 @@ After each naturalizer returns:
 After processing all drafts, delete the `.pre-naturalize` snapshots:
 
 ```bash
-rm .mz/task/<task_name>/drafts/*.pre-naturalize
+rm "<PROJECT_ROOT>/.mz/task/<task_name>/drafts/"*.pre-naturalize
 ```
 
 Update `state.md`: Phase → `naturalize_complete`, append a `NaturalizeResults` list (one row per draft with `pass | reverted:<reason>`).
@@ -442,7 +442,7 @@ Open the section with a heading and close it with a generated-line footer:
 
 Skip if `enrich_mode == "skip"`.
 
-Read `.mz/task/<task_name>/deeper_intelligence.md` (produced in Phase 2). Its content already contains the full `## Deeper Intelligence` heading + body + footer line; use it verbatim as `NEW_D_BLOCK`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/deeper_intelligence.md` (produced in Phase 2). Its content already contains the full `## Deeper Intelligence` heading + body + footer line; use it verbatim as `NEW_D_BLOCK`.
 
 If the file is missing (Phase 2 was skipped or all subagents failed before writing it), emit a minimal placeholder so the user sees the failure surface:
 
@@ -474,7 +474,7 @@ Card rewrite uses Read + Write to write the entire card file to its destination.
    - `enrich_mode == "only"` → `D_BLOCK = NEW_D_BLOCK`; `L_BLOCK = PRIOR_L_BLOCK` (preserve prior letters if any, else empty).
    - `enrich_mode == "skip"` → `D_BLOCK = PRIOR_D_BLOCK` (preserve prior deeper intel if any, else empty); `L_BLOCK = NEW_L_BLOCK`.
 1. Compose the rebuilt content. Join non-empty blocks with `\n\n` separators in this order: `HEAD`, `D_BLOCK`, `L_BLOCK`, `HIST`. Drop any block that is the empty string. Ensure the file ends with exactly one trailing newline.
-1. Compute `today = $(date +%Y-%m-%d)` and `target_path = .mz/outreach/active/<today>_<company_slug>.md`.
+1. Compute `today = $(date +%Y-%m-%d)` and `target_path = <PROJECT_ROOT>/.mz/outreach/active/<today>_<company_slug>.md`.
 1. Write the rebuilt content to `target_path`.
 
 If the card has no `*Generated:` footer (hand-authored card that does not follow the canonical shape) and the canonical headers were still found in Phase 0, the `HEAD` falls back to content-up-to-first-section-anchor as defined above. Log this in `state.md`.
@@ -490,14 +490,14 @@ After `target_path` is written and its contents verified by re-reading:
   ```
 - Defensive sweep — remove any other stale active files for this slug that are not the target:
   ```bash
-  find .mz/outreach/active -maxdepth 1 -type f \
+  find "<PROJECT_ROOT>/.mz/outreach/active" -maxdepth 1 -type f \
     -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<company_slug>.md' \
     ! -path "<target_path>" -delete 2>/dev/null
   ```
 
 If the `rm` fails (permission, missing file), do NOT fail the run — log `relocation_cleanup_failed: <reason>` in `state.md` and downgrade the final STATUS to `DONE_WITH_CONCERNS`. The card content at `target_path` is canonical regardless.
 
-Update `state.md`: Phase → `complete`, set `CompletedAt: <ISO timestamp>`, record `LettersWritten: <count>`, `LettersSkipped: <count>`, `NaturalizeReverted: <count>`, `SubagentsDispatched: <count>`, `SubagentsFailed: <count>`, `LightQueries: <count>`, `TargetPath: <target_path>`, `SourceDeleted: <yes | no | failed:<reason>>`.
+Update `state.md`: Phase → `complete`, `Status: complete`, `phase_complete: true`, `what_remains: []`, set `CompletedAt: <ISO timestamp>`, record `LettersWritten: <count>`, `LettersSkipped: <count>`, `NaturalizeReverted: <count>`, `SubagentsDispatched: <count>`, `SubagentsFailed: <count>`, `LightQueries: <count>`, `TargetPath: <target_path>`, `SourceDeleted: <yes | no | failed:<reason>>`.
 
 ## Final output
 

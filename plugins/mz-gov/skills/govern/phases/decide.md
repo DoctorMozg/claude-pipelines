@@ -8,9 +8,9 @@ This gate uses the two-surface plan pattern: the artifact is emitted as an ordin
 
 ## Inputs (from Phase 2)
 
-- `.mz/task/<task_name>/draft.md` — the converged (or accepted-with-unresolved) artifact.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the converged (or accepted-with-unresolved) artifact.
 - The verdict: `discussion_<N>.md` (heavy) or `discuss_<N>_quick.md` (light), with the final `AGGREGATE:`/`VERDICT:`.
-- `.mz/task/<task_name>/provenance.md` — `human_signoff: pending`.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` — `human_signoff: pending`.
 - The artifact type and its target `docs/` path; any carried unresolved caveats.
 
 ## Step 3.1 — Delegation guard
@@ -21,9 +21,9 @@ This gate uses the two-surface plan pattern: the artifact is emitted as an ordin
 
 Before emitting the gate, Read these with the Read tool and capture their full contents into context:
 
-- `.mz/task/<task_name>/draft.md` — the complete artifact body.
-- The converged verdict file — `.mz/task/<task_name>/discussion_<N>.md` (heavy) or `.mz/task/<task_name>/discuss_<N>_quick.md` (light) — for the final verdict block and any remaining findings.
-- `.mz/task/<task_name>/provenance.md` — the AI-provenance block to show the user (still `pending` at this point).
+- `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the complete artifact body.
+- The converged verdict file — `<PROJECT_ROOT>/.mz/task/<task_name>/discussion_<N>.md` (heavy) or `<PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_quick.md` (light) — for the final verdict block and any remaining findings.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` — the AI-provenance block to show the user (still `pending` at this point).
 
 The discuss phase must have converged (`AGGREGATE: PASS` / `VERDICT: PASS`) or reached an explicit accept-with-unresolved before this gate fires. Read the actual bytes — do not present from memory; context compaction may have destroyed the draft you revised three iterations ago.
 
@@ -68,7 +68,7 @@ Two named options only. Do not add a "Feedback" option — any reply that is not
 
 ## Step 3.5 — Response handling
 
-- **Approve** → the human has signed. In `provenance.md`, set `human_signoff: <user>@<ISO-8601>` (the approver id and the moment of approval, e.g. `drmozg@2026-05-31T15:10:00Z`) — overwrite the `pending` value. Advance the artifact's own `status` field by type: **ADR** `proposed → accepted`, **RFD** `prediscussion → discussion`, **design** `draft → reviewed`. Update `state.md` (`phase_complete: true` for Phase 3, record the signature), then proceed to Phase 4. Read `phases/record.md`.
+- **Approve** → the human has signed. Add `- decision approved: .mz/task/<task_name>/draft.md` under `## Decisions` in `state.md` and remove the `awaiting approval` entry. In `provenance.md`, set `human_signoff: <user>@<ISO-8601>` (the approver id and the moment of approval, e.g. `drmozg@2026-05-31T15:10:00Z`) — overwrite the `pending` value. Advance the artifact's own `status` field by type: **ADR** `proposed → accepted`, **RFD** `prediscussion → discussion`, **design** `draft → reviewed`. Update `state.md` (`phase_complete: true` for Phase 3, record the signature), then proceed to Phase 4. Read `phases/record.md`.
 - **Reject** → update `state.md` to `Status: aborted_by_user` and stop. **Write nothing to `docs/`.** Leave `provenance.md` at `human_signoff: pending` and leave all scratch files on disk — the user can resume or discard manually. Do not dispatch `gov-artifact-writer`.
 - **Any other reply (feedback)** → incorporate it. If the change is **structural** (alters the decision, the options, or the design — anything a critic lens would re-examine), revise `draft.md` and re-run the discuss phase (`phases/discuss.md`) before returning here. If it is a **wording or scoping polish**, just revise `draft.md` directly. Either way, return to Step 3.2, re-read the updated `draft.md`, and **re-emit the entire plan message from scratch** with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: sign-off gate`, stop. A missing answer is never approval.

@@ -29,8 +29,9 @@ Invoke when declaring a vault schema, checking notes against an existing schema,
 
 ## Constants
 
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **SCHEMA_PATH**: `.mz/vault-schema.yml` — relative to vault root.
-- **TASK_DIR**: `.mz/task/`
+- **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **MAX_MIGRATION_BATCH**: 50 — hard cap on notes patched per migrate run.
 - **REPORT_PREVIEW_WORDS**: 200 — truncation cap if an approval gate needs a preview.
 
@@ -51,12 +52,13 @@ Phases 2, 2.5, and 3 run only when `<mode>` is `migrate`. In `validate` mode the
 
 ### Phase 0: Setup
 
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. Parse `$ARGUMENTS` for `<mode>` (default `validate`) and `[vault path]`.
 1. Resolve vault path via the ladder in the Arguments section. Escalate via AskUserQuestion if nothing resolves.
 1. Compute `SCHEMA_PATH` as `<vault>/.mz/vault-schema.yml`.
 1. If `SCHEMA_PATH` does not exist, present the bootstrap template from `references/schema-dsl-syntax.md` via AskUserQuestion with options **Accept** — write the template to `SCHEMA_PATH` and continue · **Edit** — provide your own schema text · **Abort** — stop. On **Accept**, write the template. On **Edit**, accept the user's pasted YAML. On **Abort**, halt cleanly. Never fabricate a schema.
 1. Derive `task_name = <YYYY_MM_DD>_vault-schema_<mode>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`. Create `TASK_DIR<task_name>/` on disk.
-1. Write `state.md` with `schema_version: 2`, `phase_complete: false`, `what_remains: []`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `Mode: <validate|migrate>`, `Vault: <path>`, `SchemaPath: <path>`.
+1. Write `state.md` with `schema_version: 2`, `Status: running`, `Phase: 0`, `Started: <ISO timestamp>`, `phase_complete: false`, `what_remains: []`, `Mode: <validate|migrate>`, `Vault: <path>`, `SchemaPath: <path>`.
 1. Print a visible setup block showing `task_name`, resolved vault path, mode, and schema path.
 
 ### Phase 1 — Validate
@@ -67,7 +69,7 @@ See `phases/validate.md`.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/validation_report.md` and capture its full contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md` and capture its full contents into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: findings gate]`; `Status` stays `running`.
 
@@ -76,13 +78,13 @@ See `phases/validate.md`.
 ```
 ## Validation findings ready for review — vault-schema
 
-<verbatim contents of .mz/task/<task_name>/validation_report.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md>
 
 ---
 **Approve** → findings approved; proceed to Phase 2 (migration planning) if mode is migrate, otherwise mark complete  ·  **Reject** → abort, no further action  ·  reply with feedback to revise
 ```
 
-Emit the full verbatim contents of `.mz/task/<task_name>/validation_report.md` — do not substitute a path, summary, or placeholder.
+Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md` — do not substitute a path, summary, or placeholder.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
@@ -92,7 +94,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/validation_report.md` �
 
 **Response handling**:
 
-- **Approve** → update state to `findings_approved`. If `Mode: validate`, mark `Status: complete` and stop — nothing is written to the vault in validate mode. If `Mode: migrate`, proceed to Phase 2.
+- **Approve** → add `- findings approved: .mz/task/<task_name>/validation_report.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, and set `Phase: findings_approved`. If `Mode: validate`, set `Status: complete`, `phase_complete: true`, `what_remains: []` and stop — nothing is written to the vault in validate mode. If `Mode: migrate`, proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate (e.g., "re-scan with a corrected schema", "treat note_type X as pass-through"), re-run Phase 1 if needed, overwrite `validation_report.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: findings gate`, stop. A missing answer is never approval.
@@ -105,7 +107,7 @@ See `phases/migrate.md` (Step 1 + Step 2).
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/migration_plan.md` and capture its full contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/migration_plan.md` and capture its full contents into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: migration gate]`; `Status` stays `running`.
 
@@ -114,13 +116,13 @@ See `phases/migrate.md` (Step 1 + Step 2).
 ```
 ## Migration plan ready for review — vault-schema
 
-<verbatim contents of .mz/task/<task_name>/migration_plan.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/migration_plan.md>
 
 ---
 **Approve** → proceed to Phase 3 (apply patches)  ·  **Reject** → abort, no vault writes occurred, rollback manifest preserved  ·  reply with feedback to revise
 ```
 
-Emit the full verbatim contents of `.mz/task/<task_name>/migration_plan.md` — do not substitute a path, summary, or placeholder.
+Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/migration_plan.md` — do not substitute a path, summary, or placeholder.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the artifact in the question body:
 
@@ -130,7 +132,7 @@ Emit the full verbatim contents of `.mz/task/<task_name>/migration_plan.md` — 
 
 **Response handling**:
 
-- **Approve** → update state to `plan_approved`, proceed to Phase 3. The user must have filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder — Phase 3 re-checks this and loops back here if any remain.
+- **Approve** → add `- plan approved: .mz/task/<task_name>/migration_plan.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: plan_approved`, and proceed to Phase 3. The user must have filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder — Phase 3 re-checks this and loops back here if any remain.
 - **Reject** → update state to `aborted_by_user` and stop. The rollback manifest stays on disk for reference; no vault writes occurred.
 - **Any other reply (feedback)** → incorporate edits to the plan (value picks, skip specific notes, adjust proposed frontmatter), re-run Phase 2 to refresh both `migration_plan.md` and `rollback.md`, overwrite the artifact, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never apply frontmatter patches without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: migration gate`, stop. A missing answer is never approval.
@@ -150,7 +152,7 @@ See `phases/migrate.md` (Step 4).
 
 ## State Management
 
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
 ## References
 

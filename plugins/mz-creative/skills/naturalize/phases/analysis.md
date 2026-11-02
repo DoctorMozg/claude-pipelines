@@ -1,6 +1,6 @@
 # Phase 1: Pattern Analysis
 
-The orchestrator runs this phase directly (no subagent for the main analysis). Optionally dispatches `pipeline-web-researcher` if `research:yes` was set. Output: `.mz/task/<task_name>/analysis.md`.
+The orchestrator runs this phase directly (no subagent for the main analysis). Optionally dispatches `pipeline-web-researcher` if `research:yes` was set. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/analysis.md`.
 
 ## 1.1 Optional web research (when `research:yes`)
 
@@ -17,16 +17,16 @@ Sources to prioritize:
 Banned: AI-generated detection lists, undated blogs, social posts
 Output: a list of patterns NOT in the embedded vocabulary list (provided below) — focus on what's NEW since 2024
 Embedded list (do not repeat these): <copy the avoid lists from expert-naturalizer.md, abbreviated>
-Return the findings inline; the orchestrator saves them to .mz/task/<task_name>/web_research.md
+Return the findings inline; the orchestrator saves them to <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md
 ```
 
-Wait for completion. `pipeline-web-researcher` is read-only and returns its findings inline, so write its response verbatim to `.mz/task/<task_name>/web_research.md` yourself, then add a short section to the analysis that points to that file.
+Wait for completion. `pipeline-web-researcher` is read-only and returns its findings inline, so write its response verbatim to `<PROJECT_ROOT>/.mz/task/<task_name>/web_research.md` yourself, then add a short section to the analysis that points to that file.
 
 If `research:yes` is not set, skip this step.
 
 ## 1.2 Read the input
 
-Read `.mz/task/<task_name>/input.md` (written during Phase 0 setup). Compute:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/input.md` (written during Phase 0 setup). Compute:
 
 - Word count
 - Sentence count (rough split on `.!?` followed by space + capital)
@@ -177,7 +177,7 @@ Structure:
 - Technical terms flagged on avoid list but kept (domain-specific): <list> — please confirm
 
 ## Web research findings (when research:yes)
-<copy from .mz/task/<task_name>/web_research.md, or "skipped">
+<copy from <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md, or "skipped">
 
 ## Proposed rewriting strategy
 <2–4 sentences describing the approach: which patterns get top priority, what target burstiness, what word-count delta to aim for, whether to chunk by section>

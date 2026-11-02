@@ -181,8 +181,8 @@ Update `state.md`:
 
 ```yaml
 schema_version: 2
+Status: running
 Phase: 1
-Status: scaffold_complete
 phase_complete: true
 what_remains:
   - Verify all scaffolding files exist (Phase 2)

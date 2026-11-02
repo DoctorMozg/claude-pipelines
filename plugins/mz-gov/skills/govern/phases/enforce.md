@@ -5,7 +5,7 @@ Tie the durable artifact to where the work actually lands — the commit, the br
 ## Inputs (from Phase 4)
 
 - The durable artifact path under `docs/` (e.g. `docs/decisions/0001-use-redis.md`), its number, and status.
-- `.mz/task/<task_name>/provenance.md` with the recorded `human_signoff`.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` with the recorded `human_signoff`.
 
 ## Step 5.1 — Detect git context
 

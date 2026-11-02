@@ -4,7 +4,7 @@ The orchestrator re-scans the edited files, runs the project linter/formatter, p
 
 ## 4.1 Re-scan
 
-Re-run the Phase 2 detection scan on the same `scope_files.txt`. Use the same catalog patterns; do not require fresh research. Output: `.mz/task/<task_name>/verification_scan.md` with the same structure as `detection.md` but reflecting post-cleanup state.
+Re-run the Phase 2 detection scan on the same `scope_files.txt`. Use the same catalog patterns; do not require fresh research. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/verification_scan.md` with the same structure as `detection.md` but reflecting post-cleanup state.
 
 Diff against the original `detection.md`:
 
@@ -12,7 +12,7 @@ Diff against the original `detection.md`:
 - **Residual** — hits still present (the cleaner missed them, judged them WHY, or marked them BLOCKED).
 - **New** — hits in `verification_scan.md` not in `detection.md`. These should not exist; flag as a `## Concerns` block in the report and force escalation.
 
-Write the diff to `.mz/task/<task_name>/residuals.md`.
+Write the diff to `<PROJECT_ROOT>/.mz/task/<task_name>/residuals.md`.
 
 ## 4.2 Run the linter
 
@@ -26,7 +26,7 @@ Detect the project's linter via `Bash`:
 
 If no linter is detected, record `linter: n/a` in the final report. Do not silently skip; the report shows the linter was attempted.
 
-Record results to `.mz/task/<task_name>/lint_results.md` with: linter name, files checked, failures, fixable vs non-fixable counts.
+Record results to `<PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md` with: linter name, files checked, failures, fixable vs non-fixable counts.
 
 The linter pass surfaces unused-import dead code (category E item) that the cleaner agent did NOT touch. If unused-import findings exist, the orchestrator may dispatch one final cleanup wave scoped specifically to those findings.
 
@@ -51,9 +51,9 @@ Three outcomes:
 
 - → This is a variant gate. **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-  **Pre-read**: Read `.mz/task/<task_name>/residuals.md` with the Read tool. Capture the full contents into context.
+  **Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/residuals.md` with the Read tool. Capture the full contents into context.
 
-  **Surface 1 — emit the plan message.** Output the residuals verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/residuals.md` — do not substitute a path, summary, or placeholder. Structure:
+  **Surface 1 — emit the plan message.** Output the residuals verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/residuals.md` — do not substitute a path, summary, or placeholder. Structure:
 
   ```
   ## Cleanup hit iteration cap — clean-leftovers
@@ -76,7 +76,7 @@ Three outcomes:
 
 ## 4.4 Write the final report
 
-Path: `.mz/reports/<YYYY_MM_DD>_clean_leftovers_<slug>.md`. On same-day collision append `_v2`, `_v3`.
+Path: `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_clean_leftovers_<slug>.md`. On same-day collision append `_v2`, `_v3`.
 
 Structure:
 
@@ -146,8 +146,9 @@ If `Final status: failed`, replace the first line with `Cleanup incomplete — s
 
 Update `state.md`:
 
-- `Status: complete | complete_with_residuals | failed`
+- `Status: complete`, or `failed` after an Abort. Residuals accepted at the cap go under `## Notes`; the report's `Final status` field keeps the longer values.
 - `Phase: 4`
+- `phase_complete: true`, and `what_remains: []` when `Status` is `complete`. On `failed`, list the outstanding residuals in `what_remains`.
 - Append `verification_scan.md`, `residuals.md`, `lint_results.md`, and the final report path to `FilesWritten`.
 
 Phase 4 is the terminal phase. Do not re-enter once `Status: complete`.

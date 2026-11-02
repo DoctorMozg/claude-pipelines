@@ -33,7 +33,7 @@ From the approved plan, extract all work units. Group them into execution waves:
 - **Wave 2**: Units that depend on Wave 1 outputs
 - **Wave N**: Continue until all units scheduled
 
-For each work unit, identify the failing tests written in Phase 3 that target that unit (read `.mz/task/<task_name>/tests.md` for the work-unit-to-test mapping).
+For each work unit, identify the failing tests written in Phase 3 that target that unit (read `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md` for the work-unit-to-test mapping).
 
 ### 6.2 Execute waves
 
@@ -50,15 +50,15 @@ You are implementing one work unit of a larger task. Tests for this work unit AL
 <task description>
 
 ## Plan
-Read the full plan at .mz/task/<task_name>/plan.md for context.
+Read the full plan at <PROJECT_ROOT>/.mz/task/<task_name>/plan.md for context.
 
 ## Your Work Unit
 <specific work unit details>
 
 ## Your Failing Tests (the GREEN target)
-<list of test files and test names that target this work unit, copied from .mz/task/<task_name>/tests.md>
+<list of test files and test names that target this work unit, copied from <PROJECT_ROOT>/.mz/task/<task_name>/tests.md>
 
-Read .mz/task/<task_name>/red_run.md for the current failure output of these tests — that is the contract you must satisfy.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/red_run.md for the current failure output of these tests — that is the contract you must satisfy.
 
 ## TDD Mode — Read carefully
 1. The failing tests describe the exact behavior your implementation must deliver. Make them pass.
@@ -80,7 +80,7 @@ Read .mz/task/<task_name>/red_run.md for the current failure output of these tes
 Be precise. Don't add features not in the plan. Don't refactor unrelated code.
 ```
 
-**After each wave completes (all coders in the wave return), update `.mz/task/<task_name>/state.md` with:**
+**After each wave completes (all coders in the wave return), update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:**
 
 - `current_wave: N`
 - Per-coder results: STATUS (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED` / `NEEDS_CONTEXT`) for each work unit
@@ -91,10 +91,10 @@ This state update is mandatory — it enables safe resumption if context is comp
 ### 6.3 Collect results
 
 After all waves complete, collect the list of all files modified/created across all coders.
-Save implementation summary to `.mz/task/<task_name>/implementation.md`.
+Save implementation summary to `<PROJECT_ROOT>/.mz/task/<task_name>/implementation.md`.
 Update state file phase to `implementation_complete`.
 
-**Test-tampering audit**: before proceeding to Phase 7, diff the test files against the Phase 3 / Phase 5 snapshot. If any test file in `.mz/task/<task_name>/tests.md` was modified during Phase 6, escalate via AskUserQuestion. The TDD contract is that coders implement against tests, never alter them. If the audit reveals an unavoidable test edit (e.g. a fixture parameter the plan missed), the user must explicitly approve before continuing.
+**Test-tampering audit**: before proceeding to Phase 7, diff the test files against the Phase 3 / Phase 5 snapshot. If any test file in `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md` was modified during Phase 6, escalate via AskUserQuestion. The TDD contract is that coders implement against tests, never alter them. If the audit reveals an unavoidable test edit (e.g. a fixture parameter the plan missed), the user must explicitly approve before continuing.
 
 ______________________________________________________________________
 
@@ -114,9 +114,9 @@ Spawn a `pipeline-code-reviewer` agent (model: **opus**) with:
 Review the implementation of this task:
 <task description>
 
-Read the plan at .mz/task/<task_name>/plan.md.
-Read the file list at .mz/task/<task_name>/implementation.md.
-Read the test list at .mz/task/<task_name>/tests.md (these tests existed before the implementation — the implementation was written to satisfy them).
+Read the plan at <PROJECT_ROOT>/.mz/task/<task_name>/plan.md.
+Read the file list at <PROJECT_ROOT>/.mz/task/<task_name>/implementation.md.
+Read the test list at <PROJECT_ROOT>/.mz/task/<task_name>/tests.md (these tests existed before the implementation — the implementation was written to satisfy them).
 
 Review each modified production file for:
 1. **Correctness** — Does it match the plan? Logic bugs? Off-by-one errors?
@@ -136,7 +136,7 @@ Output a structured review:
 - **Notes**: observations that don't need changes
 ```
 
-Save review to `.mz/task/<task_name>/code_review_<iteration>.md`.
+Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<iteration>.md`.
 
 ### 7.2 Handle verdict
 
@@ -166,11 +166,12 @@ ______________________________________________________________________
 
 ### 8.1 Detect project tooling
 
-Read `.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If the file is absent (tooling was not detected at setup), dispatch `pipeline-tooling-detector` (model: **haiku**) now as a fallback:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` (written during Phase 0 setup). If the file is absent (tooling was not detected at setup), dispatch `pipeline-tooling-detector` (model: **haiku**) now as a fallback:
 
 ```
 Detect project tooling and write the result to:
-output_path: .mz/task/<task_name>/tooling.md
+project_root: <PROJECT_ROOT>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md
 ```
 
 If the fallback dispatch still fails (e.g., `pipeline-tooling-detector` returns `BLOCKED`), escalate via AskUserQuestion before proceeding to 8.2.
@@ -183,10 +184,10 @@ Dispatch a `pipeline-lint-runner` agent (model: **haiku**):
 Run linters and formatters for the project.
 lint_command: <lint_command from tooling.md, or "none detected">
 format_command: <format_command from tooling.md, or "none detected">
-output_path: .mz/task/<task_name>/lint_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md
 ```
 
-Read `.mz/task/<task_name>/lint_results.md`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md`.
 
 If `STATUS: DONE_WITH_CONCERNS`: dispatch a `pipeline-coder` (model: **opus**) with the lint issues from `lint_results.md` to fix them directly. Re-dispatch `pipeline-lint-runner` to confirm clean.
 
@@ -197,10 +198,10 @@ Dispatch a `pipeline-test-runner` agent (model: **haiku**):
 ```
 Run the project's full test suite to verify GREEN.
 test_command: <test_command from tooling.md>
-output_path: .mz/task/<task_name>/test_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/test_results.md
 ```
 
-Read `.mz/task/<task_name>/test_results.md`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/test_results.md`.
 
 **If STATUS: DONE**: green bar restored. Proceed to Phase 9.
 
@@ -209,7 +210,7 @@ Read `.mz/task/<task_name>/test_results.md`.
 Set `green_iteration = 0`. Max iterations: `MAX_GREEN_ITERATIONS`.
 
 - Extract the failed test list from `test_results.md`. Classify each:
-  - **TDD test (from `.mz/task/<task_name>/tests.md`) failing** — implementation does not yet satisfy that test. Coder must finish the work; do NOT delete or weaken the test.
+  - **TDD test (from `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md`) failing** — implementation does not yet satisfy that test. Coder must finish the work; do NOT delete or weaken the test.
   - **Pre-existing test failing** — the implementation regressed something. Coder must adjust the implementation to stop breaking existing behavior. Pre-existing tests may not be modified to "make them pass" without explicit user approval.
 - Increment `green_iteration`.
 - Dispatch a `pipeline-coder` agent (model: **opus**) with the classified failure list. Reinforce: **no test modifications**.
@@ -226,7 +227,7 @@ If any code was changed during test fixes, re-dispatch `pipeline-lint-runner` to
 Verify lint is still clean after test fixes.
 lint_command: <lint_command from tooling.md, or "none detected">
 format_command: <format_command from tooling.md, or "none detected">
-output_path: .mz/task/<task_name>/lint_results_final.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/lint_results_final.md
 ```
 
 Update state file phase to `tests_passing`.

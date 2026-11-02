@@ -38,7 +38,7 @@ Spawn all researchers in a **single message** using parallel tool calls.
 
 ### 2.2 Researcher artifacts
 
-Each researcher is read-only and returns its findings **inline in its response**. The **orchestrator** (not a sub-agent) writes the returned markdown to `.mz/task/<task_name>/research_<role>.md` using the Write tool, one call per returned response:
+Each researcher is read-only and returns its findings **inline in its response**. The **orchestrator** (not a sub-agent) writes the returned markdown to `<PROJECT_ROOT>/.mz/task/<task_name>/research_<role>.md` using the Write tool, one call per returned response:
 
 - `research_comprehensive.md` — when a single analyst handles everything
 - `research_structure.md` — static structure and design analysis
@@ -56,7 +56,7 @@ Used when scope ≤ 10 files and no significant external dependencies. Spawn one
 ```
 You are performing a deep code analysis for a comprehensive explanation report.
 
-Read .mz/task/<task_name>/scope.md for the file list and user's question.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question.
 
 ## Analysis Checklist
 
@@ -72,7 +72,7 @@ Read every file in scope line by line. For each file:
 
 ## Output
 
-Return the report as markdown **in your response** — the orchestrator persists to `.mz/task/<task_name>/research_comprehensive.md`. Use these sections:
+Return the report as markdown **in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/research_comprehensive.md`. Use these sections:
 - Per-File Analysis (purpose, API, key functions with file:line, deps)
 - Execution Flow Traces (per entry point, numbered steps with file:line, branching as sub-lists)
 - Data Flow Map (input type → stages → output type, all with file:line)
@@ -102,7 +102,7 @@ Used for large scopes (> 10 files). Handles static structure and design. Spawn a
 ```
 You are the STRUCTURE analyst for a deep code explanation report.
 
-Read .mz/task/<task_name>/scope.md for the file list and user's question. Do NOT trace runtime execution — another researcher handles that.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do NOT trace runtime execution — another researcher handles that.
 
 ## Analysis Checklist
 
@@ -117,7 +117,7 @@ Read every file in scope:
 **Observations**: structural strengths (clean separations, consistent patterns), structural debt (tangled deps, god classes, unclear responsibilities), missing structure (where abstractions would clarify)
 
 ## Output
-Return the report as markdown **in your response** — the orchestrator persists to `.mz/task/<task_name>/research_structure.md`. Use these sections: Module Catalog (per-module purpose, API, deps, layer), Dependency Graph (nodes, edges, hubs, cycles), Design Patterns (each with WHY and file:line), Configuration Map, Error Model, Observations (all with file:line), Diagram Suggestions — candidates: architecture flowchart, classDiagram for type relationships, mindmap for large module hierarchies (see format below).
+Return the report as markdown **in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/research_structure.md`. Use these sections: Module Catalog (per-module purpose, API, deps, layer), Dependency Graph (nodes, edges, hubs, cycles), Design Patterns (each with WHY and file:line), Configuration Map, Error Model, Observations (all with file:line), Diagram Suggestions — candidates: architecture flowchart, classDiagram for type relationships, mindmap for large module hierarchies (see format below).
 
 ### Diagram Suggestions format
 
@@ -139,7 +139,7 @@ Used for large scopes (> 10 files). Handles runtime behavior tracing. Spawn a `p
 ```
 You are the EXECUTION FLOW analyst for a deep code explanation report.
 
-Read .mz/task/<task_name>/scope.md for the file list and user's question. Do NOT analyze static structure or design patterns — another researcher handles that.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do NOT analyze static structure or design patterns — another researcher handles that.
 
 ## Analysis Checklist
 
@@ -156,7 +156,7 @@ Read every file in scope. Trace how code RUNS:
 **Timing**: initialization vs per-request vs lazy, cleanup (shutdown hooks, context managers, finalizers), ordering constraints (what breaks if reordered)
 
 ## Output
-Return the report as markdown **in your response** — the orchestrator persists to `.mz/task/<task_name>/research_flow.md`. Use these sections: Entry Point Catalog, Execution Traces (numbered steps with file:line, branching as sub-lists), Data Flow Maps (input → stages with types → output), Side Effect Timeline (per path), Concurrency Analysis, Lifecycle, Diagram Suggestions — candidates: sequenceDiagram for multi-component interactions, flowchart for branching execution, stateDiagram-v2 if explicit states exist (see format below).
+Return the report as markdown **in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/research_flow.md`. Use these sections: Entry Point Catalog, Execution Traces (numbered steps with file:line, branching as sub-lists), Data Flow Maps (input → stages with types → output), Side Effect Timeline (per path), Concurrency Analysis, Lifecycle, Diagram Suggestions — candidates: sequenceDiagram for multi-component interactions, flowchart for branching execution, stateDiagram-v2 if explicit states exist (see format below).
 
 ### Diagram Suggestions format
 
@@ -178,7 +178,7 @@ Dispatched when external dependencies are detected. Spawn a `pipeline-researcher
 ```
 You are the DOMAIN researcher for a deep code explanation report.
 
-Read .mz/task/<task_name>/scope.md for the file list and user's question. Do NOT analyze internal code structure or trace execution — other researchers handle that. You provide external context that makes their findings make sense.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do NOT analyze internal code structure or trace execution — other researchers handle that. You provide external context that makes their findings make sense.
 
 ## External Dependencies Detected
 <list of external libraries, protocols, and services identified during dispatch configuration>
@@ -196,7 +196,7 @@ Read .mz/task/<task_name>/scope.md for the file list and user's question. Do NOT
 Use WebSearch and WebFetch to verify technical claims. Cite sources. Focus on details explaining THIS code's structure, not general tutorials.
 
 ## Output
-Return the report as markdown **in your response** — the orchestrator persists to `.mz/task/<task_name>/research_domain.md`. Use these sections: Dependency Profiles (purpose, abstractions, config rationale per dep), Protocol/Standard Context, Domain Patterns (name, problem solved, quality), Technology Trade-offs, Pitfall Check, Diagram Suggestions — candidates: sequenceDiagram for handshakes/protocol flows, flowchart for service topology (see format below).
+Return the report as markdown **in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/research_domain.md`. Use these sections: Dependency Profiles (purpose, abstractions, config rationale per dep), Protocol/Standard Context, Domain Patterns (name, problem solved, quality), Technology Trade-offs, Pitfall Check, Diagram Suggestions — candidates: sequenceDiagram for handshakes/protocol flows, flowchart for service topology (see format below).
 
 ### Diagram Suggestions format
 

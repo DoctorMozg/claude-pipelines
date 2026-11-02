@@ -4,7 +4,7 @@
 
 ## 4.1 Write summary
 
-Read `.mz/task/<task_name>/findings.md` and `.mz/task/<task_name>/rollback_plan.md`, then write `.mz/task/<task_name>/summary.md`:
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md` and `<PROJECT_ROOT>/.mz/task/<task_name>/rollback_plan.md`, then write `<PROJECT_ROOT>/.mz/task/<task_name>/summary.md`:
 
 ```markdown
 # Deep Audit Summary
@@ -65,7 +65,7 @@ Read `.mz/task/<task_name>/findings.md` and `.mz/task/<task_name>/rollback_plan.
 
 ## 4.2 Update findings ledger
 
-Read `LEDGER_PATH` (`.mz/reports/audit_ledger.md`). If the file does not exist, create it (along with `.mz/reports/` directory) with this header:
+Read `LEDGER_PATH` (`<PROJECT_ROOT>/.mz/reports/audit_ledger.md`). If the file does not exist, create it (along with `<PROJECT_ROOT>/.mz/reports/` directory) with this header:
 
 ```markdown
 # Deep Audit Findings Ledger
@@ -91,4 +91,4 @@ Display:
 - Ledger append count: "<n> BLOCKING findings appended to .mz/reports/audit_ledger.md"
 - Suggest `/build`, `/debug`, or `/polish` for the user to follow up on specific findings.
 
-Update state file status to `completed`.
+Set `Status: complete`, `phase_complete: true`, `what_remains: []`.

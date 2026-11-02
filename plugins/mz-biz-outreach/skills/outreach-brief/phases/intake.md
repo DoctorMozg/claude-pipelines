@@ -49,7 +49,7 @@ The loop is complete only when, for each of the four required dimensions, every 
 
 When the check passes, write both files to the run directory.
 
-`.mz/outreach/<run_name>/brief.json`:
+`<PROJECT_ROOT>/.mz/outreach/<run_name>/brief.json`:
 
 ```json
 {
@@ -62,8 +62,15 @@ When the check passes, write both files to the run directory.
 }
 ```
 
-`.mz/outreach/<run_name>/brief.md` — a human-readable rendering of the same content, one `##` section per dimension, used verbatim by the Phase 1.5 approval gate. Keep it faithful to `brief.json`; the gate shows this file.
+`<PROJECT_ROOT>/.mz/outreach/<run_name>/brief.md` — a human-readable rendering of the same content, one `##` section per dimension, used verbatim by the Phase 1.5 approval gate. Keep it faithful to `brief.json`; the gate shows this file.
 
 ## Close out
 
-Update `.mz/task/<task_name>/state.md`: set `Phase` to `intake_complete`, refresh `what_remains`. Then proceed to **Phase 1.5: Brief Approval** (inline in `SKILL.md`). The clarification questions are captured automatically in the interaction journal by the `mz-memory` hook, so this phase logs nothing itself.
+Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`: set `Phase` to `intake_complete`, refresh `what_remains`. Then proceed to **Phase 1.5: Brief Approval** (inline in `SKILL.md`).
+
+The open-value questions above are asked in prose and reach no hook. For each value that matters later (the offering, the target industries and regions, the goal), append one `input` entry to the journal, writing a sensitive value as `[redacted]`:
+
+```bash
+mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · outreach-brief · <task_name> · input\n\n- phase: 1 (intake)\n- asked: %s\n- value: %s\n- why: %s\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "<what was asked>" "<resolved value>" "<why it matters later>" >>"<PROJECT_ROOT>/.mz/journal.md"
+```

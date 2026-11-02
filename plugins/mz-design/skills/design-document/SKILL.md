@@ -9,7 +9,7 @@ allowed-tools: Agent(design-researcher), Agent(design-document-writer), Agent(ui
 
 ## Overview
 
-Takes a UI/UX design brief and produces a comprehensive design document with ASCII wireframes, Mermaid diagrams, and a WCAG 2.2 AA contrast report. Refines the draft through four specialist critics in parallel (ui-designer, ux-designer, art-designer, accessibility-specialist) with a WCAG hard gate, for up to 5 iterations, until all critics approve and zero contrast violations remain.
+Takes a UI/UX design brief and produces a comprehensive design document with ASCII wireframes, Mermaid diagrams, and a WCAG 2.2 AA contrast report. Refines the draft through four specialist critics in parallel (ui-designer, ux-designer, art-designer, accessibility-specialist) with a WCAG hard gate, for up to 5 iterations, until all critics approve and zero contrast violations remain. If the cap is reached with findings still open, the user can accept them as unresolved and move on to the approval gate.
 
 ## When to Use
 
@@ -64,7 +64,7 @@ If empty, ask the user for a brief via `AskUserQuestion`. Never guess.
 1. If brief is empty → `AskUserQuestion` asking for the brief. Do not guess.
 1. Derive task name as `<YYYY_MM_DD>_design_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the brief (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. Create `<PROJECT_ROOT>/.mz/task/<task_name>/` for `state.md` and `<PROJECT_ROOT>/.mz/design/<task_name>/` for the design artifacts.
-1. Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with `schema_version: 2` as the first line, then `Status`, `Phase`, `Started`, `phase_complete: false`, `what_remains: []`, `Iteration: 0`, `FilesWritten: []`.
+1. Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with `schema_version: 2` as the first line, then `Status: running`, `Phase: 0`, `Started: <ISO>`, `phase_complete: false`, `what_remains: []`, `Iteration: 0`, `FilesWritten: []`.
 1. Output a visible setup block showing: `task_name`, `DESIGN_DIR` path, detected modifiers.
 
 ### Phase 4: User Approval Gate

@@ -55,7 +55,7 @@ Scoped run first:
 Run scoped tests for the code in scope.
 test_command: <Scoped test command from tooling.md, %FILES% replaced with test files from scope.md>
 specific_files: <test files from scope.md>
-output_path: .mz/task/<task_name>/test_results_scoped.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/test_results_scoped.md
 ```
 
 Then full run:
@@ -63,7 +63,7 @@ Then full run:
 ```
 Run the full test suite to catch regressions outside scope.
 test_command: <Test command from tooling.md>
-output_path: .mz/task/<task_name>/test_results_full.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/test_results_full.md
 ```
 
 **If scope is global/roam or scoped command is "not supported"**: dispatch one full run only:
@@ -71,7 +71,7 @@ output_path: .mz/task/<task_name>/test_results_full.md
 ```
 Run the full test suite.
 test_command: <Test command from tooling.md>
-output_path: .mz/task/<task_name>/test_results_full.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/test_results_full.md
 ```
 
 Read the resulting artifact(s) when done.
@@ -84,10 +84,10 @@ Dispatch a `pipeline-lint-runner` agent (model: **haiku**):
 Run linter on the source files in scope.
 lint_command: <Lint command from tooling.md, or "none detected">
 scope_files: <source files from scope.md>
-output_path: .mz/task/<task_name>/lint_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md
 ```
 
-Read `.mz/task/<task_name>/lint_results.md`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md`.
 
 ### 3.4 Formatter check
 
@@ -108,10 +108,10 @@ Dispatch a `pipeline-lint-runner` agent (model: **haiku**) with the check-mode c
 Check formatting without modifying files.
 format_command: <check-mode formatter command derived above, or "none detected">
 scope_files: <source files from scope.md>
-output_path: .mz/task/<task_name>/format_results.md
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/format_results.md
 ```
 
-Read `.mz/task/<task_name>/format_results.md`.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/format_results.md`.
 
 ### 3.5 Type checker execution
 
@@ -158,7 +158,7 @@ For each runnable example/sample detected in `tooling.md`:
 
 ### 3.7 Write execution artifact
 
-Write `.mz/task/<task_name>/execution.md`:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/execution.md`:
 
 ```markdown
 # Execution Results
@@ -207,15 +207,15 @@ Review tests for the code in scope. Cover BOTH axes in one pass:
 - Coverage gaps (untested public functions, missing code paths, missing edge cases, untested error paths)
 - Quality defects (weak assertions, order dependence, over-mocking, fragility)
 
-Read .mz/task/<task_name>/scope.md for source and test file lists.
-Read .mz/task/<task_name>/execution.md for test results.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for source and test file lists.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/execution.md for test results.
 Focus ONLY on files in scope.md.
 
-Return the unified Test Review as markdown in your response — the orchestrator persists to `.mz/task/<task_name>/test_review.md`.
+Return the unified Test Review as markdown in your response — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/test_review.md`.
 The review must include both the Coverage section (with gap-count summary) and the Quality section, ending with a single VERDICT line.
 ```
 
-The reviewer is read-only and returns the review inline. After it returns, the **orchestrator** (not a sub-agent) writes the response to `.mz/task/<task_name>/test_review.md` via the Write tool before Phase 4.2 reads the file.
+The reviewer is read-only and returns the review inline. After it returns, the **orchestrator** (not a sub-agent) writes the response to `<PROJECT_ROOT>/.mz/task/<task_name>/test_review.md` via the Write tool before Phase 4.2 reads the file.
 
 ### 4.2 Merge results
 
@@ -262,11 +262,11 @@ Diagnose why these tests are failing.
 ## Failed Tests
 <list of failed tests with error output from execution.md>
 
-Read .mz/task/<task_name>/scope.md for source and test files.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for source and test files.
 
 For each failure: determine root cause (bug in source? test? setup? environment?), category (logic_bug / missing_implementation / test_bug / configuration / environment / flaky), confidence (high/medium/low), and explanation (WHY it fails with file:line). Group tests failing for the same root cause. Do NOT propose fixes — diagnose only.
 
-Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `.mz/task/<task_name>/diagnosis_tests.md`. Use this structure:
+Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/diagnosis_tests.md`. Use this structure:
 Per group: affected tests, root cause, category, confidence, explanation with file:line, impact.
 Summary: N failures from K root causes, category breakdown.
 ```
@@ -279,11 +279,11 @@ Diagnose the type errors in this project.
 ## Type Errors
 <list from execution.md>
 
-Read .mz/task/<task_name>/scope.md for source files.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for source files.
 
 For each error, determine if it's: genuine type mismatch (real bug), missing type stubs (third-party), overly strict config, or systemic pattern. Group by root cause. Do NOT propose fixes.
 
-Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `.mz/task/<task_name>/diagnosis_types.md` using the same grouped format.
+Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/diagnosis_types.md` using the same grouped format.
 ```
 
 After either diagnostician returns, the orchestrator writes the response to the corresponding artifact via the Write tool before proceeding to Phase 6.
@@ -296,7 +296,7 @@ ______________________________________________________________________
 
 ### 6.1 Report template
 
-Read all artifacts from `.mz/task/<task_name>/`. Compile into a single report using the naming convention from SKILL.md (`<YYYY_MM_DD>_test_<detailed_name><_vN>.md` in `.mz/reports/`):
+Read all artifacts from `<PROJECT_ROOT>/.mz/task/<task_name>/`. Compile into a single report using the naming convention from SKILL.md (`<YYYY_MM_DD>_test_<detailed_name><_vN>.md` in `<PROJECT_ROOT>/.mz/reports/`):
 
 ```markdown
 # Verification Report: <scope summary>

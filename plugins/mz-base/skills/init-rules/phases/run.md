@@ -157,7 +157,7 @@ On `--uninstall`, title it `Uninstall plan ready for review`, list `<id> — rem
 
 **Response handling**:
 
-- **Approve** → proceed to Step 7. This one confirmation covers every write in the run.
+- **Approve** → add `- plan approved: <resolved rules target path>` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, and proceed to Step 7. This one confirmation covers every write in the run.
 - **Reject** → update state to `aborted_by_user`, stop. Do not write anything.
 - **Any other reply (feedback)** → apply it (for example drop a rule, a personal group, or a settings entry), rebuild the plan, re-emit the full updated plan message from scratch, and re-present the selector. Repeat until the user approves or rejects.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: install plan gate`, stop. A missing answer is never approval.
@@ -341,3 +341,5 @@ Print the mode-appropriate Step 8 summary.
 - **CLAUDE.md mode**: after writes, grep CLAUDE.md for each injected `<id>` start sentinel — expect exactly one match per installed rule, carrying the current version. For uninstall and retirement, expect zero matches for removed IDs.
 - **Hand-written copies**: none of the `HandRemoved` headings remain outside sentinel blocks, and the line count dropped by the size of the approved ranges, give or take collapsed blank lines.
 - **Settings**: run the checks in `phases/enforce.md` Verification.
+
+When every check passes, set `Status: complete`, `phase_complete: true` and `what_remains: []`. If one fails, set `Status: failed` and name the failed check in `what_remains`.

@@ -1,6 +1,6 @@
 # Phase 1: Codebase Research
 
-The orchestrator runs this phase directly (no subagent). The goal is to ground the writer in real code so it does not invent API signatures, file paths, or behaviors. Output: `.mz/task/<task_name>/research.md`.
+The orchestrator runs this phase directly (no subagent). The goal is to ground the writer in real code so it does not invent API signatures, file paths, or behaviors. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/research.md`.
 
 ## 1.1 Resolve scope
 
@@ -87,7 +87,7 @@ For polish jobs (`@doc:` provided), read the existing doc and propose what to ke
 
 ## 1.9 Write `research.md`
 
-Write `.mz/task/<task_name>/research.md` using this structure:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/research.md` using this structure:
 
 ```markdown
 # Research — <one-line task title>

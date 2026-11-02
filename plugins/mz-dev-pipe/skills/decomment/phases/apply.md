@@ -5,13 +5,13 @@ Read `edits.json` and apply every edit via the Edit tool. Record success and fai
 ## Inputs
 
 - `${task_dir}edits.json` (Phase 3 output)
-- `state.md` with last gate `diff_approved` (or `auto_approved` when `MZ_DEV_PIPE_AUTO_APPROVE=1` was set)
+- `state.md` with a `- diff approved:` line under `## Decisions`, or a diff-gate entry under `## Auto-approvals` when `MZ_DEV_PIPE_AUTO_APPROVE=1` was set
 
 ## Outputs
 
 - `${task_dir}apply_log.md` — `<edit_id> OK` per applied edit
 - `${task_dir}apply_failures.md` — `<edit_id> FAIL — <error>` per failed edit
-- `${summary_path}` — final summary report at `.mz/reports/<YYYY_MM_DD>_decomment_<slug>.md`
+- `${summary_path}` — final summary report at `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_decomment_<slug>.md`
 
 ## Steps
 
@@ -19,8 +19,8 @@ Read `edits.json` and apply every edit via the Edit tool. Record success and fai
 
 Read `state.md`. Assert all of:
 
-- `Status: in_progress`
-- Last recorded gate is `diff_approved` or `auto_approved`
+- `Status: running`
+- `## Decisions` has a `diff approved` line, or `## Auto-approvals` has a diff-gate entry
 - `Phase: 3_complete`
 
 If any assertion fails, abort with an explicit error written to the chat naming the failed assertion. Do not proceed to Edit calls.
@@ -54,14 +54,16 @@ Do not re-read each file after its edits succeed. The Edit tool errors on failed
 After the apply loop completes:
 
 - `Phase: 4_complete`
-- `Status: completed`
+- `Status: complete`
+- `phase_complete: true`
+- `what_remains: []`
 - `edits_applied: <count>`
 - `edits_failed: <count>`
 - `FilesWritten:` append `apply_log.md`, `apply_failures.md`, `summary.md` to the existing list
 
 ### 4. Write summary report
 
-Write to `${summary_path}` (resolved to `.mz/reports/<YYYY_MM_DD>_decomment_<slug>.md` — same date and slug as the task name). Use this template:
+Write to `${summary_path}` (resolved to `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_decomment_<slug>.md` — same date and slug as the task name). Use this template:
 
 ```markdown
 # Decomment summary — <task_name>
@@ -132,5 +134,5 @@ Substitute the actual counts and paths. If `edits_failed` is zero, still emit th
 - Every edit id present in `edits.json` appears in exactly one of `apply_log.md` or `apply_failures.md`.
 - The summary file exists at `${summary_path}` with the resolved date and slug substituted into the path.
 - No file in the `file_path` set of `edits.json` was touched by anything other than Edit tool calls during this phase.
-- `state.md` final state: `Status: completed`, `Phase: 4_complete`, both apply counters populated.
+- `state.md` final state: `Status: complete`, `Phase: 4_complete`, `what_remains: []`, both apply counters populated.
 - The final chat message names the summary report path and the failure count.

@@ -48,9 +48,10 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ## Constants
 
+- **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **MAX_FIX_ITERATIONS**: 5 — max code-test-review cycles before escalating
 - **MAX_REVIEW_RETRIES**: 3 — max times a review can fail before escalating
-- **TASK_DIR**: `.mz/task/` in the project root
+- **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
@@ -72,10 +73,11 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 ### Phase 0: Setup
 
-1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list and save to `.mz/task/<task_name>/scope_files.txt`. Otherwise all project files eligible.
+1. **Project root** — resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list; the task-dir step saves it. Otherwise all project files eligible.
 1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/").
 1. **Task name** — `<YYYY_MM_DD>_polish_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case of criteria (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, create `.mz/task/<task_name>/` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
+1. **Task dir & state** — **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. Save the resolved scope list, if any, to `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
 ### Phase 1.5: User Approval Gate
@@ -84,11 +86,11 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 
 See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format used below.
 
-**Pre-read**: Read `.mz/task/<task_name>/assessment.md` with the Read tool and capture its full contents into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/assessment.md` with the Read tool and capture its full contents into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: assessment gate]`; `Status` stays `running`.
 
-**Surface 1 — emit the plan message.** Output the assessment verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/assessment.md` — do not substitute a path, status summary, line count, or `<failing criteria list>` / `<proposed quick-fix plan>` / `<estimated file count>` placeholders. Structure:
+**Surface 1 — emit the plan message.** Output the assessment verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/assessment.md` — do not substitute a path, status summary, line count, or `<failing criteria list>` / `<proposed quick-fix plan>` / `<estimated file count>` placeholders. Structure:
 
 ```
 ## Assessment ready for review — polish
@@ -111,7 +113,7 @@ Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop 
 
 **Response handling**:
 
-- **Approve** → update state, proceed to Phase 2.
+- **Approve** → add `- assessment approved: .mz/task/<task_name>/assessment.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: assessment_approved`, and proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
@@ -145,7 +147,7 @@ Output the final criteria checklist with every item checked, along with the test
 
 ## State Management
 
-After each phase/iteration, update `.mz/task/<task_name>/state.md` with:
+After each phase/iteration, update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:
 
 - Current phase and iteration count
 - Criteria checklist (checked/unchecked)

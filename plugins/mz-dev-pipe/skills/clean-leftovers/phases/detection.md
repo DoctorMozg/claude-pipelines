@@ -1,6 +1,6 @@
 # Phase 2: Detection
 
-The orchestrator scans the in-scope files (per `scope_files.txt` from Phase 0) for the five artifact categories below, using the embedded catalog at `references/artifact-catalog.md` plus the Phase 1 web research findings. Output: `.mz/task/<task_name>/detection.md`.
+The orchestrator scans the in-scope files (per `scope_files.txt` from Phase 0) for the five artifact categories below, using the embedded catalog at `references/artifact-catalog.md` plus the Phase 1 web research findings. Output: `<PROJECT_ROOT>/.mz/task/<task_name>/detection.md`.
 
 This phase runs in the orchestrator itself — no subagent dispatch — because detection is regex/grep work and the user must see the consolidated hit list at the approval gate. Subagent latency adds nothing.
 
@@ -14,11 +14,11 @@ Search `references/artifact-catalog.md` for the per-category pattern blocks. Do 
 - `# Category D:` — WHAT-not-WHY comments
 - `# Category E:` — Dead code & half-implementations
 
-For each category fetch its block, parse the regex list, and combine with category-matching entries from `.mz/task/<task_name>/web_research.md` (if `research_status: complete`).
+For each category fetch its block, parse the regex list, and combine with category-matching entries from `<PROJECT_ROOT>/.mz/task/<task_name>/web_research.md` (if `research_status: complete`).
 
 ## 2.2 Scan in-scope files
 
-For every file path in `.mz/task/<task_name>/scope_files.txt`:
+For every file path in `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`:
 
 1. **Skip binary files** — match by extension (`.png`, `.jpg`, `.pdf`, `.zip`, `.so`, `.dll`, etc.). Detect text-vs-binary via first 8KB if the extension is ambiguous.
 1. **Skip excluded markdown directories** — already filtered in Phase 0, but re-check here: `docs/`, `guidelines/`, repo-root `README.md`, this skill's own `references/`. The user can override via explicit path argument, but the default scan never touches them.
@@ -145,7 +145,7 @@ Structure:
 - `<path>` — reason (markdown doc, vendored, generated, this skill's references).
 ```
 
-Keep `detection.md` under 1000 lines. If hits exceed this, summarize per-category and write the full hit list to `.mz/task/<task_name>/detection_hits.json` (JSON array of tuples); reference the JSON file from `detection.md`. The approval gate still presents `detection.md` verbatim.
+Keep `detection.md` under 1000 lines. If hits exceed this, summarize per-category and write the full hit list to `<PROJECT_ROOT>/.mz/task/<task_name>/detection_hits.json` (JSON array of tuples); reference the JSON file from `detection.md`. The approval gate still presents `detection.md` verbatim.
 
 ## 2.6 Hand off to Phase 2.5
 

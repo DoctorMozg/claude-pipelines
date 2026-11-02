@@ -1,12 +1,12 @@
 # Phase 3: Cleanup Execution
 
-The orchestrator dispatches `expert-leftover-cleaner` (opus) in parallel waves to apply the approved cleanup plan from `detection.md`. Files are split into work units of ≤ MAX_FILES_PER_DISPATCH (25) files each; up to MAX_PARALLEL_AGENTS (6) cleaners run concurrently per wave. Output: edited files in-place plus `.mz/task/<task_name>/cleanup_wave_<N>.md` reports per wave.
+The orchestrator dispatches `expert-leftover-cleaner` (opus) in parallel waves to apply the approved cleanup plan from `detection.md`. Files are split into work units of ≤ MAX_FILES_PER_DISPATCH (25) files each; up to MAX_PARALLEL_AGENTS (6) cleaners run concurrently per wave. Output: edited files in-place plus `<PROJECT_ROOT>/.mz/task/<task_name>/cleanup_wave_<N>.md` reports per wave.
 
 ## 3.1 Wave planning
 
 1. **Compute waves** — split the file list from `detection.md` into chunks of MAX_FILES_PER_DISPATCH. Number of cleaner agents per wave = `min(MAX_PARALLEL_AGENTS, chunks_remaining)`.
 1. **Group by category mix** — keep files with WHAT-not-WHY candidates (category D) in their own waves when possible. D requires per-instance judgment, which slows the agent; mixing them with A/B/C work would slow autonomous-deletion work too.
-1. **Write the wave plan** to `.mz/task/<task_name>/cleanup_plan.md` so the verification phase can compare expected vs actual edits.
+1. **Write the wave plan** to `<PROJECT_ROOT>/.mz/task/<task_name>/cleanup_plan.md` so the verification phase can compare expected vs actual edits.
 
 ## 3.2 Dispatch a wave
 
@@ -17,9 +17,9 @@ Each cleaner gets this dispatch (compressed — the agent definition carries the
 ```
 Task: Clean leftover artifacts in the listed files per the approved detection.md plan.
 
-Detection input: .mz/task/<task_name>/detection.md
+Detection input: <PROJECT_ROOT>/.mz/task/<task_name>/detection.md
 Pattern catalog: <SKILL_DIR>/references/artifact-catalog.md (grep per category — do not read whole file)
-Web research:    .mz/task/<task_name>/web_research.md (additional patterns from Phase 1)
+Web research:    <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md (additional patterns from Phase 1)
 
 Files in this work unit:
   - <path 1>
@@ -39,7 +39,7 @@ Preservation rules (do not modify):
   - Comments containing numbers + units, named references (RFC, CVE, ticket IDs), or "because"/"due to"/"to avoid" — these are WHY content even if structurally similar to flagged WHAT comments.
   - Anything inside fenced code blocks of markdown files (would need explicit markdown override from user).
 
-Output report: .mz/task/<task_name>/cleanup_wave_<N>_agent_<M>.md
+Output report: <PROJECT_ROOT>/.mz/task/<task_name>/cleanup_wave_<N>_agent_<M>.md
 Status protocol: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED — exactly one terminal line.
 ```
 
@@ -72,7 +72,7 @@ Phase 3 may be re-entered from Phase 4 when verification finds residuals. The it
 
 On re-entry from Phase 4:
 
-1. Read `.mz/task/<task_name>/residuals.md` (written by verification).
+1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/residuals.md` (written by verification).
 1. Build a NEW wave plan targeting only the residual file:line hits.
 1. Dispatch with an additional instruction: `This is iteration <Iteration> of cleanup. Previous waves missed the listed residuals. Focus exclusively on these hits — do not re-scan other files.`
 1. Cap at MAX_FIX_ITERATIONS total cleanup passes. If residuals remain at the cap, the verification phase escalates instead of looping again.

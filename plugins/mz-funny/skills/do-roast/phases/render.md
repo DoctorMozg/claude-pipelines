@@ -101,7 +101,7 @@ If the second response is also empty:
    (Finding N) <Why it's roastable line, unchanged>
    ```
 1. Wrap the list in a short in-character header and footer derived from the persona's name only (no improvisation beyond "<persona> reporting. <list>. <persona> out."). This is an emergency fallback — it is not a creative artifact.
-1. Set a flag `persona_fallback = true`. The final state will escalate to `DONE_WITH_CONCERNS`.
+1. Set a flag `persona_fallback = true`. The terminal STATUS line becomes `DONE_WITH_CONCERNS` (Step 6.9).
 1. Log `Phase 5 fallback — persona agent returned empty twice, skeleton roast built from dossier Why-it's-roastable fields` to visible output.
 
 ### 5.7 Persist raw persona output
@@ -268,6 +268,8 @@ Update `TASK_DIR<task_name>/state.md`:
 
 - `Status: complete`
 - `Phase: report_written`
+- `phase_complete: true`
+- `what_remains: []`
 - `report_path: <absolute report_path>`
 - `citation_count: <citation_count>`
 - `citation_threshold: <threshold>`

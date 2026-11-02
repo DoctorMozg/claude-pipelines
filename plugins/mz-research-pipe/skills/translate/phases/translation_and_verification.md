@@ -332,7 +332,7 @@ Tier-3 counters are always expressed as `<used> / MAX_*` so the reader sees cons
 
 ### 7.2 State Update
 
-Set `state.md` Phase → `complete`. Record the following fields in the final state block:
+Set `Status: complete`, `Phase: complete`, `phase_complete: true` and `what_remains: []` in `state.md`. Record the following fields in the final state block:
 
 - `ended_at` — current wall-clock time.
 - `final_outputs` — every output path written across Phases 2, 3.3, and 6.

@@ -6,7 +6,7 @@ This phase file covers three orchestrator responsibilities: cross-reference synt
 
 - Phase 3: Cross-Reference Synthesis — 3.1 read extracts, 3.2 cross-reference, 3.3 emergent patterns, 3.4 gap consolidation.
 - Phase 3 → 3.5 Handoff — short-circuit when residual gaps are empty.
-- Phase 3.5 Gate — full Rule-1 gate body (presentation, prompt, handling, loop language, orchestrator-only notice).
+- Phase 3.5 Gate — full gate body (presentation, prompt, handling, loop language, orchestrator-only notice).
 - Phase 5: Task-Adaptive Report Generation — 5.1 section derivation, 5.2 meta-sections, 5.3 report template, 5.4 collision handling, 5.5 state update.
 - Phase 5 → User — 5-line summary.
 
@@ -14,11 +14,11 @@ ______________________________________________________________________
 
 ## Phase 3: Cross-Reference Synthesis
 
-Entry: Phase 2 finished and every approved lens wrote an `extract_<lens>.md` under `.mz/task/<task_name>/`. Any `BLOCKED` lens was already escalated in `phases/lens_dispatch.md §Phase 2.3`; do not begin Phase 3 until the outstanding `BLOCKED` / `NEEDS_CONTEXT` cases are resolved.
+Entry: Phase 2 finished and every approved lens wrote an `extract_<lens>.md` under `<PROJECT_ROOT>/.mz/task/<task_name>/`. Any `BLOCKED` lens was already escalated in `phases/lens_dispatch.md §Phase 2.3`; do not begin Phase 3 until the outstanding `BLOCKED` / `NEEDS_CONTEXT` cases are resolved.
 
 ### Phase 3.1: Read every lens extract
 
-1. List the task directory: `ls .mz/task/<task_name>/extract_*.md`.
+1. List the task directory: `ls "<PROJECT_ROOT>/.mz/task/<task_name>"/extract_*.md`.
 1. For each file in that list, read it top-to-bottom. Capture: the `## Summary`, every row of `## Extracts` (fact, source path, confidence), every `## Conflicts` entry, every `## Gaps` entry, and the `## Files read` list.
 1. Maintain an in-memory index per extract with: lens name, summary sentences, extracts list, conflicts list, gaps list, files read.
 1. If any `extract_<lens>.md` is missing despite the lens being marked returned in `state.md`, log a warning, mark the lens as degraded for synthesis purposes, and continue — do not re-dispatch from this phase (re-dispatch is Phase 2.3's responsibility).
@@ -50,12 +50,12 @@ Record each emergent pattern as: pattern name, contributing lenses, one-sentence
 1. Normalize each gap text by trimming outer whitespace, collapsing internal whitespace runs, and lowercasing.
 1. Deduplicate on the normalized text. When the same gap surfaces from multiple lenses, keep one entry and record all contributing lenses.
 1. The deduplicated list is the **residual gap list**. This list feeds Phase 3.5.
-1. Write the consolidated residual gap list to `.mz/task/<task_name>/gaps.md`. Format: one gap per section with fields GAP_ID, Description, Lenses, Web_query. Assign `GAP_ID` as `G1`, `G2`, … in list order. `Description` is the normalized gap text from step 2. `Lenses` is a comma-separated list of the contributing lens names recorded in step 3. `Web_query` is a proposed web search query derived from the gap text (a short phrase a `pipeline-web-researcher` would use to resolve it). If the residual gap list is empty, skip this write — the Phase 3 → 3.5 Handoff below will short-circuit and no `gaps.md` is needed.
+1. Write the consolidated residual gap list to `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md`. Format: one gap per section with fields GAP_ID, Description, Lenses, Web_query. Assign `GAP_ID` as `G1`, `G2`, … in list order. `Description` is the normalized gap text from step 2. `Lenses` is a comma-separated list of the contributing lens names recorded in step 3. `Web_query` is a proposed web search query derived from the gap text (a short phrase a `pipeline-web-researcher` would use to resolve it). If the residual gap list is empty, skip this write — the Phase 3 → 3.5 Handoff below will short-circuit and no `gaps.md` is needed.
 1. If the deduplicated residual gap list is empty (no gaps found), update `state.md` to add `gap_fill: skipped_empty`, then proceed directly to Phase 5 (skipping Phase 3.5).
 
 ### Phase 3 artifact write
 
-Write `.mz/task/<task_name>/synthesis.md` with these sections in order:
+Write `<PROJECT_ROOT>/.mz/task/<task_name>/synthesis.md` with these sections in order:
 
 - `## Corroborated findings` — one bullet per corroborated claim: claim text, contributing lenses, source file list, **Confidence: high**.
 - `## Single-source findings` — one bullet per single-source claim: claim text, originating lens, source file, lens-reported confidence.
@@ -83,16 +83,16 @@ ______________________________________________________________________
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `.mz/task/<task_name>/gaps.md` with the Read tool. Capture the full contents (deduplicated residual gap list with GAP_IDs, descriptions, contributing lenses, and proposed web queries) into context.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md` with the Read tool. Capture the full contents (deduplicated residual gap list with GAP_IDs, descriptions, contributing lenses, and proposed web queries) into context.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: gap-fill gate]`; `Status` stays `running`.
 
-**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
+**Surface 1 — emit the plan message.** Output the artifact verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/gaps.md` — do not substitute a path, summary, or placeholder:
 
 ```
 ## Residual gaps ready for review — combine
 
-<verbatim contents of .mz/task/<task_name>/gaps.md>
+<verbatim contents of <PROJECT_ROOT>/.mz/task/<task_name>/gaps.md>
 
 ---
 **Approve** → proceed to Phase 4 (web gap-fill dispatch, up to MAX_LENSES pipeline-web-researcher agents)  ·  **Reject** → skip web research, proceed to Phase 5 with gaps unresolved  ·  reply with feedback to revise
@@ -106,7 +106,7 @@ ______________________________________________________________________
 
 ### Response handling
 
-- **Approve** → update `state.md` phase to `gapfill_approved`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. Record the approved gap list in `state.md` verbatim so Phase 4 can dispatch against it.
+- **Approve** → add `- gap-fill approved: .mz/task/<task_name>/gaps.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: gapfill_approved`, then proceed to Phase 4 by reading `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)`. Record the approved gap list in `state.md` verbatim so Phase 4 can dispatch against it.
 - **Reject** → update `state.md` phase to `gapfill_declined`, skip Phase 4 entirely, and proceed directly to Phase 5 with the residual gaps marked unresolved in the final report's `## Gaps ### Unresolved` section.
 - **Any other reply (feedback)** → incorporate the feedback without re-running Phases 1–3. Feedback may: drop gaps from the list, merge two gaps into one (update the normalized text), rewrite a gap's text for clarity, or add a reason the user knows but the synthesis missed. Overwrite `gaps.md`, return to this gate, re-read `gaps.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. This is a loop — repeat until the user explicitly approves or rejects. Never dispatch web researchers without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: gap-fill gate`, stop. A missing answer is never approval.
@@ -119,7 +119,7 @@ ______________________________________________________________________
 
 ## Phase 5: Task-Adaptive Report Generation
 
-Entry: either Phase 3 produced an empty residual gap list (skipped 3.5 and 4), or Phase 3.5 was rejected (skipped 4), or Phase 4 completed and wrote its `gapfill_<id>.md` files under `.mz/task/<task_name>/`.
+Entry: either Phase 3 produced an empty residual gap list (skipped 3.5 and 4), or Phase 3.5 was rejected (skipped 4), or Phase 4 completed and wrote its `gapfill_<id>.md` files under `<PROJECT_ROOT>/.mz/task/<task_name>/`.
 
 Read `state.md` to recover: task text, task slug, output path override (if any), `sections:` parameter (if any), lens list, lens coverage table from `synthesis.md`, residual gap list, gap-fill resolution outcomes.
 
@@ -127,7 +127,7 @@ Read `state.md` to recover: task text, task slug, output path override (if any),
 
 The top-level report sections come from one of two sources, chosen by whether the user supplied the `sections:` parameter at invocation time.
 
-**If `sections:` was supplied** (found in `state.md` under the `Sections` field, set by Phase 0.1):
+**If `sections:` was supplied** (found in `state.md` under the `Sections` field, set by Phase 0.2):
 
 1. Parse the comma-separated list from `state.md`. Trim whitespace from each entry. Preserve the order exactly as the user supplied it.
 1. Use each entry verbatim as a top-level report section heading. Do not rename, merge, or re-order.
@@ -162,7 +162,7 @@ Regardless of whether 5.1 took the user-supplied or task-derived branch, append 
 
 ### Phase 5.3: Write the report
 
-Use the `output:` override from `state.md` if present; otherwise use the default path `.mz/reports/<YYYY_MM_DD>_combine_<slug>.md` where `<YYYY_MM_DD>` is today's date and `<slug>` is the snake_case task slug from Phase 0.3.
+Use the `output:` override from `state.md` if present; otherwise use the default path `<PROJECT_ROOT>/.mz/reports/<YYYY_MM_DD>_combine_<slug>.md` where `<YYYY_MM_DD>` is today's date and `<slug>` is the snake_case task slug from Phase 0.4.
 
 Write the report using this template (fill placeholders; adapt the task-adaptive section list to the result of 5.1; keep the meta-section headers exactly as written):
 
@@ -241,8 +241,10 @@ Do not overwrite an existing report under any circumstances.
 
 After the report file is written, update `state.md`:
 
-- `Status` → `completed`
+- `Status` → `complete`
 - `Phase` → `report_written`
+- `phase_complete` → `true`
+- `what_remains` → `[]`
 - `Output` → absolute path of the report just written
 - `Sections source` → `task-derived` or `user-supplied`
 - `Completed` → current timestamp

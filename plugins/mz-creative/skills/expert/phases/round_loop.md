@@ -40,7 +40,7 @@ For each of the 5 selected lens agents, substitute:
 | `{round_n}`             | current round number (1, 2, or 3)                                                        |
 | `{prior_summary_block}` | empty for R1; `## Previous round summary\n\n<verbatim round_<N-1>_summary.md>` for R2/R3 |
 | `{prior_iter_block}`    | empty for R1; `## Your prior output\n\n<verbatim iter_<N-1>_<agent_name>.md>` for R2/R3  |
-| `{output_path}`         | `.mz/task/<task_name>/iter_<N>_<agent_name>.md`                                          |
+| `{output_path}`         | `<PROJECT_ROOT>/.mz/task/<task_name>/iter_<N>_<agent_name>.md`                           |
 | `{lens_name}`           | short lens label derived from the agent name (e.g. `engineer` for `lens-engineer`)       |
 | `{agent_name}`          | the full agent name (e.g. `lens-engineer`)                                               |
 
@@ -48,7 +48,7 @@ When R1, substitute empty strings for `{prior_summary_block}` and `{prior_iter_b
 
 ## Step 2.2 — Parallel panelist dispatch
 
-Read `.mz/task/<task_name>/panel.md` to get the 5 agent names. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its lens role — so the wave is visible to the user.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/panel.md` to get the 5 agent names. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per panelist with its lens role — so the wave is visible to the user.
 
 Dispatch all 5 in **one message** (single tool-use block with 5 `Agent` calls). Each gets its own substituted dispatch prompt as the user message.
 
@@ -61,14 +61,14 @@ Parallelism is load-bearing. Sequential dispatch triples latency and introduces 
 For each panelist, verify:
 
 ```bash
-test -s .mz/task/<task_name>/iter_<N>_<agent>.md
+test -s "<PROJECT_ROOT>/.mz/task/<task_name>/iter_<N>_<agent>.md"
 ```
 
 And that the file contains the required sections for the round. Quick check:
 
 ```bash
 grep -c '^## Strengths\|^## Weaknesses\|^## Risks\|^## Suggestions\|^## Scores\|^## Confidence' \
-  .mz/task/<task_name>/iter_<N>_<agent>.md
+  "<PROJECT_ROOT>/.mz/task/<task_name>/iter_<N>_<agent>.md"
 ```
 
 Should return ≥ 6 for round 1 and ≥ 8 for rounds 2-3 (adds Reactions + Changelog).
@@ -77,7 +77,7 @@ Confirm the four rubric scores are present and well-formed:
 
 ```bash
 grep -cE '^- (Merit|Feasibility|Risk exposure|Readiness to proceed): [1-5]/5' \
-  .mz/task/<task_name>/iter_<N>_<agent>.md
+  "<PROJECT_ROOT>/.mz/task/<task_name>/iter_<N>_<agent>.md"
 ```
 
 Should return 4. A file that passes the section-count check but returns fewer than 4 here has a malformed Scores block — treat it as malformed and retry per below.
@@ -97,19 +97,19 @@ Once all 5 (or however many succeeded) panelist outputs are on disk, dispatch `e
 You are the round synthesizer for an expert panel review. Your job is a neutral, lens-agnostic consolidation. You do not advocate.
 
 ## Task Directory
-.mz/task/<task_name>/
+<PROJECT_ROOT>/.mz/task/<task_name>/
 
 ## Round
 <N>
 
 ## Read
-- .mz/task/<task_name>/iter_<N>_<agent1>.md
-- .mz/task/<task_name>/iter_<N>_<agent2>.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/iter_<N>_<agent1>.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/iter_<N>_<agent2>.md
 - ... (all 5 panelist files for round <N>)
-- .mz/task/<task_name>/panel.md
+- <PROJECT_ROOT>/.mz/task/<task_name>/panel.md
 
 ## Your Job
-Write .mz/task/<task_name>/round_<N>_summary.md using the schema from your agent spec. Capture:
+Write <PROJECT_ROOT>/.mz/task/<task_name>/round_<N>_summary.md using the schema from your agent spec. Capture:
 
 1. **Consensus** — points ≥3 of the 5 agents converged on. Quote or paraphrase specific agents.
 2. **Divergence** — explicit conflicts. Name both sides. Capture the core tradeoff.
