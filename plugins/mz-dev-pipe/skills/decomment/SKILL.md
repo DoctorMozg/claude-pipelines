@@ -88,7 +88,7 @@ Scanned <N> code files in scope; the proposers emitted <M> edits across <K> file
 ---
 **Approve** → apply every edit in edits.json (Phase 4)  ·  **Reject** → mark task aborted, no file is touched  ·  reply with feedback to revise
 
-Approve cost (estimated): <M> Edit calls × ~0 agents ≈ ~$0.00 (apply phase runs no LLMs)
+Approve cost (estimated): <M> Edit calls and no agent calls (the apply phase runs no LLMs)
 ```
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the diff in the question body, it lives in the plan message above:

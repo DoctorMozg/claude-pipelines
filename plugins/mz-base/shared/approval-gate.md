@@ -17,7 +17,7 @@ Every approval gate shows the artifact as an ordinary markdown chat message (Sur
 
 ## Where gates go
 
-Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repository. Web research runs without a gate, and read-only skills such as `explain` need none.
+Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repository. A read-only skill may put one gate before its main agent wave when that wave is large or costly, as deep-research, expert, brainstorm, outreach-brief and combine do; a later step such as a gap-fill wave doesn't get another. A single search or lookup runs without a gate, and read-only skills such as `explain` need none.
 
 ## Elements, in order
 

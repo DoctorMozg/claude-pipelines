@@ -73,7 +73,7 @@ Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's 
 
 **Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
 
-Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Pass `project_root: <PROJECT_ROOT>` and write to `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`. If `pipeline-tooling-detector` returns `BLOCKED` (no recognizable tooling), note it in `state.md` as `tooling: not_detected` and proceed — tooling failure is non-fatal at setup time.
+Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Pass `project_root: <PROJECT_ROOT>` and `output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`. If it returns `DONE_WITH_CONCERNS` with the test or lint command set to "none detected", note `tooling: not_detected` in `state.md` and proceed. If it returns `BLOCKED` (it couldn't write `tooling.md`), record the reason in `state.md` and proceed the same way. Tooling gaps are non-fatal at setup time.
 
 ### Phase 1: Research
 
