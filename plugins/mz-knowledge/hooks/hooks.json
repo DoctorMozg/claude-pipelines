@@ -16,10 +16,10 @@
         "hooks": [
           {
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/vault-context.sh",
-            "once": true,
             "type": "command"
           }
-        ]
+        ],
+        "matcher": "startup|clear|compact"
       }
     ]
   }

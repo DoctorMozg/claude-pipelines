@@ -5,10 +5,10 @@
         "hooks": [
           {
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/detect-tooling.sh",
-            "once": true,
             "type": "command"
           }
-        ]
+        ],
+        "matcher": "startup|clear|compact"
       }
     ]
   }

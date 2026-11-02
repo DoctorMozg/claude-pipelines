@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# SessionStart hook (once: true) — detects project tooling and writes .mz/tooling.json.
+# SessionStart hook (startup, clear, compact) — detects project tooling and writes .mz/tooling.json.
 # Language-agnostic: checks for ecosystem config files, then parses them for specific tools.
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
