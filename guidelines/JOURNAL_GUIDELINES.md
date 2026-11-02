@@ -188,7 +188,7 @@ A skill that records a substantial decision should write it under `## Decisions`
 ## 7. Ownership and Dependency
 
 - **Format and rules**: this file. Every plugin follows it.
-- **Hook and helper**: mz-memory's `scripts/journal-capture.sh` and `scripts/journal-append.sh`. Both append through `journal_append` in `scripts/lib/common.sh`, which serializes writers with `flock` when it is available and redacts `<private>` spans.
+- **Hook**: mz-memory's `scripts/journal-capture.sh`. It appends through `journal_append` in `scripts/lib/common.sh`, which serializes writers with `flock` when it is available and redacts `<private>` spans.
 - **Other plugins** write `.mz/journal.md` and `state.md` directly with Bash and don't call mz-memory's scripts. `${CLAUDE_PLUGIN_ROOT}` is the calling plugin's own installed path (plugins-reference.md), so another plugin has no supported way to locate them.
 
 **Dependency.** Layer A needs mz-memory installed and enabled, and `jq` on PATH. Without `jq` the hook records nothing and reports no error. No plugin in this repository declares mz-memory as a dependency, so a skill can't assume the hook is present. Without it, gates work as usual and Layer B entries still land; only the automatic record is missing. Skill text says the hook records a gate "when mz-memory is installed", not that it "already records every gate".
@@ -197,7 +197,7 @@ A skill that records a substantial decision should write it under `## Decisions`
 
 The journal stores interactions verbatim, including artifacts that can hold sensitive content such as outreach drafts, tokens or customer data.
 
-- **mz-memory redacts what it writes.** `journal_append` replaces every `<private>…</private>` span with `[redacted]` and keeps the surrounding whitespace, so code indentation survives (`redact_private` in `plugins/mz-memory/scripts/lib/common.sh`). The hook and `journal-append.sh` both go through it. Without perl, the `sed` fallback misses a span that contains `<` or crosses a line.
+- **mz-memory redacts what it writes.** `journal_append` replaces every `<private>…</private>` span with `[redacted]` and keeps the surrounding whitespace, so code indentation survives (`redact_private` in `plugins/mz-memory/scripts/lib/common.sh`). The hook goes through it. Without perl, the `sed` fallback misses a span that contains `<` or crosses a line.
 - **A skill's own append isn't redacted.** A direct `>>` bypasses `journal_append`, so a `<private>` tag would be stored as is, with the secret inside it (observed). A skill writes `[redacted]` in place of each sensitive value itself, and replaces each `<private>…</private>` span with `[redacted]` before appending, for example when it copies an artifact verbatim. The second recipe in §4 does this with the perl expression mz-memory uses, which also handles spans that cross lines.
 - **Codex.** The remapped hook journals every user prompt, and only `<private>` spans are redacted.
 - **Git.** The journal stays out of git only when the project ignores `.mz/` (§2).
