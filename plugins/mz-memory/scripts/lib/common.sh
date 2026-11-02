@@ -12,6 +12,11 @@ MZ_PIN_START="<!-- mz-pinned-start -->"
 MZ_PIN_END="<!-- mz-pinned-end -->"
 MZ_LOG_START="<!-- mz-log-start -->"
 MZ_LOG_END="<!-- mz-log-end -->"
+# The stored Activity Log is capped in lines. Compression starts below the cap so old lines
+# are summarized before pruning would drop them.
+MZ_LOG_MAX_LINES=400
+# shellcheck disable=SC2034 # read by memory-capture.sh and memory-compress.sh, which source this file
+MZ_COMPRESS_THRESHOLD=300
 
 # Walk up from CLAUDE_PROJECT_DIR (or PWD) to the nearest .git, so monorepo
 # subdirectories share one MEMORY.md at the repo root. MZ_MEMORY_ROOT wins
@@ -166,21 +171,20 @@ extract_log() {
   ' "$memory_file" | head -n "$max_lines" || true
 }
 
-# Prepend a block of pre-formatted entries into the Activity Log region and
-# prune to MAX_LOG_LINES. Block is taken from stdin so callers can pipe.
+# Prepend entries from stdin to the Activity Log and prune it to $2 lines, new entries included.
 prepend_to_log() {
   local memory_file="$1"
-  local max_lines="${2:-200}"
+  local max_lines="${2:-$MZ_LOG_MAX_LINES}"
   local new_block
   new_block=$(cat)
   [[ -n "$new_block" ]] || return 0
 
-  awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" \
-      -v new="$new_block" -v max="$max_lines" '
-    BEGIN { in_log = 0; count = 0 }
+  # ENVIRON, unlike awk -v, keeps backslashes in entries literal.
+  MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" -v max="$max_lines" '
+    BEGIN { in_log = 0; new = ENVIRON["MZ_NEW_BLOCK"]; count = split(new, new_lines, "\n") }
     $0 == start {
       print
-      printf "%s\n", new
+      for (i = 1; i <= count && i <= max; i++) print new_lines[i]
       in_log = 1
       next
     }

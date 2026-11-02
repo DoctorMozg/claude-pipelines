@@ -44,7 +44,7 @@ Memory is stored at `.mz/memory/MEMORY.md` in the project root. The file uses a 
 ```
 
 - **Pinned**: persistent invariants and decisions. Never auto-pruned. Edit by hand or use `/memory-note`.
-- **Activity Log**: rolling FIFO, capped at 200 lines. Most recent first. Auto-populated by SessionEnd.
+- **Activity Log**: rolling FIFO, capped at 400 lines. Most recent first. Auto-populated by SessionEnd. SessionStart injects only the newest 200 lines.
 
 The file is human-readable, git-trackable (add to `.gitignore` for per-developer memory), and resilient to header corruption — the marker comments (`<!-- mz-pinned-start -->` etc.) anchor every insert, so the structure repairs itself if the header is hand-edited.
 
@@ -70,9 +70,11 @@ Each prompt is tokenized (alphanumeric, length ≥ 4, common stopwords dropped, 
 
 This is the 10× token-savings pattern from progressive-disclosure memory architectures: don't dump 200 lines into every prompt — only inject what the user is currently asking about.
 
-### Optional LLM Compression
+### LLM Compression
 
-When `MZ_MEMORY_COMPRESS=1` is set and `claude` is on PATH, SessionEnd will detach a background `memory-compress.sh` process whenever the Activity Log exceeds 300 entries. It keeps the most recent 100 verbatim and replaces the rest with a themed summary (`## Recurring decisions`, `## Resolved bugs`, etc.). Failure is silent — compression is best-effort and never blocks the session.
+Compression is on by default. When `claude` is on PATH and the Activity Log passes 300 lines, SessionEnd detaches a background `memory-compress.sh`. It keeps the newest 100 lines verbatim, extended to the end of the entry the cut lands in, and replaces the rest with a themed summary (`## Recurring decisions`, `## Resolved bugs`, etc.). Because it starts below the 400-line cap, old entries get summarized instead of pruned.
+
+The summary comes from a headless `claude -p` call on your own account, so it uses your plan or API usage. That child session runs with `MZ_MEMORY_COMPRESS=0`, so its own SessionEnd can't start another compression. Set `MZ_MEMORY_COMPRESS=0` to turn compression off; the log is then pruned at 400 lines. Failure is silent: compression is best-effort and never blocks the session.
 
 ## Interaction Journal
 
@@ -95,10 +97,10 @@ Adds a single dated line to **Pinned** by default, or to the **Activity Log** wi
 
 ## Environment Variables
 
-| Variable               | Effect                                                  |
-| ---------------------- | ------------------------------------------------------- |
-| `MZ_MEMORY_ROOT`       | Override project-root detection (absolute path)         |
-| `MZ_MEMORY_COMPRESS=1` | Enable background LLM compression of long Activity Logs |
+| Variable               | Effect                                                    |
+| ---------------------- | --------------------------------------------------------- |
+| `MZ_MEMORY_ROOT`       | Override project-root detection (absolute path)           |
+| `MZ_MEMORY_COMPRESS=0` | Turn off background LLM compression of long Activity Logs |
 
 ## Pair With
 
@@ -126,7 +128,7 @@ This is **complementary** to the global memory system this plugin provides:
 | `scripts/lib/common.sh`                  | Shared helpers: `find_project_root`, `strip_private`, `atomic_write`, …                                 |
 | `scripts/memory-{inject,capture}.sh`     | Core SessionStart / SessionEnd hooks                                                                    |
 | `scripts/memory-prompt-inject.sh`        | UserPromptSubmit selective-injection hook                                                               |
-| `scripts/memory-compress.sh`             | Optional background LLM compaction of the Activity Log                                                  |
+| `scripts/memory-compress.sh`             | Background LLM compaction of the Activity Log                                                           |
 | `scripts/journal-capture.sh`             | PostToolUse(AskUserQuestion) hook — records completed calls to `.mz/journal.md`                         |
 | `scripts/journal-append.sh`              | Internal helper used by journal-capture.sh (flock-guarded, `<private>`-redacting); skills don't call it |
 | `scripts/memory-note.sh`                 | CLI helper invoked by the `/memory-note` skill                                                          |

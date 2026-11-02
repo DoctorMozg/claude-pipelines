@@ -13,7 +13,6 @@ source "${SCRIPT_DIR}/lib/common.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_FILE="${PROJECT_DIR}/.mz/memory/MEMORY.md"
-MAX_LOG_LINES=200
 
 TARGET="pinned"
 if [[ "${1:-}" == "--log" ]]; then
@@ -39,7 +38,7 @@ if grep -qF "$ENTRY" "$MEMORY_FILE" 2>/dev/null; then
 fi
 
 if [[ "$TARGET" == "log" ]]; then
-  printf '%s\n' "$ENTRY" | prepend_to_log "$MEMORY_FILE" "$MAX_LOG_LINES"
+  printf '%s\n' "$ENTRY" | prepend_to_log "$MEMORY_FILE" "$MZ_LOG_MAX_LINES"
 else
   printf '%s\n' "$ENTRY" | prepend_to_pinned "$MEMORY_FILE"
 fi

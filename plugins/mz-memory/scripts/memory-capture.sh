@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # SessionEnd hook — captures completed task summaries into project memory.
-# Targets <1.5s; offloads optional LLM compression to a detached child.
+# Targets <1.5s; offloads LLM compression to a detached child.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
@@ -14,8 +14,6 @@ MEMORY_FILE="${MEMORY_DIR}/MEMORY.md"
 TASK_DIR="${PROJECT_DIR}/.mz/task"
 AGENT_MEMORY_DIR="${PROJECT_DIR}/.claude/agent-memory"
 
-MAX_LOG_LINES=200
-COMPRESS_THRESHOLD=300
 # Parsing a long task history would exceed the 1.5 s SessionEnd budget, and a killed run never advances the marker.
 MAX_FIRST_RUN_TASKS=50
 
@@ -96,17 +94,16 @@ done <<<"$CHANGED"
 NEW_BLOCK=$(printf '%s' "$NEW_BLOCK" | strip_private)
 
 if [[ -n "$NEW_BLOCK" ]]; then
-  printf '%s' "$NEW_BLOCK" | prepend_to_log "$MEMORY_FILE" "$MAX_LOG_LINES"
+  printf '%s' "$NEW_BLOCK" | prepend_to_log "$MEMORY_FILE" "$MZ_LOG_MAX_LINES"
 fi
 
 # Advance only after the log write succeeded, so a failed run is retried next time.
 mv -f "$NEXT_MARKER" "$CAPTURE_MARKER"
 
-# Optional background compression. Off by default — opt in with
-# MZ_MEMORY_COMPRESS=1. Detached so we never block SessionEnd past its budget.
-if [[ "${MZ_MEMORY_COMPRESS:-0}" == "1" ]] && command -v claude >/dev/null 2>&1; then
-  LOG_LEN=$(extract_log "$MEMORY_FILE" 9999 | grep -cE '^- ' || true)
-  if [[ "${LOG_LEN:-0}" -gt "$COMPRESS_THRESHOLD" ]]; then
+# Compression is on by default and MZ_MEMORY_COMPRESS=0 opts out. Detached so SessionEnd never waits on the LLM.
+if [[ "${MZ_MEMORY_COMPRESS:-1}" != "0" ]] && command -v claude >/dev/null 2>&1; then
+  LOG_LEN=$(extract_log "$MEMORY_FILE" 9999 | awk 'END { print NR }')
+  if [[ "${LOG_LEN:-0}" -gt "$MZ_COMPRESS_THRESHOLD" ]]; then
     nohup "${SCRIPT_DIR}/memory-compress.sh" >/dev/null 2>&1 &
     disown 2>/dev/null || true
   fi

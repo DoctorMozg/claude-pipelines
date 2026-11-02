@@ -10,7 +10,7 @@ model: haiku
 
 ## Overview
 
-Appends a single dated entry to `.mz/memory/MEMORY.md`. By default the entry goes to the **Pinned** section (persistent, never auto-pruned). Pass `--log` to append to the **Activity Log** instead (FIFO, capped at 200 lines).
+Appends a single dated entry to `.mz/memory/MEMORY.md`. By default the entry goes to the **Pinned** section (persistent, never auto-pruned). Pass `--log` to append to the **Activity Log** instead (FIFO, capped at 400 lines).
 
 ## When to Use
 

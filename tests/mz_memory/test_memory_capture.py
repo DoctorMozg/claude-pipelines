@@ -1,5 +1,7 @@
 import os
+import shlex
 import subprocess
+import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
@@ -10,6 +12,10 @@ CAPTURE_SCRIPT = (
     Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts" / "memory-capture.sh"
 )
 LOG_START = "<!-- mz-log-start -->"
+LOG_END = "<!-- mz-log-end -->"
+COMPRESSED_MARK = "<!-- mz-compressed -->"
+MAX_LOG_LINES = 400
+COMPRESS_THRESHOLD = 300
 
 
 class TaskWriter(Protocol):
@@ -72,27 +78,67 @@ def write_task(write_raw_task: RawTaskWriter) -> TaskWriter:
     return write
 
 
+def _log_region(project: Path) -> list[str]:
+    lines = _memory_file(project).read_text(encoding="utf-8").splitlines()
+    return lines[lines.index(LOG_START) + 1 : lines.index(LOG_END)]
+
+
+def _entries(count: int, extra_lines: int = 0) -> list[str]:
+    lines: list[str] = []
+    for index in range(count):
+        lines.append(f"- [2026-10-01] task_{index:04d} (phase=done)")
+        lines.extend(f"  - decision {index}.{line}" for line in range(extra_lines))
+    return lines
+
+
+def _run_capture(env: dict[str, str]) -> None:
+    result = subprocess.run(
+        ["bash", str(CAPTURE_SCRIPT)],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def _seed_log(project: Path, env: dict[str, str], lines: list[str]) -> None:
+    """Create a current-layout memory file through capture itself, then fill its Activity Log."""
+    _run_capture({**env, "MZ_MEMORY_COMPRESS": "0"})
+    memory = _memory_file(project)
+    text = memory.read_text(encoding="utf-8")
+    memory.write_text(
+        text.replace(f"{LOG_START}\n", f"{LOG_START}\n" + "".join(f"{line}\n" for line in lines)),
+        encoding="utf-8",
+    )
+
+
+def _wait_until(condition: Callable[[], bool], seconds: float) -> bool:
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+        time.sleep(0.05)
+    return condition()
+
+
 @pytest.fixture
-def run_capture(project: Path) -> Callable[[], None]:
+def capture_env(project: Path) -> dict[str, str]:
     env = {
         key: value
         for key, value in os.environ.items()
         if key not in {"MZ_MEMORY_COMPRESS", "CLAUDE_PROJECT_DIR"}
     }
     env["MZ_MEMORY_ROOT"] = str(project)
+    return env
 
-    def run() -> None:
-        result = subprocess.run(
-            ["bash", str(CAPTURE_SCRIPT)],
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-        assert result.returncode == 0, result.stderr
 
-    return run
+@pytest.fixture
+def run_capture(capture_env: dict[str, str]) -> Callable[[], None]:
+    # Compression is on by default; switching it off keeps these tests from starting the real CLI.
+    env = {**capture_env, "MZ_MEMORY_COMPRESS": "0"}
+    return lambda: _run_capture(env)
 
 
 class TestStatusFilter:
@@ -309,3 +355,64 @@ class TestPrivacy:
         memory_text = _memory_file(project).read_text(encoding="utf-8")
         assert "jane@acme.test" not in memory_text
         assert "contact first" in memory_text
+
+
+class TestPruning:
+    def test_log_is_pruned_to_its_line_cap(
+        self,
+        project: Path,
+        capture_env: dict[str, str],
+        write_task: TaskWriter,
+        run_capture: Callable[[], None],
+    ) -> None:
+        _seed_log(project, capture_env, _entries(MAX_LOG_LINES + 50))
+        write_task("2026_11_02_build_auth", "complete")
+
+        run_capture()
+
+        log = _log_region(project)
+        assert len(log) == MAX_LOG_LINES
+        assert "2026_11_02_build_auth" in log[0]
+
+
+class TestBackgroundCompression:
+    @pytest.fixture
+    def compress_env(self, project: Path, capture_env: dict[str, str]) -> dict[str, str]:
+        """Capture env with a stub `claude` first on PATH, so the compressor never calls the CLI."""
+        bin_dir = project / "bin"
+        bin_dir.mkdir()
+        stub = bin_dir / "claude"
+        summary = "## Recurring decisions\n- [2026-10-01] summarized older work"
+        stub.write_text(
+            f"#!/usr/bin/env bash\ncat >/dev/null\nprintf '%s' {shlex.quote(summary)}\n"
+        )
+        stub.chmod(0o755)
+        return {**capture_env, "PATH": f"{bin_dir}{os.pathsep}{capture_env['PATH']}"}
+
+    @staticmethod
+    def _compression_finished(project: Path) -> bool:
+        lock = project / ".mz" / "memory" / ".compress.lock"
+        return COMPRESSED_MARK in _log_region(project) and not lock.exists()
+
+    def test_log_past_the_threshold_is_compressed_by_default(
+        self, project: Path, write_task: TaskWriter, compress_env: dict[str, str]
+    ) -> None:
+        # Entries with Decisions span several lines, so 120 entries already pass the line threshold.
+        _seed_log(project, compress_env, _entries(120, extra_lines=2))
+        write_task("2026_11_02_build_auth", "complete")
+
+        _run_capture(compress_env)
+
+        assert _wait_until(lambda: self._compression_finished(project), seconds=15)
+        assert len(_log_region(project)) <= COMPRESS_THRESHOLD
+
+    def test_opt_out_leaves_a_long_log_uncompressed(
+        self, project: Path, write_task: TaskWriter, compress_env: dict[str, str]
+    ) -> None:
+        _seed_log(project, compress_env, _entries(COMPRESS_THRESHOLD + 50))
+        write_task("2026_11_02_build_auth", "complete")
+
+        _run_capture({**compress_env, "MZ_MEMORY_COMPRESS": "0"})
+
+        assert not _wait_until(lambda: self._compression_finished(project), seconds=1.5)
+        assert COMPRESSED_MARK not in _log_region(project)

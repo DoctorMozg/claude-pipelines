@@ -59,3 +59,40 @@ class TestExtractLog:
 
         assert result.returncode == 0, result.stderr
         assert len(result.stdout.splitlines()) == 5_000
+
+
+def _log_lines(memory: Path) -> list[str]:
+    lines = memory.read_text(encoding="utf-8").splitlines()
+    return lines[lines.index(LOG_START) + 1 : lines.index(LOG_END)]
+
+
+class TestPrependToLog:
+    def test_default_cap_counts_the_new_block(
+        self, call_helper: CallHelper, memory_file: Path
+    ) -> None:
+        command = "printf '%s\\n' '- new one' '- new two' | prepend_to_log \"$2\""
+        result = call_helper(command, memory_file)
+
+        assert result.returncode == 0, result.stderr
+        log = _log_lines(memory_file)
+        assert len(log) == 400
+        assert log[:3] == ["- new one", "- new two", log[2]]
+        assert log[2].startswith("- [2026-11-01] task_00000 ")
+
+    def test_backslashes_in_entries_are_kept(
+        self, call_helper: CallHelper, memory_file: Path
+    ) -> None:
+        entry = r"- [2026-11-02] moved C:\new\tools to D:\temp"
+
+        result = call_helper(f"printf '%s\\n' '{entry}' | prepend_to_log \"$2\" 10", memory_file)
+
+        assert result.returncode == 0, result.stderr
+        assert _log_lines(memory_file)[0] == entry
+
+    def test_new_block_longer_than_the_cap_is_cut_to_it(
+        self, call_helper: CallHelper, memory_file: Path
+    ) -> None:
+        result = call_helper("seq -f '- new %g' 1 30 | prepend_to_log \"$2\" 10", memory_file)
+
+        assert result.returncode == 0, result.stderr
+        assert _log_lines(memory_file) == [f"- new {index}" for index in range(1, 11)]
