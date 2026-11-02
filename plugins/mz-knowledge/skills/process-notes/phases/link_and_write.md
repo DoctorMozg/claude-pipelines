@@ -27,47 +27,28 @@ Update `state.md` once all approved notes are written: `Phase: 2`, `NotesWritten
 Dispatch the `link-suggester` agent (model: sonnet) with the prompt below. This agent searches the vault for existing notes that each new note should link to.
 
 ```
-New notes written (title → path mapping):
-<paste TitleToPath block from state.md as a YAML list>
+target_notes:
+  - title: "<title from TitleToPath>"
+    path: "<absolute path from TitleToPath>"
+  <one entry per TitleToPath item in state.md>
+vault_path: <vault_path>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md
+task_name: <task_name>
+inbound: false
 
-Vault root: <vault_path>
-Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
-
-Your task:
-
-For each new note, scan the vault for existing notes that the new note should reference via [[wikilinks]]. For every candidate target, record:
-- Source note title (one of the new notes)
-- Target note title (existing vault note)
-- Relationship type, chosen from: supports | contradicts | extends | example-of | prerequisite-for | see-also
-- One-sentence reason grounded in the actual content of both notes — not a guess
-
-Caps:
-- At most 5 link suggestions per new note.
-- Do not propose links between two new notes at this stage — that is a separate pass.
-- Skip candidates whose relationship you cannot justify in one sentence from read content.
-
-Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` using exactly this YAML shape:
-
-links:
-  - source_title: "First new note title"
-    source_path: "<absolute path>"
-    targets:
-      - target_title: "Existing Vault Note"
-        target_path: "<absolute path>"
-        relationship: "extends"
-        reason: "One sentence..."
-      - ...
-  - source_title: "Second new note title"
-    source_path: "<absolute path>"
-    targets: []
-
-Terminal status:
-- STATUS: DONE with `link_proposals.md` written.
-- STATUS: DONE_WITH_CONCERNS if the vault contains fewer than 10 readable notes — still write the file with whatever was found, but flag the small-vault concern.
-- STATUS: NEEDS_CONTEXT only if the vault root is missing or unreadable.
+Your task: these notes were just written. Find existing vault notes each of them should reference via [[wikilinks]], at most 5 per note. Skip candidates whose relationship you cannot justify in one sentence from read content.
 ```
 
-After the agent returns, read `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` and validate structure (`links:` list, each entry has `source_title`, `source_path`, `targets` list). Update `state.md`: `Phase: link_proposals_ready`.
+After the agent returns, act on its terminal `STATUS:` line before reading the artifact:
+
+- `DONE` → validate the artifact as below.
+- `DONE_WITH_CONCERNS` → the vault has fewer than 10 permanent notes, so the proposals are thin. Record `SmallVault: true` in `state.md`, then validate the artifact as below.
+- `NEEDS_CONTEXT` → this dispatch left out the field the agent names. Fill it in from `state.md` and re-dispatch once; if the agent asks again, handle it as `BLOCKED`.
+- `BLOCKED` → the vault root or a new note is unreadable at the path the agent quotes. Ask via AskUserQuestion whether to re-dispatch with a corrected path or finish without links. On finish, set `Status: complete`, `LinksAdded: 0`, `LinksSkipped: true`, `LinkSuggesterBlocked: <the agent's reason>`, and print the final output block.
+- No status line, or one not listed here → handle it as `BLOCKED`.
+- No answer to a question above → set `Status: blocked` with the open question in `what_remains` and stop. A missing answer is never approval.
+
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` and validate structure against the output format in the link-suggester agent definition: a `links:` list with one entry per new note; each entry has `source_title`, `source_path` and a `targets` list; each target has `direction`, `target_title`, `target_path`, `relationship` and `reason`, and its `direction` is `outbound`. Update `state.md`: `Phase: link_proposals_ready`.
 
 Return to SKILL.md Phase 2.5 with the proposals formatted for the user-facing presentation.
 
@@ -78,7 +59,7 @@ After the user approves in Phase 2.5 (with optional per-link skips), apply appro
 1. Group approved targets by `source_path`.
 1. For each source note:
    - Read the note file.
-   - If the body already contains a `## Related` section, append new `- [[Target Title]] — <relationship>` lines below it, preserving existing links.
+   - If the body already contains a `## Related` section, append new `- [[<target_title>]] — <relationship>` lines below it, preserving existing links.
    - If no `## Related` section exists, append one to the end of the body with a blank line before the header.
    - Preserve the frontmatter block untouched. Never move or rewrite existing content — only append to the Related section.
 1. Update `state.md`: `Phase: 2`, `Status: complete`, `Completed: <ISO timestamp>`, `LinksAdded: <N>`.

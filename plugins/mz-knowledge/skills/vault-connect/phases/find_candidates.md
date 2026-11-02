@@ -2,7 +2,7 @@
 
 ## Goal
 
-Find existing vault notes that should be linked to or from the target note. Dispatch `link-suggester` with the target content and typed-relationship instructions. Collect proposals for the Phase 1.5 approval gate.
+Find existing vault notes that should be linked to or from the target note. Dispatch `link-suggester` for the target note with inbound links enabled. Collect proposals for the Phase 1.5 approval gate.
 
 ## Step 1: Prepare target preview
 
@@ -13,71 +13,39 @@ Read the target note. Strip the frontmatter. Take the first `TARGET_PREVIEW_WORD
 Dispatch the `link-suggester` agent (model: sonnet) with this task-specific prompt:
 
 ```
-Target note:
-  title: "<title>"
-  path: "<absolute path>"
-  content (first 500 words):
+target_notes:
+  - title: "<title>"
+    path: "<absolute path>"
+vault_path: <vault_path>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md
+task_name: <task_name>
+inbound: true
+
+Target preview (first 500 words):
 <preview>
 
-Vault path: <vault_path>
-Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
-
-Your task:
-
-Find existing vault notes that should be linked to or from this target note. Do not propose links to notes you have not actually read — every proposal must be grounded in both notes' content.
-
-Steps:
-
-1. Extract 5-10 key terms and concepts from the target note (titles, named entities, domain terms, distinctive phrases).
-2. Search the vault for notes mentioning these terms — grep both filenames and body content.
-3. Read up to 15 top matching notes (first 200 words each).
-4. For each match, decide two things independently:
-   - Should the TARGET note link to it? (Yes if the target discusses a concept this match explains or extends.)
-   - Should the MATCH link back? (Yes if the match discusses something the target exemplifies, extends, or refutes.)
-5. Assign a relationship type from this closed set:
-   supports | contradicts | extends | example-of | prerequisite-for | see-also
-6. Skip any candidate whose relationship you cannot justify in one sentence from the read content.
-
-Caps:
-- At most 5 outbound proposals (links to add TO the target).
-- At most 3 inbound proposals (links to add FROM other notes TO the target).
-- Never propose linking the target to itself.
-
-Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md` using exactly this YAML shape:
-
-target:
-  title: "Target Title"
-  path: "<absolute path>"
-outbound_links:
-  - title: "Existing Note A"
-    path: "<absolute path>"
-    relationship: "extends"
-    reason: "One sentence grounded in both notes' content."
-inbound_links:
-  - title: "Existing Note C"
-    path: "<absolute path>"
-    relationship: "example-of"
-    reason: "One sentence grounded in both notes' content."
-
-Terminal status:
-- STATUS: DONE with link_proposals.md written.
-- STATUS: DONE_WITH_CONCERNS if the vault contains fewer than 10 readable notes — still write the file with whatever was found, flag the small-vault concern.
-- STATUS: NEEDS_CONTEXT only if the target note or vault root is missing or unreadable.
+Your task: find existing vault notes this note should link to, and notes that should link back to it. Skip any candidate whose relationship you cannot justify in one sentence from both notes' content.
 ```
+
+After the agent returns, act on its terminal `STATUS:` line before reading the artifact:
+
+- `DONE` → continue with Step 3.
+- `DONE_WITH_CONCERNS` → the vault has fewer than 10 permanent notes, so the proposals are thin. Record `SmallVault: true` in `state.md`, continue with Step 3, and surface the small-vault concern in the Phase 1.5 gate.
+- `NEEDS_CONTEXT` → this dispatch left out the field the agent names. Fill it in from `state.md` and re-dispatch once; if the agent asks again, handle it as `BLOCKED`.
+- `BLOCKED` → the vault root or the target note is unreadable at the path the agent quotes. Ask via AskUserQuestion whether to re-dispatch with a corrected path or abort; on abort set `Status: aborted_by_user` and stop.
+- No status line, or one not listed here → handle it as `BLOCKED`.
+- No answer to a question above → set `Status: blocked` with the open question in `what_remains` and stop. A missing answer is never approval.
 
 ## Step 3: Validate and hand off
 
-After the agent returns:
-
 1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_proposals.md`.
-1. Validate structure: top-level `target`, `outbound_links`, and `inbound_links` keys; each entry has `title`, `path`, `relationship`, `reason`; `relationship` is one of the six allowed values.
-1. If the file is missing, malformed, or empty on both link lists, retry the dispatch once with a clarified prompt. If still empty, surface the empty result via AskUserQuestion per the SKILL.md error handling — do not silently claim nothing to link.
-1. Update `state.md`: `Phase: 1`, `OutboundProposed: <N>`, `InboundProposed: <N>`.
+1. Validate structure against the output format in the link-suggester agent definition: a `links:` list with one entry, whose `source_path` is the target note; that entry has `source_title`, `source_path` and a `targets` list; each target has `direction`, `target_title`, `target_path`, `relationship` and `reason`; `direction` is `outbound` or `inbound`; `relationship` is one of the six allowed values.
+1. If the file is missing, malformed, or its `targets` list is empty, retry the dispatch once with a clarified prompt. If still empty, surface the empty result via AskUserQuestion per the SKILL.md error handling — do not silently claim nothing to link.
+1. Update `state.md`: `Phase: 1`, `OutboundProposed: <N>`, `InboundProposed: <N>`, counting targets by `direction`.
 
-Return to SKILL.md Phase 1.5 gate with the proposals formatted for the user-facing presentation (letter-labelled list, grouped by direction).
+Return to SKILL.md Phase 1.5 gate with the proposals formatted for the user-facing presentation (letter-labelled list, grouped by `direction`).
 
 ## Error handling
 
 - **Target note unreadable** → escalate via AskUserQuestion; never dispatch the agent with a stale path.
-- **Agent returns malformed YAML** → retry once with a reminder of the exact shape. Log the retry in `state.md`.
-- **Agent STATUS: NEEDS_CONTEXT** → forward the agent's required-context list to the user via AskUserQuestion; do not attempt to fabricate the missing input.
+- **Agent returns malformed YAML** → retry once with a pointer to the output format in the link-suggester agent definition. Log the retry in `state.md`.

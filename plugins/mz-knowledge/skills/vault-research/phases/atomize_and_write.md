@@ -151,34 +151,28 @@ Update `state.md`: `Phase: 2_written`, `NotesWritten: <N>`.
 Dispatch the `link-suggester` agent (model: sonnet) with the prompt below. This agent scans the vault for existing notes that each written note should reference via `[[wikilinks]]`.
 
 ```
-New notes written (title → path mapping):
-<paste TitleToPath block from state.md as YAML>
+target_notes:
+  - title: "<claim title from TitleToPath>"
+    path: "<absolute path from TitleToPath>"
+  <one entry per TitleToPath item in state.md>
+vault_path: <Vault from state.md>
+output_path: <PROJECT_ROOT>/.mz/task/<task_name>/link_suggestions.md
+task_name: <task_name>
+inbound: false
 
-Vault root: <Vault from state.md>
-Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
-
-Your task:
-
-For each new note, scan the vault for existing notes that the new note should reference via [[wikilinks]]. For every candidate target, record:
-- Source note title (one of the new notes)
-- Target note title (existing vault note)
-- Relationship type, chosen from: supports | contradicts | extends | example-of | prerequisite-for | see-also
-- One-sentence reason grounded in the actual content of both notes — not a guess
-
-Caps:
-- At most 5 link suggestions per new note.
-- Do not propose links between two new notes at this stage.
-- Skip candidates whose relationship you cannot justify in one sentence from read content.
-
-Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/link_suggestions.md` using the YAML shape documented in the link-suggester agent definition (links list with source_title, source_path, targets).
-
-Terminal status:
-- STATUS: DONE with the file written.
-- STATUS: DONE_WITH_CONCERNS if the vault has fewer than 10 readable notes.
-- STATUS: NEEDS_CONTEXT only if the vault root is missing or unreadable.
+Your task: these research notes were just written. Find existing vault notes each of them should reference via [[wikilinks]], at most 5 per note. Skip candidates whose relationship you cannot justify in one sentence from read content.
 ```
 
-After the agent returns, Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_suggestions.md` and validate structure. Update `state.md`: `Phase: 3_links_ready`, `LinkSuggestionsPath: .mz/task/<task_name>/link_suggestions.md`.
+After the agent returns, act on its terminal `STATUS:` line before reading the artifact. The notes are already written and stay on disk whatever happens here, but a failed link pass is never finalized silently:
+
+- `DONE` → validate the artifact as below.
+- `DONE_WITH_CONCERNS` → the vault has fewer than 10 permanent notes, so the suggestions are thin. Record `SmallVault: true` in `state.md`, then validate the artifact as below.
+- `NEEDS_CONTEXT` → this dispatch left out the field the agent names; the vault itself may be fine. Fill the field in from `state.md` and re-dispatch once; if the agent asks again, handle it as `BLOCKED`.
+- `BLOCKED` → the vault root or a written note is unreadable at the path the agent quotes. Record `Phase3VaultError: <the agent's reason>` in `state.md` and ask via AskUserQuestion whether to re-dispatch with a corrected path or finish without links. On finish, set `LinksAdded: 0`, `LinksSkipped: true` and go to Step 8.
+- No status line, or one not listed here → handle it as `BLOCKED`.
+- No answer to a question above → set `Status: blocked` with the open question in `what_remains` and stop. A missing answer is never approval.
+
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/link_suggestions.md` and validate structure against the output format in the link-suggester agent definition: a `links:` list with one entry per written note; each entry has `source_title`, `source_path` and a `targets` list; each target has `direction`, `target_title`, `target_path`, `relationship` and `reason`, and its `direction` is `outbound`. Update `state.md`: `Phase: 3_links_ready`, `LinkSuggestionsPath: .mz/task/<task_name>/link_suggestions.md`.
 
 ## Step 6: Return to Phase 3.5
 
@@ -197,7 +191,7 @@ After Phase 3.5 returns `approve` (with optional per-link skips), apply approved
 1. Group approved targets by `source_path`.
 1. For each source note:
    - Read the note file.
-   - If the body already contains a `## Related` section, append new `- [[Target Title]] — <relationship>` lines below it, preserving existing links.
+   - If the body already contains a `## Related` section, append new `- [[<target_title>]] — <relationship>` lines below it, preserving existing links.
    - If no `## Related` section exists, append one to the end of the body with a blank line before the header.
    - Preserve the frontmatter block untouched. Never move or rewrite existing content — only append to the Related section.
 1. Re-read each modified note and verify the `## Related` section contains the expected lines. If verification fails, record `LinkApplyError: <path>` in `state.md` and halt — do not silently miss links.
@@ -238,7 +232,7 @@ vault-research complete:
 
 - **An atomization window dispatch returns `DONE_WITH_CONCERNS`** → the window was over the 2000-word cap. Record `Phase2WindowOverflow: <index>` in `state.md` and halt with an escalation via AskUserQuestion. The windowing in Phase 1 should have prevented this — investigate why the 450-word budget leaked.
 - **File-write verification fails in Step 4.7** → halt immediately, record `Phase2WriteError: <path>` in `state.md`, escalate via AskUserQuestion. Do not proceed to link suggestions with missing notes.
-- **`link-suggester` returns `NEEDS_CONTEXT`** → the vault root is unreachable. Record `Phase3VaultError` in `state.md` and finalize with `LinksAdded: 0` — the notes are already written and usable without links.
+- **`link-suggester` returns anything but `DONE`** → follow the status handlers in Step 5. Finalize with `LinksAdded: 0` only after the user chose to finish without links.
 - **Drift detected in Step 7** (a target note in `link_suggestions.md` no longer exists) → skip that link, record `DriftedLinkTargets:` in `state.md`, continue with the surviving links.
 
 ## Common Rationalizations
