@@ -56,7 +56,7 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/regression_run_initial.md` and check e
 | **Passes (unexpected)**       | Bug may already be fixed, or test doesn't exercise the right path. Re-dispatch test writer with feedback. |
 | **Error (import/syntax/etc)** | Test is broken. Re-dispatch test writer with the error output from the artifact.                          |
 
-**Retry limit**: 2 re-dispatches. If the test still doesn't fail correctly after 2 retries, escalate via AskUserQuestion:
+**Retry limit**: 2 re-dispatches. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. If the test still doesn't fail correctly after 2 retries, escalate via AskUserQuestion:
 
 ```
 The regression test could not be made to fail against the current code after <N> attempts.
@@ -255,10 +255,10 @@ FAIL — with specific issues that must be addressed.
 
 ### 5.3 Handle review verdict
 
-| Verdict  | Action                                                                               |
-| -------- | ------------------------------------------------------------------------------------ |
-| **PASS** | Proceed to Phase 6.                                                                  |
-| **FAIL** | Dispatch `pipeline-coder` (opus) with reviewer feedback. Re-verify (5.1). Re-review. |
+| Verdict  | Action                                                                                                                                                                                                                                                                            |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PASS** | Proceed to Phase 6.                                                                                                                                                                                                                                                               |
+| **FAIL** | Dispatch `pipeline-coder` (opus) with reviewer feedback. Re-verify (5.1). Re-review. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. |
 
 **Retry limit**: `MAX_REVIEW_RETRIES = 2`. If the review still fails after 2 retries, escalate via AskUserQuestion with the reviewer's feedback and ask the user how to proceed.
 

@@ -223,6 +223,6 @@ After Wave B returns, the orchestrator writes each response:
 
 When Wave B responses are persisted, emit a post-wave rollup — a `<returned>/<dispatched>` count and one bullet per researcher with its status and a short summary — before consolidation. A researcher with no usable response shows as `<agent>: NO RETURN BLOCK`, never dropped from the count.
 
-A Wave B agent that doesn't return, or returns `NEEDS_CONTEXT`, is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/blinded_lenses.md`: it counts as not returned, and with 0 of 3 back the corroboration step is skipped and Wave A's result stands.
+A Wave B agent that doesn't return, or returns `NEEDS_CONTEXT`, is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/blinded_lenses.md`: it counts as not returned, and with 0 of 3 back the corroboration step is skipped and Wave A's result stands. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
 Update state file phase to `researched`. Record finding counts per lens in state.md.

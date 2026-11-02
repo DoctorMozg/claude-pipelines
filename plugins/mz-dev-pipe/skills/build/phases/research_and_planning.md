@@ -211,13 +211,13 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/plan_review_<iteration>.md`.
 **If FAIL and plan_iteration < 3**:
 
 - Increment `plan_iteration`
-- Spawn a new `pipeline-planner` agent (model: **opus**) with the original task, research, current plan, AND the review feedback. Ask it to revise the plan addressing all issues.
+- Spawn a new `pipeline-planner` agent (model: **opus**) with the original task, research, current plan, AND the review feedback. Ask it to revise the plan addressing all issues. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Save revised plan to `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md` (overwrite)
 - **Go to Loop start**
 
 **If FAIL and plan_iteration >= 3**:
 
-- Use AskUserQuestion to escalate: "Plan failed review 3 times. Here are the unresolved issues: <issues>. Please provide guidance."
+- Use AskUserQuestion to escalate: "Plan failed review 3 times. Here are the unresolved issues: <issues>. Please provide guidance." When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Incorporate user guidance and create a final plan revision.
 
 ### 2.3 User approval

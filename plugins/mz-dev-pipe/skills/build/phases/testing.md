@@ -139,12 +139,12 @@ Save both reviews to `<PROJECT_ROOT>/.mz/task/<task_name>/test_review_<iteration
 
 - Increment `test_review_iteration`
 - Consolidate all failure feedback into a single fix list
-- Spawn a `pipeline-test-writer` agent (model: **opus**) with the consolidated feedback to fix the tests. Reinforce: **still TDD mode — no production code, no mocking the missing implementation.**
+- Spawn a `pipeline-test-writer` agent (model: **opus**) with the consolidated feedback to fix the tests. Reinforce: **still TDD mode — no production code, no mocking the missing implementation.** When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - **Go to Loop start**
 
 **If any FAIL and test_review_iteration >= 3**:
 
-- Use AskUserQuestion to escalate.
+- Use AskUserQuestion to escalate. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
 Update state file phase to `test_review_passed`.
 

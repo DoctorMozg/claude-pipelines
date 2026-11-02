@@ -87,7 +87,7 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/test_runner_results.md` and interpret 
 | **Fails**  | Code does NOT handle this case correctly — evidence FOR the hypothesis               |
 | **Errors** | Test is broken (import error, setup failure, etc.) — not evidence either way         |
 
-**Handle errors**: if tests error out, re-dispatch `pipeline-test-writer` with the error output from the artifact. Max `MAX_TEST_RETRIES = 2` re-dispatches, then re-dispatch `pipeline-test-runner`.
+**Handle errors**: if tests error out, re-dispatch `pipeline-test-writer` with the error output from the artifact. Max `MAX_TEST_RETRIES = 2` re-dispatches, then re-dispatch `pipeline-test-runner`. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
 **Handle conflicts**: if new tests cause existing tests to fail, dispatch a `pipeline-coder` (model: **opus**) to revert the conflicting test immediately. Note it in the report as "could not test without side effects."
 

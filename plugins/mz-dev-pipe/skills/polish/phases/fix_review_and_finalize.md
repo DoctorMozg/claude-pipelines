@@ -53,7 +53,7 @@ specific_files: <test file from step 1>
 output_path: <PROJECT_ROOT>/.mz/task/<task_name>/red_run_<criterion_slug>.md
 ```
 
-3. If the test unexpectedly passes against current code: re-dispatch the test writer with the unexpected-pass note (max 2 retries), then escalate via AskUserQuestion if it still passes — the criterion may already be met or the test isn't capturing it.
+3. If the test unexpectedly passes against current code: re-dispatch the test writer with the unexpected-pass note (max 2 retries), then escalate via AskUserQuestion if it still passes — the criterion may already be met or the test isn't capturing it. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 1. Once each newly-written test is RED, mark its criterion as `covered` in state.md and proceed. The fix dispatched in 4.2 must turn it green without modifying it.
 
 If no `uncovered` criteria remain (all already had tests, or this loop has run before), skip 4.1.5.
@@ -150,7 +150,7 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/review_<iteration>.md`.
 
 **If review FAIL**:
 
-- Spawn `pipeline-coder` agent(s) to fix review issues
+- Spawn `pipeline-coder` agent(s) to fix review issues. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Check the coder's terminal STATUS before proceeding:
   - **BLOCKED** → escalate to user immediately via AskUserQuestion. Do NOT increment the review-retry counter.
   - **NEEDS_CONTEXT** → re-dispatch the coder once with the requested context. Do NOT increment the counter until the re-dispatch returns DONE or DONE_WITH_CONCERNS.

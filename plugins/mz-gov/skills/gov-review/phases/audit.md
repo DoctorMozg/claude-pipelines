@@ -82,7 +82,7 @@ Wave <w>/<K> complete — <returned>/<dispatched> agents returned
 
 The `<returned>/<dispatched>` ratio is exact. A reviewer that returns no `VERDICT:` / `STATUS:` line is listed as `<artifact filename>: NO RETURN BLOCK` and counts as **not returned** — never silently dropped from the count.
 
-**Empty / failed dispatch**: if a reviewer returns nothing usable, no `VERDICT:`, `BLOCKED`, or `NEEDS_CONTEXT`, retry that single dispatch **once**. If the retry also fails, mark that artifact `unscored` (with the reason) and move on — one bad reviewer does not sink the wave.
+**Empty / failed dispatch**: if a reviewer returns nothing usable, no `VERDICT:`, `BLOCKED`, or `NEEDS_CONTEXT`, retry that single dispatch **once**. If the retry also fails, mark that artifact `unscored` (with the reason) and move on — one bad reviewer does not sink the wave. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
 ## 1.4 Collect verdicts
 

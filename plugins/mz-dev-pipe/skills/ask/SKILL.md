@@ -99,4 +99,4 @@ Before completing, output a visible block showing: the resolved question type, r
 
 After each phase, update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with the current phase, `Question type`, researchers dispatched/completed, source count, and any issues encountered.
 
-The state contract (key block, status values, `## Decisions`) is in `<PLUGIN_ROOT>/shared/state-schema.md`; follow it.
+The state contract (key block, status values, `## Decisions`) is in `<PLUGIN_ROOT>/shared/state-schema.md`; follow it. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed or a step fails, in the form `- (review|failure) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.

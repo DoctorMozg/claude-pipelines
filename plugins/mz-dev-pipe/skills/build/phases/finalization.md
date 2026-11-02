@@ -42,7 +42,7 @@ Output:
 - **Issues** (if FAIL): numbered list with file:line references
 ```
 
-**If FAIL**: Spawn `pipeline-coder` agent(s) to fix issues, then re-run linters and tests (Phase 8.2-8.4), then re-do this final review. Max 2 retries before escalating.
+**If FAIL**: Spawn `pipeline-coder` agent(s) to fix issues, then re-run linters and tests (Phase 8.2-8.4), then re-do this final review. Max 2 retries before escalating. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
 **Over-engineering check.** In the same message as the final reviewer, also dispatch `code-lens-over-engineering` over all changes. The final reviewer catches correctness and convention defects; this lens asks the orthogonal question — whether any of the new code should exist at all, or exist as something smaller.
 

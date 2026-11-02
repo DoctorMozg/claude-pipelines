@@ -326,7 +326,7 @@ Mapping:
 | maintainability | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_maintainability.md` |
 | reliability     | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_reliability.md`     |
 
-If a researcher returned `BLOCKED` or `NEEDS_CONTEXT`, still write the response (so the blocker rationale is preserved) and mark that lens as not usable in the state file.
+If a researcher returned `BLOCKED` or `NEEDS_CONTEXT`, still write the response (so the blocker rationale is preserved) and mark that lens as not usable in the state file. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
 Update state file phase to `researched` and record how many findings each lens produced.
 

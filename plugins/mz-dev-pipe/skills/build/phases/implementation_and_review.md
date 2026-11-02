@@ -146,9 +146,9 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<iteration>.md`.
 
 - Increment `code_review_iteration`
 - Group critical issues by file/work-unit
-- Spawn `pipeline-coder` agents in parallel to fix issues, giving each agent the specific issues for its files
+- Spawn `pipeline-coder` agents in parallel to fix issues, giving each agent the specific issues for its files. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Each fix agent gets: the review feedback for its files, the plan for context, the failing-test list, and the instruction to fix ONLY the flagged issues. Restate the no-test-modification rule.
-- **After each coder dispatch, check the coder's STATUS.** If the coder returns `BLOCKED`: break the review loop immediately. Escalate via AskUserQuestion with: the coder's blocker message, the review iteration count consumed, and the current review failure details. Do not continue iterating.
+- **After each coder dispatch, check the coder's STATUS.** If the coder returns `BLOCKED`: break the review loop immediately. Escalate via AskUserQuestion with: the coder's blocker message, the review iteration count consumed, and the current review failure details. Do not continue iterating. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Only proceed with the review loop on `DONE` or `DONE_WITH_CONCERNS`.
 - **Go to Loop start**
 
