@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import subprocess
 from collections.abc import Callable, Iterable
 from pathlib import Path
@@ -8,33 +7,31 @@ from typing import Protocol
 
 import pytest
 
-SCRIPT = (
-    Path(__file__).resolve().parents[2]
-    / "plugins"
-    / "mz-memory"
-    / "scripts"
-    / "memory-prompt-inject.sh"
+from .memory_helpers import (
+    BASH,
+    DIGEST_END,
+    DIGEST_START,
+    LOG_END,
+    LOG_START,
+    PIN_END,
+    PIN_START,
+    SCRIPTS,
+    TRUNCATION_MARK,
+    SeedLessons,
+    log_entries,
+    memory_file,
+    section_lines,
 )
-BASH = shutil.which("bash") or "/bin/bash"
+
+SCRIPT = SCRIPTS / "memory-prompt-inject.sh"
 # Everything the script runs except jq, so a PATH built from these hides jq only.
 TOOLS_WITHOUT_JQ = ("dirname", "cat", "tr", "awk", "head", "sed", "paste", "grep")
-PIN_START = "<!-- mz-pinned-start -->"
-PIN_END = "<!-- mz-pinned-end -->"
-DIGEST_START = "<!-- mz-digest-start -->"
-DIGEST_END = "<!-- mz-digest-end -->"
-LOG_START = "<!-- mz-log-start -->"
-LOG_END = "<!-- mz-log-end -->"
-LESSONS_START = "<!-- mz-lessons-start -->"
-LESSONS_END = "<!-- mz-lessons-end -->"
-INBOX_START = "<!-- mz-inbox-start -->"
-INBOX_END = "<!-- mz-inbox-end -->"
 HEADER = "Project memory matches for this prompt (.mz/memory/MEMORY.md):\n"
 LESSONS_HEADING = "## Matched lessons (.mz/memory/lessons.md)"
 NUDGE = (
     "If this corrects something you did, fix it, then save the lesson with "
     '/memory-note --lesson "WHEN … → … — WHY …".'
 )
-TRUNCATION_MARK = "\n...[memory truncated]"
 MAX_MATCHES = 15
 MAX_LESSONS = 5
 LESSONS_CHARS = 1500
@@ -43,7 +40,6 @@ CORRECTION_SCAN_CHARS = 500
 PINNED = "- [2026-11-01] migrate forward only"
 
 type RunHook = Callable[..., str]
-type SeedLessons = Callable[[list[str], list[str]], None]
 type PathWithoutJq = Callable[[Iterable[str]], str]
 
 
@@ -84,23 +80,10 @@ def _nudged(stdout: str) -> bool:
     return stdout != "" and NUDGE in _context(stdout)
 
 
-def _log_lines(context: str) -> list[str]:
-    return [line for line in context.splitlines() if line.startswith("- [2")]
-
-
-def _section(context: str, heading: str) -> list[str]:
-    """The lines under `heading`, up to the blank line that ends the section."""
-    lines = context.splitlines()
-    if heading not in lines:
-        return []
-    body = lines[lines.index(heading) + 1 :]
-    return body[: body.index("")] if "" in body else body
-
-
 @pytest.fixture
-def run_hook(tmp_path: Path) -> RunHook:
+def run_hook(project: Path) -> RunHook:
     base_env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
-    base_env["MZ_MEMORY_ROOT"] = str(tmp_path)
+    base_env["MZ_MEMORY_ROOT"] = str(project)
 
     def run(stdin: str, path: str = "") -> str:
         result = subprocess.run(
@@ -120,9 +103,9 @@ def run_hook(tmp_path: Path) -> RunHook:
 
 
 @pytest.fixture
-def seed_memory(tmp_path: Path) -> SeedMemory:
+def seed_memory(project: Path) -> SeedMemory:
     def seed(pinned: list[str], log: list[str], digest: list[str] | None = None) -> None:
-        memory = tmp_path / ".mz" / "memory" / "MEMORY.md"
+        memory = memory_file(project)
         memory.parent.mkdir(parents=True, exist_ok=True)
         lines = ["# Project Memory", "", "<!-- mz-memory:v2 -->", "", "## Pinned", "", PIN_START]
         lines += [*pinned, PIN_END, ""]
@@ -130,18 +113,6 @@ def seed_memory(tmp_path: Path) -> SeedMemory:
             lines += ["## Digest", "", DIGEST_START, *digest, DIGEST_END, ""]
         lines += ["## Activity Log", "", LOG_START, *log, LOG_END]
         memory.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-    return seed
-
-
-@pytest.fixture
-def seed_lessons(tmp_path: Path) -> SeedLessons:
-    def seed(curated: list[str], inbox: list[str]) -> None:
-        lines = ["# Project Lessons", "", "## Lessons", "", LESSONS_START, *curated, LESSONS_END]
-        lines += ["", "## Inbox", "", INBOX_START, *inbox, INBOX_END]
-        path = tmp_path / ".mz" / "memory" / "lessons.md"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     return seed
 
@@ -215,14 +186,14 @@ class TestMatching:
 
         context = _context(run_hook(_event("OAUTH is broken again")))
 
-        assert _log_lines(context) == ["- [2026-11-01] Migrated OAuth tokens"]
+        assert log_entries(context) == ["- [2026-11-01] Migrated OAuth tokens"]
 
     def test_matches_are_capped_at_the_most_recent_fifteen(
         self, run_hook: RunHook, seed_memory: SeedMemory
     ) -> None:
         seed_memory([], [f"- [2026-11-01] oauth task_{index:02d}" for index in range(20)])
 
-        logged = _log_lines(_context(run_hook(_event("oauth"))))
+        logged = log_entries(_context(run_hook(_event("oauth"))))
 
         assert len(logged) == MAX_MATCHES
         assert logged[0].endswith("task_00")
@@ -251,7 +222,7 @@ class TestDigestMatching:
 
         context = _context(run_hook(_event("when do tokens rotate")))
 
-        assert _section(context, "## Matched activity entries") == [
+        assert section_lines(context, "## Matched activity entries") == [
             "- [D-0001] Tokens rotate on use",
             "- [2026-11-01] rotate oauth tokens",
         ]
@@ -272,7 +243,7 @@ class TestDigestMatching:
             [digest_item(number, f"oauth decision {number}") for number in range(1, 11)],
         )
 
-        entries = _section(_context(run_hook(_event("oauth"))), "## Matched activity entries")
+        entries = section_lines(_context(run_hook(_event("oauth"))), "## Matched activity entries")
 
         assert len(entries) == MAX_MATCHES
         assert entries[:10] == [
@@ -310,7 +281,7 @@ class TestLessonMatching:
 
         context = _context(run_hook(_event("oauth refresh is broken")))
 
-        assert [line.split()[1] for line in _section(context, LESSONS_HEADING)] == [
+        assert [line.split()[1] for line in section_lines(context, LESSONS_HEADING)] == [
             "[L-0002]",
             "[L-0001]",
         ]
@@ -329,7 +300,7 @@ class TestLessonMatching:
 
         context = _context(run_hook(_event("oauth")))
 
-        assert [line.split()[1] for line in _section(context, LESSONS_HEADING)] == [
+        assert [line.split()[1] for line in section_lines(context, LESSONS_HEADING)] == [
             "[L-0002]",
             "[L-0001]",
             "[I-0003]",
@@ -349,7 +320,9 @@ class TestLessonMatching:
 
         context = _context(run_hook(_event("oauth")))
 
-        assert _section(context, LESSONS_HEADING) == ["- [L-0001] WHEN a token expires → renew it"]
+        assert section_lines(context, LESSONS_HEADING) == [
+            "- [L-0001] WHEN a token expires → renew it"
+        ]
 
     def test_lessons_are_capped_at_five(
         self, run_hook: RunHook, seed_memory: SeedMemory, seed_lessons: SeedLessons
@@ -361,7 +334,7 @@ class TestLessonMatching:
 
         context = _context(run_hook(_event("oauth")))
 
-        assert len(_section(context, LESSONS_HEADING)) == MAX_LESSONS
+        assert len(section_lines(context, LESSONS_HEADING)) == MAX_LESSONS
 
     def test_lessons_stay_within_their_budget_in_whole_lines(
         self, run_hook: RunHook, seed_memory: SeedMemory, seed_lessons: SeedLessons
@@ -370,7 +343,7 @@ class TestLessonMatching:
         seed_memory([], [])
         seed_lessons([lesson(number, text) for number in range(1, 6)], [])
 
-        injected = _section(_context(run_hook(_event("oauth"))), LESSONS_HEADING)
+        injected = section_lines(_context(run_hook(_event("oauth"))), LESSONS_HEADING)
 
         assert len(injected) == LESSONS_CHARS // (len(f"- [L-0001] {text}") + 1)
         assert all(line.endswith("→ stop") for line in injected)
@@ -478,4 +451,4 @@ class TestLimits:
 
         context = _context(run_hook(_event(f"oauth {filler}")))
 
-        assert _log_lines(context) == ["- [2026-11-01] oauth rotation"]
+        assert log_entries(context) == ["- [2026-11-01] oauth rotation"]

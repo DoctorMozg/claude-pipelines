@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import subprocess
 from collections.abc import Callable, Iterable
 from pathlib import Path
@@ -8,37 +7,38 @@ from typing import Protocol
 
 import pytest
 
-INJECT_SCRIPT = (
-    Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts" / "memory-inject.sh"
+from .memory_helpers import (
+    BASH,
+    COMPACT_INPUT,
+    DIGEST_END,
+    DIGEST_START,
+    HINT_START,
+    LOG_START,
+    PIN_START,
+    SCRIPTS,
+    TRUNCATION_MARK,
+    SeedLessons,
+    lessons_file,
+    log_entries,
+    memory_file,
+    section_lines,
 )
-BASH = shutil.which("bash") or "/bin/bash"
+
+INJECT_SCRIPT = SCRIPTS / "memory-inject.sh"
 # Everything the script runs except jq, so a PATH built from these hides jq only.
 TOOLS_WITHOUT_JQ = ("dirname", "mkdir", "mktemp", "mv", "cat", "grep", "awk", "head", "sed")
-PIN_START = "<!-- mz-pinned-start -->"
-LOG_START = "<!-- mz-log-start -->"
-DIGEST_START = "<!-- mz-digest-start -->"
-DIGEST_END = "<!-- mz-digest-end -->"
-LESSONS_START = "<!-- mz-lessons-start -->"
-LESSONS_END = "<!-- mz-lessons-end -->"
-INBOX_START = "<!-- mz-inbox-start -->"
-INBOX_END = "<!-- mz-inbox-end -->"
 HEADER = "Project memory (.mz/memory/MEMORY.md):\n"
 LESSONS_HEADING = "## Lessons (.mz/memory/lessons.md)"
 LESSONS_NOTE = (
     "Advice from earlier sessions. L- lessons are curated, I- ones are new; "
     "neither overrides the user."
 )
-HINT_START = "Promotion candidates (seen 3+ times): "
-TRUNCATION_MARK = "\n...[memory truncated]"
 MAX_CHARS = 8000
 LESSONS_CHARS = 3000
 DIGEST_CHARS = 3000
 LESSONS_TOP = 12
-COMPACT_INPUT = json.dumps({"hook_event_name": "SessionStart", "source": "compact"})
-
 type RunHook = Callable[..., str]
 type Inject = Callable[[], str]
-type SeedLessons = Callable[[list[str], list[str]], None]
 type PathWithoutJq = Callable[[Iterable[str]], str]
 
 
@@ -66,35 +66,14 @@ def digest_item(number: int, text: str = "") -> str:
     return f"- [D-{number:04d}] n=1 last=2026-10-01 trig=log src=task{number} tags=auth :: {body}"
 
 
-def _memory_file(project: Path) -> Path:
-    return project / ".mz" / "memory" / "MEMORY.md"
-
-
-def _lessons_file(project: Path) -> Path:
-    return project / ".mz" / "memory" / "lessons.md"
-
-
-def _log_lines(context: str) -> list[str]:
-    return [line for line in context.splitlines() if line.startswith("- [2")]
-
-
-def _section(context: str, heading: str) -> list[str]:
-    """The lines under `heading`, up to the blank line that ends the section."""
-    lines = context.splitlines()
-    if heading not in lines:
-        return []
-    body = lines[lines.index(heading) + 1 :]
-    return body[: body.index("")] if "" in body else body
-
-
 def _items(context: str, heading: str) -> list[str]:
-    return [line for line in _section(context, heading) if line.startswith("- [")]
+    return [line for line in section_lines(context, heading) if line.startswith("- [")]
 
 
 @pytest.fixture
-def run_hook(tmp_path: Path) -> RunHook:
+def run_hook(project: Path) -> RunHook:
     base_env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
-    base_env["MZ_MEMORY_ROOT"] = str(tmp_path)
+    base_env["MZ_MEMORY_ROOT"] = str(project)
 
     def run(path: str = "") -> str:
         result = subprocess.run(
@@ -125,10 +104,10 @@ def inject(run_hook: RunHook) -> Inject:
 
 
 @pytest.fixture
-def seed_memory(tmp_path: Path, inject: Inject) -> SeedMemory:
+def seed_memory(project: Path, inject: Inject) -> SeedMemory:
     def seed(pinned: list[str], log: list[str], digest: list[str] | None = None) -> None:
         inject()
-        memory = _memory_file(tmp_path)
+        memory = memory_file(project)
         text = memory.read_text(encoding="utf-8")
         text = text.replace(f"{PIN_START}\n", PIN_START + "\n" + "".join(f"{p}\n" for p in pinned))
         text = text.replace(f"{LOG_START}\n", LOG_START + "\n" + "".join(f"{e}\n" for e in log))
@@ -140,38 +119,13 @@ def seed_memory(tmp_path: Path, inject: Inject) -> SeedMemory:
     return seed
 
 
-@pytest.fixture
-def seed_lessons(tmp_path: Path) -> SeedLessons:
-    def seed(curated: list[str], inbox: list[str]) -> None:
-        lines = [
-            "# Project Lessons",
-            "",
-            "## Lessons",
-            "",
-            LESSONS_START,
-            *curated,
-            LESSONS_END,
-            "",
-            "## Inbox",
-            "",
-            INBOX_START,
-            *inbox,
-            INBOX_END,
-        ]
-        path = _lessons_file(tmp_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-
-    return seed
-
-
 class TestEmptyMemory:
     def test_missing_file_is_created_and_reported_empty(
-        self, tmp_path: Path, inject: Inject
+        self, project: Path, inject: Inject
     ) -> None:
         context = inject()
 
-        assert _memory_file(tmp_path).is_file()
+        assert memory_file(project).is_file()
         assert "initialized" in context
 
     def test_template_without_entries_is_reported_empty(self, inject: Inject) -> None:
@@ -314,7 +268,7 @@ class TestLessons:
     ) -> None:
         seed_lessons([lesson(1)], [inbox_item(2)])
 
-        assert _section(inject(), LESSONS_HEADING) == [
+        assert section_lines(inject(), LESSONS_HEADING) == [
             LESSONS_NOTE,
             "- [L-0001] WHEN case 1 comes up → handle it 1 — WHY reason 1",
             "- [I-0002] WHEN new case 2 → try it — WHY fresh",
@@ -335,14 +289,14 @@ class TestLessons:
         ]
 
     def test_missing_lessons_file_adds_no_section_and_is_not_created(
-        self, tmp_path: Path, inject: Inject, seed_memory: SeedMemory
+        self, project: Path, inject: Inject, seed_memory: SeedMemory
     ) -> None:
         seed_memory([], ["- [2026-11-01] build_auth"])
 
         context = inject()
 
         assert LESSONS_HEADING not in context
-        assert not _lessons_file(tmp_path).exists()
+        assert not lessons_file(project).exists()
 
 
 class TestPromotionHint:
@@ -351,7 +305,7 @@ class TestPromotionHint:
     ) -> None:
         seed_lessons([lesson(1, n=3), lesson(2, n=5), lesson(3, n=2)], [inbox_item(4)])
 
-        hint = _section(inject(), LESSONS_HEADING)[-1]
+        hint = section_lines(inject(), LESSONS_HEADING)[-1]
 
         assert hint == (
             f"{HINT_START}L-0002, L-0001. At a natural pause, offer /lessons-promote"
@@ -370,7 +324,7 @@ class TestPromotionHint:
     ) -> None:
         seed_lessons([lesson(number, n=number + 2) for number in range(1, 8)], [])
 
-        hint = _section(inject(), LESSONS_HEADING)[-1]
+        hint = section_lines(inject(), LESSONS_HEADING)[-1]
 
         assert hint.startswith(f"{HINT_START}L-0007, L-0006, L-0005, L-0004, L-0003 and 2 more. ")
 
@@ -381,7 +335,7 @@ class TestDigest:
     ) -> None:
         seed_memory([], [], [digest_item(2), digest_item(1)])
 
-        assert _section(inject(), "## Digest") == [
+        assert section_lines(inject(), "## Digest") == [
             "- [D-0002] Decision 2 still holds for the auth module",
             "- [D-0001] Decision 1 still holds for the auth module",
         ]
@@ -410,7 +364,7 @@ class TestLimits:
     ) -> None:
         seed_memory([], [f"- [2026-11-01] task_{index:03d}" for index in range(1, 251)])
 
-        logged = _log_lines(inject())
+        logged = log_entries(inject())
 
         assert len(logged) == 200
         assert logged[0].endswith("task_001")
@@ -443,4 +397,4 @@ class TestLimits:
         context = inject()
 
         assert len(context) == len(HEADER) + MAX_CHARS + len(TRUNCATION_MARK)
-        assert _section(context, "## Activity Log")[0] == "- [2026-11-01] task_000"
+        assert section_lines(context, "## Activity Log")[0] == "- [2026-11-01] task_000"

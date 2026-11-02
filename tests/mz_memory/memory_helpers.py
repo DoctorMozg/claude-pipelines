@@ -1,6 +1,7 @@
 import json
 import re
 import shutil
+import subprocess
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,6 +20,11 @@ LESSONS_START = "<!-- mz-lessons-start -->"
 LESSONS_END = "<!-- mz-lessons-end -->"
 INBOX_START = "<!-- mz-inbox-start -->"
 INBOX_END = "<!-- mz-inbox-end -->"
+# Mirrors MZ_LESSON_MAX_CHARS in lib/lessons.sh.
+LESSON_MAX_CHARS = 400
+COMPACT_INPUT = json.dumps({"hook_event_name": "SessionStart", "source": "compact"})
+HINT_START = "Promotion candidates (seen 3+ times): "
+TRUNCATION_MARK = "\n...[memory truncated]"
 
 # A background run's PATH holds only these and the claude stub, so the real CLI never runs.
 SANDBOX_TOOLS = (
@@ -151,14 +157,37 @@ def line_ids(lines: list[str]) -> list[str]:
     return [line.split()[1] for line in lines]
 
 
+def line_text(line: str) -> str:
+    return line.split(" :: ", 1)[1]
+
+
 def line_texts(lines: list[str]) -> list[str]:
-    return [line.split(" :: ", 1)[1] for line in lines]
+    return [line_text(line) for line in lines]
 
 
 def line_field(line: str, name: str) -> str:
     match = re.search(rf"\b{name}=(\S+)", line.split(" :: ", 1)[0])
     assert match is not None, f"{name}= missing from {line!r}"
     return match.group(1)
+
+
+def ok(result: subprocess.CompletedProcess[str]) -> subprocess.CompletedProcess[str]:
+    assert result.returncode == 0, result.stderr
+    return result
+
+
+def section_lines(context: str, heading: str) -> list[str]:
+    """The lines under `heading` in injected context, up to the blank line that ends the section."""
+    lines = context.splitlines()
+    if heading not in lines:
+        return []
+    body = lines[lines.index(heading) + 1 :]
+    return body[: body.index("")] if "" in body else body
+
+
+def log_entries(context: str) -> list[str]:
+    """The activity log lines of injected context; each starts with its date."""
+    return [line for line in context.splitlines() if line.startswith("- [2")]
 
 
 def lessons_layout(curated: Sequence[str], inbox: Sequence[str]) -> str:
