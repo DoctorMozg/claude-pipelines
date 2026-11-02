@@ -22,6 +22,10 @@ graders:
     input_match: 'memory-note\.sh.{0,8}--lesson'
     min: 0
     max: 0
+  - name: lessons-file-intact
+    type: regex
+    pattern: '<!-- mz-inbox-start -->'
+    target: { source: file, path: .mz/memory/lessons.md }
   - name: inbox-empty
     type: regex
     pattern: '\[I-[0-9]{4}\]'

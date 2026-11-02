@@ -30,6 +30,10 @@ graders:
     type: regex
     pattern: 'trig=correction [^\n]* :: [^\n]*WHEN [^\n]*→[^\n]*WHY '
     target: { source: file, path: .mz/memory/lessons.md }
+  - name: seed-intact
+    type: regex
+    pattern: Use UTC timestamps everywhere
+    target: { source: file, path: .mz/memory/MEMORY.md }
   - name: lesson-not-pinned-as-note
     type: regex
     pattern: 'MIG-'
@@ -41,8 +45,14 @@ graders:
     pattern: '\bapprove\b'
     flags: i
     match: not_contains
-  # The move names both paths; the lesson text alone mentions only the new one.
-  - name: mistake-fixed
+  # A missing file passes not_contains, which is the point here: the old file has to be gone.
+  - name: old-file-moved
+    type: regex
+    pattern: CREATE INDEX
+    match: not_contains
+    target: { source: file, path: migrations/20261101_add_orders_index.sql }
+  # The new name isn't fixed, so the move command, which names both paths, shows where the file went.
+  - name: moved-under-mig-name
     type: regex
     pattern: '"type":"tool_use"[^\n]*migrations/20261101_add_orders_index\.sql[^\n]*db/migrations/MIG-'
     target: trace
