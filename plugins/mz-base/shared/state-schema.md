@@ -4,6 +4,18 @@ Canonical source: STATE_SCHEMA.md (repository guidelines, not shipped with the p
 
 Rules for `state.md`, the checkpoint a multi-phase skill writes so it can find its place again after compaction or an interruption. The file lives at `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. The project root is `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run, not the Bash working directory.
 
+## Contents
+
+- Key block
+- Status values
+- Example
+- Body sections
+- Compaction
+- Single-dispatch skills
+- Migration
+- Mismatch policy
+- Compact inline contract
+
 ## Key block
 
 The file opens with plain `key: value` lines, with no `---` fence, followed by markdown body sections.

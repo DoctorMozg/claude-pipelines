@@ -4,6 +4,17 @@ Canonical source: SKILL_GUIDELINES.md, "Approval Gates" (repository guidelines, 
 
 Every approval gate shows the artifact as an ordinary markdown chat message (Surface 1) and asks for the decision with a short AskUserQuestion selector (Surface 2). The user approves, rejects, or keeps sending feedback until satisfied.
 
+## Contents
+
+- Where gates go
+- Elements, in order
+- Plan message template
+- Selector
+- Response handling
+- Variant gates
+- Unattended mode
+- Journal entry
+
 ## Where gates go
 
 Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repository. Web research runs without a gate, and read-only skills such as `explain` need none.
