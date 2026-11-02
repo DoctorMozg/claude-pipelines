@@ -49,7 +49,7 @@ State these limits in the gate's settings section:
 1. If the file exists, run `jq empty "<file>"`. On a parse error, stop and AskUserQuestion with the path and jq's message. Never overwrite a file jq can't parse.
 1. Install: mark each entry `add` or `already present`. `attribution` counts as present when the key exists with any value, since that value is the user's choice. The Stop hook counts as present when an existing Stop hook has the identical command string.
 1. Uninstall: mark each entry `remove` only when an exact match exists; skip the rest silently.
-1. Project scope, file missing, inside git: if `git check-ignore -q .claude/settings.local.json` fails, add a plan line to append `.claude/settings.local.json` to `$(git rev-parse --git-path info/exclude)`. That keeps the file out of commits without touching the shared `.gitignore`.
+1. Project scope, file missing, inside git: if `git check-ignore -q .claude/settings.local.json` fails, add a plan line to append `.claude/settings.local.json` to `$(git rev-parse --git-path info/exclude)`. That keeps the file out of commits without touching the shared `.gitignore`. `phases/run.md` Step 7f appends it.
 
 ## Step 2: Merge (install)
 

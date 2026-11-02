@@ -3,7 +3,7 @@ name: init-rules
 description: ALWAYS invoke when the user wants to install development rules for a project or globally. Triggers:"init rules","set up rules","install rules","configure coding rules","onboard project".
 argument-hint: '[project|global] [--target=rules|claudemd] [--force] [--uninstall]'
 model: sonnet
-allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(command -v *), Bash(jq *), Bash(dirname *), Bash(mv *), Bash(rm *), Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(command -v *), Bash(jq *), Bash(dirname *), Bash(printf *), Bash(mv *), Bash(rm *), Glob, Grep, AskUserQuestion
 ---
 
 # Init Rules
@@ -99,6 +99,7 @@ After each phase, update `<TASK_DIR><task_name>/state.md` with:
 - `Installed:` / `Replaced:` / `Upgraded:` / `Skipped:` / `Removed:` / `Retired:` filenames or rule ids touched in this run
 - `HandRemoved:` headings of hand-written CLAUDE.md sections removed by the stale scan
 - `SettingsAdded:` / `SettingsRemoved:` settings entries written or removed
+- `Excluded:` paths appended to `.git/info/exclude` (`.mz/`, `.claude/settings.local.json`)
 
 Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
 

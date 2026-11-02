@@ -116,6 +116,8 @@ In rules mode "present" means `<target>/<filename>` exists and its version is th
 
 **Settings.** Read `phases/enforce.md` and run its Step 1 to add the settings section: entries to add or remove, and the limits it says to state.
 
+**Git exclude (install, project scope, inside git).** If `git check-ignore -q .mz/` fails, add a plan line to append `.mz/` to `$(git rev-parse --git-path info/exclude)`. Every mz skill writes its state, reports and memory under `.mz/`, and the exclude keeps them out of commits without touching the shared `.gitignore`. A team that wants to track a file there can still commit it with `git add -f`, such as `git add -f .mz/memory/MEMORY.md`. This line doesn't depend on `jq`, so it stays in the plan when the settings section is skipped.
+
 ## Step 6: Approval gate
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
@@ -142,6 +144,8 @@ Stale content:
 Settings: <settings file path> (<create-new | modify-existing> | skipped: <reason>)
 <one line per entry: <entry> — add | already present>
 <the limits from phases/enforce.md>
+
+Git exclude: <exclude path> (<.mz/ — add | .mz/ already ignored | n/a: global scope or outside git>)
 
 ---
 **Approve** → apply every write above  ·  **Reject** → abort, nothing written  ·  reply with feedback to revise
@@ -225,6 +229,18 @@ Unless the settings section was skipped or has nothing to add or remove, run `ph
 
 Re-read the scope's CLAUDE.md, then delete the approved `hand-remove` ranges from the bottom of the file up, so earlier line numbers stay valid. Before deleting a range, confirm its first line is still the heading shown at the gate; if the file changed, stop and AskUserQuestion with the mismatch. Collapse any run of blank lines the deletion leaves to one. Record each removed heading in `HandRemoved`.
 
+### 7f. Git exclude
+
+For each approved exclude line (`.mz/` from Step 5, and `.claude/settings.local.json` from the settings section), append the path unless the file already lists it:
+
+```bash
+X="$(git rev-parse --git-path info/exclude)"
+mkdir -p "$(dirname "$X")"
+grep -qxF '<path>' "$X" 2>/dev/null || printf '%s\n' '<path>' >>"$X"
+```
+
+Record each appended path in `state.md` → `Excluded`. Uninstall leaves these lines alone, because other mz skills keep writing to `.mz/`.
+
 ## Step 8: Report
 
 Mode-specific summary, followed by the settings lines.
@@ -270,6 +286,14 @@ Removed: N
 Settings: <settings file> (created|modified|unchanged|skipped: <reason>)
   + permissions.ask Bash(git push *)
   = attribution (already present)
+```
+
+**Git exclude (install):**
+
+```
+Git exclude: <exclude path>
+  + .mz/
+  = .claude/settings.local.json (already ignored)
 ```
 
 **Stale content (install):**
@@ -341,5 +365,6 @@ Print the mode-appropriate Step 8 summary.
 - **CLAUDE.md mode**: after writes, grep CLAUDE.md for each injected `<id>` start sentinel — expect exactly one match per installed rule, carrying the current version. For uninstall and retirement, expect zero matches for removed IDs.
 - **Hand-written copies**: none of the `HandRemoved` headings remain outside sentinel blocks, and the line count dropped by the size of the approved ranges, give or take collapsed blank lines.
 - **Settings**: run the checks in `phases/enforce.md` Verification.
+- **Git exclude**: `git check-ignore -q` succeeds for each path in `Excluded`.
 
 When every check passes, set `Status: complete`, `phase_complete: true` and `what_remains: []`. If one fails, set `Status: failed` and name the failed check in `what_remains`.
