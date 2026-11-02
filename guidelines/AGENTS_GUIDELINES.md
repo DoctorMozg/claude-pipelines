@@ -423,6 +423,8 @@ For a pipeline-only agent, check that the dispatching skill uses the right agent
 
 If a validator script exists under `scripts/`, run it as well.
 
+Repo convention: a change to a GitHub collector (`github-pr-info-scorer`, `github-pr-data-fetcher`) runs `make gh-smoke`. It runs those agents from the working tree through `claude -p --agents` and checks their artifacts against live `gh` output, so it needs `gh` auth, spends a few cents of tokens and stays out of CI.
+
 ## 22. No Rule-Number Citations
 
 This applies to every file under `plugins/`, skills and agents alike.
