@@ -1,6 +1,6 @@
 ---
 name: document
-description: 'Writes or polishes technical documentation: READMEs, API references, tutorials and how-tos. Use when the user says "document this", "polish the README" or wants something new users can follow. Not for marketing copy (use copywrite).'
+description: 'Writes or polishes technical docs: READMEs, API references, tutorials and how-tos. Use when the user says "write docs for", "document this" or "polish the README", or wants a guide new users can follow. Not for marketing copy (use copywrite).'
 argument-hint: <what to document or polish>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(git log *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet
