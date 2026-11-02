@@ -1,6 +1,6 @@
 ---
 name: batch-fix
-description: 'ALWAYS invoke when applying the same mechanical fix or compliance check across many skills, agents, or phase files in this repo. Triggers: batch fix, apply across plugins, mass edit, bulk compliance fix.'
+description: 'Applies one mechanical fix or compliance check across many skill, agent and phase files, with approval before any edit. Use when the user wants a "batch fix", "mass edit" or "bulk compliance fix" to "apply across plugins". Not for one file.'
 argument-hint: <free-form task brief describing what to check and what to change>
 allowed-tools: Agent, Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---

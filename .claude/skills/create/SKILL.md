@@ -1,6 +1,6 @@
 ---
 name: create
-description: ALWAYS invoke when the user wants to create a new plugin, skill, or agent in this repository. Triggers: "create a skill", "add a new agent", "new plugin", "scaffold", "create component". Reads authoring guidelines and research first, then scaffolds the component following all conventions.
+description: 'Scaffolds a new plugin, skill or agent in this repo, following its authoring guidelines. Use when the user wants to "create a skill", "add a new agent", start a "new plugin" or "scaffold" a component. Not for changing an existing one.'
 argument-hint: <plugin|skill|agent> <name> [description]
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch, WebSearch
 ---
