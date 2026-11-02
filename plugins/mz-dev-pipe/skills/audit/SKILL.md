@@ -75,7 +75,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 | 0   | Setup                  | inline below             | —     |
 | 1   | Scope & Lens Selection | `phases/research.md`     | —     |
 | 2   | Multi-Lens Research    | `phases/research.md`     | —     |
-| 3   | Consolidate & Rank     | `phases/research.md`     | —     |
+| 3   | Consolidate & Rank     | `phases/consolidate.md`  | —     |
 | 4   | Final Report           | `phases/final_report.md` | —     |
 
 #### `depth:deep`

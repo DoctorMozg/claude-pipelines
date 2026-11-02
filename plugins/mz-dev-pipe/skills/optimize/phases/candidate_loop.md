@@ -120,7 +120,7 @@ Append **every** candidate — survivor and discard alike — to the `## History
 
 ## 4.6 Boundary pause — when a candidate needs it
 
-If any candidate returned `STATUS: NEEDS_CONTEXT` with a `## Boundary approval needed` section, run the **Phase 4.5 Mid-loop Boundary Pause** in `SKILL.md` for that change. On approval, re-dispatch that candidate agent with the boundary change authorized, then measure it (§4.4) and gate it (§4.5). On rejection, the candidate is discarded as a `DEAD END` and the round continues with the rest.
+If any candidate returned `STATUS: NEEDS_CONTEXT` with a `## Boundary approval needed` section, run the **Phase 4.5 Mid-loop Boundary Pause** in `<SKILL_DIR>/phases/loop_checkpoints.md` for that change. On approval, re-dispatch that candidate agent with the boundary change authorized, then measure it (§4.4) and gate it (§4.5). On rejection, the candidate is discarded as a `DEAD END` and the round continues with the rest.
 
 ## 4.7 HYPOTHESIS UNVERIFIED check
 
@@ -144,7 +144,7 @@ Worktrees share the object store, so the candidate commit is readable from the m
 
 If `git apply --check` fails, the working tree changed after the snapshot. Do not force the patch. Keep it, record `PROMOTION CONFLICT` with the patch path in the history buffer, tell the user which files conflict, and route the round as a `DEAD END` (§4.11).
 
-If the contract's `correctness_command` is `manual`, run the **Phase 4.7 Manual Correctness Checkpoint** in `SKILL.md` now, before continuing — a human must confirm behavior is unchanged before the candidate is banked.
+If the contract's `correctness_command` is `manual`, run the **Phase 4.7 Manual Correctness Checkpoint** in `<SKILL_DIR>/phases/loop_checkpoints.md` now, before continuing — a human must confirm behavior is unchanged before the candidate is banked.
 
 ## 4.9 No survivors — DEAD END
 

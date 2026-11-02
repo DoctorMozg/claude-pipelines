@@ -53,194 +53,44 @@ If `$ARGUMENTS` is empty or no source can be resolved (see Source Resolution bel
 
 ## Argument Parsing
 
-Extract from `$ARGUMENTS`:
-
-- **user_path** — the path token (everything not matching a parameter pattern). Must end in `.md`.
-- **channels_override** — from `channels:<value>` (default: unset → per-contact auto-detect).
-- **sender_override** — from `sender:<value>` (default: unset → use strategy.json or fallback voice).
-- **enrich_mode** — from `enrich:<value>`: `only`, `skip`, or unset (default unset = both phases run).
-- **brief_run** — optional, from `brief:<run_name>`; resolves to `<PROJECT_ROOT>/.mz/outreach/<brief_run>/climate.json` (default: unset).
-- **personality_mode** — from `personality:<value>`: `off` disables reader-style calibration; any other value or absent = `on` (default).
-
-### Source resolution
-
-Extract the company slug from `user_path`'s basename:
-
-- If the basename matches `<YYYY-MM-DD>_<slug>.md` (active path), `company_slug` = the part after the date prefix.
-- Otherwise (`<slug>.md`), `company_slug` = the basename minus `.md`.
-
-Then resolve `source_path` (the file actually read and updated by this run):
-
-```bash
-mkdir -p "<PROJECT_ROOT>/.mz/outreach/active"
-find "<PROJECT_ROOT>/.mz/outreach/active" -maxdepth 1 -type f \
-  -name '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_<company_slug>.md' 2>/dev/null | head -1
-```
-
-- **If found** → `source_path` = the active path returned. The user-supplied path is ignored in favor of the active version (which holds the canonical accumulated history). The user may have passed a now-deleted research-baseline path; the active version is authoritative.
-- **If not found** → `source_path` = `user_path`. The card has not been activated yet; this run will activate it.
-
-Validate the card at `source_path` before any other work:
-
-1. The file exists (Read succeeds).
-1. The first non-empty line starts with `# ` (H1 = company name).
-1. The body contains H2 headers matching the canonical card shape — at minimum `## Overview`, `## Key Contacts`, `## Outreach Recommendation` must all be present. If any are missing, emit `STATUS: BLOCKED` with the list of missing headers.
+The `$ARGUMENTS` variables and the Source resolution rules (which derive `company_slug` and `source_path`) are in `${CLAUDE_SKILL_DIR}/references/argument-parsing.md`. Read it at Phase 0.
 
 ## Directory Structure
 
-- **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. Source of truth across phases.
-- **Card snapshot** — `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json`. Structured extract of the source card, consumed by the deep-enrichment subagents in Phase 2 so they know what is ALREADY documented.
-- **Enrichment artifacts** — `<PROJECT_ROOT>/.mz/task/<task_name>/enrichment/<agent_slug>.json`. One JSON per Phase 2 subagent (`news.json`, `tech.json`, `growth.json`, `reputation.json`, `contacts.json`).
-- **Briefs** — `<PROJECT_ROOT>/.mz/task/<task_name>/briefs/<contact_slug>.json`. One brief per contact selected for drafting.
-- **Profiles** — `<PROJECT_ROOT>/.mz/task/<task_name>/profiles/<contact_slug>.json`. One reader-style read per profiled contact (Social Style or role-priorities, evidence, confidence, calibration directive), written by `outreach-personality-profiler` in Phase 3 and merged into the briefs. Absent when `personality:off`.
-- **Drafts** — `<PROJECT_ROOT>/.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md`. One draft file per (contact, channel) pair. Each draft carries YAML frontmatter (`subject`, `channel`, `recipient`) followed by the body.
-- **Card lifecycle** — the card ends this run at `target_path = <PROJECT_ROOT>/.mz/outreach/active/<today>_<company_slug>.md`. If `source_path != target_path`, the source file is deleted in the final card-rewrite phase (move semantics). Research-baseline cards at `.mz/outreach/<run>/companies/<slug>.md` and stale-dated active cards (`active/<other-date>_<slug>.md`) are removed by this run.
-
-`task_name` follows `<YYYY_MM_DD>_outreach_enrich_<company_slug>` where `<company_slug>` is derived in Source Resolution (slug without date prefix or `.md`). Same-day collisions append `_v2`, `_v3`.
-
-`<run_dir>` = the directory containing `source_path` when the card is still at its research-baseline location (typically `.mz/outreach/<run>/companies/`). The sibling `strategy.json` lives at `<run_dir>/../strategy.json` — read it from there for sender voice and outreach angles. When `source_path` is already an active path, `<run_dir>` falls back to the most-recently-modified `<PROJECT_ROOT>/.mz/outreach/<run>/` directory containing a `strategy.json` (or `default` voice if none can be located).
+The run's file layout (state, card snapshot, enrichment, briefs, profiles, drafts, card lifecycle) and the `task_name` and `<run_dir>` rules are in `${CLAUDE_SKILL_DIR}/references/directory-structure.md`. Read it at Phase 0.
 
 ## Constants
 
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`. Phase files write `<SKILL_DIR>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 
 ## Core Process
 
 ### Phase Overview
 
-| #   | Phase                             | Agent(s)                                                                                                                  | Details                        |
-| --- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| 0   | Setup + card validation           | — (orchestrator)                                                                                                          | Inline below                   |
-| 1   | Parse card + light web enrichment | — (orchestrator + WebSearch)                                                                                              | Inline below                   |
-| 2   | Deep enrichment via subagents     | `outreach-news-finder`, `outreach-tech-analyst`, `outreach-growth-analyst`, `outreach-scanner`, `outreach-contact-finder` | `phases/deep_enrichment.md`    |
-| 3   | Reader profiling + draft letters  | `outreach-personality-profiler`, `expert-copywriter`                                                                      | `phases/draft_and_finalize.md` |
-| 4   | Naturalize letters                | `expert-naturalizer`                                                                                                      | `phases/draft_and_finalize.md` |
-| 5   | Rewrite card (deeper + letters)   | — (orchestrator, Read + Write)                                                                                            | `phases/draft_and_finalize.md` |
-| 6   | Verification summary              | — (orchestrator)                                                                                                          | Inline below                   |
+| #   | Phase                             | Agent(s)                                                                                                                  | Details                               |
+| --- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| 0   | Setup + card validation           | — (orchestrator)                                                                                                          | `phases/parse_card.md`                |
+| 1   | Parse card + light web enrichment | — (orchestrator + WebSearch)                                                                                              | `phases/parse_card.md`                |
+| 2   | Deep enrichment via subagents     | `outreach-news-finder`, `outreach-tech-analyst`, `outreach-growth-analyst`, `outreach-scanner`, `outreach-contact-finder` | `phases/deep_enrichment.md`           |
+| 3   | Reader profiling + draft letters  | `outreach-personality-profiler`, `expert-copywriter`                                                                      | `phases/draft_letters.md`             |
+| 4   | Naturalize letters                | `expert-naturalizer`                                                                                                      | `phases/naturalize_and_finalize.md`   |
+| 5   | Rewrite card (deeper + letters)   | — (orchestrator, Read + Write)                                                                                            | `phases/naturalize_and_finalize.md`   |
+| 6   | Verification summary              | — (orchestrator)                                                                                                          | `verification-summary.md` (reference) |
 
-Read `phases/deep_enrichment.md` when you reach Phase 2 and `phases/draft_and_finalize.md` when you reach Phase 3. If `enrich_mode == "only"`, Phases 3 and 4 are skipped; Phase 5 still runs to append the `## Deeper Intelligence` section. If `enrich_mode == "skip"`, Phase 2 is skipped; Phase 5 only appends the `## Outreach Letters` section.
+Read `phases/parse_card.md` when you reach Phase 0, `phases/deep_enrichment.md` when you reach Phase 2, `phases/draft_letters.md` when you reach Phase 3, and `phases/naturalize_and_finalize.md` when you reach Phase 4 (or Phase 5 when `enrich_mode == "only"`). If `enrich_mode == "only"`, Phases 3 and 4 are skipped; Phase 5 still runs to append the `## Deeper Intelligence` section. If `enrich_mode == "skip"`, Phase 2 is skipped; Phase 5 only appends the `## Outreach Letters` section.
 
 ### Phase 0: Setup + card validation
 
-Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
-
-Parse arguments. Resolve `user_path`, `channels_override`, `sender_override`, `enrich_mode`. Run Source Resolution (see Argument Parsing) to derive `company_slug` and `source_path`. Verify `source_path` exists and parses as a canonical company card.
-
-Derive:
-
-- `company_slug` — already set by Source Resolution (stripped of any date prefix and `.md`).
-- `task_name` = `<YYYY_MM_DD>_outreach_enrich_<company_slug>` (truncate `<company_slug>` to 30 chars if needed). Collision: `_v2`, `_v3`.
-- `task_dir` = `<PROJECT_ROOT>/.mz/task/<task_name>/`.
-- `run_dir` = if `source_path` is under `.mz/outreach/<run>/companies/`, then `dirname(dirname(source_path))`; otherwise (active path) the most-recently-modified `<PROJECT_ROOT>/.mz/outreach/<run>/` directory that contains a `strategy.json`, falling back to `default` voice if none found.
-
-```bash
-mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/enrichment"
-mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/briefs"
-mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/profiles"
-mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/drafts"
-mkdir -p "<PROJECT_ROOT>/.mz/outreach/active"
-```
-
-Write `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
-
-```yaml
-schema_version: 2
-Status: running
-Phase: 0
-Started: <ISO timestamp>
-phase_complete: false
-what_remains: []
-UserPath: <user-supplied path verbatim>
-SourcePath: <resolved path actually being read>
-CompanySlug: <slug>
-RunDir: <run_dir or "default">
-ChannelsOverride: <value or "auto">
-SenderOverride: <value or "strategy.json|default">
-EnrichMode: <both | only | skip>
-BriefRun: <brief_run or null>
-PersonalityMode: <on | off>
-```
+Run from `phases/parse_card.md`; read it at the start of Phase 0.
 
 ### Phase 1: Parse card + light web enrichment
 
-Read the card. Extract structured data — do this with normal markdown reading, not a regex parser. Capture:
-
-- **Company**: name (from H1), domain, sector, location, founded, size, score (from the metadata header lines).
-- **Overview**: the `## Overview` paragraph.
-- **Key Contacts**: every numbered entry under `## Key Contacts`. Each entry is `**<Name>** — <Title> — [LinkedIn](<url>) — <relevance>`. Extract name, title, LinkedIn URL, relevance line. Also capture the trailing `**Emails**:`, `**Phone**:`, `**Company LinkedIn**:` lines. Cap at 5 contacts.
-- **Recent News**: numbered entries under `## Recent News & Timing Signals`. Each: `**<Title>** (<date>, <category>, <timing_relevance> timing) — <outreach_implication>`. Keep top 3 by `timing_relevance` (high first).
-- **Outreach Recommendation**: the synthesizing paragraph plus the three labeled lines `**Best contact**:`, `**Best angle**:`, `**Timing**:`.
-- **Technology Profile**: stack list, maturity, GitHub URL, tech blog URL.
-- **Growth Signals**: trajectory, open roles, funding (if present).
-- **Red Flags**: any bulleted items (or "None identified").
-
-Persist the parsed structure to `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json` so Phase 2 subagents can read it without re-parsing the markdown:
-
-```json
-{
-  "company": { "name": "...", "slug": "...", "domain": "...", "sector": "...", "location": "...", "founded": "...", "size": "..." },
-  "overview": "<paragraph text>",
-  "key_contacts": [ { "name": "...", "title": "...", "linkedin_url": "...", "email": "...", "relevance": "..." } ],
-  "recent_news": [ { "title": "...", "date": "...", "category": "...", "timing_relevance": "...", "outreach_implication": "..." } ],
-  "outreach_recommendation": { "summary": "...", "best_contact": "...", "best_angle": "...", "timing": "..." },
-  "tech_profile": { "stack": ["..."], "maturity": "...", "github_url": "...", "tech_blog_url": "..." },
-  "growth_signals": { "trajectory": "...", "open_roles": ["..."], "funding": "..." },
-  "red_flags": ["..."]
-}
-```
-
-Read `<run_dir>/strategy.json` if it exists. Capture the `sender_voice` (or `outreach_strategy.sender_voice`) and `outreach_angles` fields. If the file is missing OR the field is empty, use these defaults:
-
-- `sender_voice` = `"Professional, concise, plain-spoken. No marketing register, no hype. First-person singular. Direct request, one CTA per letter."`
-- `outreach_angles` = `["Value-first introduction citing one verified personalization signal from the card or fresh research."]`
-
-If `sender_override` was supplied as an argument, it overrides the strategy.json value (inline text → used directly; path → read the file).
-
-Record `strategy_source` per brief: `strategy.json` if loaded from disk, `default` if fallback applied, `sender_override` if argument was used. If `default`, the final STATUS will be `DONE_WITH_CONCERNS`.
-
-#### Local-climate context
-
-If `brief_run` was supplied, read `<PROJECT_ROOT>/.mz/outreach/<brief_run>/climate.json` and select the combo whose `industry` and `region` best match the card's sector and location (prefer an exact region match, then industry; if none match, skip climate context and letters fall back to company data). Capture the matched combo's `signals` and `top_outreach_angles` as `climate_context`, carried into Phase 3 brief-building. If the file is missing, warn and continue without it.
-
-#### Light web enrichment
-
-This is a small fast pre-pass for the orchestrator to grab per-contact signals the Phase 2 subagents won't touch. The deep, multi-source enrichment happens in Phase 2 via subagents. Hard cap here: 6 calls.
-
-Run a single parallel wave of WebSearch calls:
-
-1. 1 × WebSearch per Key Contact (up to 5) — public activity. Query: `"<contact full name>" "<company name>" linkedin OR podcast OR interview OR keynote`.
-1. 1 × WebSearch — anchor query for cross-referencing in Phase 2. Query: `"<company name>" news <current year>`.
-
-Capture per-contact signal strings (1–2 lines each, verbatim from the search snippet). Discard anything that cannot be cited. These signals seed Phase 3 brief-building; they are not written into the card.
-
-Record the total number of light-pass web calls — surface in the final verification block.
-
-Update `state.md` Phase field to `card_parsed`. If `enrich_mode == "skip"`, advance directly to Phase 3 (handoff to `phases/draft_and_finalize.md`). Otherwise advance to Phase 2 (handoff to `phases/deep_enrichment.md`).
+Run from `phases/parse_card.md`, which Phase 0 already loaded.
 
 ### Phase 6: Verification summary
 
-After Phase 5 completes, emit a visible block:
-
-```
-Outreach enrich-company done.
-Source (read from):     <source_path>
-Card (final):           <target_path = .mz/outreach/active/<today>_<slug>.md>
-Relocated:              <yes | no>     # yes if source_path != target_path
-Task dir:               .mz/task/<task_name>/
-Enrichment mode:        <both | only | skip>
-Subagents dispatched:   <N>    (capped at 5)
-Subagents failed:       <M>
-Deeper-intel fields:    <list of populated subsections (e.g. news, tech, growth, reputation, contacts)>
-Contacts drafted:       <N>   (channels: <breakdown>)   # 0 if enrich_mode == only
-Contacts skipped:       <M>   (no contact route)
-Light web calls:        <K>   (cap 6)
-Naturalize reverted:    <R>   (drafts where naturalize was rolled back)
-Reader profiles:        <P>   (footprint: <F>, role-priority: <RP>)   # absent if personality:off
-Strategy source:        <strategy.json | default | sender_override>
-STATUS: <DONE | DONE_WITH_CONCERNS>
-```
-
-`STATUS: DONE_WITH_CONCERNS` whenever any of: `strategy_source == default`, any contact was skipped, any draft was naturalize-reverted, any copywriter dispatch failed, any web call returned an error, any enrichment subagent returned `NEEDS_CONTEXT`/`BLOCKED`, the light-pass cap was hit and contacts had to drop, the relocation failed to delete the source file.
+After Phase 5 completes, emit the visible block defined in `${CLAUDE_SKILL_DIR}/references/verification-summary.md`, which also lists when `STATUS` is `DONE_WITH_CONCERNS`.
 
 ## State Management
 
@@ -277,19 +127,15 @@ Before emitting `STATUS: DONE`, confirm:
 1. New footers sit at the bottom of each new section: `*Deeper intelligence: <date> | subagents: <N> | failed: <M>*` and `*Letters generated: <date> | naturalized: yes | light queries: <K> | reverted: <R>*`.
 1. Section order on the card is: original sections → `## Deeper Intelligence` (if present) → `## Outreach Letters` (if present) → `## Interaction History` (if it existed before).
 
+## References
+
+- `${CLAUDE_SKILL_DIR}/references/argument-parsing.md`: the `$ARGUMENTS` variables and the Source resolution rules that turn `user_path` into `company_slug` and `source_path`. Read it in full at Phase 0.
+- `${CLAUDE_SKILL_DIR}/references/directory-structure.md`: where state, the card snapshot, enrichment artifacts, briefs, profiles and drafts live, the card lifecycle, and the `task_name` and `<run_dir>` rules. Read it in full at Phase 0.
+- `${CLAUDE_SKILL_DIR}/references/verification-summary.md`: the final verification block and the `STATUS` rule. Read it in full at Phase 6.
+
 ## Resume Support
 
-Before creating anything in Phase 0, run Source Resolution to derive `company_slug` and `source_path`, then check if `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` exists for the resolved `task_name`. If it does, read the `Phase` and `SourcePath` fields and resume from the next incomplete phase:
-
-- `Phase: 0` → restart from Phase 0 with freshly resolved `source_path` (do not trust the stored `SourcePath` since the prior run did not complete validation).
-- `Phase: card_parsed` → resume from Phase 2 (or Phase 3 if `enrich_mode == "skip"`). Use the stored `SourcePath`.
-- `Phase: enrichment_complete` → resume from Phase 3 (or jump to Phase 5 if `enrich_mode == "only"`). Use the stored `SourcePath`.
-- `Phase: briefs_complete` → resume from Phase 3 drafting. Use the stored `SourcePath`.
-- `Phase: drafts_complete` → resume from Phase 4. Use the stored `SourcePath`.
-- `Phase: naturalize_complete` → resume from Phase 5. Use the stored `SourcePath` for the read; compute `target_path` fresh from today's date.
-- `Phase: complete` → no work to do; emit verification block from state. If the freshly resolved `source_path` differs from state's `TargetPath` (e.g., user re-invoked on a stale path or a new day passed), treat it as a new run and restart from Phase 0 with a new `task_name` (`_v2`, `_v3`).
-
-All phases are idempotent — re-running overwrites output files. Phase 5 writes to `target_path` (today's active path), replacing any prior file at that exact location; the post-write cleanup step removes the source if it differs.
+Before creating anything in Phase 0, run the resume check in `phases/parse_card.md` (section Resume Support); it maps the `Phase` value in `state.md` to the phase to resume from.
 
 ## Error Handling
 

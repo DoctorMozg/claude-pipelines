@@ -152,4 +152,4 @@ If the researcher returns fewer than 2 augmentations and the user CV signals a s
 
 Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` `Phase` field to `sources_complete`.
 
-Proceed to Phase 3. Read `phases/scout_score_enrich_report.md`.
+Proceed to Phase 3. Read `<SKILL_DIR>/phases/scout_and_filter.md`.

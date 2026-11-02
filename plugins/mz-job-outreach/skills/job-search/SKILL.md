@@ -72,21 +72,21 @@ Two separate directories are used:
 
 ### Phase Overview
 
-| #   | Phase                       | Agent(s)                              | Details                               |
-| --- | --------------------------- | ------------------------------------- | ------------------------------------- |
-| 0   | Setup + CV collection       | — (orchestrator)                      | Inline below                          |
-| 1   | Strategy                    | `job-strategist`                      | `phases/strategy_and_sources.md`      |
-| 1.5 | User approval of strategy   | — (orchestrator, AskUserQuestion)     | Inline below                          |
-| 2   | Source assembly             | `job-source-researcher` (+ canonical) | `phases/strategy_and_sources.md`      |
-| 3   | Scout fan-out               | N x `job-scout` (parallel)            | `phases/scout_score_enrich_report.md` |
-| 4   | Normalize + filter          | — (orchestrator, inline)              | `phases/scout_score_enrich_report.md` |
-| 4.5 | Cheap pre-score (LLM 0/1/2) | N x `job-prescorer` (parallel)        | `phases/scout_score_enrich_report.md` |
-| 5   | Full score & rank           | N x `job-scorer` (parallel)           | `phases/scout_score_enrich_report.md` |
-| 6   | Contacts (top-N)            | N x `job-contact-finder` (parallel)   | `phases/scout_score_enrich_report.md` |
-| 7   | Cover letters (top-N)       | N x `job-letter-writer` (parallel)    | `phases/scout_score_enrich_report.md` |
-| 8   | Master report               | `job-reporter`                        | `phases/scout_score_enrich_report.md` |
+| #   | Phase                       | Agent(s)                              | Details                          |
+| --- | --------------------------- | ------------------------------------- | -------------------------------- |
+| 0   | Setup + CV collection       | — (orchestrator)                      | Inline below                     |
+| 1   | Strategy                    | `job-strategist`                      | `phases/strategy_and_sources.md` |
+| 1.5 | User approval of strategy   | — (orchestrator, AskUserQuestion)     | Inline below                     |
+| 2   | Source assembly             | `job-source-researcher` (+ canonical) | `phases/strategy_and_sources.md` |
+| 3   | Scout fan-out               | N x `job-scout` (parallel)            | `phases/scout_and_filter.md`     |
+| 4   | Normalize + filter          | — (orchestrator, inline)              | `phases/scout_and_filter.md`     |
+| 4.5 | Cheap pre-score (LLM 0/1/2) | N x `job-prescorer` (parallel)        | `phases/scout_and_filter.md`     |
+| 5   | Full score & rank           | N x `job-scorer` (parallel)           | `phases/score_enrich_report.md`  |
+| 6   | Contacts (top-N)            | N x `job-contact-finder` (parallel)   | `phases/score_enrich_report.md`  |
+| 7   | Cover letters (top-N)       | N x `job-letter-writer` (parallel)    | `phases/score_enrich_report.md`  |
+| 8   | Master report               | `job-reporter`                        | `phases/score_enrich_report.md`  |
 
-Read each phase file only when you reach the phase it covers. Do not read both phase files upfront.
+Read each phase file only when you reach the phase it covers. Do not read all phase files upfront.
 
 ### Strategy schema (Phase 1 output)
 

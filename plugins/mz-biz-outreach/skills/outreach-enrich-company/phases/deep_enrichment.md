@@ -239,11 +239,11 @@ Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`:
 - Append `EnrichmentResults` list, one row per subagent: `<agent_name>: <ok|ok-with-empty|failed:<reason>>`.
 - Append `DeeperIntelArtifact: .mz/task/<task_name>/deeper_intelligence.md`.
 
-If `enrich_mode == "only"`, jump directly to Phase 5 (`phases/draft_and_finalize.md` Phase 5 — card rewrite only). Otherwise advance to Phase 3 (drafting in the same file).
+If `enrich_mode == "only"`, jump directly to Phase 5 (`<SKILL_DIR>/phases/naturalize_and_finalize.md` Phase 5 — card rewrite only). Otherwise advance to Phase 3 (drafting in `<SKILL_DIR>/phases/draft_letters.md`).
 
 ## Brief-building integration (read by Phase 3)
 
-When `phases/draft_and_finalize.md` runs Phase 3 brief-building (which currently reads only `card_parsed.json`-style structure from Phase 1), it must ALSO consume `enrichment/*.json` so deeper-intel facts become eligible personalization signals.
+When `<SKILL_DIR>/phases/draft_letters.md` runs Phase 3 brief-building (which currently reads only `card_parsed.json`-style structure from Phase 1), it must ALSO consume `enrichment/*.json` so deeper-intel facts become eligible personalization signals.
 
 For each contact's `briefs/<channel>_<contact_slug>.json`:
 

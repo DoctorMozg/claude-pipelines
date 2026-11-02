@@ -125,4 +125,4 @@ Profile:    <PROJECT_ROOT>/.mz/task/<task_name>/profile.md
 - Update `state.md`: `Phase: 3`, `PhaseName: hypothesize`, the bottleneck name and class, and the backlog hypothesis count.
 - Mark the Phase 2 and Phase 3 task trackers done.
 
-Phases 2 and 3 are complete. Return to `SKILL.md` for the **Phase 3.5 Backlog / Strategy Approval** gate — the user approves the strategy before any candidate code is written.
+Phases 2 and 3 are complete. Run the **Phase 3.5 Backlog / Strategy Approval** gate in `<SKILL_DIR>/phases/backlog_approval.md` — the user approves the strategy before any candidate code is written.

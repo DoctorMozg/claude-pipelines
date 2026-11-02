@@ -85,14 +85,14 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 | Phase | Goal                                   | Reference                           | Gate                     |
 | ----- | -------------------------------------- | ----------------------------------- | ------------------------ |
 | 0     | Setup + Goal Declaration               | inline below                        | Hard                     |
-| 0.5   | Contract Approval                      | inline below                        | Approval                 |
+| 0.5   | Contract Approval                      | `phases/contract_approval.md`       | Approval                 |
 | 1     | Baseline                               | `phases/baseline.md`                | Hard                     |
 | 2     | Profile & Classify Bottleneck          | `phases/profile_and_hypothesize.md` | —                        |
 | 3     | Hypothesis Generation & Prioritization | `phases/profile_and_hypothesize.md` | —                        |
-| 3.5   | Backlog / Strategy Approval            | inline below                        | Approval                 |
+| 3.5   | Backlog / Strategy Approval            | `phases/backlog_approval.md`        | Approval                 |
 | 4     | Candidate Generation & Verification    | `phases/candidate_loop.md`          | autonomous (risk-tiered) |
-| 4.5   | Mid-loop Boundary Pause                | inline below                        | Conditional              |
-| 4.7   | Manual Correctness Checkpoint          | inline below                        | Conditional              |
+| 4.5   | Mid-loop Boundary Pause                | `phases/loop_checkpoints.md`        | Conditional              |
+| 4.7   | Manual Correctness Checkpoint          | `phases/loop_checkpoints.md`        | Conditional              |
 | 5     | Validation & Results                   | `phases/validate_and_results.md`    | Approval                 |
 | 6     | Termination Decision                   | `phases/terminate.md`               | loop-back / stop         |
 
@@ -120,137 +120,19 @@ The "budget" is the performance budget — the measurable goal the whole loop is
 
 ### Phase 0.5: Contract Approval
 
-**Approval gate.** No measurement runs before the contract is approved. See `<PLUGIN_ROOT>/shared/approval-gate.md` for the two-surface pattern, the `MZ_DEV_PIPE_AUTO_APPROVE` unattended-mode bypass, and the cost-preview format.
-
-**Draft the contract.** Determine `target_type` (from `type:` or inferred from the target), then assemble `<PROJECT_ROOT>/.mz/task/<task_name>/contract.md`:
-
-- `target_type: code` → dispatch `pipeline-tooling-detector` with `project_root: <PROJECT_ROOT>` to auto-fill `measure_command`, `correctness_command`, and `change_space` from project manifests.
-- `target_type: container | llm_hyperparams | build_pipeline | system | generic` → propose defaults from domain knowledge. For any domain outside confident coverage, dispatch `pipeline-researcher` (with `WebFetch` / `WebSearch`) for current best practice before drafting. Mark any field you genuinely cannot propose `<NEEDS USER INPUT: ...>`.
-- `target_type: system` → keep one end-to-end metric and make `change_space` a list of objects, each tagging `{class, domain, paths}`, so the run can attribute the metric across components and follow the bottleneck as it moves between domains.
-
-Contract template:
-
-```yaml
-target_system:       "<what is optimized — file::function, image name, service, …>"
-target_type:         code        # code | container | llm_hyperparams | build_pipeline | system | generic
-metric_name:         <e.g. p95_latency>
-metric_unit:         <e.g. ms>
-metric_direction:    minimize    # minimize | maximize
-target_value:        <number, or null for best-effort within the iteration cap>
-baseline_value:      null        # filled by Phase 1
-measure_command:     "<command emitting one parseable scalar — a JSON field or a trailing numeric line>"
-measure_reps:        10
-measure_warmup:      3
-noise_ceiling_cv:    0.10        # hard-block if the measured CV exceeds this
-correctness_command: "<test command>"   # or the literal: manual
-change_space:        [<allowed transformation classes>]   # objects {class, domain, paths} for target_type: system
-scope:               working     # working | branch | global
-iteration_cap:       6
-```
-
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
-
-**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/contract.md` with the Read tool and capture its full contents into context.
-
-**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: contract]`; `Status` stays `running`.
-
-**Surface 1 — emit the plan message.** Output the contract verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/contract.md` — do not substitute a path, summary, or placeholder. Structure:
-
-```
-## Contract ready for review — optimize
-
-The contract below fully specifies this run: target, metric, the measurement and correctness commands, the allowed change space, and the iteration cap. Every later phase reads it; no measurement runs until you approve it.
-
-<verbatim contents of contract.md>
-
----
-**Approve** → proceed to Phase 1 (Baseline)  ·  **Reject** → mark task aborted, no measurement runs  ·  reply with feedback to revise
-
-Reminder: quiesce the measurement host before approving — background load inflates measurement noise and can hard-block the baseline.
-Approve cost (estimated): baseline + profile ≈ 3 agents (test-runner, measure-runner, researcher) × ~18k tokens ≈ ~$<Y.YY> on mixed Sonnet + Haiku
-```
-
-Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula for the dollar estimate.
-
-**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the contract in the question body, it lives in the plan message above:
-
-- question: `The contract above is ready for review.`
-- header: `Contract`
-- options: **Approve** — proceed to Phase 1 (Baseline) · **Reject** — mark task aborted, no measurement runs
-
-**Response handling:**
-
-- **Approve** → permitted only if every field is concrete (no `<NEEDS USER INPUT>` remains). Add `- contract approved: .mz/task/<task_name>/contract.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, read `phases/baseline.md`, and proceed to Phase 1.
-- **Reject** → set `Status: aborted_by_user` and stop.
-- **Any other reply (feedback)** → apply the changes / supplied values, overwrite `contract.md`, return to this gate, re-read `contract.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 1 without explicit approval.
-- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report. An incomplete contract takes the No-answer path instead, with `awaiting answer: fill the <NEEDS USER INPUT> fields` in `what_remains`.
-- **No answer** → set `Status: blocked`, keep `awaiting approval: contract`, stop. A missing answer is never approval.
+Phase 0.5 is in `<SKILL_DIR>/phases/contract_approval.md`: the contract drafting steps, the contract template, the gate message template and the gate handling.
 
 ### Phase 3.5: Backlog / Strategy Approval
 
-**Approval gate**, once per loop iteration. The user approves the *strategy* — which hypotheses to pursue and in what order — before any candidate code is written. This is where a cross-module or architectural strategy gets explicit sign-off.
-
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
-
-**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/backlog.md` with the Read tool and capture its full contents into context.
-
-**State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: backlog]`; `Status` stays `running`.
-
-**Surface 1 — emit the plan message.** Output the backlog verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/backlog.md` — do not substitute a path, summary, or placeholder. Structure:
-
-```
-## Hypothesis backlog ready for review — optimize
-
-Profiling found the dominant bottleneck. The backlog below ranks the falsifiable speedup hypotheses by impact × confidence ÷ effort; approving authorizes the candidate loop to pursue them top-down.
-
-<verbatim contents of backlog.md>
-
----
-**Approve** → proceed to Phase 4 (candidate generation & verification)  ·  **Reject** → mark task aborted  ·  reply with feedback to revise
-
-Approve cost (estimated): per hypothesis ≈ 4 candidate agents (Opus) + 4 serial measurements (Haiku) × ~22k tokens ≈ ~$<Y.YY>
-```
-
-**Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the backlog in the question body, it lives in the plan message above:
-
-- question: `The hypothesis backlog above is ready for review.`
-- header: `Backlog`
-- options: **Approve** — proceed to Phase 4 (candidate generation & verification) · **Reject** — mark task aborted
-
-**Response handling:**
-
-- **Approve** → add `- backlog approved (iteration <N>): .mz/task/<task_name>/backlog.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, read `phases/candidate_loop.md`, and proceed to Phase 4.
-- **Reject** → `Status: aborted_by_user`, stop.
-- **Any other reply (feedback)** → re-rank in Phase 3, overwrite `backlog.md`, return to this gate, re-read `backlog.md`, and re-emit the entire plan message from scratch with the full new contents. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 4 without explicit approval.
-- **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
-- **No answer** → set `Status: blocked`, keep `awaiting approval: backlog`, stop. A missing answer is never approval.
+Phase 3.5 is in `<SKILL_DIR>/phases/backlog_approval.md`: the gate message template and the gate handling.
 
 ### Phase 4.5: Mid-loop Boundary Pause
 
-**Conditional approval gate** — fires *from within* Phase 4, only when a candidate needs a change outside its risk tier. Any one of:
-
-- a **cross-module or architectural** change (beyond a single artifact or module),
-- a change to a file / artifact **outside the contract's `scope`**,
-- a change of a **transformation class not in `change_space`**.
-
-Low-risk, in-scope, single-artifact changes inside `change_space` do **not** trigger this — they proceed autonomously (the risk-tiered approval model).
-
-When triggered, pause the candidate loop and present, via the two-surface pattern, the specific boundary-crossing change: what it touches, which boundary it crosses, and why the candidate needs it. The user approves *that change* specifically.
-
-**Response handling:** Approve → the candidate proceeds with the boundary-crossing change. Reject → that candidate is discarded as a `DEAD END`; the loop continues with the rest. Feedback → revise and re-present. `MZ_DEV_PIPE_AUTO_APPROVE=1` → bypass per `<PLUGIN_ROOT>/shared/approval-gate.md`.
+Phase 4.5 is in `<SKILL_DIR>/phases/loop_checkpoints.md`, section "Phase 4.5: Mid-loop Boundary Pause".
 
 ### Phase 4.7: Manual Correctness Checkpoint
 
-**Conditional checkpoint** — fires only when the contract's `correctness_command` is the literal `manual`.
-
-With no automated suite, a winning candidate cannot be proven behavior-safe by a command. After such a candidate is promoted into the working tree, pause and ask the user — via AskUserQuestion — to manually confirm the change did not alter observable behavior, comparing against the manual baseline-behavior reference recorded in Phase 1.
-
-This is lighter than an approval gate — a focused yes / no on correctness, not a strategy review:
-
-- **Behavior unchanged** → the candidate is banked; continue to Phase 5.
-- **Behavior changed** → the candidate is reverted and recorded as a `DEAD END` in the history buffer; the loop continues.
-
-This checkpoint is **exempt from `MZ_DEV_PIPE_AUTO_APPROVE`** — a human must actually observe the behavior. Auto-approve never satisfies it. Nobody will come when the run is unattended, so it takes the No-answer path (`<PLUGIN_ROOT>/shared/approval-gate.md`): set `Status: blocked`, record `awaiting answer: manual correctness check` in `what_remains`, and stop.
+Phase 4.7 is in `<SKILL_DIR>/phases/loop_checkpoints.md`, section "Phase 4.7: Manual Correctness Checkpoint".
 
 ## Common Rationalizations
 
