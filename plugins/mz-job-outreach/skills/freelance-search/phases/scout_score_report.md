@@ -83,34 +83,66 @@ ______________________________________________________________________
 
 ## Phase 4.5: Cheap pre-score (LLM 0/1/2)
 
+Dispatch `job-prescorer` agents in parallel waves of up to 6 to rate every gig in `raw_gigs.json` against the CV's must-have skills, or-groups and synonym clusters. Gigs rated `0` are dropped before the full score; `1` and `2` advance.
+
+### 4.5.1 Split into prescore batches
+
+Read `<RUN_DIR>/raw_gigs.json`. Compute `batch_count = ceil(len(gigs) / 15)` and write each batch to `<RUN_DIR>/_prescore_batches/batch_<i>.json`, one array of whole gig records per file, so the prescorer sees each gig's `project_scope_raw`.
+
+### 4.5.2 Dispatch prescorers
+
+Prescorers are writer agents: each writes only its own `batch_<i>_rated.json`. Take `<CV_PATH>` from the `CV path` key in `state.md`. Wait for every agent in the wave to report, then check that each rated file exists on disk before using it.
+
 Before each wave of two or more prescorers, emit the pre-dispatch manifest, numbered and with role labels passed as `description` as in Phase 3:
 
 ```
 Dispatching gig pre-scoring, wave <w> of <K> — <N> agents in parallel
 Purpose: rate gigs for must-have skill presence
-- job-prescorer — pre-score gig <gig_slug>
-- job-prescorer — pre-score gig <gig_slug>
+- job-prescorer — batch <i> of <batch_count>
+- job-prescorer — batch <i> of <batch_count>
 ```
 
-Dispatch `job-prescorer` (reused as-is, format-agnostic skill matcher) in parallel waves of 6:
+Per-batch dispatch prompt:
 
 ```
-Pre-score the gig for must-have skill presence.
+Pre-score this batch of freelance gigs against the CV's must-have skills.
 
-Gig JSON: <one gig from raw_gigs.json>
+CV path: <CV_PATH>
 Strategy file: <RUN_DIR>/search_strategy.json
-Output file: <RUN_DIR>/_prescored/<gig_slug>.json
+Batch file (input): <RUN_DIR>/_prescore_batches/batch_<i>.json
+Output file: <RUN_DIR>/_prescore_batches/batch_<i>_rated.json
 
-Scan title + project_scope_raw + summary_snippet for must-have skills using
-synonym_clusters. Emit 0 (no must-haves found), 1 (some must-haves), or 2
-(all must-haves found).
+Read must_have_skills, must_have_or_groups, synonym_clusters, and
+nice_to_have_skills from the strategy. Scan each gig's project_scope_raw as
+well as its title and summary_snippet. Rate each gig 0/1/2:
+
+  0 = no must-have or or-group matches; clearly off-stack.
+  1 = partial match; full scorer should adjudicate.
+  2 = every must-have and or-group satisfied (cluster terms count).
+
+Emit one record per input gig with url, rating, matched_must_haves,
+matched_or_groups, and a one-phrase reason (≤ 12 words). Recall-biased —
+when uncertain, rate 1 not 0.
 ```
 
-Once every prescorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `job-prescorer (<gig_slug>)` line per agent.
+Once every prescorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `job-prescorer (batch <i>)` line per agent.
 
-Keep only gigs with prescore ≥ 1. Drop the rest into `scored_excluded.json` with `excluded_reason: "prescore_below_threshold"`.
+A prescorer returns `NEEDS_CONTEXT` when its batch file, the CV or the strategy is unreadable, or the strategy has no `must_have_skills`. Rewrite a missing batch file yourself; for any other gap follow the SKILL.md `Error Handling` rule and ask the user, storing a new CV path as `CV path` in `state.md`. Re-dispatch that batch once. If it returns `NEEDS_CONTEXT` again, list it under `Errors:` in `state.md` and let its gigs advance unrated.
 
-Update `state.md` `Phase` to `prescore_complete`.
+### 4.5.3 Merge and filter
+
+After all prescorers return:
+
+1. Concat `_prescore_batches/batch_*_rated.json` into one array and build a `url → rating` map.
+1. Check that the number of ratings equals the number of gigs in `raw_gigs.json`. If not, add a `DONE_WITH_CONCERNS` line under `Errors:` in `state.md` naming the shortfall, and go on with what is present.
+1. Partition `raw_gigs.json` by the rating each gig's `url` maps to:
+   - `rating == 0` → append to `scored_excluded.json` with `excluded_reason: "prescore_below_threshold"` and `prescore_reason: "<the prescorer's one-phrase reason>"`.
+   - `rating ∈ {1, 2}`, or no rating → keep for full scoring with `prescore_rating` on the record (`null` when unrated), since a missing rating is no evidence of a miss.
+1. Write the kept gigs to `<RUN_DIR>/prescored_gigs.json`.
+
+Update `state.md` `Phase` to `prescore_complete` and add `PrescoreDropped: <count>`, `PrescoreAdvanced: <count>`.
+
+If `PrescoreAdvanced == 0`, stop before scoring: dispatch no scorer, let Phase 5 write its empty `scored.json`, and go on to Phase 6, which still reports the exclusions and the guidance-only networks.
 
 ______________________________________________________________________
 
@@ -125,12 +157,12 @@ Purpose: score prescore-survivor gigs against the strategy
 - freelance-scorer — score gig <gig_slug>
 ```
 
-Dispatch `freelance-scorer` in parallel waves of 6 over the prescore-survivors:
+Dispatch `freelance-scorer` in parallel waves of 6 over the gigs in `prescored_gigs.json`:
 
 ```
 Score this freelance gig against the strategy.
 
-Gig JSON: <one gig from prescore-survivor set>
+Gig JSON: <one gig from prescored_gigs.json>
 Strategy file: <RUN_DIR>/search_strategy.json
 Output file: <RUN_DIR>/_scored/<gig_slug>.json
 
@@ -141,10 +173,10 @@ format; surface conversion math verbatim in score_reason.
 
 Once every scorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `freelance-scorer (<gig_slug>)` line per agent.
 
-Scorers in a wave run at the same time, so each writes only its own `_scored/<gig_slug>.json` and the orchestrator alone writes `scored.json`. After all scorers complete, list any dispatched gig without its file under `Errors:` in `state.md`, then merge the files, sorted by `score` descending and cut to the top `limit`:
+Scorers in a wave run at the same time, so each writes only its own `_scored/<gig_slug>.json` and the orchestrator alone writes `scored.json`. After all scorers complete, list any dispatched gig without its file under `Errors:` in `state.md`, then merge the files, sorted by `score` descending and cut to the top `limit`. A scorer record holds only the score and its reasons, so the merge joins each one to its gig in `raw_gigs.json` by `gig_slug`; Phase 6 and `/freelance-pitch` read the gig's own fields from `scored.json`:
 
 ```bash
-jq -s 'sort_by(-.score) | .[:<LIMIT>]' "<RUN_DIR>"/_scored/*.json > "<RUN_DIR>/scored.json"
+jq -s --slurpfile gigs "<RUN_DIR>/raw_gigs.json" 'INDEX($gigs[0][]; .gig_slug) as $by_slug | map($by_slug[.gig_slug // ""] + .) | sort_by(-.score) | .[:<LIMIT>]' "<RUN_DIR>"/_scored/*.json > "<RUN_DIR>/scored.json"
 ```
 
 If no gig survived prescoring, write `[]` to `<RUN_DIR>/scored.json` instead.

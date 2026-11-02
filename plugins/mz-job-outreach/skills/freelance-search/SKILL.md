@@ -60,7 +60,7 @@ Extract from `$ARGUMENTS`:
 Two separate directories are used:
 
 - **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`. Source of truth across phases.
-- **Outreach data** — `<PROJECT_ROOT>/.mz/outreach/<run_name>/` (called `<RUN_DIR>` in phase files) holds `search_strategy.json`, `sources.json`, temp `_scout/`, `raw_gigs.json`, `scored.json`, `scored_excluded.json`, and the final `<YYYY_MM_DD>_freelance_search_<slug>.md` report.
+- **Outreach data** — `<PROJECT_ROOT>/.mz/outreach/<run_name>/` (called `<RUN_DIR>` in phase files) holds `search_strategy.json`, `sources.json`, `raw_gigs.json`, `prescored_gigs.json`, `scored.json`, `scored_excluded.json`, the final `<YYYY_MM_DD>_freelance_search_<slug>.md` report, and the temp folders `_scout/`, `_prescore_batches/` and `_scored/`.
 
 `task_name` follows the pattern `<YYYY_MM_DD>_freelance_search_<slug>`; `run_name` is `<YYYY_MM_DD>_freelance_search_<preferences_slug>`. Same-day collisions append `_v2`, `_v3`.
 
@@ -81,7 +81,7 @@ Two separate directories are used:
 | 2   | Source assembly                   | `job-source-researcher` mode=freelance (+ canonical)  | `phases/strategy_and_sources.md` |
 | 3   | Scout fan-out                     | N × `freelance-scout` (parallel, skips guidance-only) | `phases/scout_score_report.md`   |
 | 4   | Normalize + filter                | — (orchestrator, inline)                              | `phases/scout_score_report.md`   |
-| 4.5 | Cheap pre-score (LLM 0/1/2)       | N × `job-prescorer` (reused, format-agnostic)         | `phases/scout_score_report.md`   |
+| 4.5 | Cheap pre-score (LLM 0/1/2)       | N × `job-prescorer` (batches of up to 15 gigs)        | `phases/scout_score_report.md`   |
 | 5   | Full score & rank                 | N × `freelance-scorer` (parallel)                     | `phases/scout_score_report.md`   |
 | 6   | Master report + guidance cards    | — (orchestrator, inline)                              | `phases/scout_score_report.md`   |
 

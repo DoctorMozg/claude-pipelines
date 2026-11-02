@@ -30,7 +30,7 @@ Do not dispatch in batch — exactly one gig per invocation.
 
 You receive:
 
-1. **Gig JSON** — one entry from `_scout/<source>.json` after dedup and prescore filtering.
+1. **Gig JSON** — one gig record from `prescored_gigs.json`, the survivors of dedup, filtering and prescoring, with its `gig_slug`.
 1. **Strategy file path** — `search_strategy.json`.
 1. **Output file path** — where to write your record, `_scored/<gig_slug>.json`. Every scorer in a wave gets its own file.
 
@@ -137,6 +137,7 @@ Compare the gig's apparent discipline (inferred from title + scope) to `derived_
 ```json
 {
   "gig_url": "https://www.malt.com/profile/acmeco/projects/12345",
+  "gig_slug": "senior-backend-engineer-payments-api",
   "gig_title": "Senior Backend Engineer — Payments API redesign",
   "source": "Malt",
   "score": 82,
@@ -155,11 +156,11 @@ Compare the gig's apparent discipline (inferred from title + scope) to `derived_
 }
 ```
 
-Write the record to the output file path, replacing the file if it exists.
+Copy `gig_slug` from the gig JSON unchanged. Write the record to the output file path, replacing the file if it exists.
 
 ## Output Format
 
-The output file holds one JSON object, your record: no array, no markdown wrapper. The orchestrator merges the per-gig files into `scored.json`.
+The output file holds one JSON object, your record: no array, no markdown wrapper. The orchestrator merges the per-gig files into `scored.json`, joining each record to its gig by `gig_slug`, so a wrong or missing slug leaves the gig's fields out of the report.
 
 ## Red Flags
 
