@@ -58,6 +58,8 @@ The file is human-readable and resilient to header corruption: the marker commen
 
 `mz-memory` walks up from `CLAUDE_PROJECT_DIR` (or the current working directory) to the nearest `.git`, so a single `MEMORY.md` is shared across every subdirectory of a monorepo. Override with `MZ_MEMORY_ROOT=/abs/path` if needed.
 
+If your home directory is itself a git repository, such as a dotfiles checkout, every folder under it without a `.git` of its own resolves to home, and all of them share `~/.mz/memory/MEMORY.md`. Run `git init` in the folder, or set `MZ_MEMORY_ROOT` for it. `GIT_CEILING_DIRECTORIES` doesn't help: the hooks look for `.git` themselves and ignore it, while skills resolve the root with `git rev-parse`, which honors it, so setting it splits the two.
+
 ### What Gets Captured Automatically
 
 - Completed task names and dates (from `.mz/task/*/state.md` where `Status: complete`; the legacy `completed` is also accepted)
