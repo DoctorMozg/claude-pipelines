@@ -104,7 +104,7 @@ Repo convention: set the tier and effort once, in the agent's frontmatter. A ski
 
 `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` overrides both the dispatch `model` and the frontmatter. With `CLAUDE_CODE_SUBAGENT_MODEL` also set, every subagent runs on that model; without it, every subagent runs on the main session's model (sub-agents.md; changelog 2.1.257). Workflow agents also read `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (changelog 2.1.296).
 
-**A skill's own `model:`** switches the main session's model for the rest of the turn, and that loses prompt-cache hits (skills.md). Set it only when the whole skill run benefits from that model.
+**A skill's own `model:`** switches the main session's model for the rest of the turn, and that loses prompt-cache hits (skills.md). Repo convention: no SKILL.md sets it, and `tests/plugin_lint/test_skills.py` enforces that. Pin the model on the agents the skill dispatches instead.
 
 `fable` is also a valid alias, and Bedrock, Vertex and Foundry may map the aliases to older models (model-config.md).
 

@@ -6,7 +6,7 @@ Claims about Claude Code behavior carry the short source tags described at the t
 
 **Owned elsewhere.** These topics are defined in other files; this one only points to them.
 
-- Model tiers, effort, and a skill's own `model:` field: AGENTS_GUIDELINES.md, "Model and Effort".
+- Model tiers and effort, and why a skill sets no `model:`: AGENTS_GUIDELINES.md, "Model and Effort".
 - What a dispatch prompt carries and how to compress it: AGENTS_GUIDELINES.md, "Dispatch Prompts".
 - Issuing waves and the 6-agent cap: AGENTS_GUIDELINES.md, "Parallel Waves".
 - `STATUS:` values and how an orchestrator handles them: AGENTS_GUIDELINES.md, "Status Protocol".

@@ -117,7 +117,7 @@ After compaction, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`, then t
 <The state block that fits the skill, from "State blocks" below.>
 ```
 
-Leave `model:` out unless the whole run benefits from one model. A skill's own `model:` switches the session's model for the rest of the turn and loses prompt-cache hits (AGENTS_GUIDELINES.md, "Model and Effort"). A skill meant for claude.ai uploads or the Skills API keeps only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`.
+Leave `model:` out. A skill's own `model:` switches the session's model for the rest of the turn and loses prompt-cache hits, so pin the model on the agents the skill dispatches (AGENTS_GUIDELINES.md, "Model and Effort"). A skill meant for claude.ai uploads or the Skills API keeps only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`.
 
 A multi-phase skill has two or more phase files or any approval gate. Inline gates take a `.5` number, a gate inside a phase file is listed with that file, and the Loop column is optional. Keep the table's delimiter row; without it, mdformat turns the table into a paragraph.
 
