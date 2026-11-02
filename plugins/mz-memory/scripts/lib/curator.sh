@@ -118,7 +118,7 @@ curator_call() {
   printf '%s' "$raw" | jq -ce 'select(.is_error == false and .subtype == "success") | .structured_output // empty' 2>/dev/null
 }
 
-lessons_curator_schema() {
+curator_schema() {
   printf '%s' '{"type":"object","additionalProperties":false,"required":["operations"],"properties":{"operations":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["op","inbox","lessons","text","tags","reason"],"properties":{"op":{"type":"string","enum":["ADD","MERGE","SUPERSEDE","DROP","COMBINE"]},"inbox":{"type":"array","items":{"type":"string"}},"lessons":{"type":"array","items":{"type":"string"}},"text":{"type":"string"},"tags":{"type":"array","items":{"type":"string"}},"reason":{"type":"string"}}}}}}'
 }
 

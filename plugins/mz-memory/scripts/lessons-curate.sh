@@ -31,7 +31,7 @@ fi
 
 # The mark comes from the snapshot the model sees; items added during the call wait for the next run.
 HIGH=$(inbox_high_id "$LESSONS_FILE")
-if OPS=$(lessons_curator_prompt "$LESSONS_FILE" | curator_call "$(lessons_curator_schema)" "$(lessons_curator_system)"); then
+if OPS=$(lessons_curator_prompt "$LESSONS_FILE" | curator_call "$(curator_schema)" "$(lessons_curator_system)"); then
   apply_curator_ops "$LESSONS_FILE" "$OPS" "$TODAY" || curator_event "$OPS_LOG" failed "could not apply the curator operations"
 else
   curator_event "$OPS_LOG" failed "curator call failed or returned no operations"

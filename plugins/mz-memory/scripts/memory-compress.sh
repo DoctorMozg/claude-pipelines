@@ -173,7 +173,7 @@ OLD=$(awk -v keep="$KEEP_RECENT" 'NR > keep && /^- / { old = 1 } old { print }' 
 RECENT_LINES=$(awk 'END { print NR }' <<<"$RECENT")
 ENTRIES=$(entries_as_inbox <<<"$OLD")
 
-if OPS=$(digest_prompt | curator_call "$(lessons_curator_schema)" "$(digest_system)"); then
+if OPS=$(digest_prompt | curator_call "$(curator_schema)" "$(digest_system)"); then
   if apply_digest_ops; then
     rm -f "$FAILED_MARK"
     exit 0
