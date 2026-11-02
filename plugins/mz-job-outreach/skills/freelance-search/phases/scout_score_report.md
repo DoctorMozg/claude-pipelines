@@ -73,6 +73,7 @@ Read every `_scout/<source>.json`. For each gig:
 1. **Filter by recency** — drop gigs whose parsed `posted_date` is older than `recency_window_days × 1.5`. Gigs with `null` or unparseable `posted_date` are kept (with a `posted_date_unparseable: true` flag for the scorer).
 1. **Filter by region** — apply `location_eligibility_rule` from the strategy. Drop gigs whose `remote_status_raw` explicitly excludes the candidate's region (e.g. "US only" for an EU candidate).
 1. **Apply banned-domain check** — refuse any gig whose URL contains `upwork.com`, `fiverr.com`, `peopleperhour.com`, `freelancer.com`, or `guru.com`. If found, halt and emit a bug report — this should never happen given researcher mode-blocklist.
+1. **Assign `gig_slug`** — slug each surviving gig's title (lowercase, non-alphanumerics to `-`, max 40 chars) and store it on the record as `gig_slug`, appending `-2`, `-3` on a clash. Phases 4.5 and 5 name one file per gig after it, so two gigs must never share a slug.
 
 Write the surviving array to `<RUN_DIR>/raw_gigs.json`. Write filtered-out gigs with their exclusion reasons to `<RUN_DIR>/scored_excluded.json` for transparency.
 
@@ -131,7 +132,7 @@ Score this freelance gig against the strategy.
 
 Gig JSON: <one gig from prescore-survivor set>
 Strategy file: <RUN_DIR>/search_strategy.json
-Output file: <RUN_DIR>/scored.json (append)
+Output file: <RUN_DIR>/_scored/<gig_slug>.json
 
 Apply hard gate (missing must-have = score 0). Score seven axes per
 strategy.scoring_weights. Compare budget_fit in the gig's native rate
@@ -140,7 +141,13 @@ format; surface conversion math verbatim in score_reason.
 
 Once every scorer of a wave has reported, emit the post-wave rollup in the same form as Phase 3, with a `freelance-scorer (<gig_slug>)` line per agent.
 
-After all scorers complete, read `<RUN_DIR>/scored.json`, sort by `score` descending, take top-`limit` entries, and write the sorted array back.
+Scorers in a wave run at the same time, so each writes only its own `_scored/<gig_slug>.json` and the orchestrator alone writes `scored.json`. After all scorers complete, list any dispatched gig without its file under `Errors:` in `state.md`, then merge the files, sorted by `score` descending and cut to the top `limit`:
+
+```bash
+jq -s 'sort_by(-.score) | .[:<LIMIT>]' "<RUN_DIR>"/_scored/*.json > "<RUN_DIR>/scored.json"
+```
+
+If no gig survived prescoring, write `[]` to `<RUN_DIR>/scored.json` instead.
 
 Update `state.md` `Phase` to `score_complete`.
 

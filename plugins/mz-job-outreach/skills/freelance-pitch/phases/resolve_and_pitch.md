@@ -4,11 +4,12 @@
 
 Handled in SKILL.md's "Phase 0 entry" section. After resolution you have:
 
-- `gig` — JSON record (from `latest_run/scored.json` or WebFetched off-pipeline).
+- `gig` — JSON record (from `<search_run_dir>/scored.json` or WebFetched off-pipeline).
 - `run_dir` — where to write the proposal.
 - `task_name` — for state.
+- `search_state` and `search_run_dir` — the newest freelance-search run, when there is one.
 
-If the gig came from `latest_run/scored.json`, the corresponding `latest_run/search_strategy.json` is the strategy file. If off-pipeline, there is no strategy file — the proposal-writer must operate without `rate_floor` (rate falls back to "to be discussed").
+If the gig came from `<search_run_dir>/scored.json`, the corresponding `<search_run_dir>/search_strategy.json` is the strategy file. If off-pipeline, there is no strategy file — the proposal-writer must operate without `rate_floor` (rate falls back to "to be discussed").
 
 Write `<run_dir>/_pitch_temp/gig.json` with the resolved gig record for the proposal-writer to read.
 
@@ -33,7 +34,7 @@ Strategy file: <path or null>
 
 ## Phase 1: Read CV + collect tone preference
 
-Read the CV. If `latest_run/state.md` exists, look up the CV path from there. Otherwise AskUserQuestion to collect a fresh CV path (same validation as `/freelance-search` Phase 0).
+Read the CV. If a prior run was found, take the path from the `CV path` key of `search_state`. If there is no prior run, the key is missing, or the file it names is gone, AskUserQuestion to collect a fresh CV path (same validation as `/freelance-search` Phase 0).
 
 Collect tone preference — a closed-choice input collector. Call `AskUserQuestion` once:
 

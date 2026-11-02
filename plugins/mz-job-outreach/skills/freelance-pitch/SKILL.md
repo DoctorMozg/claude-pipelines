@@ -26,14 +26,14 @@ Drafting a proposal for one specific freelance gig, picked from the latest searc
 ## Input
 
 - `$ARGUMENTS` — optional, one of:
-  - An integer rank (e.g. `3`) → resolve against the latest `<RUN_DIR>/scored.json`.
-  - A URL → look up in the latest `scored.json`; if not found, WebFetch with a warning.
+  - An integer rank (e.g. `3`) → resolve against `<search_run_dir>/scored.json` of the newest freelance-search run.
+  - A URL → look up in that `scored.json`; if not found, WebFetch with a warning.
   - Empty → interactive picker.
 
 ## Directory Structure
 
 - **State** — `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`.
-- **Output** — when resolving against an existing freelance-search run: `<PROJECT_ROOT>/.mz/outreach/<freelance-search-run-dir>/proposals/<gig_slug>.md`. When operating off-pipeline (URL with no prior run): `<PROJECT_ROOT>/.mz/outreach/<YYYY_MM_DD>_freelance_pitch_<slug>/proposals/<gig_slug>.md`.
+- **Output** — when resolving against an existing freelance-search run: `<search_run_dir>/proposals/<gig_slug>.md`. When operating off-pipeline (URL with no prior run): `<PROJECT_ROOT>/.mz/outreach/<YYYY_MM_DD>_freelance_pitch_<slug>/proposals/<gig_slug>.md`.
 
 ## Constants
 
@@ -80,21 +80,20 @@ Parse `$ARGUMENTS`:
 - `personality:off` token (anywhere in `$ARGUMENTS`) → `personality_mode = off` (default `on`); disables the Phase 1.6 reader-style read so proposals use neutral structure.
 - Empty (no rank or URL) → interactive picker.
 
-Discover the most recent freelance-search run:
+Find the newest freelance-search run. That skill keeps its state at `<PROJECT_ROOT>/.mz/task/<YYYY_MM_DD>_freelance_search_<slug>/state.md` and its data in the outreach folder that state names under `RunName`.
 
-```bash
-latest_run=$(ls -dt "<PROJECT_ROOT>"/.mz/outreach/*freelance_search_* 2>/dev/null | head -n 1)
-```
+1. Glob `<PROJECT_ROOT>/.mz/task/*_freelance_search_*/state.md` and sort the matches by the `<YYYY_MM_DD>` prefix of their task folder, newest first, breaking a same-day tie by the later `Started` value. Don't keep Glob's own order or sort by modification time: writing `proposals/` into an older run would make it look newest.
+1. Walk that list and stop at the first state whose run folder holds a `scored.json`; a run without one never finished scoring. Set `search_state` to that file and `search_run_dir` to `<PROJECT_ROOT>/.mz/outreach/<RunName>`, with `RunName` read from it. If no state qualifies, there is no prior run.
 
 Branching:
 
-- **`rank_arg` set** → require `latest_run`. If absent, AskUserQuestion: "No prior /freelance-search run found. Provide a gig URL, or **Cancel**."
-- **`url_arg` set** → if `latest_run` exists, look up the URL in `latest_run/scored.json`. If found, use the scored record. If not found, WebFetch the URL and treat as off-pipeline (warn: no prior scoring).
-- **Empty** → if `latest_run` exists, AskUserQuestion with a single-select menu of the top-10 scored gigs (label = `#<rank> <title> — <client> (score <score>)`) plus an "Other URL" option. If no `latest_run`, AskUserQuestion demands a URL or aborts.
+- **`rank_arg` set** → require a prior run. If there is none, AskUserQuestion: "No prior /freelance-search run found. Provide a gig URL, or **Cancel**."
+- **`url_arg` set** → if a prior run exists, look up the URL in `<search_run_dir>/scored.json`. If found, use the scored record. If not found, WebFetch the URL and treat as off-pipeline (warn: no prior scoring).
+- **Empty** → if a prior run exists, AskUserQuestion with a single-select menu of the top-10 scored gigs (label = `#<rank> <title> — <client> (score <score>)`) plus an "Other URL" option. If there is none, AskUserQuestion demands a URL or aborts.
 
 Set `task_name = <YYYY_MM_DD>_freelance_pitch_<gig_slug>`. Set `run_dir`:
 
-- If gig came from `latest_run`'s `scored.json`: `run_dir = latest_run` (proposals nested under existing run).
+- If gig came from `<search_run_dir>/scored.json`: `run_dir = search_run_dir` (proposals nested under existing run).
 - If gig is off-pipeline (URL with no prior scoring): `run_dir = <PROJECT_ROOT>/.mz/outreach/<task_name>` (new sibling directory).
 
 ```bash

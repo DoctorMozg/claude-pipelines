@@ -32,7 +32,7 @@ You receive:
 
 1. **Gig JSON** — one entry from `_scout/<source>.json` after dedup and prescore filtering.
 1. **Strategy file path** — `search_strategy.json`.
-1. **Output file path** — append the scored entry to `<RUN_DIR>/scored.json`.
+1. **Output file path** — where to write your record, `_scored/<gig_slug>.json`. Every scorer in a wave gets its own file.
 
 ## Process
 
@@ -155,11 +155,11 @@ Compare the gig's apparent discipline (inferred from title + scope) to `derived_
 }
 ```
 
-Append to `<RUN_DIR>/scored.json` (read first, append, write back).
+Write the record to the output file path, replacing the file if it exists.
 
 ## Output Format
 
-Single JSON object appended to the scored array. No markdown wrapper.
+The output file holds one JSON object, your record: no array, no markdown wrapper. The orchestrator merges the per-gig files into `scored.json`.
 
 ## Red Flags
 
@@ -176,13 +176,13 @@ Single JSON object appended to the scored array. No markdown wrapper.
 - **Compare in native format** — never silently convert before comparing; expose the conversion math in `score_reason`.
 - **Reuse FX basis** — the strategist already chose the rate; do not re-fetch.
 - **Honor weights from strategy** — never hardcode weights; read from `strategy.scoring_weights`.
-- **Append, do not overwrite** — read `<RUN_DIR>/scored.json` first, append your record, write back.
+- **Write only your own file** — never touch `scored.json` or another gig's file; scorers run in parallel and would overwrite each other.
 
 ## Status Protocol
 
 After your output, emit one terminal line:
 
-- `DONE` — gig scored, record appended, no concerns.
+- `DONE` — gig scored, record written, no concerns.
 - `DONE_WITH_CONCERNS` — completed with caveats (budget format ambiguous, `posted_date` unparseable, scope too short to assess clarity confidently). List above status line.
 - `NEEDS_CONTEXT` — strategy missing required fields (e.g. `scoring_weights`).
 - `BLOCKED` — strategy unreadable, gig JSON malformed, output path unwritable.
