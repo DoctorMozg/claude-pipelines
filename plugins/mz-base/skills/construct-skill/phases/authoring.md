@@ -1,197 +1,197 @@
-# Phase 1: TDD Authoring Loop (RED / GREEN / REFACTOR)
+# Phase 1: Authoring Loop (RED, GREEN, REFACTOR)
 
-This phase walks the author through a test-driven authoring loop for a new skill. The "tests" are the rationalizations the skill will face in the wild; the "implementation" is the 7-section canonical anatomy that rebuts them. Read this file at the start of Phase 1 and do not skip steps.
+Canonical sources: guidelines/SKILL_GUIDELINES.md, "Skill Descriptions" for Steps 2.2 and 3.1, and "Pre-Publish Checklist" for Step 3.5, which copies it item for item (in the repo checkout; not shipped with the plugin).
 
-## Step 1: RED — Find the rationalizations
+The new skill is written test-first. The "tests" are the failures the skill has to prevent, observed before any text is written. The "implementation" is a SKILL.md that answers each of them. Read this file at the start of Phase 1, and re-read it after compaction.
 
-Before writing any SKILL.md content, enumerate the excuses a future invocation will raise to skip the skill. Writing from the rationalizations backward forces the skill body to earn its invocation instead of assuming it.
+Track the step in `Phase` (`1_red`, `1_green`, `1_refactor`, `1_approval`) and write `state.md` as each step starts. Append every file this run writes to `FilesWritten` as it is written.
 
-### 1.1 Grep the library for domain-relevant seeds
+## Step 1: RED — find the failures
 
-```
-grep -A 4 '^### ' references/anti-rationalization-library.md | less
-```
+Before writing any SKILL.md text, collect what goes wrong when the task runs without the skill. Writing backward from real failures keeps each section earning its place.
 
-Look for entries whose `Skill type` matches the classification from Phase 0 (discipline / collaboration / reference) and whose label relates to the new skill's domain. Copy 2-3 relevant entries to scratch notes as seed patterns — do not paste them verbatim into the SKILL.md unless the rationalization genuinely applies.
+### 1.1 Gather evidence
 
-### 1.2 Enumerate skill-specific rationalizations
+Use these sources, strongest first:
 
-Write ≥3 rationalization/rebuttal pairs that are specific to THIS skill. For each pair:
+- **A run of the task without the skill.** The new skill doesn't exist yet, so any fresh subagent given the task as a user would phrase it is a run without it. Use worktree isolation when the task edits files. Record what it returned, and its transcript path when the session shows one.
+- **Reports or transcripts of earlier runs** under `<PROJECT_ROOT>/.mz/`.
+- **The seed library.** Search `<SKILL_DIR>/references/anti-rationalization-library.md` for the area heading that matches the rule the new skill guards (its Contents list names the areas), or for a keyword from that rule, rather than reading all of it. A seed row is a lead: keep it only once a run shows the agent making that excuse.
 
-- **Rationalization**: a verbatim sentence a user or a future Claude run would say to skip the skill. Use first-person ("I", "we"), direct speech, no meta-language.
-- **Rebuttal**: a concrete, non-generic counter. Cite a specific failure mode, past incident, or empirical finding. Never write "because it is best practice" — that is not a rebuttal.
+### 1.2 Record each failure
 
-Example shape:
+Record each failure in `<PROJECT_ROOT>/.mz/task/<task_name>/red.md`: what the agent did, its excuse verbatim where it skipped a rule, the source (transcript or report path, or the seed row), and the form chosen in 1.3. Don't invent failures; an excuse no agent was seen making tests nothing.
 
-```
-Rationalization: "the plan is small, we can skip the approval gate"
-Rebuttal: "small plans misjudge integration; the gate is the 30-second cost cap on a 3-hour misstep"
-```
+When nothing fails, because the run showed no shortcut, or no run was possible and no earlier transcript or report shows one, write `no observed failures` in `red.md`. The skill then gets no rationalization table: write it from the task's steps and output contract, and mark the checklist's table item n/a with that reason.
 
-### 1.3 Classify the persuasion register
+### 1.3 Match the form to the failure
 
-Re-read SKILL_GUIDELINES.md. Match the skill type (discipline / collaboration / reference) to the register:
+Pick the form for each failure as the library's "When a table helps" section sets out:
 
-- **Discipline** → Authority + Commitment + Social Proof. No Liking. MUST/ALWAYS phrasing. Cite observed incidents.
-- **Collaboration** → Unity + Commitment. "We"/"us" framing. Ask the user to commit verbally at gates.
-- **Reference** → Neutral / informational only. No persuasive language at all.
+- **A rule agents know and skip under pressure**: a row in an anti-rationalization table under `## Common Rationalizations`, or merged into `## Red Flags`. Write it as the library's "Format and placement" and "Writing a row" sections describe.
+- **Output in the wrong shape**: a positive output contract in Core Process instead of a table.
+- **A step the user explicitly chooses to skip**: no row. The skill states the risk once in its report and follows the choice.
 
-Grep `references/persuasion-principles.md` for the recipe that matches. Note which principles will be reflected in the Overview, Core Process, and Common Rationalizations sections.
+**RED exit criterion**: `red.md` records each failure with its source and its form (a table row, an output contract or a Core Process step), or says `no observed failures`.
 
-**RED exit criterion**: you have ≥3 skill-specific rationalization/rebuttal pairs in scratch notes AND a documented persuasion register.
+## Step 2: GREEN — write the skill around the failures
 
-## Step 2: GREEN — Write the counter-arguments into the canonical anatomy
+### 2.1 Start from the skeleton
 
-Now write the SKILL.md body using the rationalizations as the pressure that shapes each section. The rationalization table (Section 5) is the literal "tests"; the other sections explain why those tests pass.
+Read `<SKILL_DIR>/references/canonical-skill-anatomy.md` in full and copy its skeleton into `<TARGET_DIR>/SKILL.md`. Before the first write, check that `TARGET_DIR` starts with `<REPO_ROOT>/plugins/`. Put phase files in `<TARGET_DIR>/phases/` and reference files in `<TARGET_DIR>/references/`.
 
-### 2.1 Copy the skeleton
+### 2.2 Section pass
 
-Grep `references/canonical-skill-anatomy.md` for the 7-section skeleton. Paste into the new `plugins/<plugin>/skills/<name>/SKILL.md`. Fill every section; never leave a header empty — use `N/A — <reason>` with an explicit rationale if a section genuinely does not apply.
+1. **Frontmatter.** `name` is `SkillName` from Phase 0. `description` opens with a third-person clause naming what the skill produces or covers, then "Use when…". It covers the phrases users type, at least one request that doesn't name the domain, and the nearest sibling skill as a counter-trigger, because the body loads only after the skill is picked. It has no workflow summary, no "I" or "you", and no all-caps unless `claude plugin eval` shows a gain without firing on near misses. Keep `description` plus any `when_to_use` within `DESCRIPTION_MAX_CHARS`, leave out `<` and `>`, and quote it if it contains `: ` or starts with `[` or `"`. Quote an `argument-hint` that starts with `[`. Add `model:` only when the whole run benefits from that model.
+1. **Overview.** One paragraph on what the skill does.
+1. **When to Use.** One scope line plus redirects to the nearest sibling skills, or `## When NOT to Use` holding only the redirects. Trigger phrases go in the description, not here. Skip the redirects when no sibling is a near miss.
+1. **Core Process.** The steps, or a phase table under `### Phase Overview` for a multi-phase skill (two or more phase files, or any approval gate). Be prescriptive where the task is fragile: gates, irreversible actions and output contracts. Elsewhere state the goal. Place gates as the anatomy reference's "Gate skeleton" says, and follow its skeleton.
+1. **Techniques, Common Rationalizations, Red Flags, Verification.** Write each only when Step 1 or the task gives it content, and otherwise leave the heading out. Every Verification check cites its evidence: the command and its output.
+1. **Supporting sections**, in the places the anatomy reference's "Sections" gives them. Constants for every bound and path, each bound with a short reason. A References list naming each reference file with what it holds and when to read it. `## Error Handling` with each predictable failure and its response, including the case where nobody can answer. `## State Management` with the state block from the anatomy reference. A skill that edits or analyzes code accepts `scope:`. A skill that writes reports, dispatches waves, runs project tooling, collects input or runs unattended follows the anatomy reference's "Supporting rules".
 
-### 2.2 Section-by-section write pass
+### 2.3 Sources
 
-1. **Frontmatter**: name, description (CSO compliant — triggers only, ≤250 chars, `ALWAYS invoke when...` lead), argument-hint, allowed-tools, model. Third person. No workflow tail.
-1. **Overview**: one paragraph. What the skill does and why the rationalizations from Step 1 would defeat the user without it.
-1. **When to Use**: 3-5 concrete trigger phrases. `### When NOT to use` with 2-3 counter-triggers that route to a sibling skill.
-1. **Core Process**: for single-step skills, a numbered list. For multi-phase skills, a Phase Overview table with `phases/<file>.md` references.
-1. **Techniques**: concrete patterns, tools, decision trees. Pipeline exemption: multi-phase orchestrators may use the single line `Techniques: delegated to phase files — see Phase Overview table above.`
-1. **Common Rationalizations**: two-column table with the pairs from Step 1. Discipline skills must have ≥3 rows. Collaboration/reference skills may use `N/A — collaboration skill.` with no table.
-1. **Red Flags**: 3+ observable signs the skill is being skipped or misapplied.
-1. **Verification**: how to confirm the skill actually ran. Every check must produce visible output.
+Don't invent sources, authors or figures. A claim about Claude Code behavior names its doc page, and a repo precedent names its file. Name a guideline by its filename and section title, never by rule or section number; the skill may number its own steps and refer to them. A skill can't read `guidelines/` at runtime, because no installed plugin reaches that folder; rule text the skill needs ships inside the skill, or in the shared folder the new skill reads as `<PLUGIN_ROOT>/shared/<file>.md`. Delete a citation that trails a sentence which already states the rule.
 
-### 2.3 Cite authority sources
+### 2.4 Wording pass
 
-Anchor every non-obvious claim to an authority source. Acceptable citations:
+Read `<SKILL_DIR>/references/persuasion-principles.md`, then re-read the draft against each of its sections, from "Say what to do" to "Register by role", using the role noted in Phase 0. The sections cover positive instructions, the key rule near the top, visible verification, specificity, binding rules with reasons, no emphasis, safety intent in one line, orchestrator lanes and the register for the role.
 
-- SKILL_GUIDELINES.md ("per SKILL_GUIDELINES.md").
-- Meincke et al. (2025) N=28,000 LLM persuasion compliance study (for Authority / Commitment / Social-Proof framing claims).
-- `obra/superpowers` or `addyosmani/superpowers` for pattern provenance.
-- Prior `.mz/reports/` or `.mz/research/` artifacts for repo-internal precedent.
+**GREEN exit criterion**: Overview, When to Use and Core Process are written, no section is empty, `N/A` or a pointer line, every source is real, and the wording matches the role.
 
-Do not invent citations. If no authoritative source exists, flag the claim as observed-internal and move on.
+## Step 3: REFACTOR — re-test under pressure
 
-### 2.4 Apply the persuasion register
+Re-read the draft as a skeptic who doesn't want to invoke the skill. This catches what the writing pass missed.
 
-Re-read the section text with the persuasion register from Step 1.3 in mind. For discipline skills, convert softening language ("you might want to", "consider") to authority phrasing ("MUST", "ALWAYS"). For collaboration skills, convert "you should" to "let's" / "we". For reference skills, strip any persuasive language — stay neutral.
+### 3.1 Description stress test
 
-Grep `references/persuasion-principles.md` for worked examples if uncertain.
+Read only `description` and any `when_to_use`, and ask whether they alone would make Claude pick the skill for a matching request. Check them against Step 2.2 item 1, then:
 
-**GREEN exit criterion**: all 7 canonical sections filled, all citations real, register matches skill type.
+- Take one near-miss request. Would the description wrongly fire on it?
+- Is it within `DESCRIPTION_MAX_CHARS`, counted with the command in Step 3.4 rather than by eye?
 
-## Step 3: REFACTOR — Re-test under pressure
+If any answer is no, rewrite the description and run this check again.
 
-Re-read the draft as a skeptical user who does not want to invoke the skill. This step catches what writer-brain misses.
+### 3.2 Check that SKILL.md has every required section heading
 
-### 3.1 Description stress test (CSO check)
-
-Read only the frontmatter description. Ask: "Would this description alone convince Claude to invoke the skill on a matching user turn?"
-
-- Does it lead with `ALWAYS invoke when...`?
-- Are there 2-3 concrete trigger phrases?
-- Is the total ≤250 characters?
-- Does it describe triggers only, with zero workflow summary tail?
-- Is it third person?
-
-If any answer is no, rewrite the description and return to this check.
-
-### 3.2 Anatomy anchor check
-
-Grep the SKILL.md for all 7 anchor headers in order:
-
-```
-grep -n '^## ' plugins/<plugin>/skills/<name>/SKILL.md
-```
-
-Expected output: `Overview`, `When to Use`, `Core Process`, `Techniques`, `Common Rationalizations`, `Red Flags`, `Verification`. If any is missing or out of order, fix it.
+List the `## ` headings of `<TARGET_DIR>/SKILL.md`. Overview, When to Use (or When NOT to Use) and Core Process are required. Techniques, Common Rationalizations, Red Flags and Verification may be absent; any that are present follow that relative order and carry real content. Supporting sections sit where the anatomy reference's "Sections" places them. Fix a missing heading, one out of order, or one whose body is empty, `N/A` or a pointer line.
 
 ### 3.3 Rationalization table pressure test
 
-For each row in the rationalization table, ask:
+Skip this step when the skill has no table. For each row:
 
-- **Is the rationalization verbatim?** It must read like something a user would actually say. Academic paraphrases fail.
-- **Is the rebuttal specific?** "Because best practice" fails. "Because the 2025-03-04 prod outage was caused by exactly this" passes.
-- **Does the rebuttal actually push back?** If the rebuttal sounds like it agrees with the rationalization with a caveat, rewrite it.
+- Is the excuse in `red.md` with its source, as an agent's own words rather than invented or taken from the user?
+- Is the rebuttal specific: a concrete cost or the rule it protects, with no invented figures?
+- Does it push back, rather than agree with a caveat?
 
-Discipline skills with \<3 rows fail the anti-rationalization requirement. Re-open Step 1 if the table is thin.
+Rewrite or drop a row that fails. If no observed row is left, drop the table or go back to Step 1 for evidence.
 
-### 3.4 Line budget + file reference check
+### 3.4 Run the mechanical checks
 
-- `wc -l SKILL.md` ≤ 150.
-- `wc -l phases/*.md` ≤ 400 each.
-- Every `phases/<file>.md` and `references/<file>.md` mentioned in SKILL.md must exist on disk. Dead references fail the pre-publish checklist.
+Run each check and keep its output for the checklist:
+
+- `claude plugin validate --strict <REPO_ROOT>/plugins/<plugin>`.
+
+- A strict YAML parse of the frontmatter, which also prints the `description` plus `when_to_use` character count. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this check:
+
+  ```bash
+  python3 -c 'import sys,yaml; fm=yaml.safe_load(open(sys.argv[1]).read().split("---")[1]); print(len(fm["description"])+len(fm.get("when_to_use","")))' "<TARGET_DIR>/SKILL.md"
+  ```
+
+- Line and character counts of every markdown file in the skill: `find "<TARGET_DIR>" -name '*.md' -exec wc -lm {} +`.
+
+- Every path in SKILL.md and the phase files resolves inside the plugin, including through its `shared` link.
 
 ### 3.5 Run the pre-publish checklist
 
-Output every bullet from the SKILL_GUIDELINES.md pre-publish checklist as a visible checklist and mark each PASS/FAIL. Block the workflow on any FAIL — return to GREEN or RED as needed.
+Print every item as a visible list marked PASS, FAIL or n/a (with the reason), with the command output behind each mechanical item. Mark an item the run can't check itself as open, with what the user has to do: for the invocation test, invoke the skill both ways; for the eval suite, write the cases and run `claude plugin eval`. A FAIL sends the draft back to GREEN or RED. When the same item fails after `MAX_REFACTOR_ATTEMPTS` passes, follow Error Handling in SKILL.md.
 
-Expected bullets (all 20):
+**Mechanical checks**
 
-- [ ] Description follows the description rules (third person, directive, front-loaded, trigger phrases)
-- [ ] SKILL.md under 150 lines, phase files under 400 lines
-- [ ] Scope parameter accepted with documented default if code-editing skill
-- [ ] All bounds and paths declared as named constants, no inline hardcoded limits
-- [ ] State persisted to `.mz/task/<task_name>/state.md` with task-naming convention
-- [ ] Dispatch prompts carry only task-specific context, no agent-instruction repetition
-- [ ] Error paths escalate via AskUserQuestion, never silently guess
-- [ ] Model tier (opus/sonnet/haiku) chosen appropriately for each agent dispatch
-- [ ] Tooling (test/lint/type) detected on first use and recorded to `tooling.md`
-- [ ] Input formats documented in SKILL.md; empty or ambiguous args ask, never guess
-- [ ] All phase file references in SKILL.md resolve to existing files
-- [ ] Agent names in dispatch prompts match actual agent definitions
-- [ ] No nested file references (one level deep from SKILL.md)
-- [ ] Consistent terminology across all files in the skill
-- [ ] Tested with direct invocation (`/skill-name`) and natural language trigger
-- [ ] Canonical 7-section anatomy present
-- [ ] Anti-rationalization table present if discipline skill
-- [ ] Description is CSO-compliant, no workflow summary
-- [ ] references/ directory uses grep-first pattern if present
-- [ ] Language matches skill type
+- [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser ("Skill Descriptions").
+- [ ] `description` plus any `when_to_use` is at most 250 characters; `description` contains no `<` or `>` and is quoted if it contains `: ` or starts with `[` or `"` ("Skill Descriptions").
+- [ ] An `argument-hint` that starts with `[` is quoted ("Input Parsing").
+- [ ] SKILL.md is under about 20,000 characters and 500 lines, phase files are under about 400 lines, and reference files over 100 lines open with a table of contents ("Phase and Reference Files").
+- [ ] Every path in SKILL.md and the phase files resolves inside the plugin, including through its `shared` link. No path reaches into another plugin's directory ("Phase and Reference Files").
+- [ ] Every reference file is listed in SKILL.md ("Phase and Reference Files").
+- [ ] Each AskUserQuestion call has 2-4 options and a `header` of at most 12 characters. A plain gate has exactly Approve and Reject, with no Feedback option ("Approval Gates").
+- [ ] The phase table, if present, sits under `### Phase Overview` and has its delimiter row ("Phase Overview Table").
+- [ ] No anatomy section is empty, `N/A` or a pointer line ("Skill Anatomy").
+- [ ] Agent names in dispatch prompts match real agent definitions, and a skill that dispatches another plugin's agent has that plugin in `dependencies` (AGENTS_GUIDELINES.md, "Naming, Organization and Dependencies").
+- [ ] The skill cites no guideline rule or section numbers (AGENTS_GUIDELINES.md, "No Rule-Number Citations").
 
-**REFACTOR exit criterion**: every pre-publish checklist bullet is PASS.
+**Review checks**
 
-## Step 4: Final approval gate
+- [ ] The description opens with a capability clause and "Use when…", covers real phrasings and one request that doesn't name the domain, names the nearest sibling as a counter-trigger, uses plain directives with caps only where an eval backs them, and has no workflow summary ("Skill Descriptions").
+- [ ] Gates sit before irreversible or expensive steps. Each has the delegation guard, the pre-read, state written first, the verbatim plan message, the selector, and response handling covering Approve, Reject, feedback (looping) and no answer ("Approval Gates").
+- [ ] A variant gate with more than four actions lists the extra ones as typed replies or asks in two calls ("Approval Gates").
+- [ ] Unattended mode, if supported, logs every skipped gate to chat, `state.md`, the journal and the final report, and never auto-approves a variant gate ("Approval Gates").
+- [ ] Phase files are read at the start of their phase, and the current one is re-read after compaction ("Phase and Reference Files").
+- [ ] The phase table is present for a multi-phase skill ("Phase Overview Table").
+- [ ] A code-editing or analysis skill accepts `scope:`, documents its default and its read and edit boundary, links the shared scope file, and states the edit boundary in every writer dispatch ("Scope Parameter").
+- [ ] Bounds and paths are named constants with reasons. Phase files use `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` placeholders, expanded before use ("Constants and Paths").
+- [ ] `state.md` follows STATE_SCHEMA.md, as copied in the anatomy reference's state blocks, uses the task-name convention, and is written after every phase and before every gate ("State Management").
+- [ ] Predictable failures are listed under `## Error Handling` with their responses. Escalation follows "Error Handling and Escalation", including the case where nobody can answer.
+- [ ] Reports use `.mz/<root>/<task_name>.md`, and the skill passes report paths to agents ("Report Naming").
+- [ ] Every wave of two or more agents has a manifest and a rollup, and stays within the wave cap ("Wave Observability"; AGENTS_GUIDELINES.md, "Parallel Waves").
+- [ ] Tooling is resolved in order (project instructions, then `.mz/tooling.json`, then the manifests) and recorded in `tooling.md`, with the no-tests behavior stated ("Tooling Detection").
+- [ ] Input formats are documented. Missing, ambiguous and omitted arguments follow "Input Parsing". Input collectors are kept apart from gates, and open values are recorded in `state.md`.
+- [ ] Overview, When to Use and Core Process are present, and what must survive compaction sits in the first 5,000 tokens ("Skill Anatomy").
+- [ ] Dispatch prompts follow AGENTS_GUIDELINES.md, "Dispatch Prompts". A dispatch that overrides `model` or `effort` gives a one-line reason (AGENTS_GUIDELINES.md, "Model and Effort").
+- [ ] Wording follows AGENTS_GUIDELINES.md, "Instruction Wording". A skill that guards a rule agents skip under pressure has an anti-rationalization table (AGENTS_GUIDELINES.md, "Anti-Rationalization Tables").
+- [ ] Terms are used consistently across SKILL.md, phase files and references.
+- [ ] The skill works when invoked directly as `/<plugin>:<skill>` and from a natural-language request. A skill Claude can invoke on its own (no `disable-model-invocation: true`) has a `claude plugin eval` suite of at least three cases. Each case has a result grader plus a `tool_used: Skill` grader; in two-arm runs the `tool_used` grader is shown as an indicator rather than scored, and a should-not-trigger case uses `min: 0, max: 0` with `arm: both`.
 
-**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
+Section names in parentheses are in SKILL_GUIDELINES.md unless another file is named. The rule text these checks need ships in the anatomy reference: its "Supporting rules" cover reports, waves, tooling, input collectors, escalation and unattended mode. Two rules aren't copied into this skill and are only in the repo checkout: what a dispatch prompt carries (AGENTS_GUIDELINES.md, "Dispatch Prompts") and the eval suite format (Claude Code's plugin-evals docs).
 
-### 4.1 Pre-read the draft
+**REFACTOR exit criterion**: no item is FAIL.
 
-Read `plugins/<plugin>/skills/<name>/SKILL.md` and capture the full contents into context.
+## Step 4: Draft approval gate
 
-### 4.2 Surface 1 — emit the plan message
+**This orchestrator** (not a subagent) presents this gate. Interactive; do not delegate.
 
-Emit the full verbatim contents of `plugins/<plugin>/skills/<name>/SKILL.md` as a normal markdown chat message — do not substitute a path, summary, or placeholder. Structure:
+**Pre-read**: Read `<TARGET_DIR>/SKILL.md` and every phase and reference file this run wrote, and capture their full contents.
 
-```
-## Skill draft ready for review — construct-skill
+**State**: write `state.md` with `Phase: 1_approval`, the target path and `awaiting approval: skill draft gate` in `what_remains`. `Status` stays `running` while the gate waits.
 
-Target: plugins/<plugin>/skills/<name>/SKILL.md
-Classification: <discipline | collaboration | reference>
-Anatomy sections: all 7 present
-Rationalization rows: <N>
-Pre-publish checklist: all PASS
+**Surface 1: emit the plan message.** Output the draft verbatim as a normal chat message, one heading per file. Wrap each file in a `markdown` fence one backtick longer than the longest backtick run inside it (four backticks for most files), so its frontmatter and headings show as source:
 
-<verbatim contents of plugins/<plugin>/skills/<name>/SKILL.md>
+`````
+## Skill draft for review: construct-skill
+
+Target: <TARGET_DIR> · Role: <discipline | collaboration | reference> · Checklist: <n> PASS, <n> open
+
+### SKILL.md
+
+````markdown
+<verbatim contents of <TARGET_DIR>/SKILL.md>
+````
+
+### phases/<file>.md
+
+````markdown
+<verbatim contents; one heading and fence per phase file>
+````
+
+### references/<file>.md
+
+````markdown
+<verbatim contents; one heading and fence per reference file>
+````
 
 ---
-**Approve** → save the file to its final location, update state, report completion  ·  **Reject** → delete the draft, update state to `aborted_by_user`, stop  ·  reply with feedback to revise
-```
+**Approve** → keep the files and finish  ·  **Reject** → move the draft into the task folder and stop  ·  reply with feedback to revise
+`````
 
-### 4.3 Surface 2 — call AskUserQuestion
+Emit the full verbatim contents, never a path, summary or placeholder. A draft too long for one message goes out as consecutive messages, whole files each, before the selector.
 
-A short selector — do not re-embed the SKILL.md contents in the question body, they live in the plan message above:
+**Surface 2: call AskUserQuestion.** question: "The skill draft above is ready for review." header: "Skill draft". options: **Approve** — keep the files and finish · **Reject** — move the draft into the task folder and stop.
 
-- question: `The skill draft above is ready for review.`
-- options: **Approve** — save the file to its final location, update state, report completion · **Reject** — delete the draft, update state to `aborted_by_user`, stop
+**Response handling**:
 
-### 4.4 Response handling
+- **Approve** → record the approved `TARGET_DIR` under `## Decisions` in `state.md`, clear `awaiting approval`, set `phase_complete: true`, `what_remains: []` and `Status: complete`, and report completion with any open checklist items.
+- **Reject** → append the journal entry first. Then check that `TargetDir` in `state.md` ends in `/skills/<SkillName>/` with a non-empty `SkillName`, that it sits under `<REPO_ROOT>/plugins/<plugin>/skills/`, and that every file under it is listed in `FilesWritten`, which shows this run created it. If all three hold, run `mv "<TARGET_DIR>" "<PROJECT_ROOT>/.mz/task/<task_name>/rejected_draft"`, so the plugin tree is clean and the draft can be recovered, and record the new path in `state.md`. If a check fails or the move is refused, leave the directory where it is and name it in the report. Set `Status: aborted_by_user` and stop.
+- **Any other answer** is feedback, including typed text and an Approve whose note asks for a change. Apply it, re-running the RED, GREEN or REFACTOR step it touches, overwrite the files, re-read them, and re-emit the whole plan message from scratch before presenting the selector again. Don't send a diff or a summary: the user approves the draft as it now stands. Loop until the user explicitly approves.
+- **No answer** (the call is denied or unavailable, or its result carries the away signal, whatever option it names) → set `Status: blocked`, keep `awaiting approval: skill draft gate` in `what_remains`, leave the plan message in place, and stop. A missing answer is never approval.
 
-- **Approve** → save the file to its final location, update state, report completion to the user.
-- **Reject** → delete the draft, update state to `aborted_by_user`, and stop. Do not proceed.
-- **Any other reply (feedback)** → incorporate the feedback, re-run the affected RED/GREEN/REFACTOR step, return to this gate, re-read the updated draft, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never publish the skill without explicit approval.
-
-## Error Handling
-
-- Empty arguments → ask the user for skill name, intent, and target plugin. Never guess.
-- Target plugin directory does not exist → stop and ask; do not create a new plugin directory as a side effect.
-- Pre-publish checklist has a persistent FAIL after two refactor attempts → escalate to the user via AskUserQuestion with the specific failing bullet and the options: (a) accept the exception with a documented reason, (b) rework the skill, (c) abort.
-- Description cannot fit under 250 chars without dropping triggers → surface the conflict to the user; do not silently truncate triggers.
+**Journal**: once the gate resolves, and on Reject before the move, append a `gate` entry with the command under "Gate skeleton" in the anatomy reference: skill `construct-skill`, phase `1_approval`, gate `skill draft`, and one set of artifact lines per draft file. Journaling never delays the gate.

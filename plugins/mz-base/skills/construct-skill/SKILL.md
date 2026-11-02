@@ -1,93 +1,89 @@
 ---
 name: construct-skill
-description: ALWAYS invoke when the user asks to "write a skill", "author a new skill", "construct a skill", "create a SKILL.md", or "add a skill to the plugin".
+description: "Drafts a new skill for a plugin in this marketplace repo, to its guidelines. Use when asked to write or add a skill or SKILL.md to one of its plugins, or to package a recurring workflow. Not for .claude/skills or skill reviews (use review-branch)."
 argument-hint: <skill name or intent>
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Read, Write, Edit, AskUserQuestion, Bash(claude plugin validate:*)
 model: sonnet
 ---
 
 # Construct Skill
 
-Meta-skill for authoring new skills in this repository. Applies SKILL_GUIDELINES.md through a TDD-style authoring loop: RED (enumerate rationalizations the skill will face), GREEN (write the counter-arguments into the canonical 7-section anatomy), REFACTOR (re-read as a skeptic and stress-test the description, triggers, and rationalization table).
-
 ## Overview
 
-This skill turns SKILL_GUIDELINES.md from a passive rulebook into an executable authoring workflow. Every new skill the user asks to create is walked through the same three-step loop. RED finds the excuses a future invocation will raise to skip the skill. GREEN writes the canonical body whose rationalization table directly rebuts those excuses. REFACTOR subjects the draft to a skeptical re-read and the pre-publish checklist before the user approves.
+Walks the user through writing one new skill for a plugin in this marketplace repo, so that it meets the repo's skill guidelines at first review. The loop is test-first. RED collects the failures an agent shows when the task runs without the skill. GREEN writes the skill around those failures. REFACTOR re-reads the draft as a skeptic and runs the pre-publish checklist. The user approves the finished draft before the run ends.
 
 ## When to Use
 
-Triggers: "write a skill", "author a new skill", "create a SKILL.md", "add a skill to the plugin", "turn this rule into a skill", "help me make this skill follow guidelines".
+One new skill under `plugins/<plugin>/skills/<name>/` in a marketplace checkout, from its frontmatter to its phase and reference files.
 
-### When NOT to use
+- Reviewing skill changes on a branch or PR: use `review-branch` or `github-review-pr`.
+- Editing one phase file of an existing skill: edit it directly.
+- A project skill under `.claude/skills/`, or a repo with no `plugins/` tree: out of scope, because the checks here assume the plugin layout.
+- Writing an agent, a rule file or a plan: this skill covers skills only, and agents follow AGENTS_GUIDELINES.md.
 
-- Auditing or fixing an already-merged skill's CSO/anatomy compliance — use `/review-branch` or `/github-review-pr` instead.
-- Editing phase files inside an existing skill without changing its SKILL.md or references — just edit directly.
-- Writing non-skill markdown (rules, agent files, plan docs) — this skill is scoped to `plugins/<plugin>/skills/<name>/SKILL.md` authoring only.
+## Constants
+
+- **SKILL_DIR**: `${CLAUDE_SKILL_DIR}`
+- **PROJECT_ROOT**: the path printed in Phase 0 by `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`. It holds `.mz/` and nothing else.
+- **REPO_ROOT**: the path printed in Phase 0 by `git rev-parse --show-toplevel`, the checkout the user is authoring in. The plugin tree lives here. `MZ_MEMORY_ROOT` can point `.mz/` at another checkout, so it never decides where the skill is written.
+- **TARGET_DIR**: `<REPO_ROOT>/plugins/<plugin>/skills/<SkillName>/`, the new skill's directory
+- **DESCRIPTION_MAX_CHARS**: 250, the repo cap on `description` plus `when_to_use`. It protects the skill-listing budget that every installed skill shares.
+- **MAX_REFACTOR_ATTEMPTS**: 2. An item that still fails after two rework passes needs the user's call, not a third guess.
+
+The phase file writes `<SKILL_DIR>`, `<PROJECT_ROOT>`, `<REPO_ROOT>` and `<TARGET_DIR>`, because a file opened with Read gets no variable substitution and shell variables don't persist between Bash calls. Expand each to its absolute path before reading a file or running a command.
 
 ## Core Process
 
-| Phase | Goal                                   | Details               |
-| ----- | -------------------------------------- | --------------------- |
-| 0     | Setup                                  | Inline below          |
-| 1     | TDD authoring (RED / GREEN / REFACTOR) | `phases/authoring.md` |
+### Phase Overview
+
+| Phase | Goal                                                | Details               | Loop           |
+| ----- | --------------------------------------------------- | --------------------- | -------------- |
+| 0     | Setup                                               | Inline below          |                |
+| 1     | Author (RED, GREEN, REFACTOR) and approve the draft | `phases/authoring.md` | until approved |
 
 ### Phase 0: Setup
 
-1. **Parse arguments**: `$ARGUMENTS` is the skill name or a short intent string. If empty, ask the user what skill to author and which plugin it belongs in.
-1. **Scope**: identify the target plugin directory under `plugins/` (e.g. `mz-dev-base`, `mz-dev-pipe`). Confirm with the user if ambiguous.
-1. **Classify skill type** per SKILL_GUIDELINES.md: discipline (pushes back against shortcuts), collaboration (shared output with the user), or reference (neutral knowledge). The classification determines the persuasion register the skill must use and whether an anti-rationalization table is required.
+1. **Resolve the roots.** Run the `PROJECT_ROOT` and `REPO_ROOT` commands once, before any `cd`, and keep the printed paths. Check that `<REPO_ROOT>` holds `.claude-plugin/marketplace.json` and a `plugins/` directory.
+1. **Parse the input.** `$ARGUMENTS` is the skill name or a short intent. If it is empty, ask in prose what the skill should do and which plugin it belongs to.
+1. **Settle the skill name.** If `$ARGUMENTS` is already a kebab-case name, use it. Otherwise propose a short kebab-case name from the intent (lowercase letters, digits and single hyphens) and ask in prose whether to keep it or replace it.
+1. **Note the skill's role**: discipline, collaboration or reference, as `${CLAUDE_SKILL_DIR}/references/persuasion-principles.md`, "Register by role", defines them. The role sets the voice of the body.
+1. **Name the task** `<YYYY_MM_DD>_construct-skill_<slug>`: today's date with underscores, then a snake_case summary of the skill name of at most 20 characters. On a same-day collision, append `_v2`, `_v3`. Write `state.md` with `SkillName` and `SkillRole`.
+1. **Pick the target plugin** under `<REPO_ROOT>/plugins/`. If several fit, ask with AskUserQuestion, header "Plugin", offering the likeliest ones (up to four) as options; the user can type any other name. Check that `TARGET_DIR` doesn't exist yet, then add `TargetDir` to `state.md`.
 
-Proceed to Phase 1 by reading `phases/authoring.md`.
-
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — reference skill, not discipline. The rationalizations this skill cares about live in `references/anti-rationalization-library.md` and are seeded into every new skill it authors.
+Then read `<SKILL_DIR>/phases/authoring.md` and run Phase 1. After compaction, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`, then the phase file, before continuing.
 
 ## Red Flags
 
-- You wrote a draft SKILL.md without filling in the Common Rationalizations or Red Flags sections. The anatomy is incomplete — return to RED and enumerate excuses before shipping.
-- The description reads like a workflow summary ("Orchestrates X, then Y, then Z") instead of a CSO trigger list. Descriptions are the skill's auction bid for invocation, not a table of contents.
-- You skipped the persuasion-register check. Discipline skills must use Authority/Commitment/Social-Proof framing; Liking language is banned for them because it drops compliance from 72% to 33% per Meincke et al. (2025).
+- The draft's description summarizes the workflow, or opens with a prefix every skill shares instead of a capability clause and "Use when…".
+- A draft section reads `N/A` or is a pointer line such as "delegated to phase files". Leave the heading out instead.
+- The rationalization table holds excuses nobody saw an agent make, excuses from the user, or rebuttals with invented figures.
+- The draft's body uses all-caps emphasis, which current models over-apply, or flattery and pleasantries, which push models toward agreeing with the user.
+- The gate message shows a path, a line count or a summary where the draft belongs verbatim.
+- A mechanical checklist item is marked PASS with no command output behind it.
 
 ## Verification
 
-Run the pre-publish checklist at the end of Phase 1. Every bullet must be green before the skill is considered done:
-
-- Description is CSO-compliant, ≤250 chars, triggers only, no workflow tail.
-- SKILL.md ≤150 lines; phase files ≤400 lines.
-- All 7 canonical sections present, in order.
-- Anti-rationalization table present with ≥3 rows if discipline skill.
-- Persuasion register matches skill type; no Liking language in discipline skills.
-- All `phases/*.md` and `references/*.md` pointers resolve.
-- User has explicitly approved the final draft via the Phase 1 approval gate.
-
-Output the checklist result as a visible block before concluding — silent checks get skipped.
+The run is done when two things are on screen: the pre-publish checklist from Phase 1, each item marked PASS, n/a or open with its evidence (the command and its output for mechanical items), and the user's explicit Approve at the draft gate.
 
 ## References
 
-- Reference: grep `references/persuasion-principles.md` for Cialdini principle applications per skill type.
-- Reference: grep `references/anti-rationalization-library.md` for seed rationalization/rebuttal pairs.
-- Reference: grep `references/canonical-skill-anatomy.md` for the 7-section skeleton template.
+- `${CLAUDE_SKILL_DIR}/references/canonical-skill-anatomy.md`: the SKILL.md section layout, a skeleton to copy, path rules, the state blocks, the gate skeleton and the supporting rules for reports, waves, tooling, input and escalation. Read it in full at the start of GREEN.
+- `${CLAUDE_SKILL_DIR}/references/anti-rationalization-library.md`: seed rows, grouped by the rule they guard. Search it for the matching area heading during RED rather than reading all of it.
+- `${CLAUDE_SKILL_DIR}/references/persuasion-principles.md`: how to word a skill body for its role. Read it before the wording pass in GREEN.
+
+## Error Handling
+
+- **Not a marketplace checkout** (`git rev-parse --show-toplevel` fails, or `<REPO_ROOT>` lacks `.claude-plugin/marketplace.json` or `plugins/`): stop and say that this skill writes plugin skills in a marketplace repo only.
+- **Empty arguments**: ask in prose what the skill should do and which plugin it belongs to. Don't invent either.
+- **Target plugin missing**: stop and ask. Don't create a plugin directory as a side effect.
+- **`TARGET_DIR` already exists**: ask whether to pick another name or stop. This skill writes new skills only and doesn't overwrite one.
+- **Description can't fit `DESCRIPTION_MAX_CHARS` without dropping a trigger or the counter-trigger**: show the conflict and let the user choose what to drop. Don't cut triggers silently.
+- **`claude plugin validate` or PyYAML unavailable**: mark that checklist item open, run the other checks, and say so in the final report.
+- **A checklist item still fails after `MAX_REFACTOR_ATTEMPTS` passes**: ask with AskUserQuestion, header "Checklist", naming the item, with the options **Accept** (keep the exception with a written reason), **Rework** and **Abort**.
+- **Nobody can answer** (AskUserQuestion is denied or unavailable, or the skill runs inside a subagent): finish the work that doesn't need the answer, write the question and its options to `state.md`, set `Status: blocked`, and stop. Inside a subagent, return `STATUS: BLOCKED` with the question and its options.
 
 ## State Management
 
-After each phase, update `.mz/task/<task_name>/state.md` with:
+State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Lessons` and `## Notes`; mz-memory harvests them only once `Status` is `complete`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
-```yaml
-schema_version: 2
-Status: running   # running | complete | aborted_by_user | failed
-Phase: <current phase number>
-Started: <ISO timestamp>
-phase_complete: false
-what_remains: []
-SkillType: <classified skill type from Phase 0>
-DraftPath: <path to the in-progress SKILL.md or phase file>
-```
-
-Never rely on conversation memory for cross-phase state — context compaction destroys specific paths and decisions.
-
-State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
+This skill also keeps the optional schema key `FilesWritten`, next to the other schema keys: every file the run creates, appended as it is written, relative to `PROJECT_ROOT` or absolute outside it. Its skill-specific keys are `SkillName` and `SkillRole` (from Phase 0) and `TargetDir` (the absolute `TARGET_DIR`). `Phase` records the authoring step: `1_red`, `1_green`, `1_refactor` or `1_approval`.
