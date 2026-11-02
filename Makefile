@@ -1,7 +1,12 @@
-.PHONY: smoke contract-matrix pytest test validate gh-smoke help
+.PHONY: smoke contract-matrix pytest test validate gh-smoke eval help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
+EVAL_MODEL ?= sonnet
+# Pinned, so judge-scored results stay comparable across runs and releases.
+EVAL_JUDGE ?= claude-haiku-5-5
+EVAL_MAX_USD ?= 5
+EVAL_RUNS ?=
 
 help:
 	@echo "Targets:"
@@ -11,6 +16,7 @@ help:
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
+	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_MAX_USD; spends tokens)"
 
 contract-matrix:
 	@./plugins/mz-dev-pipe/tests/run_contract_matrix.sh
@@ -40,3 +46,14 @@ validate:
 # Live GitHub and model calls, so it stays out of `test` and CI.
 gh-smoke:
 	@$(PYTHON) -I tests/e2e/gh_smoke.py
+
+# Targets the repo root so a case's `plugins:` may also load sibling plugins: dependencies and
+# cross-plugin near misses. Routing needs no baseline arm, and --trust-plugin covers only this repo.
+eval:
+	@test -n "$(PLUGIN)" || { echo "usage: make eval PLUGIN=<name> [EVAL_MODEL=opus] [EVAL_RUNS=1]"; exit 2; }
+	@test -d "plugins/$(PLUGIN)/evals" || { echo "plugins/$(PLUGIN) has no evals/ directory"; exit 2; }
+	@mkdir -p "plugins/$(PLUGIN)/evals/results"
+	$(CLAUDE) plugin eval . --eval-dir "plugins/$(PLUGIN)/evals" --ablation none --trust-plugin --no-publish \
+		--model "$(EVAL_MODEL)" --judge-model "$(EVAL_JUDGE)" --max-cost-usd "$(EVAL_MAX_USD)" \
+		$(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") \
+		--json "plugins/$(PLUGIN)/evals/results/last-$(EVAL_MODEL).json"

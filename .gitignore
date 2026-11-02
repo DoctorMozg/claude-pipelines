@@ -7,3 +7,6 @@
 
 .mz/
 __pycache__/
+
+# claude plugin eval output: per-run transcripts, scores and reports
+plugins/*/evals/results/
