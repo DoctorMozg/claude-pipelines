@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: verify-near-miss-red-branch
+description: Making failing tests pass and getting pre-commit clean means fixing the failures, which is polish, not read-only verify.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    My branch is red. There are 4 failures in tests/test_handlers.py and pre-commit is
+    complaining about unused imports in app/handlers.py. Make the tests pass and get
+    pre-commit clean on all the changed files.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: verify-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?verify"'
+    min: 0
+    max: 0
+    arm: both

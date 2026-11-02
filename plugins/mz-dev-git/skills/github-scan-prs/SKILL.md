@@ -1,6 +1,6 @@
 ---
 name: github-scan-prs
-description: ALWAYS invoke when the user wants to check which PRs need attention across GitHub repositories. Triggers:"scan PRs","check PRs","what PRs need attention","PR inbox","daily PR report".
+description: 'Triages open GitHub PRs across repos into a ranked report of what needs attention. Use when the user says "scan PRs", "check PRs", "what PRs need attention", "PR inbox" or "daily PR report". Not for reviewing one specific PR (use github-review-pr).'
 argument-hint: '[owner/repo1, owner/repo2, ...]'
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh repo view *), Bash(gh auth status *), Bash(curl *), Read, Write, AskUserQuestion
@@ -14,7 +14,7 @@ Dispatch the `github-pr-scanner` agent to find pull requests that need the user'
 
 ## When to Use
 
-Triggers: "scan PRs", "check PRs", "what PRs need attention", "PR inbox", "daily PR report".
+Triage of pull requests across one or more GitHub repositories into a prioritized list of what needs the user's attention; it scores PRs and does not review their code.
 
 ### When NOT to use
 

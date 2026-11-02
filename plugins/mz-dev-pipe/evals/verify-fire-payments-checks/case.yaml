@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: verify-fire-payments-checks
+description: Running tests, lint and type checks on a directory and reporting pass or fail without fixing is verify.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    run the tests and lint the code in src/payments/, type check it too. report only,
+    I'll fix whatever breaks myself
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: verify-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?verify"'

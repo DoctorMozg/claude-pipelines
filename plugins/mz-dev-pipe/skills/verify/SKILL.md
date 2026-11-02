@@ -1,6 +1,6 @@
 ---
 name: verify
-description: 'ALWAYS invoke when the user wants to verify code quality, run tests, lint, or check type safety. Triggers: "verify", "run tests", "lint the code", "validate". When NOT to use: fixing failures (use polish or debug).'
+description: 'Runs tests, linters and type checks and reports findings without editing code. Use when the user says "verify", "run tests", "lint the code" or "validate", or wants a quality gate. Not for fixing failures it finds (use polish, or debug for one bug).'
 argument-hint: '[scope:branch|global|working] [optional focus — e.g. "src/auth/", "test_payments.py", "check examples work"]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
@@ -14,15 +14,13 @@ Orchestrates a deep verification pass that checks whether code in scope is corre
 
 ## When to Use
 
-- User asks to verify, run tests, lint, type-check, or gate quality.
-- Triggers: "verify", "run tests", "check code quality", "lint the code", "validate".
-- You need a read-only pass/fail snapshot before shipping or reviewing.
+A read-only pass/fail snapshot of tests, lint, type safety and coverage before shipping or reviewing; it reports findings and never fixes them.
 
 ### When NOT to use
 
 - Failing tests that need fixing — use `polish` or `debug`.
 - New feature work that includes tests — use `build`.
-- Bug hunt with auto-fix — use `audit`.
+- Hunting bugs or security issues by reading the code — use `audit`, which also reports without fixing.
 
 ## Input
 

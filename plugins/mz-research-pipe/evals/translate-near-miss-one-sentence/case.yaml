@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: translate-near-miss-one-sentence
+description: Translating a single short sentence is answered inline and needs no skill.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base", "../../../mz-creative"]
+execution:
+  prompt: >-
+    Translate "Your order has shipped and will arrive on Friday" to French for me.
+    It's for an email subject line.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: translate-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?translate"'
+    min: 0
+    max: 0
+    arm: both

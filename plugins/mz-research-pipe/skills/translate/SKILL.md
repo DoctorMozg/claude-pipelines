@@ -1,6 +1,6 @@
 ---
 name: translate
-description: ALWAYS invoke when the user wants to translate files, docs, or i18n resources. Triggers - "translate X to Y", "localize", "i18n to a language". When NOT to use - single-sentence phrase translation (answer inline).
+description: 'Translates docs and i18n resources into another language. Use when the user says "translate X to Y" or "localize", or wants files or docs in another language. Not for one phrase or sentence (answer inline) or same-language rewording (use naturalize).'
 argument-hint: <natural language request — e.g. "translate README.md to Russian" or "translate locales/en.json to fr mode:i18n">
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(rg *), Bash(awk *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch
@@ -14,13 +14,12 @@ Orchestrates a plan-approve-translate-verify flow for translating documents, REA
 
 ## When to Use
 
-- Translate or localize documents, READMEs, docs directories, or i18n resource files into another language.
-- Triggers: "translate X to Y", "localize this to <lang>", "i18n to <lang>", "render the README in Russian".
-- Supported formats: `md`, `mdx`, `json`, `yaml`/`yml`, `po`, `properties`, `strings`, `xliff`, `txt`.
+Translating or localizing documents, READMEs, docs directories and i18n resource files into another language. Supported formats: `md`, `mdx`, `json`, `yaml`/`yml`, `po`, `properties`, `strings`, `xliff`, `txt`.
 
 ### When NOT to use
 
-- Single-sentence phrase lookup — answer inline, do not orchestrate a pipeline.
+- A single phrase or sentence — answer inline, do not orchestrate a pipeline.
+- Rewording text that stays in its language — use `naturalize`.
 - Code comments or string-literal polish — use the `polish` skill.
 - Live machine-translation chat — out of scope for a file-oriented pipeline.
 - Binary formats (`.docx`, `.pdf`, images) — unsupported; escalate via AskUserQuestion.

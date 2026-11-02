@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: polish-fire-auth-tests
+description: Making an existing module's failing tests pass and the pre-commit hooks clean is polishing existing code against criteria.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    Fix the failing tests in tests/test_auth.py and make sure pre-commit passes on everything under src/auth/. The code is all there already, it just needs to get over the line.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: polish-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'

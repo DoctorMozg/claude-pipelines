@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: polish-near-miss-new-paginator
+description: A helper that does not exist yet, even with quality requirements attached, is a from-scratch module, so it belongs to build instead of polish.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    We need a cursor-based pagination helper for our API in api/pagination.py. It does not exist yet. It has to pass mypy strict, and I want tests covering at least 90% of it, written alongside the code.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: polish-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'
+    min: 0
+    max: 0
+    arm: both

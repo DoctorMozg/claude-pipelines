@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: polish-near-miss-one-failing-test
+description: One failing test with an unknown cause is a single bug to investigate and fix, so it belongs to debug instead of polish.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    test_refund_flow in tests/test_payments.py started failing after yesterday's merge. AssertionError: expected 200 got 500, and I have no idea why. Can you find out what broke it?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: polish-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'
+    min: 0
+    max: 0
+    arm: both

@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: github-scan-prs-fire-morning-triage
+description: Asking which PRs across two named repos need the user's attention today is the multi-repo triage that github-scan-prs does.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    Morning. Can you check which PRs need my attention in acme/widgets and
+    acme/gears? Mostly I want the ones where I was asked to review or where
+    someone is waiting on my reply.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: github-scan-prs-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?github-scan-prs"'

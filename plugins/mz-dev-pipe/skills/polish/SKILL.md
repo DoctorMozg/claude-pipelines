@@ -1,6 +1,6 @@
 ---
 name: polish
-description: 'ALWAYS invoke when the user wants to polish code against criteria — fix failing tests, meet quality standards. Triggers: "polish X", "make tests pass", "fix failing tests". When NOT to use: new feature (use build), single bug (use debug).'
+description: 'Brings existing code up to stated criteria such as passing tests. Use when the user says "polish X", "make tests pass" or "fix failing tests", or has code that must clear its quality gates. Not for one bug (use debug) or a new feature (use build).'
 argument-hint: '[scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
@@ -16,9 +16,7 @@ When a behavioral criterion is not yet covered by any test, polish writes the te
 
 ## When to Use
 
-- User has existing code that needs to meet specific criteria or quality standards.
-- Triggers: "polish X", "make tests pass", "fix failing tests", "clean up the code", "finish this implementation".
-- Code exists but is failing tests, lint, or quality gates.
+Existing code that must meet specific criteria, such as failing tests, lint or other quality gates, or an unfinished implementation.
 
 ### When NOT to use
 
