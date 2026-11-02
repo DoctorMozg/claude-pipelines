@@ -1,6 +1,6 @@
 ---
 name: github-review-pr
-description: ALWAYS invoke when the user wants to review a GitHub pull request. Triggers:"review PR","review pull request","check this PR","PR review". Provide a PR URL or owner/repo#number as argument.
+description: 'Reviews a GitHub pull request by URL or owner/repo#number and writes a findings report with a verdict. Use when the user says "review this PR", pastes a PR link or asks if a change is safe to merge. Not for local branches (use review-branch).'
 argument-hint: <PR URL or owner/repo#number>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh pr view *), Bash(gh auth status *), Bash(git worktree list *), Bash(git worktree remove *), Bash(curl *), Read, Write, AskUserQuestion

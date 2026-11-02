@@ -1,6 +1,6 @@
 ---
 name: combine
-description: 'ALWAYS invoke when the user wants to synthesize or consolidate existing local research, task artifacts, or prior pipeline output into a unified report. Triggers: "synthesize what we learned", "combine our findings", "consolidate past research".'
+description: 'Consolidates existing local research, task artifacts and prior reports into one unified report. Use when the user says "combine our findings" or "pull together everything we found so far". Not for new research from scratch (use deep-research).'
 argument-hint: '[output:<path>] [sources:<glob>] [scope:branch|global|working] [sections:<csv>] <task — what to synthesize>'
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git log *), Bash(git status *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch

@@ -1,6 +1,6 @@
 ---
 name: document
-description: 'ALWAYS invoke when the user wants to create or polish technical documentation for a project. Triggers: "write docs for", "document this", "polish the README", "create API reference", "write a tutorial for", "draft a how-to". Produces Diátaxis-aligned documentation grounded in codebase research, then runs an automatic naturalize pass.'
+description: 'Writes or polishes technical documentation: READMEs, API references, tutorials and how-tos. Use when the user says "document this", "polish the README" or wants something new users can follow. Not for marketing copy (use copywrite).'
 argument-hint: <what to document or polish>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(git log *), Bash(mkdir *), Bash(date *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 model: sonnet

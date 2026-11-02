@@ -1,6 +1,6 @@
 ---
 name: deep-research
-description: ALWAYS invoke when the user wants exhaustive multi-source research on any topic. Triggers:"research X","deep dive into","comprehensive analysis of","what is the state of". Provide a topic as the argument.
+description: 'Researches a topic across many web sources and writes a sourced report. Use when the user says "research X", "deep dive into" or "what is the state of", or needs a thorough briefing. Not for consolidating work already on disk (use combine).'
 argument-hint: <research topic>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, AskUserQuestion

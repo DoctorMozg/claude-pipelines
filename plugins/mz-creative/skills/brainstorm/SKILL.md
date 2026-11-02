@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: 'ALWAYS invoke when the user wants creative ideas, brainstorming, multi-perspective thinking, or diverse viewpoints on a problem. Triggers: "brainstorm", "creative ideas for", "think about this from different angles", "diverse perspectives on".'
+description: 'Generates ideas for an open problem from a panel of differing viewpoints. Use when the user says "brainstorm", "creative ideas for" or "think about this from different angles", or wants options. Not for critiquing a proposal (use expert).'
 argument-hint: <topic or problem to brainstorm>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
