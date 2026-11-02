@@ -24,6 +24,10 @@ from mozg_pipelines.rendering import render_codex_package
 
 _REPOSITORY_ROOT = Path(__file__).parents[2]
 _PLAN_PATH = _REPOSITORY_ROOT / "data/codex_migration.toml"
+# set_versions.sh writes one version everywhere, so a bump must not break these tests.
+_MARKETPLACE_VERSION = json.loads(
+    (_REPOSITORY_ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+)["metadata"]["version"]
 # Each dependent package names the packages that own the agents and files it dispatches.
 _EXPECTED_DEPENDENCIES = {
     "mz-dev-pipe": ("mz-base",),
@@ -63,7 +67,7 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         for package in packages
         if package.plan.disposition is PackageDisposition.DEPENDENT
     } == _EXPECTED_DEPENDENCIES
-    assert {package.source_manifest.version for package in packages} == {"0.49.0"}
+    assert {package.source_manifest.version for package in packages} == {_MARKETPLACE_VERSION}
 
 
 def test_migration_plan_rejects_marketplace_membership_drift() -> None:
@@ -286,7 +290,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
 
         assert spec.source_root == _REPOSITORY_ROOT
         assert spec.package_root == tmp_path / package.plan.name
-        assert spec.version == "0.49.0"
+        assert spec.version == _MARKETPLACE_VERSION
         assert spec.description == package.source_manifest.description
         assert spec.author_name == "Stanislav Gonorovskii"
         assert tuple(role.name for role in spec.catalog.roles) == role_names
