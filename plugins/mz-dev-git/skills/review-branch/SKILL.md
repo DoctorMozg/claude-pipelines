@@ -59,6 +59,10 @@ Dispatch `Agent(branch-reviewer)` with the following prompt and wait for its rep
 
 ```
 Review the current branch against <base-branch>.
+code_root: <output of `git rev-parse --show-toplevel`>
+artifact_root: <PROJECT_ROOT>
+base_branch: <base-branch>
+task_name: <task_name>
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
 Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers as their own wave after Phase 3.5 returns, reading the prompts from <PLUGIN_ROOT>/shared/blinded_lenses.md, and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1.
 Use researcher agents for domain research if the implementation topic is complex.
