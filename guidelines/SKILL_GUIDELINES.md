@@ -341,7 +341,7 @@ The pattern comes from addyosmani/agent-skills, `docs/skill-anatomy.md`, which c
 
 Run this before merging a new or changed skill.
 
-**Mechanical checks.** These suit a script. Pre-commit already runs two of them, `skill-description-shape` and `skill-reference-path` in `.pre-commit-config.yaml`; check the rest by hand until a repo script runs them in `make test`. `make validate`, which the CI `validate` job also runs, calls `claude plugin validate --strict` on the repo and every plugin for what Claude Code accepts. A strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML); it doesn't replace validate, and no script runs it yet.
+**Mechanical checks.** These suit a script. Pre-commit already runs three of them, `skill-description-shape`, `skill-reference-path` and `no-rule-citations` in `.pre-commit-config.yaml`; check the rest by hand until a repo script runs them in `make test`. `make validate`, which the CI `validate` job also runs, calls `claude plugin validate --strict` on the repo and every plugin for what Claude Code accepts. A strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML); it doesn't replace validate, and no script runs it yet.
 
 - [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser (§3).
 - [ ] `description` plus any `when_to_use` is at most 250 characters; `description` is one line, contains no `<` or `>`, and is quoted if it contains `: ` or starts with `[` or `"` (§3).

@@ -447,13 +447,13 @@ Exceptions:
 - A guideline file may refer to its own sections by number. A commit that renumbers a file updates every reference and example in that file.
 - References between guideline files use the section title. Examples use the placeholder "Rule N".
 - Repo-root docs (`README.md`, `CLAUDE.md`), commit messages, PR descriptions and review reports may cite numbers when discussing compliance.
-- A plugin file may number its own steps and sections and refer to them, as in "Step 3" or "§2 of the spec this skill writes". The ban covers numbers that point into a guideline. A lint for this rule matches a number next to a guideline name (`GUIDELINES.md`, `STATE_SCHEMA.md`), not a bare `§N`.
+- A plugin file may number its own steps and sections and refer to them, as in "Step 3" or "§2 of the spec this skill writes". The ban covers numbers that point into a guideline. The `no-rule-citations` pre-commit hook enforces the rule in `plugins/**/*.md`: it matches `Rule N` and a number next to a guideline name (`_GUIDELINES.md`, `STATE_SCHEMA.md`), not a bare `§N`.
 
 ## 23. Pre-Publish Checklist
 
 Run this before merging a new or changed agent.
 
-**Mechanical checks.** These suit a script. Until a repo script runs them in `make test`, check them by hand. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
+**Mechanical checks.** Scripts run all but one. `tests/plugin_lint/test_agents.py`, which `make test` runs, covers every item except the `dependencies` item and the last one, which the `no-rule-citations` pre-commit hook covers. Check the `dependencies` item by hand until a test covers it. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
 
 - [ ] The frontmatter parses with a strict YAML parser and has no unknown keys (§1).
 - [ ] `name` is kebab-case, 3-50 characters and two to four words, is unique across the marketplace, and matches the filename (§20).

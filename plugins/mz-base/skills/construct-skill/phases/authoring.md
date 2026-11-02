@@ -92,6 +92,8 @@ Run each check and keep its output for the checklist:
 
 - `claude plugin validate --strict <REPO_ROOT>/plugins/<plugin>`.
 
+- `pre-commit run --files <every file in TARGET_DIR>` from `<REPO_ROOT>`, which runs the repo's `skill-description-shape`, `skill-reference-path` and `no-rule-citations` hooks along with mdformat.
+
 - A strict YAML parse of the frontmatter, which also prints the `description` plus `when_to_use` character count. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this check:
 
   ```bash
