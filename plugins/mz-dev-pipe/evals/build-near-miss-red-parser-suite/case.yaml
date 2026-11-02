@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: build-near-miss-red-parser-suite
+description: Getting an already-written parser to pass its failing tests and the pre-commit hooks is bringing existing code up to criteria, so it belongs to polish instead of build.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    The invoice parser in billing/parser.py is written and its tests are in tests/test_parser.py, but 7 of the 23 are red and pre-commit complains about line lengths and missing type hints. Get the suite green and the hooks passing.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: build-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?build"'
+    min: 0
+    max: 0
+    arm: both

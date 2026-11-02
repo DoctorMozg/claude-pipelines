@@ -1,6 +1,6 @@
 ---
 name: audit
-description: ALWAYS invoke when the user wants to audit, find bugs, or review the codebase for issues. Triggers - audit, find bugs, security review, code quality scan, pre-PR audit, ship audit. Produces a report-only findings file and does not modify code. Supports depth:standard (default, quick lens scan) and depth:deep (pre-PR multi-wave with rollback rehearsal + blinded adversarial lenses). When NOT to use - single-file fix (use debug), new feature (use build).
+description: 'Audits code for bugs, security and quality issues, writing a report-only findings file. Use when the user wants code checked for problems and reported without changes ("audit", "find bugs", "security review"). Not for one known bug (use debug).'
 argument-hint: '[depth:standard|deep] [scope:branch|global|working] [optional focus]'
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git log *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(sort *), Bash(uniq *), Bash(mv *), Bash(printf *), Bash(perl -0777 -pe *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
@@ -19,16 +19,14 @@ No code is modified in either mode. Hand the summary to `build`, `debug`, or `po
 
 ## When to Use
 
-- User asks to audit, find bugs, or review the codebase for issues.
-- Triggers (standard): "audit", "find bugs", "security review", "check for issues", "code quality scan".
-- Triggers (deep): "deep audit", "pre-PR audit", "ship audit", "audit before publishing", "before I open a PR".
-- Scope spans multiple files / multiple concern categories.
+A report-only hunt for problems across multiple files and concern categories, as a quick scan or a deeper pre-PR pass.
 
 ### When NOT to use
 
 - A single known bug — use `debug`.
 - Building new functionality — use `build`.
 - Map-reduce cleanup with no bug hunt — use `cleanup`.
+- Only running the existing tests, lint and type checks — use `verify`.
 - You want the findings fixed automatically — this skill does not edit code; pass the summary to `build`, `debug`, or `polish` afterwards.
 
 ## Input

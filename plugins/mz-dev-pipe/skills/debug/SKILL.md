@@ -1,6 +1,6 @@
 ---
 name: debug
-description: 'ALWAYS invoke when the user reports a bug, failing test, or wants to verify a hypothesis. Triggers: "debug X", "fix this bug", "why is X failing", "stack trace", "investigate X", "is X actually doing Y", "prove/disprove". Two modes via `certainty:` — high (default, full TDD fix) or low (hypothesis investigation, no fix). When NOT to use: new features (use build), quality polish on known-good code (use polish).'
+description: 'Fixes a bug test-first, or tests a hypothesis without fixing. Use when the user reports a bug, error, failing test or stack trace, or says "debug X" or "is X actually doing Y". Not for new features (use build) or getting a suite green (use polish).'
 argument-hint: '[scope:branch|global|working] [certainty:low|high] <bug report or hypothesis — error message, stack trace, failing test, description, GitHub issue URL, or behavioral question>'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
@@ -19,22 +19,12 @@ The two modes share Phase 0 setup, then diverge into separate phase files. The u
 
 ## When to Use
 
-**`certainty:high` (default, reactive bug fix)**:
-
-- User reports a bug, error, or failing test with a reproducible symptom.
-- Triggers: "debug X", "fix this bug", "why is X failing", "stack trace".
-- You have (or can create) a reproducer; the failure is observable.
-
-**`certainty:low` (hypothesis investigation)**:
-
-- User suspects an issue but has not confirmed it. Wants verification, not a fix.
-- Triggers: "investigate X", "does X actually do Y", "is the retry logic correct", "might X have a race condition", "prove/disprove X".
-- The question is testable but the answer is uncertain.
+A bug, error or failing test with an observable symptom and a reproducer (or one that can be written), fixed at the root cause (`certainty:high`, the default); or a suspected, unconfirmed issue with a testable claim, investigated and reported without a fix (`certainty:low`).
 
 ### When NOT to use
 
 - Building a new feature from scratch — use `build`.
-- Polishing already-working code to criteria — use `polish`.
+- Polishing already-working code to criteria, or getting a whole suite or quality bar green with no single bug in view — use `polish`.
 - General code quality improvement with no specific bug — use `polish` or `cleanup`.
 - Map-reduce cleanup across a module — use `cleanup`.
 - Impact analysis before a refactor — use `audit depth:deep scope:branch` (auto-invokes `<PLUGIN_ROOT>/shared/blast-radius.md`).

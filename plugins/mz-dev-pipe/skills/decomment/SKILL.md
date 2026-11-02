@@ -1,6 +1,6 @@
 ---
 name: decomment
-description: ALWAYS invoke when the user wants to strip AI-flavored comments and docstrings from code. Triggers "decomment", "strip AI comments", "remove robotic comments". When NOT to use - markdown (use naturalize), full comment deletion, code refactor.
+description: 'Strips AI-flavored comments and docstrings from code, editing comment text only. Use when the user says "decomment", "strip AI comments" or "remove robotic comments". Not for code-level AI residue (use clean-leftovers) or markdown (use naturalize).'
 argument-hint: '[scope:branch|global|working] [path/glob override]'
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git status *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(perl -0777 -pe *), Bash(awk *), Bash(sed *), Bash(mv *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Read, Write, Edit, Glob, Grep, AskUserQuestion
@@ -12,12 +12,11 @@ allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git 
 
 ## When to Use
 
-- Cleaning AI residue from a feature branch before merge.
-- Removing robotic section banners, phase headers, and restate-the-signature docstrings from generated code.
-- Trigger phrases: "decomment", "strip AI comments from my branch", "remove robotic comments", "clean LLM comments from code".
+Stripping robotic section banners, phase headers and restate-the-signature docstrings from generated code, typically on a feature branch before merge, by editing comment and docstring text only.
 
 ### When NOT to use
 
+- Wider AI residue such as signatures, phase markers in code, half-built stubs and dead code — use `clean-leftovers`.
 - Markdown or prose files — use `naturalize`.
 - Deleting ALL comments wholesale — this skill targets AI artifacts only, not every comment.
 - Code refactor or function-body rewriting — comment-region edits only.

@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: audit-fire-inherited-service
+description: A read-through of an unfamiliar service that ranks what is broken or risky across several concerns, without fixing it, is an audit even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    I inherited services/billing/ from a contractor who left last month and nobody on
+    the team has read it end to end. Go through all of it and tell me what's broken,
+    risky or just plain wrong, worst first, covering correctness, security and
+    performance. Just the list for now, I'm not asking for fixes yet.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: audit-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?audit"'

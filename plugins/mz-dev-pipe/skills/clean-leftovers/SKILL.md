@@ -1,6 +1,6 @@
 ---
 name: clean-leftovers
-description: "ALWAYS invoke when the user wants to remove AI-generation leftovers from code. Triggers: 'clean leftovers', 'remove AI markers', 'strip phase comments', 'clean up after the pipeline', 'de-AI the code'. When NOT to use: prose rewriting (use /naturalize), general code quality cleanup (use /cleanup)."
+description: 'Removes AI-run residue, code included: signatures, phase markers, stubs. Use when the user says "clean leftovers", "remove AI markers" or "clean up after the pipeline". Not for comment-only tidying (use decomment) or refactors (use cleanup).'
 argument-hint: '[scope:branch|global|working] [path or glob]'
 model: sonnet
 allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
@@ -14,12 +14,11 @@ Removes AI-generation leftover artifacts from code: AI signatures and tool water
 
 ## When to Use
 
-- Branch or working tree contains pipeline-run leftovers (Phase markers, AI signatures, planning comments, half-finished stubs).
-- Pre-PR sweep to remove provenance leaks and amateur-looking generation artifacts before review.
-- Triggers: "clean leftovers", "remove AI markers", "strip phase comments", "clean up after the pipeline", "de-AI the code".
+Sweeping a branch or working tree for the wider residue of an AI run (signatures, phase and plan markers, half-built stubs, dead code), code included, e.g. before a PR to remove provenance leaks.
 
 ### When NOT to use
 
+- Comment- and docstring-only tidying that must leave executable code untouched — use `/decomment`.
 - Prose rewriting (AI-style writing patterns in narrative markdown) — use `/naturalize`.
 - Generic code-quality cleanup with no AI-artifact focus — use `/cleanup`.
 - Fixing failing tests or completing partial features — use `/polish`.

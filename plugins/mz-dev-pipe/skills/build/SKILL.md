@@ -1,6 +1,6 @@
 ---
 name: build
-description: 'ALWAYS invoke when the user wants to build, implement, or create a new feature, module, or component from scratch. Triggers: "build X", "implement Y", "add feature". When NOT to use: bug fixes (use debug), polishing existing code (use polish).'
+description: 'Builds a new feature, module or component test-first, with code review. Use when the user wants something new built or implemented ("build X", "implement Y", "add feature"). Not for bug fixes (use debug) or bringing code up to criteria (use polish).'
 argument-hint: <task description>
 model: sonnet
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(mv *), Bash(printf *), Bash(perl -0777 -pe *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
@@ -16,9 +16,7 @@ The pipeline enforces red-green-refactor: tests are written and verified failing
 
 ## When to Use
 
-- User asks to build, implement, or create a new feature/module/component.
-- Triggers: "build X", "implement Y", "add feature Z", "develop".
-- Work spans multiple files and benefits from a plan + review + test loop.
+Creating a new feature, module or component that spans multiple files and benefits from a plan, review and test loop.
 
 ### When NOT to use
 

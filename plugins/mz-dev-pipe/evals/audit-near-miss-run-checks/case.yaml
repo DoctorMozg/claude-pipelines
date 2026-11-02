@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: audit-near-miss-run-checks
+description: Running the existing tests, linter and type checker and reporting the result is verify, not an audit of the code.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    Run pytest, ruff and mypy on the whole repo and tell me what fails. Just report
+    it, I don't want any changes.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: audit-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?audit"'
+    min: 0
+    max: 0
+    arm: both

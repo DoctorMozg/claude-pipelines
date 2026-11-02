@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: build-fire-webhook-delivery
+description: A multi-part capability that does not exist yet, described by its behavior and location without build vocabulary, is a from-scratch feature for build.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    Our Go service at github.com/acme/ledger has to notify customers when a transaction posts. Each customer registers callback URLs, we POST the payload to every one of them signed with an HMAC, and failed deliveries retry with backoff for up to a day. Nothing for this exists in the repo yet, so it needs the registration endpoint, a delivery worker under internal/webhooks/, and tests.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: build-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?build"'

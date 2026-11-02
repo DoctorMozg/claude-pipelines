@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: decomment-fire-restating-docstrings
+description: Removing AI-sounding docstrings and banner comments from a branch while leaving the code alone is the comment-only job decomment does.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-base", "../../../mz-creative"]
+execution:
+  prompt: >-
+    Can you strip the AI comments out of this branch? Every function got a docstring
+    that just restates its signature, and there are "# ===== Helpers =====" banners
+    all over. Only touch comments and docstrings, leave the code alone.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: decomment-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?decomment"'
