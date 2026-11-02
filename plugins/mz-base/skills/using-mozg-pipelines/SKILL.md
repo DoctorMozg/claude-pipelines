@@ -51,6 +51,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "synthesize past research", "combine findings", "consolidate prior work"                                                                             | combine                                                        | mz-research-pipe |
 | "translate this", "localize", "translate to <lang>"                                                                                                  | translate                                                      | mz-research-pipe |
 | "bootstrap rules", "init project rules"                                                                                                              | init-rules                                                     | mz-base          |
+| "promote lessons", "turn lessons into rules"                                                                                                         | lessons-promote                                                | mz-memory        |
 | "review my branch", "what changed locally"                                                                                                           | review-branch                                                  | mz-dev-git       |
 | "review this PR", "what's wrong with this PR"                                                                                                        | github-review-pr                                               | mz-dev-git       |
 | "scan open PRs", "triage PRs"                                                                                                                        | github-scan-prs                                                | mz-dev-git       |
@@ -67,7 +68,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "install governance policy", "init governance", "set up decision records"                                                                            | gov-init                                                       | mz-gov           |
 | "review our ADRs", "audit decision records", "are our design docs sound"                                                                             | gov-review                                                     | mz-gov           |
 
-mz-memory contributes SessionStart, SessionEnd, UserPromptSubmit and PostToolUse (AskUserQuestion) hooks and the `/memory-note` skill; it is referenced by agents that need persistent state.
+mz-memory contributes SessionStart, SessionEnd, UserPromptSubmit and PostToolUse (AskUserQuestion) hooks, the `/memory-note` skill (notes, and lessons after a correction) and the `/lessons-promote` skill (recurring lessons into project rules); it is referenced by agents that need persistent state.
 
 ## Red Flags
 
