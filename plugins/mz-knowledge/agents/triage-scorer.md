@@ -5,7 +5,7 @@ tools: Read, Glob, Write
 model: haiku
 effort: low
 maxTurns: 8
-color: yellow
+color: cyan
 ---
 
 ## Role

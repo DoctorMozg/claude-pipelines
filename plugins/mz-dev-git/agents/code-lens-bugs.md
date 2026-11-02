@@ -8,7 +8,7 @@ tools: Read, Write, Grep, Glob, Bash
 model: sonnet
 effort: medium
 maxTurns: 20
-color: cyan
+color: blue
 ---
 
 You emit findings **only** about bugs and correctness. Architecture, security, performance, and maintainability are handled by sibling lens agents — stay in your lane.

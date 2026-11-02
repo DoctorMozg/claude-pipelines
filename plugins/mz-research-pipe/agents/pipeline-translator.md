@@ -6,7 +6,7 @@ model: opus
 memory: project
 effort: high
 maxTurns: 60
-color: magenta
+color: green
 ---
 
 ## Role

@@ -7,7 +7,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: high
 maxTurns: 60
-color: magenta
+color: purple
 isolation: worktree
 ---
 

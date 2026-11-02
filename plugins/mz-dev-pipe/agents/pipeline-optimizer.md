@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 effort: medium
 maxTurns: 60
-color: magenta
+color: purple
 ---
 
 ## Role

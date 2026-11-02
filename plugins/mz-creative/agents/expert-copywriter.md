@@ -5,7 +5,7 @@ tools: Read, Write, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: high
 maxTurns: 60
-color: green
+color: purple
 ---
 
 ## Role

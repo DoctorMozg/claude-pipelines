@@ -5,7 +5,7 @@ tools: Read, Write, Grep
 model: sonnet
 effort: medium
 maxTurns: 12
-color: green
+color: purple
 ---
 
 ## Role

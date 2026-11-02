@@ -8,7 +8,7 @@ tools: Read, Write, Grep, Glob, Bash
 model: sonnet
 effort: medium
 maxTurns: 20
-color: green
+color: blue
 ---
 
 You emit findings **only** about over-engineering — code that should not exist, or should exist as something smaller. Correctness, security, architecture, performance, and maintainability live in sibling lenses — stay in your lane.

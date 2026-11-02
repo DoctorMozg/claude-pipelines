@@ -7,7 +7,7 @@ tools: Read, Write, Edit, Glob
 model: sonnet
 effort: medium
 maxTurns: 20
-color: magenta
+color: purple
 ---
 
 ## Role

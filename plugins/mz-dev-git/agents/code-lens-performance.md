@@ -8,7 +8,7 @@ tools: Read, Write, Grep, Glob, Bash
 model: sonnet
 effort: medium
 maxTurns: 20
-color: yellow
+color: blue
 ---
 
 You emit findings **only** about performance and efficiency. Correctness, security, architecture, maintainability live in sibling lenses — stay in your lane.

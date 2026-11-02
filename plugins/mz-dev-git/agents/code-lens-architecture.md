@@ -8,7 +8,7 @@ tools: Read, Write, Grep, Glob, Bash
 model: sonnet
 effort: medium
 maxTurns: 20
-color: magenta
+color: blue
 ---
 
 You emit findings **only** about architecture and design patterns. Bugs, security, performance, maintainability live in sibling lenses — stay in your lane.

@@ -7,7 +7,7 @@ tools: Read, Glob, Bash, Write
 model: haiku
 effort: low
 maxTurns: 12
-color: green
+color: cyan
 ---
 
 ## Role

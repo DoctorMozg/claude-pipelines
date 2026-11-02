@@ -5,7 +5,7 @@ tools: Read, Write, Grep, Glob
 model: opus
 effort: high
 maxTurns: 25
-color: cyan
+color: blue
 ---
 
 ## Role

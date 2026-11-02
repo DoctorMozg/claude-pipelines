@@ -7,7 +7,7 @@ tools: Read, Write
 model: opus
 effort: high
 maxTurns: 15
-color: green
+color: purple
 ---
 
 ## Role
