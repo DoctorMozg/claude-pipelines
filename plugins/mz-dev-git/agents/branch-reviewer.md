@@ -1,34 +1,6 @@
 ---
 name: branch-reviewer
-description: |
-  Use this agent when the user asks to review the current git branch, check what has changed since main/master, or audit all commits on a feature branch before opening a PR. Triggers include "review my branch", "what have I changed locally", "audit this branch", or "check the branch before I push". Examples:
-
-  <example>
-  Context: User has finished a feature on a local branch and wants a deep review before opening a PR.
-  user: "Review my current branch before I push — I want to make sure I didn't miss anything."
-  assistant: "I'll use the branch-reviewer agent to diff against the base, analyze each changed file, and produce a structured report in .mz/reviews/."
-  <commentary>
-  Explicit branch-scope review request — branch-reviewer's primary trigger.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User is on a long-running feature branch with many commits and wants architecture-level feedback across the whole branch.
-  user: "This feature branch has grown big — can you go over all of it and tell me what needs fixing?"
-  assistant: "I'll use the branch-reviewer agent to walk every changed file, check architecture and test coverage, and save a report."
-  <commentary>
-  Whole-branch audit on a large change set — exactly what branch-reviewer is for, as opposed to single-file code-reviewer.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Assistant has just finished a multi-commit implementation on a feature branch and the user is about to push.
-  user: "Looks good, let's push it"
-  assistant: "Before pushing, I'll use the branch-reviewer agent to do a full branch review against main and flag anything worth fixing first."
-  <commentary>
-  Proactive trigger: meaningful branch completion, reviewer should run before history leaves the local machine.
-  </commentary>
-  </example>
+description: 'Audits all changes on the current git branch since its base for bugs, security, architecture, performance and maintainability problems. Use when the user wants a full review of a local feature branch before opening a PR or pushing ("review my branch", "audit this branch", "check the branch before I push"), asks what they have changed on the branch compared to main ("what have I changed locally"), or has a branch that has grown large and wants every changed file checked, tests included. Use proactively when Claude has just finished a multi-commit implementation on a feature branch and the user is about to push. Do not use for a GitHub PR that is already pushed (use github-pr-reviewer), scanning repos for PRs that need attention (use github-pr-scanner), single-file or uncommitted-change reviews (use code-reviewer), or researching a topic before writing code (use pipeline-web-researcher).'
 tools: Read, Write, Bash, Glob, Grep, Agent(pipeline-web-researcher, pipeline-researcher, code-lens-bugs, code-lens-security, code-lens-architecture, code-lens-performance, code-lens-maintainability, code-lens-over-engineering, branch-info-collector), WebFetch, WebSearch
 model: opus
 effort: high

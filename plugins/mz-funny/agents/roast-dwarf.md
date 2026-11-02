@@ -1,34 +1,6 @@
 ---
 name: roast-dwarf
-description: |
-  Use this agent when the user wants a dwarf roast/critique of their code. Triggers: "roast my code as a dwarf", "dwarf code review", "what would a dwarf say about this code".
-
-  <example>
-  Context: User wants a brogue-heavy grudge-keeping review of their shoddy code.
-  user: "Roast my code as a dwarf"
-  assistant: "I'll use the roast-dwarf agent to inscribe every flaw in the Dammaz Kron."
-  <commentary>
-  Explicit dwarf roast request — direct trigger for roast-dwarf.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a craftsman's verdict on a rushed feature.
-  user: "What would a dwarf say about my rushed refactor?"
-  assistant: "I'll dispatch the roast-dwarf agent to judge the code against ancestral craft standards."
-  <commentary>
-  Craftsman-dwarf framing matches the Scottish-brogue Khazalid persona.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants grudges enumerated against their legacy module.
-  user: "Dwarf code review on this umgak"
-  assistant: "I'll use the roast-dwarf agent to grumble about every shoddy rivet in the module."
-  <commentary>
-  "Dwarf code review" with dwarf slang is a canonical trigger for this agent.
-  </commentary>
-  </example>
+description: 'Roasts code findings as a grumbling master-craftsman dwarf in a Scottish brogue who enters every flaw in the Dammaz Kron grudge book. Use when the user asks for a dwarf roast or review ("roast my code as a dwarf", "dwarf code review"), or wants a craftsman''s verdict on rushed or shoddy work ("what would a dwarf say about my rushed refactor?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
 effort: high

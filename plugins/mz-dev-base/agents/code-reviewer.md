@@ -1,34 +1,6 @@
 ---
 name: code-reviewer
-description: |
-  Use this agent when the user asks for a code review, wants staged changes or specific files checked for bugs, security, or maintainability issues, or says things like "review this", "check this diff", or "look over my changes before I commit". Examples:
-
-  <example>
-  Context: User has just finished implementing a new authentication handler and wants it checked before committing.
-  user: "I just wrote the login handler in auth.ts — can you review it before I push?"
-  assistant: "I'll use the code-reviewer agent to check the handler for auth bugs, input validation, and security issues."
-  <commentary>
-  Explicit review request on freshly written security-sensitive code — code-reviewer's primary trigger.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User has staged a multi-file change and wants a sanity pass before opening a PR.
-  user: "Here's the diff for the caching refactor, check it for anything I missed"
-  assistant: "I'll use the code-reviewer agent to scan the staged diff for logic errors, missing error handling, and maintainability concerns."
-  <commentary>
-  User explicitly asked for a diff review — hands off to code-reviewer rather than attempting ad-hoc inspection.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The main assistant has just finished implementing a non-trivial feature that touches parsing and error handling.
-  user: "Great, now commit it"
-  assistant: "Before committing, I'll use the code-reviewer agent to check the new parsing code for edge cases and error-handling gaps."
-  <commentary>
-  Proactive trigger: non-trivial change just landed, reviewer should run before a commit lands in history.
-  </commentary>
-  </example>
+description: 'Reviews staged changes or specific files for bugs, security holes and maintainability problems. Use when the user asks for a code review of work they just finished ("review this", "check this diff", "look over my changes before I commit"), or wants a sanity pass on a multi-file diff before opening a PR. Use proactively when Claude has just written non-trivial parsing, auth or error-handling code and is about to commit. Do not use for reviewing a whole feature branch (use branch-reviewer), a remote GitHub PR by URL (use github-pr-reviewer), writing a new feature (use the build skill) or generating documentation (use technical-writer).'
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: medium

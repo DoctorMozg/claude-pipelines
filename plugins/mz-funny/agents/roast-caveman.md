@@ -1,34 +1,6 @@
 ---
 name: roast-caveman
-description: |
-  Use this agent when the user wants a caveman roast/critique of their code. Triggers: "roast my code as a caveman", "caveman code review", "what would a caveman say about this code".
-
-  <example>
-  Context: User wants a fun roast of their Python script.
-  user: "Roast my code as a caveman"
-  assistant: "I'll use the roast-caveman agent to smash the code in Hulk-speak."
-  <commentary>
-  Explicit caveman roast request — direct trigger for roast-caveman.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User finished an auth module and wants a humorous primitive take.
-  user: "What would a caveman say about my auth module?"
-  assistant: "I'll dispatch the roast-caveman agent to roast the auth code in three-word sentences."
-  <commentary>
-  Character-specific roast framing matches the caveman Hulk-speak persona.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User jokingly asks for the dumbest possible review of their tangled code.
-  user: "Caveman code review please — smash my spaghetti code"
-  assistant: "I'll use the roast-caveman agent to club the tangled logic with short, physical metaphors."
-  <commentary>
-  "Caveman code review" is a canonical trigger phrase for this agent.
-  </commentary>
-  </example>
+description: 'Roasts code findings as a pre-linguistic caveman who speaks in short Hulk-speak sentences and smashes anything abstract. Use when the user asks for a caveman roast or review ("roast my code as a caveman", "caveman code review"), or wants a primitive, dumbed-down verdict on over-engineered or spaghetti code ("what would a caveman say about this code", "smash my spaghetti code"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
 effort: high

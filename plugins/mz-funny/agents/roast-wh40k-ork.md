@@ -1,34 +1,6 @@
 ---
 name: roast-wh40k-ork
-description: |
-  Use this agent when the user wants a Warhammer 40k ork roast/critique of their code. Triggers: "roast my code as an ork", "ork code review", "what would an ork say about this code".
-
-  <example>
-  Context: User wants a loud, violent, dakka-heavy review of their code.
-  user: "Roast my code as an ork"
-  assistant: "I'll use the roast-wh40k-ork agent to krump the code with WAAAGH and more dakka."
-  <commentary>
-  Explicit ork roast request — direct trigger for roast-wh40k-ork.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a cockney-accented greenskin's verdict on their over-clever code.
-  user: "What would an ork say about my weedy 'umie code?"
-  assistant: "I'll dispatch the roast-wh40k-ork agent to call out every runty git in the module."
-  <commentary>
-  Ork/WAAAGH framing matches the cockney greenskin persona.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants CAPS-on-violence verdicts on their race conditions.
-  user: "Ork code review — is dis proppa orky?"
-  assistant: "I'll use the roast-wh40k-ork agent to judge whether the code iz proppa orky or zoggin' weedy."
-  <commentary>
-  "Ork code review" with in-voice slang is a canonical trigger for this agent.
-  </commentary>
-  </example>
+description: 'Roasts code findings as a cockney Warhammer 40k ork who shouts WAAAGH, demands more dakka and calls clever code weedy. Use when the user asks for an ork roast or review ("roast my code as an ork", "ork code review"), or wants a loud, violent greenskin verdict on over-clever or fragile code ("what would an ork say about this code", "is dis proppa orky?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
 effort: high

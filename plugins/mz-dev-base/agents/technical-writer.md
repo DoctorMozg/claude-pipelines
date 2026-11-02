@@ -1,34 +1,6 @@
 ---
 name: technical-writer
-description: |
-  Use this agent when the user asks to write or improve technical documentation — README files, API references, SDK docs, integration guides, tutorials, getting-started material, or troubleshooting/FAQ sections. Triggers include "write a README for X", "document this module", "draft API docs", or "write a getting-started guide". Examples:
-
-  <example>
-  Context: User has finished a library and now needs a README for it.
-  user: "Write a README for the http-retry package"
-  assistant: "I'll use the technical-writer agent to read the package source, build an example-driven README, and verify snippets against the actual code."
-  <commentary>
-  Explicit README request grounded in existing code — technical-writer's primary trigger.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants an API reference generated from actual source, not guessed.
-  user: "Draft API docs for the public functions in auth/"
-  assistant: "I'll use the technical-writer agent to enumerate public symbols, write signatures, parameters, and examples from real usage in tests."
-  <commentary>
-  Source-grounded API reference — technical-writer reads code first, then writes, avoiding fabrication.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Existing README is stale and the user wants it rewritten to match current code.
-  user: "The README is out of date compared to what the CLI actually does now — rewrite it"
-  assistant: "I'll use the technical-writer agent to read the current CLI, compare against the stale README, and rewrite with verified examples."
-  <commentary>
-  Doc reconciliation against code as source of truth — matches technical-writer's verify-before-writing discipline.
-  </commentary>
-  </example>
+description: 'Writes or rewrites technical documentation grounded in the actual source: READMEs, API references, SDK and integration guides, tutorials, getting-started and troubleshooting pages. Use when the user asks for new docs ("write a README for X", "draft API docs", "write a getting-started guide"), wants a module documented from its real signatures and tests ("document this module"), or has a stale README that no longer matches the code and needs a rewrite with verified examples. Do not use for checking existing docs for correctness only (use code-reviewer or a plain Read), researching external libraries or protocols first (use pipeline-web-researcher), changing production code (use the build skill), PR descriptions or commit messages, or a full Diátaxis-structured doc pipeline with a humanizing pass (use the document skill).'
 tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch
 model: sonnet
 effort: high

@@ -1,34 +1,6 @@
 ---
 name: github-pr-scanner
-description: |
-  Use this agent when the user wants to triage or scan multiple GitHub repositories for PRs needing attention — PRs where review is requested, the user is mentioned or assigned, or the user's own PRs have changes requested. Triggers include "check my PRs", "scan these repos for stuff I need to review", "what PRs need my attention today", or "do my daily PR review". Examples:
-
-  <example>
-  Context: Start of the workday — user wants to know which PRs across multiple repos need their attention.
-  user: "Scan acme/widgets and acme/gears for anything needing my review today"
-  assistant: "I'll use the github-pr-scanner agent to triage both repos, fan out per-PR haiku scorers in parallel, and save a prioritized report to .mz/reviews/."
-  <commentary>
-  Multi-repo PR triage across a provided list — github-pr-scanner's primary trigger. Deep reviews are a separate skill (/github-review-pr); github-pr-scanner produces a lightweight prioritized inbox only.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a morning digest of open PRs across their team's repos.
-  user: "What open PRs need my attention this morning?"
-  assistant: "I'll use the github-pr-scanner agent to list the repos to scan and produce a prioritized digest of PRs needing your review, reply, or action."
-  <commentary>
-  Daily triage framing — github-pr-scanner classifies every PR into one of three tiers (directly-asked-unanswered, review-requested, informational) and ranks them.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User asks to check for unanswered feedback on their own PRs across multiple repos.
-  user: "Check my own PRs in acme/widgets, acme/gears, acme/cogs for unanswered review comments"
-  assistant: "I'll use the github-pr-scanner agent to scan all three repos for changes-requested and unanswered-discussion items on your PRs."
-  <commentary>
-  Cross-repo scan of user's own PRs for unanswered threads — exactly the "Tier 1 — directly asked, unanswered" signal the scanner surfaces first.
-  </commentary>
-  </example>
+description: 'Triages pull requests across the GitHub repositories the user names and ranks the ones that need their attention: review requested, user mentioned or assigned, or their own PRs with changes requested. Use when the user asks what needs their attention across several repos ("what PRs need my attention today", "do my daily PR review", "scan these repos for stuff I need to review"), or wants to check their own PRs for unanswered review comments ("check my PRs"). Do not use for a deep review of one specific PR (use github-pr-reviewer), reviewing a local branch before pushing (use branch-reviewer), investigating code bugs or architecture (use code-reviewer or branch-reviewer), or PR metrics and status analytics.'
 tools: Read, Write, Bash, Glob, Grep, Agent(github-pr-info-scorer, github-pr-data-fetcher), mcp__github__*, mcp__plugin_github_github__*
 model: sonnet
 effort: medium

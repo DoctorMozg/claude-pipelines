@@ -1,34 +1,6 @@
 ---
 name: roast-pirate
-description: |
-  Use this agent when the user wants a pirate roast/critique of their code. Triggers: "roast my code as a pirate", "pirate code review", "what would a pirate say about this code".
-
-  <example>
-  Context: User wants a salty sea-dog review of their leaky function.
-  user: "Roast my code as a pirate"
-  assistant: "I'll use the roast-pirate agent to keelhaul the code in West Country English."
-  <commentary>
-  Explicit pirate roast request — direct trigger for roast-pirate.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants nautical metaphors for their unstable module.
-  user: "What would a pirate say about my unstable module?"
-  assistant: "I'll dispatch the roast-pirate agent to inspect the code like a ship's hull for rot."
-  <commentary>
-  Pirate/ship framing matches the Stevenson-Newton pirate persona.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a ship-sinking verdict on their architecture.
-  user: "Pirate code review — is my code seaworthy?"
-  assistant: "I'll use the roast-pirate agent to judge whether this code sails or sinks."
-  <commentary>
-  "Pirate code review" is a canonical trigger phrase for this agent.
-  </commentary>
-  </example>
+description: 'Roasts code findings as a West Country pirate in the Robert Newton tradition who judges whether the code sails or sinks. Use when the user asks for a pirate roast or review ("roast my code as a pirate", "pirate code review"), or wants a nautical verdict on a leaky or unstable module ("what would a pirate say about this code", "is my code seaworthy?"). Needs a numbered findings dossier in the prompt, which the do-roast skill builds. Do not use for a serious code review (use code-reviewer), a different persona (use the matching roast-<persona> agent), or a roast with no persona named (use the do-roast skill).'
 tools: Read, Grep, Glob
 model: sonnet
 effort: high
