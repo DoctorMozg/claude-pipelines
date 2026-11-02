@@ -285,7 +285,7 @@ Run the no-op path as well, such as a missing file or the wrong tool: exit 0 and
 
 **End-to-end eval.** `claude plugin eval` runs a plugin's hooks for real, so a case can check what a hook does inside a session (observed on 2.1.316). SessionEnd hooks finish before graders read files, so a `{source: file, path}` regex grader sees what a hook wrote. The trace records SessionStart `hook_started` and `hook_response` events with the hook's stdout, so a trace regex can check injected context. UserPromptSubmit events and the prompt itself aren't in the trace. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes, including `git init` in the `scaffold_script` for any hook that resolves the project root. The mz-memory suite in `plugins/mz-memory/evals/` is the worked example.
 
-**Live smoke.** Repo convention: a change to an mz-memory hook or the mz-dev-pipe tooling hook runs `make hooks-smoke`. It runs the hooks from the working tree in live headless sessions on haiku, through startup, session end, resume and compact, which an eval case can't reach. It spends about a cent of tokens and stays out of CI.
+**Live smoke.** Repo convention: a change to an mz-memory hook or the mz-dev-pipe tooling hook runs `make hooks-smoke`. It runs the hooks from the working tree in live headless sessions on haiku, through startup, session end, resume and compact, which an eval case can't reach. It spends about a cent of tokens and stays out of CI. mz-base's SessionStart hook runs too, but only its exit status is checked, so that's a crash check and nothing more. Its fixture stays below the compression and curation thresholds, so the detached `claude -p` paths are covered by the `tests/mz_memory/` suite, not by this run.
 
 ## 14. Versioning
 
