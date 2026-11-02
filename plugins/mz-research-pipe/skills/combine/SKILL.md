@@ -82,7 +82,7 @@ Before completing, output a visible block showing: task slug, lenses dispatched,
 
 - **0.1 Resolve PROJECT_ROOT** — run the command in Constants, before any `cd` or worktree switch, and use its output for every `.mz/` path below.
 - **0.2 Parse arguments** — extract `output:`, `sources:`, `scope:`, and `sections:` from `$ARGUMENTS` (case-insensitive); remove each matched parameter from the argument text — the remainder is the task description.
-- **0.3 Vague-task check** — count whitespace-separated tokens in the task text; if fewer than `MIN_TASK_QUERY_TOKENS`, or the task contains a banned token (`everything`, `all`, `whatever`), fire AskUserQuestion with a focusing prompt before proceeding. Never guess intent.
+- **0.3 Vague-task check** — count whitespace-separated tokens in the task text; if fewer than `MIN_TASK_QUERY_TOKENS`, or the task contains a banned token (`everything`, `whatever`), fire AskUserQuestion with a focusing prompt before proceeding. Never guess intent.
 - **0.4 Derive task name** — format `<YYYY_MM_DD>_combine_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary of the task text (max 20 chars); on same-day collision append `_v2`, `_v3`.
 - **0.5 Create task directory and state** — `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>/"` and write `state.md` with fields, in order: `schema_version: 2` (first line), Status, Phase, Started, `phase_complete: false`, `what_remains: []`, Task, Output, Lenses, Sections (source: `task-derived` | `user-supplied`).
 - **0.6 Create task tracking** — use TaskCreate for each pipeline phase.
