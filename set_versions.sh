@@ -21,13 +21,13 @@ REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 # orchestrator branch; we'd rather fail the bump than ship the drift.
 CONTRACT_MATRIX="$REPO_ROOT/plugins/mz-dev-pipe/tests/run_contract_matrix.sh"
 if [ -x "$CONTRACT_MATRIX" ]; then
-  if ! "$CONTRACT_MATRIX" >/tmp/contract_matrix.out 2>&1; then
+  MATRIX_OUT=$(mktemp)
+  trap 'rm -f "$MATRIX_OUT"' EXIT
+  if ! "$CONTRACT_MATRIX" >"$MATRIX_OUT" 2>&1; then
     echo "Error: contract matrix failed — version bump blocked." >&2
-    cat /tmp/contract_matrix.out >&2
-    rm -f /tmp/contract_matrix.out
+    cat "$MATRIX_OUT" >&2
     exit 1
   fi
-  rm -f /tmp/contract_matrix.out
 fi
 
 # sed -i is incompatible between GNU and BSD: GNU takes no argument, BSD
@@ -40,37 +40,29 @@ else
   SED_INPLACE=(sed -i '' -E)
 fi
 
-# Substitute every "version": "X.Y.Z" occurrence and verify the file actually
-# changed before accepting the rewrite. Fail fast on any file that was supposed
-# to carry a version but didn't.
-rewrite_version() {
-  local file="$1"
-  local expected_min="$2"
+# The marketplace keeps only metadata.version; plugin versions live in each manifest, which wins at install time.
+VERSION_FILES=("$REPO_ROOT/.claude-plugin/marketplace.json")
+for dir in "$REPO_ROOT"/plugins/*/; do
+  VERSION_FILES+=("${dir}.claude-plugin/plugin.json")
+done
+VERSION_PATTERN='"version":[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"'
 
+# Check every file before rewriting any, so drift in one file never leaves a half-bumped repo.
+for file in "${VERSION_FILES[@]}"; do
   if [ ! -f "$file" ]; then
     echo "Error: missing file $file" >&2
     exit 1
   fi
-
-  local count
-  count=$(grep -cE '"version":[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"' "$file" || true)
-  if [ "$count" -lt "$expected_min" ]; then
-    echo "Error: $file has $count version field(s); expected at least $expected_min" >&2
+  count=$(grep -cE "$VERSION_PATTERN" "$file" || true)
+  if [ "$count" -ne 1 ]; then
+    echo "Error: $file has $count version field(s); expected exactly 1" >&2
     exit 1
   fi
+done
 
-  "${SED_INPLACE[@]}" "s/\"version\":[[:space:]]*\"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$VERSION\"/g" "$file"
-  echo "Updated: ${file#"$REPO_ROOT"/} ($count occurrence(s))"
-}
-
-# marketplace.json carries metadata.version + one version per plugin entry.
-PLUGIN_COUNT=$(find "$REPO_ROOT/plugins" -mindepth 1 -maxdepth 1 -type d | wc -l)
-EXPECTED_MARKETPLACE_VERSIONS=$((PLUGIN_COUNT + 1))
-rewrite_version "$REPO_ROOT/.claude-plugin/marketplace.json" "$EXPECTED_MARKETPLACE_VERSIONS"
-
-# Each plugin.json has exactly one version field.
-for f in "$REPO_ROOT"/plugins/*/plugin.json; do
-  rewrite_version "$f" 1
+for file in "${VERSION_FILES[@]}"; do
+  "${SED_INPLACE[@]}" "s/${VERSION_PATTERN}/\"version\": \"$VERSION\"/" "$file"
+  echo "Updated: ${file#"$REPO_ROOT"/}"
 done
 
 echo ""

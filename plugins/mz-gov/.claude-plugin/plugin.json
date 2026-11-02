@@ -1,4 +1,8 @@
 {
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
   "description": "Development governance pipeline \u2014 generates, discusses, enforces, and reviews ADRs, RFCs/RFDs, design docs, and AI-decision provenance, gated by a human sign-off",
   "license": "MIT",
   "name": "mz-gov",

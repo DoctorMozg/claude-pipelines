@@ -16,6 +16,7 @@ from mozg_pipelines.inventory import (
 from mozg_pipelines.models import (
     HookEvent,
     HookScriptAdapter,
+    MigrationPlan,
     PackageDisposition,
     PackagePlanSpec,
 )
@@ -58,7 +59,7 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         ("mz-dev-git", ("mz-dev-pipe",)),
         ("mz-biz-outreach", ("mz-creative",)),
     )
-    assert {package.marketplace.version for package in packages} == {"0.49.0"}
+    assert {package.source_manifest.version for package in packages} == {"0.49.0"}
 
 
 def test_migration_plan_rejects_marketplace_membership_drift() -> None:
@@ -107,6 +108,30 @@ def test_package_plan_rejects_duplicate_excluded_skills() -> None:
         )
 
 
+def test_migration_plan_reads_manifest_only_from_claude_plugin_dir(tmp_path: Path) -> None:
+    (tmp_path / ".claude-plugin").mkdir()
+    (tmp_path / ".claude-plugin/marketplace.json").write_text(
+        json.dumps({"owner": {"name": "Owner"}, "plugins": [{"name": "mz-x", "source": "./mz-x"}]}),
+        encoding="utf-8",
+    )
+    manifest = json.dumps({"name": "mz-x", "version": "1.0.0", "description": "Example."})
+    (tmp_path / "mz-x").mkdir()
+    (tmp_path / "mz-x/plugin.json").write_text(manifest, encoding="utf-8")
+    plan = MigrationPlan(
+        schema_version=1,
+        source_marketplace=".claude-plugin/marketplace.json",
+        packages=(PackagePlanSpec(name="mz-x", disposition=PackageDisposition.READY),),
+    )
+
+    legacy_report = validate_migration_plan(plan, tmp_path)
+    (tmp_path / "mz-x/.claude-plugin").mkdir()
+    (tmp_path / "mz-x/plugin.json").rename(tmp_path / "mz-x/.claude-plugin/plugin.json")
+    packages = discover_packages(plan, tmp_path)
+
+    assert tuple(issue.code for issue in legacy_report.issues) == ("invalid-package-manifest",)
+    assert packages[0].source_manifest.version == "1.0.0"
+
+
 def test_load_migration_plan_reports_missing_file(tmp_path: Path) -> None:
     missing_plan = tmp_path / "missing.toml"
 
@@ -151,7 +176,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
         assert spec.source_root == _REPOSITORY_ROOT
         assert spec.package_root == tmp_path / package.plan.name
         assert spec.version == "0.49.0"
-        assert spec.description == package.marketplace.description
+        assert spec.description == package.source_manifest.description
         assert spec.author_name == "Stanislav Gonorovskii"
         assert tuple(role.name for role in spec.catalog.roles) == role_names
         assert all(skill.roles == role_names for skill in spec.catalog.skills)

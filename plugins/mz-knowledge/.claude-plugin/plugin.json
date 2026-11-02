@@ -1,4 +1,8 @@
 {
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
   "description": "Personal Obsidian knowledge base skills and agents \u2014 vault bootstrap (init), vault maintenance, note processing, multimodal capture (voice/image/PDF/YouTube), vault triage, research ingestion, schema validation, safe refactoring, epistemic provenance, grounded Q&A, review, link suggestions, and Obsidian syntax reference",
   "license": "MIT",
   "name": "mz-knowledge",

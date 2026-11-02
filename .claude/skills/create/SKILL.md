@@ -37,7 +37,7 @@ Read 2-3 existing examples of the same component type in the target plugin to le
 
 - **Skills**: read SKILL.md + one phase file from the target plugin
 - **Agents**: read 2-3 agent files from the target plugin, noting frontmatter pattern
-- **Plugins**: read plugin.json + directory layout from an existing plugin
+- **Plugins**: read `.claude-plugin/plugin.json` + directory layout from an existing plugin
 
 ### 3. Plan the component
 
@@ -61,7 +61,7 @@ For agents, present:
 For plugins, present:
 
 - Directory structure
-- plugin.json manifest
+- `.claude-plugin/plugin.json` manifest
 - Planned skills and agents
 
 Use AskUserQuestion with:
@@ -104,7 +104,8 @@ Write all files following the guidelines. Key rules to enforce:
 
 **For plugins:**
 
-- Flat plugin.json: only name, description, version, license. No `contents` wrapper
+- Flat `.claude-plugin/plugin.json`: name, description, version, license and author. No `contents` wrapper. Claude Code reads the manifest only from `.claude-plugin/`
+- The marketplace.json entry carries name, source, category and keywords; version and description live in the manifest only
 - Auto-discovery: agents/, skills/, commands/, hooks/ at plugin root
 - Version must match other plugins (use `set_versions.sh`)
 

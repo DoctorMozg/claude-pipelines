@@ -16,7 +16,7 @@ If the file is missing and this is not `--uninstall`, flag `will_create = true` 
 ## Step 2: Read the policy body and resolve version
 
 1. **Body source**: `<SKILL_DIR>/policy/governance-policy.md`. If unreadable, escalate via AskUserQuestion with the failing path — do not invent the body.
-1. **Version**: read `<PLUGIN_ROOT>/plugin.json` → `version`. If the file is missing or unreadable, use the literal `unknown`.
+1. **Version**: read `<PLUGIN_ROOT>/.claude-plugin/plugin.json` → `version`. If the file is missing or unreadable, use the literal `unknown`.
 1. **Prepare the injected body**:
    - Strip any YAML frontmatter (the leading `---` … `---` block) if present.
    - Demote any H1 heading (`# `) in the body to H2 (`## `) so `CLAUDE.md` stays single-rooted. The policy file's title `# Development Governance Policy` becomes `## Development Governance Policy`. H2 and below pass through verbatim.

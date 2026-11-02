@@ -1,4 +1,8 @@
 {
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
   "description": "UI/UX design document generation with multi-critic refinement loop and WCAG enforcement",
   "license": "MIT",
   "name": "mz-design",

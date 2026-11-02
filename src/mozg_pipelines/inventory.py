@@ -40,6 +40,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Claude Code reads a plugin's manifest only from here; the manifest owns version and description.
+_SOURCE_MANIFEST_PATH = Path(".claude-plugin/plugin.json")
+
 
 class MarketplaceModel(BaseModel):
     model_config = ConfigDict(extra="ignore", frozen=True)
@@ -48,8 +51,6 @@ class MarketplaceModel(BaseModel):
 class MarketplacePlugin(MarketplaceModel):
     name: Identifier
     source: RepositoryPath
-    version: NonEmptyText
-    description: NonEmptyText
 
 
 class MarketplaceOwner(MarketplaceModel):
@@ -182,9 +183,8 @@ def validate_migration_plan(plan: MigrationPlan, repository_root: Path) -> Valid
             )
             continue
 
-        manifest_path = source_root / "plugin.json"
         try:
-            source_manifest = _load_source_manifest(manifest_path)
+            source_manifest = _load_source_manifest(source_root / _SOURCE_MANIFEST_PATH)
         except MigrationInventoryError as error:
             issues.append(_error("invalid-package-manifest", str(error), marketplace_plugin.source))
             continue
@@ -195,16 +195,6 @@ def validate_migration_plan(plan: MigrationPlan, repository_root: Path) -> Valid
                     "manifest-name-mismatch",
                     f"Source manifest name {source_manifest.name!r} does not match "
                     f"{package.name!r}.",
-                    marketplace_plugin.source,
-                    package.name,
-                )
-            )
-        if source_manifest.version != marketplace_plugin.version:
-            issues.append(
-                _error(
-                    "version-mismatch",
-                    f"Source manifest version {source_manifest.version!r} does not match "
-                    f"marketplace version {marketplace_plugin.version!r}.",
                     marketplace_plugin.source,
                     package.name,
                 )
@@ -248,7 +238,7 @@ def discover_packages(plan: MigrationPlan, repository_root: Path) -> tuple[Packa
             PackageInventory(
                 plan=package_plan,
                 marketplace=marketplace_plugin,
-                source_manifest=_load_source_manifest(source_root / "plugin.json"),
+                source_manifest=_load_source_manifest(source_root / _SOURCE_MANIFEST_PATH),
                 author_name=marketplace.owner.name,
                 skill_sources=_skill_sources(root, source_root, package_plan),
                 role_sources=_source_files(root, source_root / "agents", "*.md"),
@@ -339,8 +329,8 @@ def build_codex_package_spec(
         policy=policy,
         source_root=repository,
         package_root=package_root,
-        version=package.marketplace.version,
-        description=package.marketplace.description,
+        version=package.source_manifest.version,
+        description=package.source_manifest.description,
         author_name=package.author_name,
     )
 

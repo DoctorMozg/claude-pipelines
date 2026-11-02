@@ -1,4 +1,8 @@
 {
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
   "description": "Essential development agents, skills, and context-aware rules for coding workflows",
   "license": "MIT",
   "name": "mz-dev-base",

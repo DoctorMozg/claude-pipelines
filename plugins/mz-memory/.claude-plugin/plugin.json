@@ -1,4 +1,8 @@
 {
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
   "description": "Cross-session project memory \u2014 automatic knowledge persistence, injection, and compaction recovery",
   "license": "MIT",
   "name": "mz-memory",
