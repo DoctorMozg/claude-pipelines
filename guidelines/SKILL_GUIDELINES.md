@@ -49,7 +49,7 @@ Every approval gate uses the two-surface pattern. It borrows plan mode's loop, i
 
 1. **Response handling**, as a labeled section:
 
-   - **Approve**: record the approved artifact path in `state.md` and remove the `awaiting approval` entry, then proceed. The journal hook sees only the one-line selector, so `state.md` is the record of what was approved.
+   - **Approve**: record the approved artifact path in `state.md` as a `## Decisions` line and remove the `awaiting approval` entry, then proceed. The journal hook sees only the one-line selector, so `state.md` is the record of what was approved.
    - **Reject**: set `Status: aborted_by_user` and stop.
    - **Any other answer is feedback.** That includes typed text, a "Chat about this" reply, and an Approve whose note asks for a change. Apply the feedback, running the upstream phase or agent again when the change needs it. Then overwrite the artifact, re-read it, and re-emit the whole plan message from scratch before presenting the selector again. Don't send a diff or a summary: the user approves the artifact as it now stands, earlier versions may no longer be on screen, and after compaction Claude holds only a summary of them. The gate loops until the user explicitly approves.
    - **No answer**: AskUserQuestion is denied or unavailable in `dontAsk` mode, in `claude -p` without a permission host, with `--permission-prompts none`, and in `claude -p --channels`. With the opt-in `askUserQuestionTimeout`, a result can also carry the away signal while naming whichever option was preselected (tools-reference.md; settings-reference.md; permission-modes.md; headless.md; channels.md; changelog 2.1.200). Neither case is approval, whatever option the result names. Set `Status: blocked`, keep `awaiting approval: <gate>` in `what_remains`, leave the plan message in place, and stop.
@@ -60,7 +60,7 @@ Every approval gate uses the two-surface pattern. It borrows plan mode's loop, i
 
 Every element is required except the variant gate (only when variant actions exist) and the journal entry (recommended).
 
-**Unattended mode.** A user can opt in to unattended runs by setting `MZ_DEV_PIPE_AUTO_APPROVE=1`, for CI or scheduled jobs. Skills never turn it on themselves. The orchestrator checks the variable once during setup with a Bash call and records the result in `state.md`. In this mode it still emits Surface 1 and skips Surface 2. It logs every skipped gate in four places: chat, `state.md` under `## Auto-approvals`, a Layer B journal entry at the project root, and the final report. No hook fires without an AskUserQuestion call, so the skill appends the journal entry itself, writing sensitive values as `[redacted]`. A raw `>>` append bypasses the journal's redactor, so a `<private>` span would be written as is. Variant gates never auto-approve, because they need an explicit choice; in an unattended run they take the No-answer path.
+**Unattended mode.** A user can opt in to unattended runs by setting `MZ_DEV_PIPE_AUTO_APPROVE=1`, for CI or scheduled jobs. Skills never turn it on themselves. The orchestrator checks the variable once during setup with a Bash call and records the result in `state.md` as `unattended: true` or `unattended: false`. In this mode it still emits Surface 1 and skips Surface 2. It logs every skipped gate in four places: chat, `state.md` under `## Auto-approvals`, a Layer B journal entry at the project root that names the authority (`MZ_DEV_PIPE_AUTO_APPROVE=1`) and carries the artifact path rather than its text, and the final report. No hook fires without an AskUserQuestion call, so the skill appends the journal entry itself, writing sensitive values as `[redacted]`. A raw `>>` append bypasses the journal's redactor, so a `<private>` span would be written as is. Variant gates never auto-approve, because they need an explicit choice; in an unattended run they take the No-answer path.
 
 **Cost line.** A gate may add a one-line cost estimate for the next step to the Surface 1 footer.
 
@@ -69,7 +69,7 @@ Every element is required except the variant gate (only when variant actions exi
 **Canonical skeleton:**
 
 ```
-**This orchestrator** (not a subagent) presents this gate. Interactive; do not delegate.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `<artifact_path>` and capture its full contents into context.
 **State**: write `state.md` with the artifact path and `awaiting approval: <gate>`.
@@ -85,11 +85,11 @@ Every element is required except the variant gate (only when variant actions exi
 
 Emit the full verbatim contents, never a path, summary or placeholder.
 
-**Surface 2: call AskUserQuestion.** question: "The plan above is ready for review."
+**Surface 2: call AskUserQuestion.** question: "The plan above is ready for review." header: "<12 chars max>"
 options: **Approve** — <next phase> · **Reject** — <abort outcome>.
 
 **Response handling**:
-- **Approve** → record the approved artifact path in `state.md`, clear `awaiting approval`, proceed to <next phase>.
+- **Approve** → record the approved artifact path as a `## Decisions` line in `state.md`, clear `awaiting approval`, proceed to <next phase>.
 - **Reject** → set `Status: aborted_by_user`, stop.
 - **Any other answer** → apply the feedback (re-run the upstream phase if needed), overwrite `<artifact_path>`, return to Surface 1, re-emit the full updated plan message, re-present. Loop until explicit Approve.
 - **No answer** → set `Status: blocked` with `awaiting approval: <gate>`, stop. A missing answer is never approval.
@@ -132,7 +132,7 @@ The description is the main signal Claude uses to invoke a skill on its own. If 
 
 **Shape.** Open with a third-person clause naming what the skill produces or covers, then "Use when…". Name a capability, not the skill's steps, and never end with a workflow summary such as "— orchestrates X, Y, Z". Avoid "I" and "you": the description is injected into the system prompt, and a mixed point of view hurts discovery (platform: skills best-practices).
 
-**Wording.** State when to use the skill in plain directive terms, a little pushy, because Claude still tends to under-trigger skills (anthropics/skills skill-creator; agentskills.io, optimizing descriptions). Don't use all caps unless `claude plugin eval` shows a gain without firing on near misses. skill-creator calls all-caps ALWAYS and NEVER a yellow flag. Current models over-apply emphasized rules (best-practices.md, "What you can stop doing"), and Anthropic saw emphatic skill descriptions over-trigger on Opus 4.5 and 4.6 (platform: claude-prompting-best-practices). A prefix that every skill shares, such as "ALWAYS invoke when", tells Claude nothing about which skill to pick.
+**Wording.** State when to use the skill in plain directive terms, a little pushy, because Claude still tends to under-trigger skills (anthropics/skills skill-creator; agentskills.io, optimizing descriptions). Don't use all caps unless `claude plugin eval` shows a gain without firing on near misses. skill-creator calls all-caps ALWAYS and NEVER a yellow flag. Current models over-apply emphasized rules (best-practices.md, "What you can stop doing"), and Anthropic warns that emphatic wording written for older models can over-trigger on Opus 4.5 and 4.6 (platform: claude-prompting-best-practices). A prefix that every skill shares, such as "ALWAYS invoke when", tells Claude nothing about which skill to pick.
 
 **Triggers.** Cover what the user is trying to do:
 
@@ -193,19 +193,21 @@ Repo convention since commit 97944fb:
 
 The reason is that Bash runs from the session's working directory, and Read doesn't substitute variables. Claude Code doesn't require this pattern. Paths relative to the skill root are the documented cross-tool convention and still work for Read.
 
+Repo convention for `.mz/` paths: a skill that writes under `.mz/` resolves `PROJECT_ROOT` once during setup, before any `cd` or worktree switch, with the command in `guidelines/JOURNAL_GUIDELINES.md`, "Project Root". It keeps the printed path and writes `<PROJECT_ROOT>/...` in phase files, because neither the Bash working directory nor `CLAUDE_PROJECT_DIR` reliably names the repository root.
+
 **Portability.** On claude.ai chat, `${CLAUDE_SKILL_DIR}` isn't promised, and files outside the skill's folder may be missing (claude.com: skills how-to; anthropics/claude-code#103509). Keep a file the skill needs on every surface inside its own folder.
 
 Outside Claude Code (claude.ai uploads, the Skills API, `package_skill.py`), frontmatter may hold only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`. Any other field fails with a hard error (skills.md, "Using skill frontmatter outside Claude Code"). A skill meant for those surfaces drops `model`, `when_to_use`, `argument-hint` and the other Claude Code fields.
 
 ## 7. State Management
 
-A multi-phase skill keeps its cross-phase state in `.mz/task/<task_name>/state.md`, under the project root defined in `guidelines/JOURNAL_GUIDELINES.md` rather than the Bash working directory. Its keys, status values, progress ledger, body sections and compaction rules are defined in `guidelines/STATE_SCHEMA.md`, the single source. Skills mirror its compact contract and don't invent their own keys.
+A multi-phase skill keeps its cross-phase state in `.mz/task/<task_name>/state.md`, under the project root defined in `guidelines/JOURNAL_GUIDELINES.md` rather than the Bash working directory. Its keys, status values, progress ledger, body sections and compaction rules are defined in `guidelines/STATE_SCHEMA.md`, the single source. Skills mirror its compact contract and add their own keys below the schema keys, never renaming or replacing one.
 
 - **Task name**: `<YYYY_MM_DD>_<skill>_<slug>`. The date is today's, written with underscores. `<slug>` is a snake_case summary of the argument, at most 20 characters. On a same-day collision, append `_v2`, `_v3`. Examples: `2026_04_20_build_oauth_flow`, `2026_04_20_debug_payment_err`.
 - **Status values** (mirrors STATE_SCHEMA.md): `pending | running | blocked | complete | aborted_by_user | failed`. `blocked` means the run stopped for an answer or an obstacle, with the reason in `what_remains`. Milestones go in `Phase`.
 - **When to write**: after every phase transition, and before every approval gate. A compaction summary can drop specific paths and decisions. A main conversation over 200K tokens can also compact after sitting idle for about an hour, which can happen while a gate waits (settings-reference.md, `idleCompaction`; changelog 2.1.299). Read cross-phase facts back from `state.md`, not from conversation memory.
-- **Size**: keep `state.md` under about 5,000 tokens, with a resume pointer near the top.
-- **Decisions**: a decision worth remembering across sessions goes under `## Decisions`, where mz-memory harvests it (`guidelines/JOURNAL_GUIDELINES.md`).
+- **Size**: keep `state.md` under about 5,000 tokens, and put a one-line resume pointer near the top of SKILL.md (`guidelines/STATE_SCHEMA.md`, "Compaction").
+- **Decisions**: a decision worth remembering across sessions goes under `## Decisions`, where mz-memory harvests it once the task is `complete` (`guidelines/STATE_SCHEMA.md`, "Body Sections").
 
 ## 8. Error Handling and Escalation
 
@@ -331,7 +333,7 @@ Use these section names, in this relative order, for the content the skill has:
 1. `## Red Flags`: signs the skill is being skipped or misapplied.
 1. `## Verification`: how to confirm the skill ran.
 
-Sections 4-7 appear only when they carry content. Leave a heading out rather than writing `N/A` or a pointer line. Keep anything that has to survive compaction in the first 5,000 tokens (§2).
+Sections 4-7 appear only when they carry content. Leave a heading out rather than writing `N/A` or a pointer line. Repo convention for the supporting sections: `## Input`, `## Scope Parameter` and `## Constants` go between When to Use and Core Process; `## References`, `## Error Handling` and `## State Management` go after Verification. Keep anything that has to survive compaction in the first 5,000 tokens (§2).
 
 The pattern comes from addyosmani/agent-skills, `docs/skill-anatomy.md`, which calls itself "a recommended pattern, not a rigid template". The voice of a skill body follows its role (discipline, collaboration or reference) as set out in AGENTS_GUIDELINES.md, "Instruction Wording".
 
@@ -350,7 +352,7 @@ Run this before merging a new or changed skill.
 - [ ] Each AskUserQuestion call has 2-4 options and a `header` of at most 12 characters. A plain gate has exactly Approve and Reject, with no Feedback option (§1).
 - [ ] The phase table, if present, sits under `### Phase Overview` and has its delimiter row (§4).
 - [ ] No anatomy section is empty, `N/A` or a pointer line (§13).
-- [ ] Agent names in dispatch prompts match real agent definitions, and a skill that dispatches another plugin's agent has that plugin in `dependencies` (AGENTS_GUIDELINES.md, "Naming, Organization and Dependencies").
+- [ ] Agent names in dispatch prompts are bare names that match real agent definitions. When a dispatched agent belongs to another plugin, this plugin's `.claude-plugin/plugin.json` lists that plugin in `dependencies` (AGENTS_GUIDELINES.md, "Naming, Organization and Dependencies").
 - [ ] The skill cites no guideline rule or section numbers (AGENTS_GUIDELINES.md, "No Rule-Number Citations").
 
 **Review checks**
@@ -362,7 +364,7 @@ Run this before merging a new or changed skill.
 - [ ] Phase files are read at the start of their phase, and the current one is re-read after compaction (§2).
 - [ ] The phase table is present for a multi-phase skill (§4).
 - [ ] A code-editing or analysis skill accepts `scope:`, documents its default and its read and edit boundary, links the shared scope file, and states the edit boundary in every writer dispatch (§5).
-- [ ] Bounds and paths are named constants with reasons. Phase files use `<SKILL_DIR>` and `<PLUGIN_ROOT>` placeholders, expanded before use (§6).
+- [ ] Bounds and paths are named constants with reasons. Phase files use `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` placeholders, expanded before use (§6).
 - [ ] `state.md` follows STATE_SCHEMA.md, uses the task-name convention, and is written after every phase and before every gate (§7).
 - [ ] Predictable failures are listed under `## Error Handling` with their responses. Escalation follows §8, including the case where nobody can answer.
 - [ ] Reports use `.mz/<root>/<task_name>.md`, and the skill passes report paths to agents (§9).

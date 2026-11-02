@@ -53,7 +53,7 @@ Plugin agents ignore four frontmatter fields: `hooks`, `mcpServers`, `permission
 
 Claude picks an agent from a listing that shows each agent's name, description and tools. The body loads only after the agent is dispatched (sub-agents.md; listing format observed in the 2.1.316 binary). So everything that decides routing, counter-triggers included, goes in `description`. Choosing by description is skipped when the user @-mentions the agent, starts `claude --agent`, or runs a skill that passes `subagent_type`. Naming the agent in a prompt doesn't skip it.
 
-**Shape.** Start with a third-person capability clause, then "Use when…", as the official examples do. Don't write in the first person ("I help you…"), and don't narrate ("This agent is designed to…"). Second person belongs in the body (§10). Directive wording is fine, but avoid "MUST BE USED" and all caps. Current models over-apply emphasized instructions (best-practices.md, "What you can stop doing"), and Anthropic saw emphatic tool and skill descriptions over-trigger (platform: claude-prompting-best-practices). Don't end with a workflow summary such as "— orchestrates X, Y, Z".
+**Shape.** Start with a third-person capability clause, then "Use when…", as the official examples do. Don't write in the first person ("I help you…"), and don't narrate ("This agent is designed to…"). Second person belongs in the body (§10). Directive wording is fine, but avoid "MUST BE USED" and all caps. Current models over-apply emphasized instructions (best-practices.md, "What you can stop doing"), and Anthropic warns that emphatic tool and skill wording written for older models can over-trigger on Opus 4.5 and 4.6 (platform: claude-prompting-best-practices). Don't end with a workflow summary such as "— orchestrates X, Y, Z".
 
 **Length.** Put the primary trigger in the first sentence. UI previews cut long descriptions, but the router reads the whole text (changelog 2.1.232; observed in the 2.1.316 binary). Claude Code sets no length limit for a single agent. It shows a startup warning once the names and descriptions of all agents together pass about 15,000 tokens (sub-agents.md, v2.1.316). Repo convention: standalone descriptions run about 200-1,000 characters, and pipeline-only ones are shorter.
 
@@ -220,7 +220,7 @@ An agent whose output an orchestrator consumes, or that writes artifacts for lat
 
 - `DONE`: the work is complete. The orchestrator proceeds.
 - `DONE_WITH_CONCERNS`: the work is complete, with concerns flagged. The orchestrator settles correctness and scope concerns before review, and logs the rest to `state.md`.
-- `NEEDS_CONTEXT`: the agent can't continue without specific information. The orchestrator supplies it once, either by resuming the agent with `SendMessage` (changelog 2.1.304) or, where the agent can't be resumed (as on Codex), with a fresh dispatch. If the agent still lacks context, treat the result as `BLOCKED`.
+- `NEEDS_CONTEXT`: the agent can't continue without specific information. The orchestrator supplies it once, either by resuming the agent with `SendMessage` (changelog 2.1.304) or, where the agent can't be resumed (as on Codex), with a fresh dispatch. If the agent still lacks context, treat the result as `BLOCKED`. An agent in a blinded wave is the exception: resuming it with added context breaks the blind, so it counts as not returned (`branch-reviewer`, Wave B). A blinded agent stopped by `maxTurns` may be resumed once with a bare request to finish, adding no context.
 - `BLOCKED`: a fundamental obstacle, such as a broken environment, an impossible constraint or an ambiguous spec. The orchestrator first tries the changes it can make itself: more context, a stronger model or a smaller task. When none applies, it escalates, and how depends on where it runs:
   - An orchestrator in an interactive main session asks the user with AskUserQuestion.
   - An orchestrator that is itself a subagent, or that runs where nobody can answer (`claude -p` without a permission host, `--permission-prompts none`, `dontAsk`), first finishes the work that doesn't depend on the answer. It then returns its own `STATUS: BLOCKED` with the blocker and the options (sub-agents.md; headless.md; permission-modes.md).
@@ -247,7 +247,7 @@ Every agent that reports findings labels each one with a severity:
 - `Optional:` is a suggested improvement, and advisory.
 - `FYI:` is informational, and advisory.
 
-A report-only audit with no gate may use a critical/high/medium/low ladder if it states how that ladder maps to these labels.
+A report-only audit with no gate may use a critical/high/medium/low ladder if it states how that ladder maps to these labels. A report that caps how many findings it lists moves the rest to an appendix rather than dropping them.
 
 Only the agent that decides a gate emits a verdict. `VERDICT: PASS` means zero `Critical:` findings, however many Nits, Optionals and FYIs there are. `VERDICT: FAIL` means at least one `Critical:` finding. Write the verdict as a bare line, `VERDICT: PASS`, not as a heading, and put it immediately before the final `STATUS:` line when the agent emits one.
 
@@ -298,7 +298,7 @@ Put the table under `## Common Rationalizations`, or merge it into `## Red Flags
 | "I'll report DONE and mention the lint failure in passing." | "DONE_WITH_CONCERNS exists for this. A buried failure costs the next phase a debugging round." |
 ```
 
-- Rows record excuses the agent itself was seen making, not excuses from the user.
+- Rows record excuses the agent itself was seen making, not excuses from the user. A row taken from the seed library is a lead: keep it once a run shows the agent making that excuse.
 - A rebuttal states a concrete cost or the rule it protects, by substance. It doesn't invent statistics.
 - There is no minimum row count.
 - When the user explicitly chooses to skip a step, state the risk once in the report and follow the choice. That isn't a rationalization to rebut.
@@ -310,15 +310,15 @@ Skills draw on the seed library at `plugins/mz-base/skills/construct-skill/refer
 This section applies to skill bodies as well as agent bodies.
 
 - **Say what to do.** "Use X exclusively" works better than "Don't use Y".
-- **Put the most important rule near the top.** Don't copy rules to the bottom by default. A long prompt may end with one short reminder of a single key instruction (platform: claude-prompting-best-practices).
+- **Put the most important rule near the top.** Don't copy rules to the bottom by default. A long prompt may end with one short reminder of a single key instruction, as the Opus 5 guide does for conciseness (platform: prompting-claude-opus-5).
 - **Make verification visible.** A verification step cites its evidence: the command and its output.
 - **Be specific.** "Check every database query for parameterization" beats "Look for security issues."
-- **State binding rules as obligations, and give the reason.** "Requires" and "must" mark a rule; "consider" marks a suggestion. Reserve "must" and "never" for invariants.
+- **State binding rules as obligations, and give the reason.** "Requires" or a plain imperative marks a binding rule, and "consider" marks a suggestion. Keep "must" and "never" for invariants.
 - **Skip emphasis.** Don't use "IMPORTANT", "CRITICAL" or all caps; bold is fine. Current Claude models over-apply emphasized rules (platform: claude-prompting-best-practices; best-practices.md, "What you can stop doing").
 - **State a safety rule's intent in one line**, for example "Don't run destructive git commands unless the user asked for them". Leave command blocklists and secret patterns to hooks and permission rules (§19). Don't claim that prose enforces anything.
 - **Orchestrators state their lane**: "You orchestrate only. You don't propose solutions or implement fixes; dispatch specialists for those." An orchestrating reviewer that decides the gate says it issues the verdict and nothing else.
 
-**Register by role.** The archetypes in §11 describe a process spine. The register describes the voice, and one archetype can take different registers depending on how it is dispatched.
+**Register by role.** The split by role is a repo convention; no study has tested it. The archetypes in §11 describe a process spine. The register describes the voice, and one archetype can take different registers depending on how it is dispatched.
 
 | Role                                                               | Purpose                                             | Register                                                                                                                                                |
 | ------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -332,9 +332,9 @@ Examples, all in the second person:
 - Collaboration: "You and the orchestrator share one goal: a plan that survives review. Your part is finding what it missed. You can restructure sections, but you can't change the scope."
 - Reference: "You map phrases to skills. You don't run skills, give advice or editorialize."
 
-Discipline agents use no flattery or pleasantries ("great question!", "happy to help!"), in their instructions or in their output, because warmth in the prompt pushes models toward agreeing with the user (arXiv 2507.21919).
+Discipline agents use no flattery or pleasantries ("great question!", "happy to help!"), in their instructions or in their output, because warmth pushes models toward agreeing with the user (arXiv 2507.21919). That study mostly fine-tuned warmth into the models; asking for warmth in the system prompt alone produced similar but weaker and less consistent effects.
 
-**What the evidence covers.** The persuasion studies once cited for these registers measured users talking a model into objectionable requests, not how well a model follows its own system prompt. They are Meincke et al. 2025 (GPT-4o-mini, 28,000 conversations) and the 2026 PNAS replication (126,000 conversations on Claude Haiku 4.5, GPT-5 mini and Gemini 3 Flash). In those studies Liking raised compliance; it didn't lower it. The one study that put a rule in the system prompt (AIES 2026, arXiv 2608.12323; 12 models, none from Claude) found that some models obey only when the rule is worded as an obligation, and that pressure in the input broke compliance on all of them. For system prompts, the evidence supports plain, specific wording: binding rules stated as obligations with their reasons, and no emphasis.
+**What the evidence covers.** The persuasion studies once cited for these registers measured users talking a model into objectionable requests, not how well a model follows its own system prompt. They are Meincke et al. 2025 (GPT-4o-mini, 28,000 conversations) and the 2026 PNAS replication (126,000 conversations on Claude Haiku 4.5, GPT-5 mini and Gemini 3 Flash). In those studies Liking raised compliance; it didn't lower it. The most direct study of a rule in the system prompt (AIES 2026, arXiv 2608.12323; 12 models, none from Claude) found that some models obey only when the rule is worded as an obligation. Deadline urgency in the input dropped every model to 9% compliance or below when the rule was weakly framed, the fine was low and no mandate was in place. An anti-adversarial mandate in the system prompt helped every model, by 7 to 76 points on average, without closing the gap. For system prompts, the evidence supports plain, specific wording: binding rules stated as obligations with their reasons, and no emphasis.
 
 ## 17. Anti-Pattern Catalog
 
@@ -395,7 +395,7 @@ Async hooks can't block. Their feedback reaches the agent on a later turn, or no
 - **`name`**: kebab-case, 3-50 characters, two to four words joined by hyphens, starting and ending with a letter or digit. Repo convention, matching plugin-dev's validator.
 - **Say what it does.** Generic names (`helper`, `assistant`, `worker`, `agent`) don't signal a purpose. Name the agent by its single primary function: `pipeline-researcher`, `design-critique-synthesizer`, `github-pr-data-fetcher`.
 - **Uniqueness.** Repo convention: names are unique across every plugin in this marketplace. Skills here dispatch by bare name, so a duplicate would be ambiguous. Plugin agents register as `<plugin>:<name>`, with a subfolder segment only when the file sits in a subfolder (plugins/components.md; sub-agents.md). A bare name is also ambiguous when a project, user or managed agent has the same name, and those outrank plugin agents (sub-agents.md). The scoped form, `mz-creative:expert-naturalizer`, pins one, but the Codex renderer rejects colons, so this repo keeps names unique and dispatches by bare name.
-- **Dependencies.** A plugin whose skills or agents dispatch another plugin's agents declares that plugin in `dependencies` (plugins-reference.md).
+- **Dependencies.** A plugin whose skills or agents dispatch another plugin's agents lists that plugin by bare name in `dependencies` in its manifest, `plugins/<plugin>/.claude-plugin/plugin.json`. A bare name resolves in the declaring plugin's own marketplace (plugins/dependencies.md). Installing the plugin also installs and enables its dependencies at the same scope. Claude Code refuses to disable a dependency while an enabled plugin still needs it, and a plugin whose dependency is missing or disabled fails to load (plugins/install.md, "Plugins with dependencies"; plugins/dependencies.md). `claude plugin validate` checks neither unknown names nor cycles (observed, 2.1.316); the Codex inventory tests in `tests/codex_migration` compare each manifest's `dependencies` with the Codex plan and reject cycles.
 - **Layout.** Agents live under `plugins/<plugin>/agents/`, one agent per file, and the filename matches `name` with a `.md` extension.
 - **Cross-references.** Agent files refer to each other by name only. Don't hard-code paths between agents; plugins get relocated when installed.
 - **Renames.** Claude Code has no rename redirect (observed). When renaming an agent, search the whole repo for references: plugin manifests, skill dispatch prompts, `Agent(...)` entries in `tools`, hook matchers on `agent_type`, README tables, test fixtures and `tests/codex_migration`.
@@ -431,7 +431,7 @@ Rule and section numbers change whenever a guideline is reorganized. A citation 
 
 Not allowed in any file under `plugins/`:
 
-- `per Rule N`, `(Rule N)`, `See Rule N.`, `§N`, `Section N`
+- `per Rule N`, `(Rule N)`, `See Rule N.`, and `§N` or `Section N` when it points into a guideline
 - `per AGENTS_GUIDELINES.md Rule N`, `SKILL_GUIDELINES.md §N`
 - `Rule N requires evidence.` used as narrative
 - headings such as `### Status Protocol (Rule N)`
@@ -447,6 +447,7 @@ Exceptions:
 - A guideline file may refer to its own sections by number. A commit that renumbers a file updates every reference and example in that file.
 - References between guideline files use the section title. Examples use the placeholder "Rule N".
 - Repo-root docs (`README.md`, `CLAUDE.md`), commit messages, PR descriptions and review reports may cite numbers when discussing compliance.
+- A plugin file may number its own steps and sections and refer to them, as in "Step 3" or "§2 of the spec this skill writes". The ban covers numbers that point into a guideline. A lint for this rule matches a number next to a guideline name (`GUIDELINES.md`, `STATE_SCHEMA.md`), not a bare `§N`.
 
 ## 23. Pre-Publish Checklist
 
@@ -458,6 +459,7 @@ Run this before merging a new or changed agent.
 - [ ] `name` is kebab-case, 3-50 characters and two to four words, is unique across the marketplace, and matches the filename (§20).
 - [ ] `tools`, `model`, `effort` and `maxTurns` are set. `model` is an explicit tier, not `inherit` (§1, §5).
 - [ ] `tools` has no invented names (§4).
+- [ ] An agent that dispatches another plugin's agents sits in a plugin whose manifest lists that plugin in `dependencies` (§20).
 - [ ] `color`, if set, is one of the eight valid values (§1).
 - [ ] A plugin agent declares none of `hooks`, `mcpServers`, `permissionMode` or `initialPrompt` (§2).
 - [ ] `description` contains no `<example>` blocks or `user:`/`assistant:` transcript lines (§3).

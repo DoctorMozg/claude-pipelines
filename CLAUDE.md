@@ -4,23 +4,26 @@ This repository is a public plugin registry for Claude Code. It provides agents 
 
 ## Structure
 
-- `.claude-plugin/marketplace.json` — Top-level registry manifest listing all available plugins
+- `.claude-plugin/marketplace.json` — Top-level registry manifest: one entry per plugin (`name`, `source`, `category`, `keywords`), the marketplace `metadata.version`, and `renames`, which maps a former plugin name to its current one. Add a `renames` entry whenever a plugin is renamed or removed (plugins/marketplace-reference.md)
 - `plugins/<name>/` — Each plugin is a self-contained directory
-- `plugins/<name>/plugin.json` — Per-plugin metadata (name, version, description, license)
+- `plugins/<name>/.claude-plugin/plugin.json` — Per-plugin manifest: `name`, `version`, `description`, `license`, `author`, and `dependencies` when the plugin dispatches another plugin's agents
 - `plugins/<name>/agents/` — Agent definition files (markdown with YAML frontmatter)
 - `plugins/<name>/skills/` — Skill definitions (standard Claude Code skill format)
-- `plugins/<name>/hooks/` — Optional `hooks.json` + `scripts/` for lifecycle hooks
+- `plugins/<name>/hooks/hooks.json` — Optional lifecycle hooks; the scripts they run, and any scripts the plugin's skills call, live in `plugins/<name>/scripts/`
+- `plugins/mz-base/shared/` — Rule files shared across plugins; each consumer plugin links to it with a `shared -> ../mz-base/shared` symlink at its root
 
 ## Adding a New Plugin
 
 1. Create a new directory under `plugins/`
-1. Add a `plugin.json` with name, version, description, and license
+1. Add `.claude-plugin/plugin.json` with `name`, `version` (the marketplace's current `metadata.version`), `description`, `license` and `author`, plus `dependencies` if it dispatches another plugin's agents
 1. Add agent/skill files in their respective subdirectories
-1. Register the plugin in `.claude-plugin/marketplace.json`
+1. Register the plugin in `.claude-plugin/marketplace.json` with `name`, `source`, `category` and `keywords`
+1. Add a `[[packages]]` entry for it to `data/codex_migration.toml`, with the same `dependencies` as its manifest. `tests/codex_migration/test_inventory.py` pins the plugin list, the dependency map and the skill and agent counts, so update it in the same change
+1. Run `claude plugin validate --strict .`, `claude plugin validate --strict plugins/<name>`, `make test` and `.venv/bin/pytest`. Neither `make test` nor CI runs the Python tests
 
 ## Bumping Versions
 
-Use the repo-root helper script to bump all version fields in one shot (all `plugins/*/plugin.json` and `.claude-plugin/marketplace.json` `metadata.version` + per-plugin entries). The script verifies the expected number of `"version"` fields in each file and fails loudly on drift. Do not hand-edit version strings across files — they must stay in sync.
+Use the repo-root helper script to bump every version field in one shot: `version` in each `plugins/*/.claude-plugin/plugin.json` and `metadata.version` in `.claude-plugin/marketplace.json`. Marketplace entries carry no version; when both set one, `plugin.json` wins at install time (plugins/marketplace-reference.md). The script runs the agent contract matrix first, checks that each file has exactly one `"version"` field, and fails loudly on drift. Don't hand-edit version strings; they have to stay in sync.
 
 ```bash
 ./set_versions.sh 0.3.0
@@ -33,9 +36,11 @@ The argument must be semver (`MAJOR.MINOR.PATCH`).
 ```yaml
 ---
 name: agent-name
-description: "When to use this agent"
+description: "What the agent does. Use when <situation>. Do not use for <near miss>."
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
+effort: medium
+maxTurns: 20
 ---
 
 Agent instructions here...

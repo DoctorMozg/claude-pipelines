@@ -117,7 +117,7 @@ Print every item as a visible list marked PASS, FAIL or n/a (with the reason), w
 - [ ] Each AskUserQuestion call has 2-4 options and a `header` of at most 12 characters. A plain gate has exactly Approve and Reject, with no Feedback option ("Approval Gates").
 - [ ] The phase table, if present, sits under `### Phase Overview` and has its delimiter row ("Phase Overview Table").
 - [ ] No anatomy section is empty, `N/A` or a pointer line ("Skill Anatomy").
-- [ ] Agent names in dispatch prompts match real agent definitions, and a skill that dispatches another plugin's agent has that plugin in `dependencies` (AGENTS_GUIDELINES.md, "Naming, Organization and Dependencies").
+- [ ] Agent names in dispatch prompts are bare names that match real agent definitions. When a dispatched agent belongs to another plugin, this plugin's `.claude-plugin/plugin.json` lists that plugin in `dependencies` (AGENTS_GUIDELINES.md, "Naming, Organization and Dependencies").
 - [ ] The skill cites no guideline rule or section numbers (AGENTS_GUIDELINES.md, "No Rule-Number Citations").
 
 **Review checks**
@@ -148,7 +148,7 @@ Section names in parentheses are in SKILL_GUIDELINES.md unless another file is n
 
 ## Step 4: Draft approval gate
 
-**This orchestrator** (not a subagent) presents this gate. Interactive; do not delegate.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `<TARGET_DIR>/SKILL.md` and every phase and reference file this run wrote, and capture their full contents.
 

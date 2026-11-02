@@ -25,7 +25,7 @@ Use these section names, in this relative order, for the content the skill has:
 1. `## Red Flags`: signs the skill is being skipped or misapplied.
 1. `## Verification`: how to confirm the skill ran.
 
-The last four appear only when they carry content. Leave a heading out rather than writing `N/A` or a pointer line. The supporting sections have fixed places too, as a repo convention: `## Input`, `## Scope Parameter` and `## Constants` go before Core Process; `## References`, `## Error Handling` and `## State Management` go after Verification. Keep anything that has to survive compaction in the first 5,000 tokens of SKILL.md.
+The last four appear only when they carry content. Leave a heading out rather than writing `N/A` or a pointer line. The supporting sections have fixed places too, as a repo convention: `## Input`, `## Scope Parameter` and `## Constants` go between When to Use and Core Process; `## References`, `## Error Handling` and `## State Management` go after Verification. Keep anything that has to survive compaction in the first 5,000 tokens of SKILL.md.
 
 The pattern comes from addyosmani/agent-skills, `docs/skill-anatomy.md`, which calls itself "a recommended pattern, not a rigid template". The voice of the body follows the skill's role: discipline, collaboration or reference (see `persuasion-principles.md`, "Register by role").
 
@@ -133,7 +133,7 @@ A multi-phase skill has two or more phase files or any approval gate. Inline gat
 
 ## State blocks
 
-These are the compact contracts from STATE_SCHEMA.md, "Compact Inline Contract". Copy the one that fits into the State Management section. A skill adds its own keys below the schema keys and never renames or replaces one. The task name is `<YYYY_MM_DD>_<skill>_<slug>`: today's date with underscores, then a snake_case summary of the argument of at most 20 characters, with `_v2`, `_v3` on a same-day collision. Keep `## Decisions` short and first of the body sections: the harvest copies only the first 10 non-blank lines of `## Decisions`, `## Lessons` and `## Notes` together.
+These are the compact contracts from STATE_SCHEMA.md, "Compact Inline Contract". Copy the one that fits into the State Management section. A skill adds its own keys below the schema keys and never renames or replaces one. The task name is `<YYYY_MM_DD>_<skill>_<slug>`: today's date with underscores, then a snake_case summary of the argument of at most 20 characters, with `_v2`, `_v3` on a same-day collision. Keep `## Decisions` short and first of the body sections: the harvest copies only the first 10 non-blank lines of `## Decisions`, `## Lessons` and `## Notes` together. Keep `state.md` well under 5,000 tokens: put bulk output in its own files and keep body sections to one line per entry.
 
 Multi-phase skills:
 
@@ -145,10 +145,10 @@ Single-dispatch skills, which run setup, one dispatch and its report in a single
 
 ## Gate skeleton
 
-Put a gate before an irreversible or expensive step, such as changing code, launching a multi-wave or opus-tier agent run (research included), or sending something outside the repo. A single research step or lookup runs without a gate, and a read-only skill needs none. Every gate follows this skeleton:
+Put a gate before an irreversible or expensive step, such as changing code, launching a large agent wave, or sending something outside the repo. Web research runs without a gate, and a read-only skill needs none. Every gate follows this skeleton:
 
 ```
-**This orchestrator** (not a subagent) presents this gate. Interactive; do not delegate.
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
 **Pre-read**: Read `<artifact_path>` and capture its full contents into context.
 **State**: write `state.md` with the artifact path and `awaiting approval: <gate>`.
@@ -168,7 +168,7 @@ Emit the full verbatim contents, never a path, summary or placeholder.
 options: **Approve** — <next phase> · **Reject** — <abort outcome>.
 
 **Response handling**:
-- **Approve** → record the approved artifact path in `state.md`, clear `awaiting approval`, proceed to <next phase>.
+- **Approve** → record the approved artifact path as a `## Decisions` line in `state.md`, clear `awaiting approval`, proceed to <next phase>.
 - **Reject** → set `Status: aborted_by_user`, stop.
 - **Any other answer** → apply the feedback (re-run the upstream phase if needed), overwrite `<artifact_path>`, return to Surface 1, re-emit the full updated plan message, re-present. Loop until explicit Approve.
 - **No answer** → set `Status: blocked` with `awaiting approval: <gate>`, stop. A missing answer is never approval.
@@ -198,4 +198,4 @@ These copy the SKILL_GUIDELINES.md sections named in the canonical-source line a
 - **Tooling.** Resolve the test, lint, format and type-check commands before the first phase that runs one, from CLAUDE.md (or AGENTS.md when there is no CLAUDE.md), then `.mz/tooling.json` when mz-dev-pipe is enabled, then the manifests. Record them with their source in `.mz/task/<task_name>/tooling.md`. With no tests, the orchestrator asks before the first phase that needs them, and a dispatched agent returns `NEEDS_CONTEXT`. Where nobody can answer, a skill whose output is tests stops, any other skill continues or stops as it documents, and the final report says which.
 - **Input collectors.** A missing value is collected, not gated: no artifact, no plan message, no Approve and Reject. A closed choice of 2-4 values is one AskUserQuestion call with each value as an option; with more, name the most common as options and list the rest in the question. Confirm-or-customize is one AskUserQuestion call with options such as `Defaults` and `Minimal`, with custom answers through the typed reply. An open value, such as a path or a topic, is a prose question. Collectors run in the main session only. An empty answer means stop, and an invalid one is re-asked once. Record open values in `state.md`.
 - **Escalation.** Recover on your own where the skill documents a default, a fallback chain or a degraded mode the final report discloses. Escalate when the remaining choices lead to materially different work or a wrong guess would be unsafe; for a routine judgment call, state the assumption and continue. Never fill a blocker with an invented value. Ask a pick from a set with AskUserQuestion, and name the tool in the instruction, because auto mode otherwise steers Claude away from clarifying questions. Where nobody can answer, finish the work that doesn't depend on the answer, write the blocker and its options to `state.md`, set `Status: blocked` and stop; inside a subagent, return `STATUS: BLOCKED`. An agent that returns nothing usable: wait while it runs, resume a partial one once with `SendMessage`, re-dispatch an empty or malformed one once with something changed, and report an API error or usage limit instead of retrying.
-- **Unattended mode** (optional). The user opts in with `MZ_DEV_PIPE_AUTO_APPROVE=1`; a skill never turns it on itself. Check it once during setup with a Bash call and record the result in `state.md`. A plain gate still emits Surface 1 and skips Surface 2. Log each skipped gate in four places: chat, `state.md` under `## Auto-approvals` (gate label, phase, time), a journal `gate` entry with outcome `auto-approved (unattended)`, `authority: MZ_DEV_PIPE_AUTO_APPROVE=1` and the artifact path rather than its text, and the final report. Variant gates never auto-approve; they take the No-answer path.
+- **Unattended mode** (optional). The user opts in with `MZ_DEV_PIPE_AUTO_APPROVE=1`; a skill never turns it on itself. Check it once during setup with a Bash call and record the result in `state.md` as `unattended: true` or `unattended: false`. A plain gate still emits Surface 1 and skips Surface 2. Log each skipped gate in four places: chat, `state.md` under `## Auto-approvals` (gate label, phase, time), a journal `gate` entry with outcome `auto-approved (unattended)`, `authority: MZ_DEV_PIPE_AUTO_APPROVE=1` and the artifact path rather than its text, and the final report. Variant gates never auto-approve; they take the No-answer path.
