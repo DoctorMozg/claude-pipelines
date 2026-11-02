@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: lessons-promote-fire-recurring
+description: 'A paraphrase with no trigger phrase: lessons that recur should become instructions every session follows.'
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base"]
+execution:
+  prompt: >-
+    A few of the lessons in project memory have come up again and again. Make them part of the
+    standing instructions every session here follows, one at a time so I can check each.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: lessons-promote-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?lessons-promote"'

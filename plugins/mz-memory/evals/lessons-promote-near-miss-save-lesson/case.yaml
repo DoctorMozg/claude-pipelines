@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: lessons-promote-near-miss-save-lesson
+description: 'Saving a new lesson belongs to memory-note --lesson, not to promotion.'
+tags: [routing, near-miss]
+plugins: ["../.."]
+execution:
+  prompt: >-
+    Save this as a lesson: WHEN running the integration tests → start the Stripe mock first — WHY
+    the sandbox times out without it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: lessons-promote-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?lessons-promote"'
+    min: 0
+    max: 0
+    arm: both

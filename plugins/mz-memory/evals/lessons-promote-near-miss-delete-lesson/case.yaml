@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: lessons-promote-near-miss-delete-lesson
+description: 'Deleting a stale lesson is a direct edit of lessons.md, not a promotion.'
+tags: [routing, near-miss]
+plugins: ["../.."]
+execution:
+  prompt: >-
+    Lesson L-0003 in .mz/memory/lessons.md is out of date now that we dropped Redis. Delete it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: lessons-promote-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?lessons-promote"'
+    min: 0
+    max: 0
+    arm: both
