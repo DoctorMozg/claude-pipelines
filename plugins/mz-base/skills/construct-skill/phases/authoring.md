@@ -113,7 +113,7 @@ Print every item as a visible list marked PASS, FAIL or n/a (with the reason), w
 **Mechanical checks**
 
 - [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser and uses only documented keys ("Skill Descriptions", "Constants and Paths").
-- [ ] `allowed-tools` grants Bash one command at a time, as `Bash(<command> *)`, never as a bare `Bash` ("Constants and Paths").
+- [ ] `allowed-tools` grants Bash one command at a time, as `Bash(<command> *)`, and never as a bare `Bash` unless the skill is a listed open-ended exemption ("Constants and Paths").
 - [ ] `description` plus any `when_to_use` is at most 250 characters; `description` is one line, contains no `<` or `>`, and is quoted if it contains `: ` or starts with `[` or `"` ("Skill Descriptions").
 - [ ] An `argument-hint` that starts with `[` is quoted ("Input Parsing").
 - [ ] SKILL.md is under about 20,000 characters and 500 lines, phase files are under about 400 lines, and reference files over 100 lines open with a table of contents ("Phase and Reference Files").
