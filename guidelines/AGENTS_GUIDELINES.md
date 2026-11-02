@@ -314,7 +314,7 @@ This section applies to skill bodies as well as agent bodies.
 - **Make verification visible.** A verification step cites its evidence: the command and its output.
 - **Be specific.** "Check every database query for parameterization" beats "Look for security issues."
 - **State binding rules as obligations, and give the reason.** "Requires" or a plain imperative marks a binding rule, and "consider" marks a suggestion. Keep "must" and "never" for invariants.
-- **Skip emphasis.** Don't use "IMPORTANT", "CRITICAL" or all caps; bold is fine. Current Claude models over-apply emphasized rules (platform: claude-prompting-best-practices; best-practices.md, "What you can stop doing").
+- **Skip emphasis.** Don't use "IMPORTANT", "CRITICAL" or all caps; bold is fine. Current Claude models over-apply emphasized rules (platform: claude-prompting-best-practices; best-practices.md, "What you can stop doing"). `tests/plugin_lint/test_cross_refs.py` flags MUST, ALWAYS, NEVER, IMPORTANT, NOT, ONLY, ANY and EVERY in the bodies of skill, agent and shared files, outside code spans and double quotes. CRITICAL, ALL and NO are left to review, since they double as a severity value and as tokens.
 - **State a safety rule's intent in one line**, for example "Don't run destructive git commands unless the user asked for them". Leave command blocklists and secret patterns to hooks and permission rules (§19). Don't claim that prose enforces anything.
 - **Orchestrators state their lane**: "You orchestrate only. You don't propose solutions or implement fixes; dispatch specialists for those." An orchestrating reviewer that decides the gate says it issues the verdict and nothing else.
 
@@ -469,7 +469,7 @@ Exceptions:
 
 Run this before merging a new or changed agent.
 
-**Mechanical checks.** Scripts run all of them. `make test` runs `tests/plugin_lint/test_agents.py`, which covers every item except three: `tests/plugin_lint/test_dependencies.py` covers the `dependencies` item, `tests/plugin_lint/test_cross_refs.py` covers closing fences, and the `no-rule-citations` pre-commit hook covers the last one. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
+**Mechanical checks.** Scripts run all of them. `make test` runs `tests/plugin_lint/test_agents.py`, which covers every item except four: `tests/plugin_lint/test_dependencies.py` covers the `dependencies` item, `tests/plugin_lint/test_cross_refs.py` covers closing fences and all-caps emphasis, and the `no-rule-citations` pre-commit hook covers the last one. `make validate` and the CI `validate` job run `claude plugin validate --strict` on every plugin, but it covers only part of the list: in this repo's layout it has passed some unparseable agent YAML, invalid colors and unknown keys (observed on 2.1.316).
 
 - [ ] The frontmatter parses with a strict YAML parser and has no unknown keys (§1).
 - [ ] `name` is kebab-case, 3-50 characters and two to four words, is unique across the marketplace, and matches the filename (§20).
@@ -484,6 +484,7 @@ Run this before merging a new or changed agent.
 - [ ] `VERDICT:` appears as a bare line, never as a heading, and `STACK DETECTED:` is written with a space (§12, §13).
 - [ ] A `## Red Flags` heading sits outside code fences (§10).
 - [ ] Every code fence closes, on a bare run of its own character at least as long as the opener. An unclosed fence turns the rest of the file into code.
+- [ ] The body has no all-caps MUST, ALWAYS, NEVER, IMPORTANT, NOT, ONLY, ANY or EVERY outside code spans and double quotes (§16).
 - [ ] The agent cites no guideline rule or section numbers (§22).
 
 **Review checks**
@@ -497,7 +498,7 @@ Run this before merging a new or changed agent.
 - [ ] A reviewer labels every finding. Only the gate decider emits `VERDICT:`. Each `Critical:` finding names a location and a failure, and pre-existing defects aren't `Critical:` (§13).
 - [ ] A web-research agent declares the source ladder, cites only pages it fetched, and emits the disclosure tokens (§14).
 - [ ] An agent that guards a rule agents skip under pressure has an anti-rationalization table built from the agent's own excuses (§15).
-- [ ] The most important rule is near the top. The body has no "IMPORTANT", "CRITICAL" or all-caps emphasis. Verification steps cite the command and its output. Rules say what to do rather than what to avoid, an orchestrator states its lane, and a discipline agent has no flattery (§16).
+- [ ] The most important rule is near the top. The body has no "CRITICAL" or other all-caps emphasis that the lint lets through. Verification steps cite the command and its output. Rules say what to do rather than what to avoid, an orchestrator states its lane, and a discipline agent has no flattery (§16).
 - [ ] Rich output goes to a file, and the agent returns a pointer (§7).
 - [ ] An orchestrator names its allowed subagent types and issues each wave of at most 6 calls in one message. It waits for the whole wave, and checks that each writer's artifact exists before using it (§8, §9).
 - [ ] A worktree-isolated agent gets a base snapshot when it needs in-progress work, and never writes into the main checkout through Bash (§8).
