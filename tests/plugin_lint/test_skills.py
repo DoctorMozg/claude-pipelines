@@ -58,6 +58,8 @@ REFERENCE_TOC_MIN_LINES = 100
 SKILL_MAX_CHARS = 20_000
 SKILL_MAX_LINES = 500
 PHASE_MAX_LINES = 400
+# Every installed skill's description shares one listing budget; past it, whole descriptions drop.
+DESCRIPTION_MAX_CHARS = 250
 # Interpreters and exec wrappers run whatever follows them: a bare-program grant is bare Bash.
 BASH_EQUIVALENT_GRANT = re.compile(
     r"^Bash\((?:\*|(?:bash|sh|zsh|python3?|node|perl|env|eval|exec|xargs|sudo|npx|uv run)"
@@ -115,6 +117,19 @@ class TestFrontmatter:
                 violations.append(f"{item.doc.relative}: description is missing or not a string")
             elif "\n" in description:
                 violations.append(f"{item.doc.relative}: description spans several lines")
+        assert_no_violations(violations)
+
+    def test_description_fits_listing_budget(self, skills: DocSet) -> None:
+        violations: list[str] = []
+        for item in skills.parsed:
+            description = str(item.frontmatter.get("description") or "")
+            when_to_use = str(item.frontmatter.get("when_to_use") or "")
+            length = len(description) + len(when_to_use)
+            if length > DESCRIPTION_MAX_CHARS:
+                violations.append(
+                    f"{item.doc.relative}: description plus when_to_use is {length} characters,"
+                    f" over {DESCRIPTION_MAX_CHARS}"
+                )
         assert_no_violations(violations)
 
     def test_argument_hint_is_a_string(self, skills: DocSet) -> None:
