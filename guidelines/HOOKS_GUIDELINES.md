@@ -224,7 +224,7 @@ set -euo pipefail
 
 - **Header.** A shebang, `set -euo pipefail`, and a one-line comment naming the event and matcher, so a reader can find the hooks.json entry. Update the comment when the matcher changes.
 - **Optional variables** are written as `${VAR:-}` or `${VAR:-default}`. Under `set -u`, `cmd "$UNSET" || true` still dies with "unbound variable"; only the default expansion helps.
-- **Pipelines cut short.** `head` and `grep -q` can close a pipe early, which `pipefail` turns into a failure. A `grep` that finds nothing exits 1 as well, so under `set -e` an assignment such as `x=$(grep … | head -1)` ends the script. End such a pipeline with `|| true`, as `vault-context.sh` does: `x=$(grep … | head -1 || true)`. `memory-prompt-inject.sh` once lost its whole injection this way, when a prompt of about a thousand distinct words made `head -n 12` close its keyword pipeline.
+- **Pipelines cut short.** `head` and `grep -q` can close a pipe early, which `pipefail` turns into a failure. A `grep` that finds nothing exits 1 as well, so under `set -e` an assignment such as `x=$(grep … | head -1)` ends the script. End such a pipeline with `|| true`, as `vault-context.sh` does: `x=$(grep … | head -1 || true)`. `memory-prompt-inject.sh` once lost its whole injection this way, when a prompt of about a thousand distinct words made `head -n 12` close its keyword pipeline. The `hook-script-head-guard` pre-commit hook flags a `| head` in `plugins/*/scripts/*.sh` without `|| true`. It reads one line at a time, so put the guard on the line that holds `| head`.
 - **Shared code** lives in a library under `scripts/lib/` that defines functions and runs nothing when sourced, like `plugins/mz-memory/scripts/lib/common.sh`. Source it without `|| true`: a missing library means a broken install, and the hook-error notice is the right signal. A script that is both run and sourced guards its entry point with `if [[ "${BASH_SOURCE[0]}" == "$0" ]]`.
 
 ```bash
@@ -277,7 +277,7 @@ cat "$root/.mz/journal.md"
 
 Run the no-op path as well, such as a missing file or the wrong tool: exit 0 and no stdout.
 
-**Lint.** `pre-commit run --files <script>` runs shellcheck and shfmt (`-i 2 -ci`) as configured in `.pre-commit-config.yaml`; shellcheck doesn't need to be on PATH. The config turns off only SC1091, because shellcheck can't follow a `source` path built from `$SCRIPT_DIR`. Unquoted expansions (§12) are flagged.
+**Lint.** `pre-commit run --files <script>` runs shellcheck, shfmt (`-i 2 -ci`) and `hook-script-head-guard` as configured in `.pre-commit-config.yaml`; shellcheck doesn't need to be on PATH. The config turns off only SC1091, because shellcheck can't follow a `source` path built from `$SCRIPT_DIR`. Unquoted expansions (§12) are flagged.
 
 **Validator.** Run `claude plugin validate --strict plugins/<name>`. It checks hooks.json for invalid JSON, unknown event names, a wrong nesting level and an unquoted `${CLAUDE_PLUGIN_ROOT}` in shell form, and `--strict` fails on any of them. It stays silent on `once`, on `if` for a non-tool event, on a missing or non-executable script, on an invalid regex matcher, on unknown handler fields, and on `async` or `onFailure` where they have no effect (observed on 2.1.316). Check those by hand against §15.
 

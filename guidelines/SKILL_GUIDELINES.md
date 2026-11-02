@@ -144,7 +144,7 @@ Counter-triggers that must prevent a wrong invocation go in the description, bec
 
 **Length.** Put the skill's distinctive domain words in the first sentence. Claude Code cuts `description` plus `when_to_use` at 1,536 characters (skills.md; changelog 2.1.105), and the Agent Skills spec and claude.ai uploads allow 1,024 (agentskills.io specification). When the listing goes over its budget, Claude Code drops whole descriptions, least-used skills first. Repo convention: keep `description` plus any `when_to_use` at or under 250 characters. This protects the shared listing budget; it isn't a platform limit.
 
-**Characters and quoting.** Leave out `<` and `>`, which the listing shows as `&lt;` and `&gt;` (skills.md). Quote a description that contains `: ` or starts with `[` or `"`. Claude Code accepts unquoted colons (changelog 2.1.69), but strict YAML parsers, such as the PyYAML loader in the repo's Codex renderer, reject them.
+**Characters and quoting.** Leave out `<` and `>`, which the listing shows as `&lt;` and `&gt;` (skills.md). Keep `description` on one line; repo convention, enforced by the `skill-description-shape` pre-commit hook, rules out a block scalar such as `>-` or `|`. Quote a description that contains `: ` or starts with `[` or `"`. Claude Code accepts unquoted colons (changelog 2.1.69), but strict YAML parsers, such as the PyYAML loader in the repo's Codex renderer, reject them.
 
 ```yaml
 description: "Builds a feature end to end, from plan to tested code. Use when the user asks to build, implement or add a feature or module. Not for bug fixes (use debug) or polishing working code (use polish)."
@@ -341,10 +341,10 @@ The pattern comes from addyosmani/agent-skills, `docs/skill-anatomy.md`, which c
 
 Run this before merging a new or changed skill.
 
-**Mechanical checks.** These suit a script. Until a repo script runs them in `make test`, check them by hand. The script calls `claude plugin validate --strict` for what Claude Code accepts. A strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML); it doesn't replace validate.
+**Mechanical checks.** These suit a script. Pre-commit already runs two of them, `skill-description-shape` and `skill-reference-path` in `.pre-commit-config.yaml`; check the rest by hand until a repo script runs them in `make test`. The script calls `claude plugin validate --strict` for what Claude Code accepts. A strict YAML parse is a separate check, for the repo's Codex renderer (PyYAML); it doesn't replace validate.
 
 - [ ] `claude plugin validate --strict` passes on the plugin, and the frontmatter parses with a strict YAML parser (§3).
-- [ ] `description` plus any `when_to_use` is at most 250 characters; `description` contains no `<` or `>` and is quoted if it contains `: ` or starts with `[` or `"` (§3).
+- [ ] `description` plus any `when_to_use` is at most 250 characters; `description` is one line, contains no `<` or `>`, and is quoted if it contains `: ` or starts with `[` or `"` (§3).
 - [ ] An `argument-hint` that starts with `[` is quoted (§12).
 - [ ] SKILL.md is under about 20,000 characters and 500 lines, phase files are under about 400 lines, and reference files over 100 lines open with a table of contents (§2).
 - [ ] Every path in SKILL.md and the phase files resolves inside the plugin, including through its `shared` link. No path reaches into another plugin's directory (§2).
