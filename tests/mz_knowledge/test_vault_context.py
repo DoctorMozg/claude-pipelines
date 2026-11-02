@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 import subprocess
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from datetime import date
 from pathlib import Path
 
@@ -13,8 +13,12 @@ BASH = shutil.which("bash") or "/bin/bash"
 MOC_DIR = "00 - MOCs"
 # Everything the script runs except jq, so a PATH built from these hides jq only.
 TOOLS_WITHOUT_JQ = ("date", "find", "sort", "head", "xargs", "ls")
+MAX_CHARS = 8000
+TRUNCATION_MARK = "\n… (truncated)"
 
 type RunHook = Callable[..., str]
+type CappedScript = Callable[[int], Path]
+type PathWithoutJq = Callable[[Iterable[str]], str]
 
 
 def _note(path: Path, mtime: float | None = None) -> Path:
@@ -49,10 +53,10 @@ def run_hook(tmp_path: Path, vault: Path) -> RunHook:
     workdir = tmp_path / "cwd"
     workdir.mkdir()
 
-    def run(path: str = "", env: dict[str, str] | None = None) -> str:
+    def run(path: str = "", env: dict[str, str] | None = None, script: Path = SCRIPT) -> str:
         overrides = {"OBSIDIAN_VAULT_PATH": str(vault)} if env is None else env
         result = subprocess.run(
-            [BASH, str(SCRIPT)],
+            [BASH, str(script)],
             input='{"hook_event_name":"SessionStart","source":"startup"}',
             env={**base_env, **overrides, **({"PATH": path} if path else {})},
             cwd=workdir,
@@ -65,6 +69,21 @@ def run_hook(tmp_path: Path, vault: Path) -> RunHook:
         return result.stdout
 
     return run
+
+
+@pytest.fixture
+def capped_script(tmp_path: Path) -> CappedScript:
+    # Note names stop at 255 bytes, so real notes can't fill MAX_CHARS; a copy with a lower cap can.
+    source = SCRIPT.read_text(encoding="utf-8")
+    shipped = f"\nMAX_CHARS={MAX_CHARS}\n"
+
+    def write(limit: int) -> Path:
+        assert shipped in source, f"{SCRIPT.name} should cap its context at {MAX_CHARS} chars"
+        copy = tmp_path / "vault-context-capped.sh"
+        copy.write_text(source.replace(shipped, f"\nMAX_CHARS={limit}\n"), encoding="utf-8")
+        return copy
+
+    return write
 
 
 class TestSilentExits:
@@ -81,17 +100,11 @@ class TestSilentExits:
         assert run_hook() == ""
 
     def test_missing_jq_prints_nothing(
-        self, run_hook: RunHook, vault: Path, tmp_path: Path
+        self, run_hook: RunHook, vault: Path, path_without_jq: PathWithoutJq
     ) -> None:
         _note(vault / "daily" / f"{date.today():%Y-%m-%d}.md")
-        bin_dir = tmp_path / "bin"
-        bin_dir.mkdir()
-        for tool in TOOLS_WITHOUT_JQ:
-            located = shutil.which(tool)
-            assert located is not None, tool
-            (bin_dir / tool).symlink_to(located)
 
-        assert run_hook(path=str(bin_dir)) == ""
+        assert run_hook(path=path_without_jq(TOOLS_WITHOUT_JQ)) == ""
 
 
 class TestContext:
@@ -150,3 +163,25 @@ class TestContext:
         )
 
         assert context == "Recently modified: primary"
+
+
+class TestLimits:
+    @pytest.fixture
+    def full_context(self, vault: Path) -> str:
+        name = "a" * 60
+        _note(vault / MOC_DIR / f"{name}.md")
+        return f"Vault MOCs: {name}\nRecently modified: {name}"
+
+    def test_context_over_the_cap_is_cut_with_a_marker(
+        self, run_hook: RunHook, capped_script: CappedScript, full_context: str
+    ) -> None:
+        context = _context(run_hook(script=capped_script(40)))
+
+        assert context == full_context[:40] + TRUNCATION_MARK
+
+    def test_context_at_the_cap_is_left_whole(
+        self, run_hook: RunHook, capped_script: CappedScript, full_context: str
+    ) -> None:
+        context = _context(run_hook(script=capped_script(len(full_context))))
+
+        assert context == full_context

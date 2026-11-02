@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# CLI helper — appends a pre-formatted markdown block to the interaction
-# journal (.mz/journal.md) under an flock, redacting <private> regions. Used by
-# the journal-capture.sh hook and by skills that enrich gate/decision entries
-# with semantic context the hook cannot see (skill, task, phase, artifact).
+# Appends a pre-formatted markdown block to the interaction journal
+# (.mz/journal.md) under an flock, redacting <private> regions.
+# Used by journal-capture.sh. Skills append directly with `>>`.
 #
 # Usage: printf '%s' "$block" | journal-append.sh
 #        journal-append.sh "block text"

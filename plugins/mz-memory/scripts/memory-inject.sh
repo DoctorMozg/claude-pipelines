@@ -7,6 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
+command -v jq >/dev/null 2>&1 || exit 0
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"

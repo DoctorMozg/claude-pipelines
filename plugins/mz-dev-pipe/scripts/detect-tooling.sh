@@ -1,10 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# SessionStart hook (startup, clear, compact) — detects project tooling and writes .mz/tooling.json.
+# SessionStart hook (startup, clear, compact) — detects project tooling and writes <root>/.mz/tooling.json.
 # Language-agnostic: checks for ecosystem config files, then parses them for specific tools.
 
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
+# Copy of find_project_root in mz-memory's lib/common.sh; keep the two identical.
+find_project_root() {
+  if [[ -n "${MZ_MEMORY_ROOT:-}" ]]; then
+    printf '%s\n' "$MZ_MEMORY_ROOT"
+    return 0
+  fi
+  local dir="${CLAUDE_PROJECT_DIR:-$PWD}"
+  dir=$(cd "$dir" 2>/dev/null && pwd) || dir="$PWD"
+  while [[ "$dir" != "/" && -n "$dir" ]]; do
+    if [[ -e "$dir/.git" ]]; then
+      printf '%s\n' "$dir"
+      return 0
+    fi
+    dir=$(dirname "$dir")
+  done
+  printf '%s\n' "${CLAUDE_PROJECT_DIR:-$PWD}"
+}
+
+PROJECT_DIR=$(find_project_root)
 OUTPUT_DIR="${PROJECT_DIR}/.mz"
 OUTPUT_FILE="${OUTPUT_DIR}/tooling.json"
 
@@ -271,8 +289,8 @@ fi
 if command -v jq &>/dev/null; then
   ECOSYSTEMS=$(jq -r '.ecosystems | keys[]' "$OUTPUT_FILE" 2>/dev/null | tr '\n' ', ' | sed 's/,$//' || echo "")
   if [[ -n "$ECOSYSTEMS" ]]; then
-    jq -n --arg eco "$ECOSYSTEMS" \
-      '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: ("Project tooling detected: " + $eco + ". Full details in .mz/tooling.json")}}'
+    jq -n --arg eco "$ECOSYSTEMS" --arg path "$OUTPUT_FILE" \
+      '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: ("Project tooling detected: " + $eco + ". Full details in " + $path)}}'
   fi
 fi
 

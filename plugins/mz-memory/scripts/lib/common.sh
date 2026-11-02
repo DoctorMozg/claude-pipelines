@@ -213,9 +213,8 @@ prepend_to_pinned() {
 }
 
 # --- Interaction journal (.mz/journal.md) ------------------------------------
-# The journal is a global, append-only, gitignored audit trail of approval
-# gates, input prompts, and decisions. Separate from MEMORY.md: the journal is
-# the raw firehose; MEMORY.md is the curated recall store fed from it.
+# The journal is an append-only record of AskUserQuestion calls and skill entries.
+# MEMORY.md is fed from state.md, not from the journal.
 
 # Replace <private>...</private> regions with [redacted] WITHOUT collapsing the
 # surrounding whitespace — verbatim journal artifacts must keep their code
@@ -238,7 +237,7 @@ ensure_journal_file() {
   {
     printf '# Interaction Journal\n\n'
     printf '<!-- Auto-managed by mz-memory journal-capture. Append-only, newest last. -->\n'
-    printf '<!-- Raw audit trail of approval gates, input prompts, and decisions. Gitignored scratch. -->\n\n'
+    printf '<!-- Append-only interaction journal. Not read for recall. -->\n\n'
   } >"$journal_file"
 }
 

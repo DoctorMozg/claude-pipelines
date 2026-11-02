@@ -6,12 +6,13 @@ set -euo pipefail
 # high-signal). Activity log entries are filtered to those whose line text
 # contains at least one prompt keyword (>=4 chars, alphanumeric).
 #
-# Output schema: hookSpecificOutput with `additionalContext`, which is optional; the no-op path sends it empty.
+# Output: hookSpecificOutput with additionalContext when entries match; the no-op path prints nothing.
 # Hard budget: <100ms typical, never blocks the prompt.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
+command -v jq >/dev/null 2>&1 || exit 0
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_FILE="${PROJECT_DIR}/.mz/memory/MEMORY.md"
@@ -20,22 +21,16 @@ MAX_MATCHES=15
 MAX_CHARS=2000
 MIN_KEYWORD_LEN=4
 
-emit_silent() {
-  jq -n --arg event "UserPromptSubmit" --arg ctx "" \
-    '{hookSpecificOutput: {hookEventName: $event, additionalContext: $ctx}}'
-  exit 0
-}
-
-[[ -f "$MEMORY_FILE" ]] || emit_silent
+[[ -f "$MEMORY_FILE" ]] || exit 0
 
 INPUT=""
 if [[ ! -t 0 ]]; then
   INPUT=$(cat || true)
 fi
-[[ -n "$INPUT" ]] || emit_silent
+[[ -n "$INPUT" ]] || exit 0
 
 PROMPT=$(printf '%s' "$INPUT" | jq -r '.prompt // empty' 2>/dev/null || true)
-[[ -n "$PROMPT" ]] || emit_silent
+[[ -n "$PROMPT" ]] || exit 0
 
 # Normalize: lowercase, strip non-alphanumeric, dedup, drop short words and
 # common stopwords. Keep at most 12 keywords to bound the grep cost.
@@ -48,9 +43,9 @@ KEYWORDS=$(printf '%s' "$PROMPT" \
       { print }
     ' \
   | awk '!seen[$0]++' \
-  | head -n 12)
+  | head -n 12 || true)
 
-[[ -n "$KEYWORDS" ]] || emit_silent
+[[ -n "$KEYWORDS" ]] || exit 0
 
 PINNED=$(extract_pinned "$MEMORY_FILE" | sed '/^[[:space:]]*$/d')
 LOG=$(extract_log "$MEMORY_FILE" 9999)
@@ -62,7 +57,7 @@ if [[ -n "$LOG" && -n "$PATTERN" ]]; then
 fi
 
 if [[ -z "$PINNED" && -z "$MATCHES" ]]; then
-  emit_silent
+  exit 0
 fi
 
 PAYLOAD="Project memory matches for this prompt (.mz/memory/MEMORY.md):

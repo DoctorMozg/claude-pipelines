@@ -1,7 +1,8 @@
 import json
 import os
+import shutil
 import subprocess
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,9 @@ import pytest
 INJECT_SCRIPT = (
     Path(__file__).resolve().parents[2] / "plugins" / "mz-memory" / "scripts" / "memory-inject.sh"
 )
+BASH = shutil.which("bash") or "/bin/bash"
+# Everything the script runs except jq, so a PATH built from these hides jq only.
+TOOLS_WITHOUT_JQ = ("dirname", "mkdir", "mktemp", "mv", "cat", "grep", "awk", "head", "sed")
 PIN_START = "<!-- mz-pinned-start -->"
 LOG_START = "<!-- mz-log-start -->"
 HEADER = "Project memory (.mz/memory/MEMORY.md):\n"
@@ -16,8 +20,10 @@ TRUNCATION_MARK = "\n...[memory truncated]"
 MAX_CHARS = 8000
 COMPACT_INPUT = json.dumps({"hook_event_name": "SessionStart", "source": "compact"})
 
+type RunHook = Callable[..., str]
 type Inject = Callable[[], str]
 type SeedMemory = Callable[[list[str], list[str]], None]
+type PathWithoutJq = Callable[[Iterable[str]], str]
 
 
 def _memory_file(project: Path) -> Path:
@@ -29,22 +35,30 @@ def _log_lines(context: str) -> list[str]:
 
 
 @pytest.fixture
-def inject(tmp_path: Path) -> Inject:
-    env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
-    env["MZ_MEMORY_ROOT"] = str(tmp_path)
+def run_hook(tmp_path: Path) -> RunHook:
+    base_env = {key: value for key, value in os.environ.items() if key != "CLAUDE_PROJECT_DIR"}
+    base_env["MZ_MEMORY_ROOT"] = str(tmp_path)
 
-    def run() -> str:
+    def run(path: str = "") -> str:
         result = subprocess.run(
-            ["bash", str(INJECT_SCRIPT)],
+            [BASH, str(INJECT_SCRIPT)],
             input=COMPACT_INPUT,
-            env=env,
+            env={**base_env, **({"PATH": path} if path else {})},
             capture_output=True,
             text=True,
             timeout=30,
             check=False,
         )
         assert result.returncode == 0, result.stderr
-        output = json.loads(result.stdout)
+        return result.stdout
+
+    return run
+
+
+@pytest.fixture
+def inject(run_hook: RunHook) -> Inject:
+    def run() -> str:
+        output = json.loads(run_hook())
         assert output["hookSpecificOutput"]["hookEventName"] == "SessionStart"
         context: str = output["hookSpecificOutput"]["additionalContext"]
         return context
@@ -78,6 +92,15 @@ class TestEmptyMemory:
         inject()
 
         assert "initialized" in inject()
+
+
+class TestSilentExits:
+    def test_missing_jq_prints_nothing(
+        self, run_hook: RunHook, seed_memory: SeedMemory, path_without_jq: PathWithoutJq
+    ) -> None:
+        seed_memory(["- [2026-11-01] migrate forward only"], ["- [2026-11-01] build_auth"])
+
+        assert run_hook(path_without_jq(TOOLS_WITHOUT_JQ)) == ""
 
 
 class TestPayload:

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# PostToolUse(AskUserQuestion) — records every approval gate and input prompt
-# to the global interaction journal (.mz/journal.md). This is the deterministic
-# "audit guarantee" layer: it fires even when the model has forgotten it is
-# mid-gate. Logging only — emits no hook output, always exits 0.
+# PostToolUse(AskUserQuestion): appends the question and answer of each completed call to <root>/.mz/journal.md.
+# Logging only; no output, always exit 0.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh

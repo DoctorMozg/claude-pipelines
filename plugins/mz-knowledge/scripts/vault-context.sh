@@ -6,6 +6,7 @@ set -euo pipefail
 
 MAX_MOCS=20
 MAX_RECENT=3
+MAX_CHARS=8000
 
 VAULT="${OBSIDIAN_VAULT_PATH:-${MZ_VAULT_PATH:-}}"
 [[ -n "$VAULT" && -d "$VAULT" ]] || exit 0
@@ -50,5 +51,9 @@ if ((${#lines[@]} == 0)); then
 fi
 
 context=$(printf '%s\n' "${lines[@]}")
+if ((${#context} > MAX_CHARS)); then
+  context="${context:0:MAX_CHARS}
+… (truncated)"
+fi
 jq -n --arg context "$context" \
   '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $context}}'
