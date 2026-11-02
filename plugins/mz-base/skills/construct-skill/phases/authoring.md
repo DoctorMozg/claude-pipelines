@@ -142,7 +142,7 @@ Print every item as a visible list marked PASS, FAIL or n/a (with the reason), w
 - [ ] Tooling is resolved in order (project instructions, then `.mz/tooling.json`, then the manifests) and recorded in `tooling.md`, with the no-tests behavior stated ("Tooling Detection").
 - [ ] Input formats are documented. Missing, ambiguous and omitted arguments follow "Input Parsing". Input collectors are kept apart from gates, and open values are recorded in `state.md`.
 - [ ] Overview, When to Use and Core Process are present, and what must survive compaction sits in the first 5,000 tokens ("Skill Anatomy").
-- [ ] Dispatch prompts follow AGENTS_GUIDELINES.md, "Dispatch Prompts". A dispatch that overrides `model` or `effort` gives a one-line reason (AGENTS_GUIDELINES.md, "Model and Effort").
+- [ ] Dispatch prompts follow AGENTS_GUIDELINES.md, "Dispatch Prompts". A dispatch that overrides `model` or `effort` gives a one-line reason, inside its `(model: **X**)` note when it has one (AGENTS_GUIDELINES.md, "Model and Effort").
 - [ ] Wording follows AGENTS_GUIDELINES.md, "Instruction Wording". A skill that guards a rule agents skip under pressure has an anti-rationalization table (AGENTS_GUIDELINES.md, "Anti-Rationalization Tables").
 - [ ] Terms are used consistently across SKILL.md, phase files and references.
 - [ ] The skill works when invoked directly as `/<plugin>:<skill>` and from a natural-language request. A skill Claude can invoke on its own (no `disable-model-invocation: true`) has a `claude plugin eval` suite of at least three cases. Each case has a result grader plus a `tool_used: Skill` grader; in two-arm runs the `tool_used` grader is shown as an indicator rather than scored, and a should-not-trigger case uses `min: 0, max: 0` with `arm: both`.

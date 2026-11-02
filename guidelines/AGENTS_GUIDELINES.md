@@ -83,7 +83,7 @@ Every agent declares `tools`. Leaving it out gives the agent every tool, MCP too
 
 ## 5. Model and Effort
 
-Repo convention: set the tier and effort once, in the agent's frontmatter. A skill that passes `model` or `effort` in a dispatch states a one-line reason next to the call.
+Repo convention: set the tier and effort once, in the agent's frontmatter. A skill that passes `model` or `effort` in a dispatch states a one-line reason next to the call. In a `(model: **X**)` dispatch note, the reason goes inside the note after the model, as in `(model: **sonnet**, because the fix is narrow)`. `tests/plugin_lint/test_skills.py::TestDispatchNotes` fails on a note in a skill, agent or shared file that names a model other than the agent's pin with nothing after it.
 
 | Tier     | Use for                                                                                                         |
 | -------- | --------------------------------------------------------------------------------------------------------------- |
@@ -253,7 +253,7 @@ Only the agent that decides a gate emits a verdict. `VERDICT: PASS` means zero `
 
 - A `Critical:` finding names a location and a concrete failure.
 - A defect that was there before the change is never `Critical:`. Report it as `FYI:`.
-- Label findings instead of suppressing them. A confidence threshold that drops findings hides them from the orchestrator, which then can't weigh them.
+- Label findings instead of suppressing them. A confidence threshold that drops findings hides them from the orchestrator, which then can't weigh them. An issue below the agent's confidence bar is never `Critical:` and is never dropped: list it under `## Low confidence` as one line, `FYI: (possible <severity>, <score>) <file>:<line> — <issue>`, for example `FYI: (possible Critical, 65) src/auth.ts:42 — token expiry compared in seconds against ms`.
 - Mechanical checks (lint, type-check, tests) are commands. Whoever runs them cites the command and its output. Dispatch a separate reviewer only when a fresh context or a more capable model adds value, typically when the work is beyond what the author does reliably alone. Don't stack extra review rounds on a pipeline that already has a reviewer.
 
 ## 14. Source Hierarchy
