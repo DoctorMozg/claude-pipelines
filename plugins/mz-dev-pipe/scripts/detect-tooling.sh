@@ -26,7 +26,12 @@ PROJECT_DIR=$(find_project_root)
 OUTPUT_DIR="${PROJECT_DIR}/.mz"
 OUTPUT_FILE="${OUTPUT_DIR}/tooling.json"
 
-mkdir -p "$OUTPUT_DIR"
+# The cache is a convenience: an unwritable project gets no tooling.json instead of a hook error.
+# `: >>` tests the file without truncating a cache that is still readable.
+if ! mkdir -p "$OUTPUT_DIR" 2>/dev/null || ! : >>"$OUTPUT_FILE" 2>/dev/null; then
+  echo "detect-tooling.sh: can't write ${OUTPUT_FILE}, skipping tooling detection" >&2
+  exit 0
+fi
 
 # Validate a command string sourced from project manifests against a conservative
 # allowlist. Untrusted values that fail validation are replaced with a placeholder

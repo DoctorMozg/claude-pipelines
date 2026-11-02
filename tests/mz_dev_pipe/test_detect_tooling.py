@@ -3,7 +3,8 @@ import os
 import re
 import shutil
 import subprocess
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
@@ -105,6 +106,42 @@ class TestOutput:
         context = output["hookSpecificOutput"]["additionalContext"]
         assert output["hookSpecificOutput"]["hookEventName"] == "SessionStart"
         assert context.endswith(f"Full details in {repo / '.mz' / 'tooling.json'}")
+
+
+@contextmanager
+def read_only(*paths: Path) -> Iterator[None]:
+    """Strip write permission from `paths` for the block and restore it even if the block fails."""
+    modes = {path: path.stat().st_mode for path in paths}
+    for path in paths:
+        path.chmod(0o555 if path.is_dir() else 0o444)
+    try:
+        yield
+    finally:
+        for path, mode in modes.items():
+            path.chmod(mode)
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root writes whatever the mode")
+class TestUnwritableProject:
+    def test_uncreatable_cache_dir_exits_zero_without_context(
+        self, run_hook: RunHook, repo: Path
+    ) -> None:
+        with read_only(repo):
+            output = run_hook(repo)
+
+        assert output == ""
+        assert not (repo / ".mz").exists()
+
+    def test_read_only_cache_is_left_as_it_was(self, run_hook: RunHook, repo: Path) -> None:
+        run_hook(repo)
+        cache = repo / ".mz" / "tooling.json"
+        before = cache.read_text(encoding="utf-8")
+
+        with read_only(cache, cache.parent):
+            output = run_hook(repo)
+
+        assert output == ""
+        assert cache.read_text(encoding="utf-8") == before
 
 
 class TestCopyStaysInSync:
