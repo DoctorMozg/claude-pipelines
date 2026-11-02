@@ -26,9 +26,10 @@ graders:
     type: regex
     pattern: '- \[I-0001\] [0-9]{4}-[0-9]{2}-[0-9]{2} trig=correction src=[0-9]{4}_[0-9]{2}_[0-9]{2}_memory-note@[0-9a-f]+ status=noted :: [^\n]*MIG-'
     target: { source: file, path: .mz/memory/lessons.md }
-  - name: lesson-names-when-and-why
+  # A stated cause after " — " is the contract; the curator rewrites inbox lessons into the "— WHY" form later.
+  - name: lesson-has-when-and-cause
     type: regex
-    pattern: 'trig=correction [^\n]* :: [^\n]*WHEN [^\n]*→[^\n]*WHY '
+    pattern: 'trig=correction [^\n]* :: [^\n]*WHEN [^\n]*→[^\n]* — [^\n]*[A-Za-z]'
     target: { source: file, path: .mz/memory/lessons.md }
   - name: seed-intact
     type: regex
