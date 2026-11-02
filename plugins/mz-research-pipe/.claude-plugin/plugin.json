@@ -3,6 +3,10 @@
     "name": "Stanislav Gonorovskii",
     "url": "https://github.com/drmozg"
   },
+  "dependencies": [
+    "mz-base",
+    "mz-dev-pipe"
+  ],
   "description": "Research and content pipelines \u2014 multi-source web research, file translation with structural fidelity, prior-output synthesis, and codebase explanation with diagrams",
   "license": "MIT",
   "name": "mz-research-pipe",

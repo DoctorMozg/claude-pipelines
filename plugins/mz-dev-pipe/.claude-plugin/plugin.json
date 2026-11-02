@@ -3,6 +3,9 @@
     "name": "Stanislav Gonorovskii",
     "url": "https://github.com/drmozg"
   },
+  "dependencies": [
+    "mz-base"
+  ],
   "description": "Full development pipeline \u2014 autonomous coding, reviewing, testing, and research agents with orchestrating skills",
   "license": "MIT",
   "name": "mz-dev-pipe",

@@ -221,6 +221,8 @@ claude plugin install mz-knowledge      # Obsidian knowledge base
 claude plugin install mz-gov            # Development governance
 ```
 
+Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`; `mz-biz-outreach` brings in `mz-creative`.
+
 After installation, skills are available as slash commands:
 
 ```

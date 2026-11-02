@@ -3,6 +3,9 @@
     "name": "Stanislav Gonorovskii",
     "url": "https://github.com/drmozg"
   },
+  "dependencies": [
+    "mz-base"
+  ],
   "description": "Multi-perspective AI panels and creative writing tools \u2014 brainstorming, Delphi-style expert consultation, technical documentation, AI-text naturalization, and copywriting",
   "license": "MIT",
   "name": "mz-creative",

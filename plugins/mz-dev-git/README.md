@@ -13,13 +13,7 @@ claude plugin install mz-dev-git
 
 ## Dependencies
 
-`mz-dev-git` dispatches three shared agents from **`mz-base`** (see [Cross-plugin dispatch](#cross-plugin-dispatch)). Install it alongside:
-
-```bash
-claude plugin install mz-base
-```
-
-If `mz-base` is absent, the reviewers skip the optional research step and run the five local lenses; branch-reviewer needs only 4 of its 6 lenses, so nothing fails hard.
+`mz-dev-git` declares **`mz-base`** as a dependency because it dispatches three shared agents from there (see [Cross-plugin dispatch](#cross-plugin-dispatch)). `claude plugin install mz-dev-git` installs and enables `mz-base` too.
 
 GitHub-PR skills additionally require the `gh` CLI authenticated, or `$GITHUB_TOKEN` set, or a GitHub MCP server exposed in the session.
 
@@ -80,7 +74,7 @@ All five `code-lens-*` agents and the four `github-pr-*` collectors/scorers are 
 
 ## Cross-plugin dispatch
 
-`branch-reviewer` dispatches `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering`; `github-pr-reviewer` dispatches `pipeline-web-researcher`. All three live in `mz-base` because skills in other plugins dispatch them too. Claude Code resolves agent names across all loaded plugins, so the dispatch works whenever `mz-base` is installed.
+`branch-reviewer` dispatches `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering`; `github-pr-reviewer` dispatches `pipeline-web-researcher`. All three live in `mz-base` because skills in other plugins dispatch them too. Claude Code resolves agent names across all loaded plugins. Because the manifest declares `mz-base`, it installs with `mz-dev-git`, and disabling `mz-base` disables `mz-dev-git` too.
 
 ## License
 

@@ -171,7 +171,7 @@ ______________________________________________________________________
 
 ### `/combine`, `/deep-research`, `/explain`, `/translate` — moved to `mz-research-pipe`
 
-These research and content skills now live in the [`mz-research-pipe`](../mz-research-pipe/README.md) plugin. Install both plugins together for full functionality.
+These research and content skills now live in the [`mz-research-pipe`](../mz-research-pipe/README.md) plugin, which declares `mz-dev-pipe` as a dependency.
 
 ## Scope Parameter
 
@@ -202,7 +202,7 @@ Specialized worker agents used by the pipeline skills. You don't invoke these di
 | **pipeline-measure-runner**       | Runs a benchmark with warmup and N reps, computes mean/median/CV — the only source of measurement numbers |
 | **pipeline-perf-candidate**       | Implements one optimization hypothesis as a diversified candidate change in an isolated worktree          |
 
-The pipeline skills also dispatch three agents from [`mz-base`](../mz-base/README.md): `pipeline-researcher`, `pipeline-web-researcher` and `code-lens-over-engineering`. They live there because skills in other plugins dispatch them too.
+The pipeline skills also dispatch three agents from [`mz-base`](../mz-base/README.md): `pipeline-researcher`, `pipeline-web-researcher` and `code-lens-over-engineering`. They live there because skills in other plugins dispatch them too; `mz-dev-pipe` declares `mz-base` as a dependency, so it installs alongside.
 
 ## Architecture
 
