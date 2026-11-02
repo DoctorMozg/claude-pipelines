@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: job-search-fire-frontend-shortlist
+description: Asking for a ranked shortlist of vacancies matched against a CV is the job-search pipeline's core request.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    Help me with my job hunt. I'm a senior frontend dev, React and TypeScript,
+    and I want hybrid in Lisbon or remote within Europe. My CV is at ~/docs/cv.md.
+    Search for vacancies from the last week that fit and give me a ranked shortlist.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-search-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-search"'

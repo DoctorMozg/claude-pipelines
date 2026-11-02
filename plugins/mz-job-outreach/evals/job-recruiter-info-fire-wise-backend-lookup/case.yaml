@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: job-recruiter-info-fire-wise-backend-lookup
+description: Asking who recruits for one named role at one company is a single-target contact lookup, which belongs to job-recruiter-info.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    who recruits for the Senior Backend Engineer role at Wise in London? need a
+    careers email or a named hiring manager
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-recruiter-info-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-recruiter-info"'

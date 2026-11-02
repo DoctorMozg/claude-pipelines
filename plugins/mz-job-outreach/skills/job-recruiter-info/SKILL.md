@@ -1,6 +1,6 @@
 ---
 name: job-recruiter-info
-description: 'ALWAYS invoke when the user wants to find recruiter, hiring-manager, or careers contacts for a single job listing or company — outside the full /job-search pipeline. Triggers: "find a recruiter", "find recruiter contacts", "find hiring manager", "who recruits for X", "careers email for X", "who do I apply to at X".'
+description: 'Finds recruiter, hiring-manager and careers contacts for one job or company. Use when the user wants to know who to apply to ("find a recruiter", "who recruits for X", "careers email for X"). Not for B2B contacts (use outreach-enrich-company).'
 argument-hint: '"<job listing URL or company name>" [region:<region>] [language:<lang>]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash(mv *), Bash(rm *), Bash(rmdir *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -16,7 +16,7 @@ This is the standalone counterpart to Phase 6 of `/job-search`. Use it when the 
 
 ## When to Use
 
-Invoke when the user wants apply-target contacts for one job or one company without running the full job-search pipeline. Trigger phrases: "find a recruiter for this role", "who do I apply to at <company>", "careers email for <company>", "hiring manager for this listing", "find the recruiter".
+Looks up apply-target contacts for one job listing or one company, without running the full job-search pipeline.
 
 ### When NOT to use
 

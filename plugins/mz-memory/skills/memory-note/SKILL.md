@@ -1,6 +1,6 @@
 ---
 name: memory-note
-description: ALWAYS invoke when the user wants to manually save a note, decision, or convention into project memory. Triggers "remember that", "note this", "save to memory", "pin this decision", "add to memory". Pins go to the persistent Pinned section; activity entries go to the rolling Activity Log.
+description: 'Saves a note or decision to project memory. Use when the user wants something remembered ("remember that", "note this", "save to memory", "pin this decision"). Not for lookups (open MEMORY.md).'
 argument-hint: '<the note, verbatim as the user wrote it>  [--log to append to Activity Log instead of Pinned]'
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory-note.sh *), Bash(date *), Read, AskUserQuestion
 model: haiku
@@ -14,9 +14,7 @@ Appends a single dated entry to `.mz/memory/MEMORY.md`. By default the entry goe
 
 ## When to Use
 
-- User says "remember that X", "note this", "pin the decision to use Y", "save to memory"
-- User reports a convention, invariant, or decision that should outlive the current session
-- User wants to leave a breadcrumb for the next session
+Records one note, decision, convention or invariant the user wants to outlive the current session, as a dated entry in `.mz/memory/MEMORY.md`.
 
 ### When NOT to use
 

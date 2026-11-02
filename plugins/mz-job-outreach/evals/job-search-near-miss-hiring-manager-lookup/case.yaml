@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: job-search-near-miss-hiring-manager-lookup
+description: Finding the hiring manager for one specific posting is a single-target contact lookup, which belongs to job-recruiter-info and not to a multi-vacancy search.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    Who is the hiring manager for the Senior Backend Engineer posting at Grafana
+    Labs? I'd rather email them directly than go through the portal.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-search-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-search"'
+    min: 0
+    max: 0
+    arm: both

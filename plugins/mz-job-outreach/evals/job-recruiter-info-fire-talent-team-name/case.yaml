@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: job-recruiter-info-fire-talent-team-name
+description: Wanting the person or inbox on a company's talent team who owns one open role is a contact lookup for job-recruiter-info, stated without its vocabulary.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    I want to get my application for the ML engineer opening at Mistral AI in front
+    of an actual human instead of a web form. Who on their talent team owns that
+    role? A name would be ideal, otherwise just the right inbox. Someone who reads
+    French is a bonus since I'd write in French.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-recruiter-info-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-recruiter-info"'

@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: job-search-fire-leave-by-spring
+description: A user who wants out of their company and asks where they would have a real shot at a salaried position is describing the job-search pipeline in their own words.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-biz-outreach", "../../../mz-creative", "../../../mz-base"]
+execution:
+  prompt: >-
+    I'm done with my current company and want to be out by spring. Six years of
+    iOS, mostly Swift, some Kotlin on the side. I'd take a normal salaried position,
+    Lisbon or fully remote in Europe, no agencies. Dig through the hiring sites and
+    tell me where I'd actually have a real shot.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-search-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-search"'

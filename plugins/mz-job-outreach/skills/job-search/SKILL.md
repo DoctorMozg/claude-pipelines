@@ -1,6 +1,6 @@
 ---
 name: job-search
-description: 'ALWAYS invoke when the user wants to find vacancies, match jobs against a CV, or build a job-hunt shortlist with cover letters. Triggers: "find me a job", "search jobs", "match vacancies to my CV", "job hunt", "find openings".'
+description: 'Finds job vacancies, scores them against a CV and ranks a shortlist with cover letters. Use when the user wants a job hunt ("find me a job", "search jobs", "match vacancies to my CV", "find openings"). Not for freelance gigs (use freelance-search).'
 argument-hint: '"<free-text preferences>" [limit:N] [recency:Nd] [contacts:topN] [letters:topN]'
 model: sonnet
 allowed-tools: Agent, AskUserQuestion, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(test *), Bash([ *), Bash(cp *), Bash(tr *), Bash(sha1sum *), Bash(cut *), Bash(jq *), Bash(mv *), Bash(rm *), Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
@@ -16,10 +16,12 @@ Output is a single master markdown report (not per-vacancy dossier cards). Cover
 
 ## When to Use
 
-Invoke when the user wants to discover open roles matching their CV, build a job shortlist, or prepare for outreach to recruiters. Trigger phrases: "find me a job", "match vacancies to my CV", "job hunt", "search openings", "find roles".
+Runs a full salaried-job hunt from a CV: vacancy discovery, scoring, recruiter contacts and cover letters for the top matches.
 
 ### When NOT to use
 
+- The user wants freelance gigs, contracts or consulting engagements rather than salaried roles — use `/freelance-search`.
+- The user wants recruiter contacts for one known listing or company, with no CV matching — use `/job-recruiter-info`.
 - The user wants to draft a single cover letter for a specific known role — that is a copywriting task, use the copywrite skill.
 - The user wants to revise their CV — this skill consumes a CV, it does not edit one.
 - The user wants competitive analysis of one named employer — use `explain` or web research instead.
