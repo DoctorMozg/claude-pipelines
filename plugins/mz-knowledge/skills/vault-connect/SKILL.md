@@ -85,10 +85,6 @@ Response handling:
 - **Letter list** (e.g. `a,c`) → mark those proposals as skipped, proceed to Phase 2 with the remaining set.
 - **Any other reply (feedback)** → pass feedback to `link-suggester`, re-run Phase 1, return to this gate, re-read `.mz/task/<task_name>/link_proposals.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                     | Rebuttal                                                                                                                                                                       |

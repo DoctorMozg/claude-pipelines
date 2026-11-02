@@ -112,10 +112,6 @@ Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop 
 - **Any other reply (feedback)** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **`MZ_DEV_PIPE_AUTO_APPROVE=1`** → skip the AskUserQuestion call entirely, log `auto-approved (unattended mode)` to chat and to `state.md` under `## Auto-approvals`, and proceed to Phase 2. The plan message (Surface 1) is still emitted so the transcript records what would have been approved. See `shared/approval-gate.md` for the bypass contract.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                      | Rebuttal                                                 |

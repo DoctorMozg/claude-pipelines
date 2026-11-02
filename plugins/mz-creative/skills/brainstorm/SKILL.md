@@ -69,14 +69,6 @@ Invoke when the user wants creative ideation, multi-perspective thinking, or div
 | 3   | Synthesis + Voting | `phases/voting_and_report.md` | max 5 iterations |
 | 4   | Report             | `phases/voting_and_report.md` | --               |
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill, not discipline.
-
 ## Red Flags
 
 - You collapsed into one-voice output instead of running multiple personas.

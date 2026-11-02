@@ -97,10 +97,6 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → re-run Phase 1 with feedback, overwrite `research.md`, return to Surface 1, re-read `research.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                      | Rebuttal                                            |

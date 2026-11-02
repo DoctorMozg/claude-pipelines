@@ -58,14 +58,6 @@ If no argument is provided, ask the user for a PR URL.
    - `STATUS: BLOCKED` → escalate via AskUserQuestion with the blocker reason. Never auto-retry on `BLOCKED`.
 1. On any terminal success, display the absolute report path.
 
-## Techniques
-
-Delegated to phase files — see Phase Overview table above. Detailed technique (PR worktree setup and cleanup, diff-plus-context reading, multi-lens fan-out, two-signal Critical gate, CI-result cross-referencing, severity labeling) lives in `plugins/mz-dev-git/agents/github-pr-reviewer.md` and the code-lens-\* agent files.
-
-## Common Rationalizations
-
-N/A — this is a reference/collaboration skill that dispatches a specialist agent. It does not enforce discipline decisions itself. Discipline pressure is enforced inside `github-pr-reviewer` and the code-lens-\* agents.
-
 ## Red Flags
 
 - The PR argument is missing or malformed and you are guessing a URL instead of asking.

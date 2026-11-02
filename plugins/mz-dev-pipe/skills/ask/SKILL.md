@@ -72,14 +72,6 @@ After setup, read `phases/research.md` and proceed to Phase 1.
 - **Phase 2 — Web Research** (skip when `Question type: codebase`): dispatch up to **MAX_WEB_AGENTS** `pipeline-web-researcher` agents (model: **opus**) for external knowledge. See `phases/research.md`. Update state to `web_researched`.
 - **Phase 3 — Synthesis & Answer**: compile all findings into a direct answer with cited sources, write the report to `.mz/reports/<YYYY_MM_DD>_ask_<slug>.md` (append `_v2`, `_v3` if exists), and present the answer in chat. See `phases/answer.md`. Update state to `complete`.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — reference skill, not discipline.
-
 ## Red Flags
 
 - You answered from prior knowledge without dispatching a researcher to confirm against the actual code.

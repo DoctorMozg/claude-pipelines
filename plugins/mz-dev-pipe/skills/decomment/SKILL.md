@@ -98,10 +98,6 @@ Unattended-mode bypass: when env `MZ_DEV_PIPE_AUTO_APPROVE=1`, skip AskUserQuest
 
 Single gate, two paths only — no Apply/Skip/Diff submenu inside the AskUserQuestion call.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                         | Rebuttal                                                                                                                                                                                                                                                      |
@@ -110,14 +106,6 @@ Techniques: delegated to phase files — see Phase Overview table above.
 | "These banner dividers are obviously AI — strip them all."              | "Banner dividers around a workaround note are load-bearing visual structure. The preserve-zone (WHY tokens, RFC refs, dates, URLs) decides per-block, not per-pattern. A blanket strip rule deletes legitimate comments."                                     |
 | "Skip the gate, the proposer is good enough."                           | "The proposer matches patterns; only the user can confirm a comment isn't load-bearing in the project's actual context. No-gate mode (`MZ_DEV_PIPE_AUTO_APPROVE`) exists for unattended runs, but the default is single-gate-required and that is not a bug." |
 | "Verbose docstrings restate the signature — just delete them all."      | "Five conditions must hold simultaneously before docstring deletion is safe: full typing, AI opener phrase, no tooling fields, no non-signature identifiers, all content words overlap with name/params. Partial matches preserve."                           |
-
-## Red Flags
-
-Red Flags: delegated to phase files (each phase declares its own red flags).
-
-## Verification
-
-Verification: see phases/apply.md for the final-state checklist.
 
 ## State Management
 

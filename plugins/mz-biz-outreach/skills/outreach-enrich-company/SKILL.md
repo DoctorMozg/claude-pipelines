@@ -240,14 +240,6 @@ STATUS: <DONE | DONE_WITH_CONCERNS>
 
 State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.
 
-## Techniques
-
-Techniques: delegated to `phases/deep_enrichment.md` (Phase 2) and `phases/draft_and_finalize.md` (Phases 3–5).
-
-## Common Rationalizations
-
-N/A — orchestration skill, not a discipline skill.
-
 ## Red Flags
 
 - You drafted a letter referencing a personalization hook that came from your own background knowledge rather than the card, the light-pass enrichment, or the Phase 2 deeper intelligence.

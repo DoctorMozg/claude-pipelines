@@ -51,14 +51,6 @@ Invoke when the user wants to draft a proposal for one specific freelance gig. T
 
 Read the phase file when reaching Phase 0.
 
-## Techniques
-
-Delegated to phase file.
-
-## Common Rationalizations
-
-N/A — orchestration skill.
-
 ## Red Flags
 
 - You generated a proposal without a CV — proposal-writer cannot ground the credibility hook.

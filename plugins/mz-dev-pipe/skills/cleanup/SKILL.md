@@ -127,7 +127,6 @@ Final verification, then write `summary.md` listing chunks, files, iterations, d
 
 ## Techniques
 
-Techniques: delegated to phase files — see Phase Overview table above.
 Reference files: grep `references/dead-code-detection-patterns.md` for per-language detection patterns — do not load the entire file.
 
 ## Common Rationalizations

@@ -75,10 +75,6 @@ See [`skills/shared/scope-parameter.md`](../shared/scope-parameter.md) for the c
 - **Phase 5 — Failure Diagnosis**: if any Phase 3 check failed, dispatch researchers; skip if green. See `phases/checks.md` → Phase 5. Update state to `diagnosis_complete`.
 - **Phase 6 — Report**: compile results, write to `.mz/reports/<YYYY_MM_DD>_test_<scope_name>.md` (append `_v2`, `_v3` if exists). See `phases/checks.md` → Phase 6. Update state to `completed`.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                      | Rebuttal                                                           |

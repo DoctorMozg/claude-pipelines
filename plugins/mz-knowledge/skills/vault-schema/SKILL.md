@@ -131,10 +131,6 @@ Emit the full verbatim contents of `.mz/task/<task_name>/migration_plan.md` — 
 
 See `phases/migrate.md` (Step 4).
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                                            | Rebuttal                                                                                                                                                                                                                                     |
@@ -143,14 +139,6 @@ Techniques: delegated to phase files — see Phase Overview table above.
 | "Skip the rollback manifest — patches are trivial, we can undo by hand."                   | "Rollback is non-negotiable. Ctrl-C mid-batch leaves the vault half-patched with no recovery record. The manifest is a disk-persisted artifact that survives context compaction; memory of what changed does not."                           |
 | "Auto-pick values for `allowed_values` violations — the user will accept the obvious one." | "Enum picks are irreversible without rollback and 'obvious' is a guess. The skill surfaces `<PICK: ...>` placeholders precisely so the user owns the value, not the orchestrator. Silent auto-pick is how 'helpful' becomes data loss."      |
 | "The batch exceeds MAX_MIGRATION_BATCH — just raise the cap inline."                       | "The cap exists so approval-gate review stays human-sized. Raising it inline silently moves the review from 'readable' to 'rubber-stamped'. Split the batch and run again — the gate is load-bearing, not decoration."                       |
-
-## Red Flags
-
-Red Flags: delegated to phase files — see Phase Overview table above.
-
-## Verification
-
-Verification: delegated to phase files — see Phase Overview table above.
 
 ## State Management
 

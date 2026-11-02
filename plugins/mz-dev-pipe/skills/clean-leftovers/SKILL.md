@@ -108,7 +108,7 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on Opus
 
 ## Techniques
 
-Techniques: delegated to phase files — see Phase Overview table above. Reference: grep `references/artifact-catalog.md` for category-specific patterns; do not load the entire file.
+Reference: grep `references/artifact-catalog.md` for category-specific patterns; do not load the entire file.
 
 ## Common Rationalizations
 

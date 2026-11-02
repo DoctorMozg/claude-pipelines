@@ -104,10 +104,6 @@ Design document finalized (<N>/5 iterations · Aggregate: <verdict> · WCAG: PAS
 - **Reject** → update `state.md` to `aborted_by_user` and stop. Do not write `final-summary.md`.
 - **Any other reply (feedback)** → dispatch `design-revision-writer` to apply the feedback, overwrite the affected artifact(s), return to this gate, re-read the updated artifact(s), and re-emit the entire plan message from scratch with the full new contents under each section — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to `final-summary.md` without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                      | Rebuttal                                                                                                                                                                    |

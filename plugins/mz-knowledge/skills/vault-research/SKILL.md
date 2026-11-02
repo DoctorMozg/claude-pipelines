@@ -142,10 +142,6 @@ Emit the full verbatim contents of `.mz/task/<task_name>/link_suggestions.md` �
 - **Reject** → update `state.md` Status to `complete` with `LinksAdded: 0`, `LinksSkipped: true`. Written notes stay on disk without a Related section.
 - **Any other reply (feedback)** → skip specified links, accept the rest, overwrite `link_suggestions.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                  | Rebuttal                                                                                                                                                                                               |

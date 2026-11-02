@@ -94,7 +94,7 @@ Route by `depth:` to the phase files in the table above. Both depth modes stop a
 
 ## Techniques
 
-Techniques: delegated to phase files — see Phase Overview table above. Reference files: grep `references/owasp-top-10-checklist.md` for specific OWASP categories — do not load the entire file.
+Reference files: grep `references/owasp-top-10-checklist.md` for specific OWASP categories — do not load the entire file.
 
 ## Common Rationalizations
 

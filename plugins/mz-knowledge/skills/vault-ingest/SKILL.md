@@ -92,10 +92,6 @@ Response handling:
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → common feedback is "try a different tool" (switch `whisper-cpp` → `whisper`, `ocrit` → `tesseract`) or "the transcript is truncated, rerun". Incorporate the feedback, re-run Phase 1 with the adjusted tool choice, return to this gate, re-read `.mz/task/<task_name>/transcript.md`, and re-emit the entire plan message from scratch (never diff-only). This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                               | Rebuttal                                                                                                                                                                                         |

@@ -103,14 +103,6 @@ Write the final report to `.mz/research/` using the naming convention `<YYYY_MM_
 
 Display path, source count, subtopic count, and top 3-5 findings.
 
-## Techniques
-
-Techniques: delegated to phase files — see `phases/research_and_report.md`.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill, not discipline.
-
 ## Red Flags
 
 - You dispatched a single researcher instead of a parallel fan-out across subtopics.

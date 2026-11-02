@@ -65,10 +65,6 @@ Glob the artifact source, dispatch `gov-audit-reviewer` per artifact (parallel u
 
 Techniques: delegated to `phases/audit.md` (glob resolution, wave batching, manifest/rollup, report shape) and `references/review-rubric.md` (the six-axis scoring rubric the reviewer applies).
 
-## Common Rationalizations
-
-Common Rationalizations: delegated to the `gov-audit-reviewer` agent — its anti-rationalization table covers the audit-discipline excuses (softening a `Critical:`, passing a `pending` sign-off, rounding a single Critical up to PASS).
-
 ## Red Flags
 
 Red Flags: delegated to `phases/audit.md` and the `gov-audit-reviewer` agent. The orchestrator-level red flag: dumping the full report inline instead of reporting its path, or claiming a verdict for an artifact whose reviewer returned no `VERDICT:` line.

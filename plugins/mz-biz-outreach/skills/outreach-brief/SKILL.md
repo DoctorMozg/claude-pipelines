@@ -85,14 +85,6 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 - **Reject** → update `.mz/task/<task_name>/state.md` `Status` field to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → return to the Phase 1 intake loop, ask targeted follow-ups to resolve the feedback, overwrite `brief.json` and `brief.md`, then return to Surface 1, re-read `brief.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — collaboration/research skill, not a discipline skill.
-
 ## Red Flags
 
 - You guessed a required brief field instead of asking the user for it.

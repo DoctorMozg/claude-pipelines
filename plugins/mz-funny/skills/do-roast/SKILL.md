@@ -67,10 +67,6 @@ Invoke when the user wants funny pushback, team levity, a character-voice review
 | 5   | Persona dispatch           | `phases/render.md`  |
 | 6   | Report assembly + teaser   | `phases/render.md`  |
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                                                | Rebuttal                                                                                                                |

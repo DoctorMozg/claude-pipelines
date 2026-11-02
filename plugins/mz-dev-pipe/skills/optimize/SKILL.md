@@ -239,8 +239,6 @@ This checkpoint is **exempt from `MZ_DEV_PIPE_AUTO_APPROVE`** — a human must a
 
 ## Techniques
 
-Techniques: delegated to phase files — see the Phase Overview table.
-
 Reference file: [`references/optimization-toolkit.md`](references/optimization-toolkit.md) — the domain-agnostic bottleneck taxonomy, transformation catalog, profiling principles, prioritization rules, and anti-patterns. Phases 2 and 3 grep it per section; do not load the whole file.
 
 ## Common Rationalizations

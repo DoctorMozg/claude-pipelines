@@ -83,10 +83,6 @@ Reference: grep `references/callouts.md` for callout type aliases.
 Reference: grep `references/properties.md` for property type details.
 Reference: grep `references/embeds.md` for all embed variants.
 
-## Common Rationalizations
-
-N/A — reference skill.
-
 ## Red Flags
 
 - Using Markdown links `[text](path)` for internal vault notes — use `[[wikilinks]]` instead so Obsidian's graph and backlinks work.

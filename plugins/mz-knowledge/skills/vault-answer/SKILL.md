@@ -59,18 +59,6 @@ No approval gate — read-only skill, no vault writes.
 | "Skip the `## Unknowns` section if every claim looks grounded."                  | "The `## Unknowns` section is always present; an empty list is still informative — it signals the vault fully covered the question. Omitting the section removes a load-bearing signal from the answer."                 |
 | "Invent a plausible-sounding `[[wikilink]]` to hit the citation density target." | "Every `[[wikilink]]` must resolve to a note that was actually read. Invented links corrupt the citation trail silently and make the answer unauditable. Prefer low density with honest citations over fabricated ones." |
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Red Flags
-
-Red Flags: delegated to phase files — see Phase Overview table above.
-
-## Verification
-
-Verification: delegated to phase files — see Phase Overview table above.
-
 ## State Management
 
 State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's first line is `schema_version: 2`, and alongside the skill's existing `Status` / `Phase` / `Started` keys it carries `phase_complete` (boolean) and `what_remains` (YAML list of strings). Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass; refresh `what_remains` on every phase transition; `what_remains` MUST be `[]` when `Status: complete`. On reading a `schema_version: 1` or unversioned file, add the missing keys, set `schema_version: 2`, and log the upgrade.

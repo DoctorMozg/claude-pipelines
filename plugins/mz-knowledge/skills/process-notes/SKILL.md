@@ -118,10 +118,6 @@ Response handling:
 - **Number list** (e.g. `1,3`) → mark those link numbers as skipped, proceed with the remaining set.
 - **Any other reply (feedback)** → skip specified links or apply feedback, re-present the updated set. Return to Surface 1, re-read `.mz/task/<task_name>/link_proposals.md`, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never write links without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                | Rebuttal                                                                                                                                                                                                                |

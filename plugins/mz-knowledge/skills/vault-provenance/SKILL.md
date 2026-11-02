@@ -90,10 +90,6 @@ Emit the full verbatim contents of `.mz/task/<task_name>/claims_analysis.md` —
 
 See `phases/backfill_sources.md`.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                     | Rebuttal                                                                                                                                                                                              |
@@ -102,14 +98,6 @@ Techniques: delegated to phase files — see Phase Overview table above.
 | "Classify all claims at the note level, not per-claim."             | "Note-level classification loses provenance granularity; a single note routinely mixes first-hand observation, cited findings, and inferred conclusions. Every claim must carry its own attribution." |
 | "Sources frontmatter is optional — the user probably won't use it." | "Provenance is the whole point of this skill; the frontmatter-only annotation contract is the default output. Treating it as optional silently reduces the skill to an advisory pass."                |
 | "Inline annotations are more visible — patch the body by default."  | "Body annotations mutate author-authored prose and can break formatted notes; they require explicit opt-in during the Phase 1.5 feedback loop. Frontmatter-only is the default for a reason."         |
-
-## Red Flags
-
-Red Flags: delegated to phase files — see Phase Overview table above.
-
-## Verification
-
-Verification: delegated to phase files — see Phase Overview table above.
 
 ## State Management
 

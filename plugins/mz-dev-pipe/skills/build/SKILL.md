@@ -158,10 +158,6 @@ Clean up dead code, debug artifacts, unused imports — the refactor leg of red-
 
 Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is done. See `phases/finalization.md` → Phase 11. Max 2 iterations.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                 | Rebuttal                                                                                                    |

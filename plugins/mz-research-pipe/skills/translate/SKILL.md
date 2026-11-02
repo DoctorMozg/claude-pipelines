@@ -123,7 +123,7 @@ Read `phases/translation_and_verification.md` on entry to Phase 2 and keep it lo
 
 ## Techniques
 
-Delegated to phase files (see Phase Overview table). Reference material: grep `references/placeholder-patterns.md`, `references/markdown-preservation-rules.md`, `references/language-codes.md`.
+Reference material: grep `references/placeholder-patterns.md`, `references/markdown-preservation-rules.md`, `references/language-codes.md`.
 
 ## Common Rationalizations
 

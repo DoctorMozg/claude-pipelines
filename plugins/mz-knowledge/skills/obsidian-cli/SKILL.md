@@ -67,10 +67,6 @@ Invoke when running shell commands against an Obsidian vault, scripting vault op
 - `obsidian eval code=<js>` — evaluate JavaScript in the Obsidian context.
 - `obsidian dev:css` — show applied CSS.
 
-## Common Rationalizations
-
-N/A — reference skill.
-
 ## Red Flags
 
 - Using `--file` syntax instead of `file=` — parameters use `=`, not `--`.

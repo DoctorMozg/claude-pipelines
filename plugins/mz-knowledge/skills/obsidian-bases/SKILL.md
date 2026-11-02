@@ -103,10 +103,6 @@ formulas:
 
 Reference: grep `references/functions-reference.md` for formula function signatures by return type (Date, Duration, String, Number, Boolean, List, File). Do not load the full file — grep for the function name or category you need.
 
-## Common Rationalizations
-
-N/A — reference skill, not discipline.
-
 ## Red Flags
 
 - Using `(date.now() - file.mtime)` directly as a number — must access `.days` / `.hours` / etc. Duration is not a Number.

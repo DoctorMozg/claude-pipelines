@@ -89,10 +89,6 @@ The user may also reply with an override list such as `1=discard, 3=merge::Targe
 - **discard** — delete the inbox file.
 - **defer** — stamp a `review_after` frontmatter field and keep the note in the inbox.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                   | Rebuttal                                                                                                                               |
@@ -108,10 +104,6 @@ Techniques: delegated to phase files — see Phase Overview table above.
 - Processing more than `BATCH_SIZE` (7) notes in a session — batching prevents decision fatigue.
 - Deleting an inbox source file before verifying the destination write on promote or merge.
 - Proceeding to Phase 2 without explicit "approve" from the user at Phase 1.5.
-
-## Verification
-
-Verification: delegated to phase files — see Phase Overview table above.
 
 ## State Management
 

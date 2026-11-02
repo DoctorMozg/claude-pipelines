@@ -95,14 +95,6 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 - **Reject** → update `state.md` to `aborted_by_user` and stop. Do not run rounds.
 - **Any other reply (feedback)** → apply swaps/changes, overwrite `panel.md`, return to Surface 1, re-read `panel.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill, not a discipline skill.
-
 ## Red Flags
 
 - You skipped the panel-approval gate.

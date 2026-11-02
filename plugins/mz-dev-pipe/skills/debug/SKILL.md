@@ -150,7 +150,6 @@ Phase 3+ runs `pipeline-test-writer + pipeline-coder + pipeline-code-reviewer + 
 
 ## Techniques
 
-Techniques: delegated to phase files — see Phase Overview table above.
 Reference files: grep `references/debugging-patterns.md` for bisection, flaky test, stack trace, or memory leak patterns — do not load the entire file.
 
 ## Common Rationalizations

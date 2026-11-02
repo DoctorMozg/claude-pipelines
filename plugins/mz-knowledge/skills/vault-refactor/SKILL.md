@@ -88,10 +88,6 @@ After `phases/rewrite_and_rollback.md` returns, run `Grep` for the old basename 
 - **Zero remaining occurrences** → update state `Status: complete`, `Completed: <ISO timestamp>`, print the verification block, emit `STATUS: DONE`.
 - **Any remaining occurrence** → update state `Status: post-write-verification-failed`, print the failing paths and line numbers verbatim, print the rollback manifest path from state, emit `STATUS: BLOCKED` with rollback instructions. Never silently ignore a residual reference.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                                     | Rebuttal                                                                                                                                                                                                               |

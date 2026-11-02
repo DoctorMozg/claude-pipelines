@@ -83,14 +83,6 @@ Dispatch `gov-artifact-writer` (only after sign-off is stamped) to write the dur
 
 Detect git context (commit, branch, optional open PR — read-only), append a `## Provenance / Links` section to the artifact, advance status where appropriate, and recommend the next skill (never auto-invoke). Mark state `complete`, `what_remains: []`. See `phases/enforce.md`.
 
-## Techniques
-
-Techniques: delegated to phase files — see the Phase Overview table above.
-
-## Common Rationalizations
-
-Common Rationalizations: delegated to phase files — `propose.md` (skipping the router), `discuss.md` (skipping the panel), `decide.md` (skipping the human gate).
-
 ## Red Flags
 
 - You drafted to `docs/` before the human sign-off gate passed, or while `provenance.md` still read `human_signoff: pending`.

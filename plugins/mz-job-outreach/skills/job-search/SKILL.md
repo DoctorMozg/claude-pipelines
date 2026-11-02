@@ -133,14 +133,6 @@ Built from your CV plus preferences. Derived titles, skills, region, location-el
 - **Reject** → update `.mz/task/<task_name>/state.md` `Status` to `aborted_by_user` and stop.
 - **Any other reply (feedback)** → re-dispatch `job-strategist` with the feedback appended, overwrite `search_strategy.json`, return to Surface 1, re-read `search_strategy.json`, and re-emit the full plan message from scratch with the new JSON contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — orchestration skill, not a discipline skill.
-
 ## Red Flags
 
 - You dispatched scouts before the user approved the strategy.

@@ -56,18 +56,6 @@ The approval gate in `phases/run.md` must run before any write to `CLAUDE.md`. A
 
 Read `phases/run.md` and proceed to Phase 1.
 
-## Techniques
-
-Techniques: delegated to phase file — see the Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — this is a setup/reference skill, not a discipline gate.
-
-## Red Flags
-
-Red Flags: delegated to phase file — see the Phase Overview table above.
-
 ## Verification
 
 Verification: delegated to phase file — after install, grep `CLAUDE.md` for exactly one `mz-gov:governance-policy` start sentinel (zero after uninstall). See `phases/run.md`.

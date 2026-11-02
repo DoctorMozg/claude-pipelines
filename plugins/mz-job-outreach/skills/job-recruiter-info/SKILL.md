@@ -116,14 +116,6 @@ RunName: <run_name>
 
 After setup completes, read `phases/lookup_and_report.md` and proceed to Phase 1.
 
-## Techniques
-
-Techniques: delegated to `phases/lookup_and_report.md`.
-
-## Common Rationalizations
-
-N/A — orchestration skill, not a discipline skill.
-
 ## Red Flags
 
 - You fabricated a recruiter name or email that did not appear in any verified source.

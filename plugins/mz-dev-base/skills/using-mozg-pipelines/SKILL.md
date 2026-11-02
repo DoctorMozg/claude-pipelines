@@ -75,10 +75,6 @@ Routing table. Phrases are indicative, not exact matches.
 
 mz-memory contributes SessionStart/SessionEnd memory hooks and has no user-facing skills; it is referenced by agents that need persistent state.
 
-## Common Rationalizations
-
-N/A — informational routing skill, not a discipline skill.
-
 ## Red Flags
 
 - You answered a routing-type question by attempting the task directly without checking the routing table.

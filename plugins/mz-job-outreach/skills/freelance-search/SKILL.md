@@ -134,14 +134,6 @@ Built from your CV plus preferences and selected region. Derived discipline, eng
 - **Reject** → update `state.md` `Status` to `aborted_by_user` and stop.
 - **Any other reply (feedback)** → re-dispatch `freelance-strategist` with the feedback appended, overwrite `search_strategy.json`, return to Surface 1, re-read the updated strategy, and re-emit the full plan message from scratch with the new JSON contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Delegated to phase files — see Phase Overview table.
-
-## Common Rationalizations
-
-N/A — orchestration skill.
-
 ## Red Flags
 
 - You dispatched scouts before the user approved the strategy.

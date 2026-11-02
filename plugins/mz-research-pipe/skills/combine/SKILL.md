@@ -66,14 +66,6 @@ Paths/freshness: `TASK_DIR = .mz/task/`, `REPORT_DIR = .mz/reports/`, `RESEARCH_
 | 4   | Web Gap-Fill (conditional)              | `phases/lens_dispatch.md §Phase 4: Web Gap-Fill (conditional)` | —     |
 | 5   | Task-Adaptive Report Generation         | `phases/synthesis.md`                                          | —     |
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — collaboration skill, not discipline.
-
 ## Red Flags
 
 - Inline `.mz/` reads from the orchestrator — only filenames and mtimes are allowed inline; file bodies belong in lens agents.

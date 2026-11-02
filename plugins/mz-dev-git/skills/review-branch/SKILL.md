@@ -69,14 +69,6 @@ Once the agent completes:
 - Print a brief summary of the verdict and key findings (critical bugs, missing tests, etc.)
 - If the agent found critical issues, highlight them explicitly
 
-## Techniques
-
-Techniques: delegated to the `branch-reviewer` agent — see its agent definition for diff-walking, test-coverage, and architecture-consistency checks.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill, not discipline.
-
 ## Red Flags
 
 - You reviewed diff output without checking out or reading the branch's actual file contents.

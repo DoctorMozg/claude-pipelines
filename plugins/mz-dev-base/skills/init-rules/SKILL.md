@@ -66,22 +66,6 @@ Every run, in both modes and for uninstall, passes the single approval gate in P
 
 Read `phases/run.md` and proceed to Phase 1.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill.
-
-## Red Flags
-
-Red Flags: delegated to phase files — see Phase Overview table above.
-
-## Verification
-
-Verification: delegated to phase files — see Phase Overview table above.
-
 ## Error Handling
 
 - **Empty / ambiguous argument** → AskUserQuestion; never guess.

@@ -90,10 +90,6 @@ Emit the full verbatim contents of `.mz/task/<task_name>/audit_data.md` — do n
 
 See `phases/report.md`.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                        | Rebuttal                                                                                                                                     |

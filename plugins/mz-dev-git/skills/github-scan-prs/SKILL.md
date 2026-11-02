@@ -49,14 +49,6 @@ If no argument is provided, detect the current repository from `gh repo view --j
 1. Every PR returned by the scan is scored into one of three tiers — Tier 1 (directly asked, unanswered), Tier 2 (review or action requested), or Tier 3 (informational) — and ranked within its tier by complexity and age.
 1. After completion, display the path to the triage report at `.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_names><_vN>.md` (append `_v2`, `_v3` etc. if a report with the same base name already exists).
 
-## Techniques
-
-Techniques: delegated to the `github-pr-scanner`, `github-pr-data-fetcher`, and `github-pr-info-scorer` agents — see their agent definitions for bulk PR listing, per-PR haiku triage, and tier-based ranking.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill, not discipline.
-
 ## Red Flags
 
 - You produced a triage report without scoring every PR the fetcher returned (top-N truncation is a bug here).

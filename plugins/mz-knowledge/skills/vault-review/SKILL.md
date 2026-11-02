@@ -84,10 +84,6 @@ Emit the full verbatim contents of `.mz/task/<task_name>/review_queue.md` — do
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → adjust queue parameters (exclude a folder, change weights, filter by maturity, resize), re-run Phase 1 if needed, overwrite `review_queue.md`, return to Surface 1, re-read the updated artifact, and re-emit the entire plan message from scratch. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 
-## Techniques
-
-Techniques: delegated to phase files — see Phase Overview table above.
-
 ## Common Rationalizations
 
 | Rationalization                                   | Rebuttal                                                                                                                                                                  |

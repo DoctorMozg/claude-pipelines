@@ -66,12 +66,7 @@ Example: `2026_04_20_explain_src_auth_token_refresh.md`
 
 ## Techniques
 
-Techniques: delegated to phase files — see Phase Overview table above.
 Reference files: grep `references/mermaid-syntax-by-type.md` for specific diagram type syntax — do not load the entire file.
-
-## Common Rationalizations
-
-N/A — collaboration/reference skill, not discipline.
 
 ## Red Flags
 
