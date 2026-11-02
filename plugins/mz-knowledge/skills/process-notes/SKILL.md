@@ -1,6 +1,6 @@
 ---
 name: process-notes
-description: ALWAYS invoke when processing fleeting notes into permanent atomic notes, atomizing long notes, running the fleeting-to-permanent pipeline, or converting raw captures into vault-ready notes.
+description: 'Turns fleeting notes, long notes and raw captures into permanent atomic notes. Use when the user wants notes processed or atomized ("process fleeting notes", "atomize this note"). Not for a fast keep/merge/discard pass (use vault-triage).'
 argument-hint: '<note name, daily note date YYYY-MM-DD, #fleeting tag, or paste raw text>'
 model: opus
 allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Read, Write, AskUserQuestion
@@ -14,12 +14,11 @@ Discipline skill that runs the fleeting-to-permanent pipeline with explicit appr
 
 ## When to Use
 
-- Processing inbox or `#fleeting` tagged notes into permanent atomic notes.
-- Atomizing long, multi-idea notes into separately linkable atomic notes.
-- Converting daily notes, highlights, or pasted raw captures into vault-ready notes.
+Writing inbox or `#fleeting` notes, daily notes, highlights and pasted raw captures up as permanent atomic notes, splitting long multi-idea notes into separately linkable ones.
 
 ### When NOT to use
 
+- A fast keep/merge/discard/defer pass over an inbox without writing notes up — use `vault-triage`.
 - Quick single-note editing — just use `Edit` directly.
 - Vault maintenance (orphan detection, broken links, frontmatter sweeps) — use `vault-health`.
 - Link suggestions for notes that already exist in the vault — use `vault-connect`.

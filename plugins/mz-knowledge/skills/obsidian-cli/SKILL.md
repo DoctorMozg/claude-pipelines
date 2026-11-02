@@ -1,6 +1,6 @@
 ---
 name: obsidian-cli
-description: 'ALWAYS invoke when using the obsidian CLI tool to interact with a vault from the terminal. Triggers: obsidian CLI, vault command line, obsidian read/create/search from shell.'
+description: 'Runs the obsidian CLI to read, create, search and edit vault notes. Use when the user wants vault work done from a shell ("obsidian CLI", "vault command line", "obsidian read/create/search from shell"). Not for OFM syntax (use obsidian-markdown).'
 argument-hint: '[vault operation: read|create|append|search|tags|backlinks|property]'
 model: haiku
 allowed-tools: Bash(obsidian read *), Bash(obsidian daily:read *), Bash(obsidian search *), Bash(obsidian tags *), Bash(obsidian backlinks *), Bash(obsidian create *), Bash(obsidian append *), Bash(obsidian daily:append *), Bash(obsidian property:set *), Read
@@ -12,7 +12,7 @@ The `obsidian` CLI is an official command-line interface that requires Obsidian 
 
 ## When to Use
 
-Invoke when running shell commands against an Obsidian vault, scripting vault operations, or checking note content from the terminal. Trigger phrases: "obsidian CLI", "vault command line", "obsidian read/create/search from shell".
+Running `obsidian` shell commands against a vault in the live Obsidian app: reading, creating, appending to, searching and inspecting notes, and setting properties, from the terminal or a script.
 
 ### When NOT to use
 

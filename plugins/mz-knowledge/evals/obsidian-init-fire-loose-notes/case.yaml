@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: obsidian-init-fire-loose-notes
+description: Turning a pile of loose markdown files into an organized, Claude-ready Obsidian workspace is a retrofit bootstrap even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    ~/Documents/Notes has about 400 loose .md files and an .obsidian folder from when I
+    tried the app a couple of years ago. No subfolders, no templates, nothing. Set it up
+    with Projects, Areas, Resources and Archive folders, add starter templates for
+    permanent and fleeting notes, and write down how it all works so you stop asking me
+    where things go. Don't move or touch the files that are already there.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-init-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-init"'

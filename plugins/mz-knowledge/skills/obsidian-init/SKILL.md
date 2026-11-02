@@ -1,6 +1,6 @@
 ---
 name: obsidian-init
-description: ALWAYS invoke when bootstrapping a new Obsidian vault with CLAUDE.md, folder structure, schema, and rules. Triggers init vault, bootstrap obsidian, setup knowledge base, create vault structure.
+description: 'Bootstraps an Obsidian vault with CLAUDE.md, folders and schema. Use when the user wants a vault set up ("init vault", "bootstrap obsidian", "setup knowledge base", "create vault structure"). Not for a code repo''s coding rules (use init-rules).'
 argument-hint: <vault path> [--minimal]
 model: sonnet
 allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Grep, Glob, AskUserQuestion
@@ -14,13 +14,13 @@ Discipline skill that bootstraps a new Obsidian vault (or retrofits an existing 
 
 ## When to Use
 
-- Setting up a new Obsidian vault from scratch for use with Claude Code.
-- Retrofitting an existing vault that lacks CLAUDE.md or `.mz/` structure.
+Setting up a new Obsidian vault from scratch for use with Claude Code, or retrofitting an existing vault that lacks CLAUDE.md or `.mz/` structure.
 
 ### When NOT to use
 
 - Vault already has well-formed CLAUDE.md and `.mz/vault-schema.yml` — edit directly.
 - Processing or ingesting notes — use `vault-ingest`, `process-notes`.
+- Coding rules for a code repo rather than a vault — use `init-rules`.
 
 ## Constants
 

@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: obsidian-markdown-fire-rust-ownership-note
+description: Writing a new Obsidian note with frontmatter properties, a callout and wikilinks is Obsidian Flavored Markdown work.
+tags: [routing, fire]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Can you write an Obsidian note summarizing chapter 4 of the Rust book (ownership
+    and borrowing)? I want tags and aliases in the frontmatter, a collapsed callout
+    for the borrow checker gotcha, and wikilinks to my Lifetimes and Smart Pointers
+    notes.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-markdown-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-markdown"'

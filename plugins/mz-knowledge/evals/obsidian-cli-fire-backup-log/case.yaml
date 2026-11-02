@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: obsidian-cli-fire-backup-log
+description: A script that writes its result into today's daily note of a running Obsidian needs the obsidian CLI's daily append, with no skill vocabulary in the request.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Wire a line into my backup script so that when it finishes, the result (ok or
+    failed, plus how long it took) lands in today's Obsidian daily note. The app
+    is always open on that machine, so it can be done without any plugin.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-cli-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-cli"'

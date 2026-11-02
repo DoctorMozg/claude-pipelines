@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: obsidian-markdown-near-miss-dataview-tasks
+description: A Dataview query is a separate plugin with its own query language, which the note-syntax skill explicitly excludes and no other skill covers.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Need a Dataview query for my daily note that lists every unfinished task from the
+    Projects folder due this week, grouped by file. TASK or TABLE, whichever works
+    better.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-markdown-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-markdown"'
+    min: 0
+    max: 0
+    arm: both

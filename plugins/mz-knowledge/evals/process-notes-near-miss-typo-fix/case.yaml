@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: process-notes-near-miss-typo-fix
+description: Fixing one typo and one punctuation mark in a single note is a quick edit that needs no skill.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    In notes/Spaced repetition beats massed practice.md the second paragraph
+    says "retreival" instead of "retrieval". Fix that, and swap the em dash in
+    the last sentence for a comma. Nothing else.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: process-notes-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?process-notes"'
+    min: 0
+    max: 0
+    arm: both

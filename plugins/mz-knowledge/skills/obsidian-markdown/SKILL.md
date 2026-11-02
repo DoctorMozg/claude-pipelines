@@ -1,6 +1,6 @@
 ---
 name: obsidian-markdown
-description: 'ALWAYS invoke when working with Obsidian vault .md files. Triggers: wikilinks, callouts, embeds, frontmatter properties, Obsidian Flavored Markdown, OFM syntax.'
+description: 'Applies Obsidian Flavored Markdown (wikilinks, embeds, callouts, frontmatter properties). Use when the user wants to write or edit vault notes ("add a callout", "use a wikilink", "OFM syntax"). Not for .base database views (use obsidian-bases).'
 argument-hint: '[optional: specific OFM feature or note to work on]'
 model: haiku
 allowed-tools: Read
@@ -12,10 +12,12 @@ This skill provides authoritative Obsidian Flavored Markdown (OFM) syntax knowle
 
 ## When to Use
 
-Invoke when working inside an Obsidian vault or writing content destined for one. Trigger phrases: "write an Obsidian note", "add a callout", "use a wikilink", "set frontmatter properties", "embed a PDF page", "OFM syntax", "vault markdown".
+Writing or editing Obsidian Flavored Markdown (wikilinks, embeds, callouts, tags, frontmatter properties, math, Mermaid) inside an Obsidian vault or for content destined for one.
 
 ### When NOT to use
 
+- `.base` files, Bases views or filter formulas — use `obsidian-bases`.
+- Shell commands against a running vault — use `obsidian-cli`.
 - Standard markdown outside an Obsidian context — plain CommonMark/GFM applies, not OFM.
 - Dataview queries or DataviewJS — that is a separate plugin with its own query language.
 - Templater/Meta Bind DSLs — not part of OFM core.

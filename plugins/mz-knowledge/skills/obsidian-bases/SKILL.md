@@ -1,6 +1,6 @@
 ---
 name: obsidian-bases
-description: 'ALWAYS invoke when working with Obsidian Bases (.base files), database views, filters, formulas, or the Bases query language. Triggers: .base file, Bases view, filter formula, vault database.'
+description: 'Builds and edits Obsidian Bases (.base files) with filters, formulas and views. Use when the user wants a database view of vault notes (".base file", "Bases view", "filter formula", "vault database"). Not for note syntax (use obsidian-markdown).'
 argument-hint: '[optional: base file name or query to build]'
 model: haiku
 allowed-tools: Read
@@ -14,12 +14,12 @@ Obsidian Bases is a native database/spreadsheet feature introduced in Obsidian 1
 
 ## When to Use
 
-Invoke when the user mentions `.base` files, Bases views, filter formulas, vault-level databases, or asks to build a query that lists/groups/summarizes notes across the vault.
+Writing, editing or debugging `.base` files: filters, formulas, views and summaries that list, group or summarize notes across the vault.
 
 ### When NOT to use
 
-- Dataview queries (DQL, `TABLE`, `LIST`, `WHERE` syntax, or JavaScript views) — different query language, not Bases.
-- Standard frontmatter edits on a single note — no Bases file involved.
+- Dataview queries (DQL, `TABLE`, `LIST`, `WHERE` syntax, or JavaScript views) — different query language, not Bases, and out of scope for `obsidian-markdown` too.
+- Wikilinks, callouts or frontmatter edits on a single note — no Bases file involved; use `obsidian-markdown`.
 - Obsidian plugin development or community plugin config — Bases is a core feature, not a plugin.
 
 ## Core Process

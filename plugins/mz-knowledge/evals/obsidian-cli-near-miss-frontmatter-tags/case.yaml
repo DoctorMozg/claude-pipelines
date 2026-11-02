@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: obsidian-cli-near-miss-frontmatter-tags
+description: Fixing deprecated singular tag and alias keys in a note's frontmatter is an OFM property-syntax problem, so it belongs to obsidian-markdown.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Obsidian won't show the tags on Daily/2026-10-30.md. The frontmatter has
+    tag: work, planning and alias: Friday plan. What's wrong with it? Fix it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-cli-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-cli"'
+    min: 0
+    max: 0
+    arm: both

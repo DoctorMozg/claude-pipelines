@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: obsidian-init-near-miss-claude-md-line
+description: Adding one line to the CLAUDE.md of an already configured vault is a direct edit that needs no skill.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    In ~/Documents/Brain/CLAUDE.md, under the Don'ts section, add one line saying never
+    to create notes in the vault root. The file is already set up, I just want that
+    rule added.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-init-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-init"'
+    min: 0
+    max: 0
+    arm: both

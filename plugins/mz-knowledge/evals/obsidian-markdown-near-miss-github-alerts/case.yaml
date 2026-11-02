@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: obsidian-markdown-near-miss-github-alerts
+description: GitHub alert blocks in a repo README are plain GFM outside any Obsidian vault, so no Obsidian skill applies.
+tags: [routing, near-miss]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Our open-source repo's README.md needs a heads-up about the v3 breaking changes.
+    Put a WARNING alert block at the top about the renamed config keys, a NOTE one
+    under the install section, and an upgrade table with old key and new key columns.
+    It renders on GitHub, so stick to what GitHub supports.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-markdown-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-markdown"'
+    min: 0
+    max: 0
+    arm: both

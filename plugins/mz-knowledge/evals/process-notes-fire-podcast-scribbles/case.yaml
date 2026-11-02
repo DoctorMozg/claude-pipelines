@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: process-notes-fire-podcast-scribbles
+description: Splitting one long note of tangled ideas into separate claim-titled notes is process-notes work even though the prompt uses none of its vocabulary.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    Inbox/2026-10-14 podcast scribbles.md is about 1,200 words of me typing
+    while listening to an episode on sleep and memory. There are at least six
+    separate ideas tangled together in there. I want each one to be its own
+    note in my vault, titled as a full sentence that states the point, and I
+    want to see the drafts before anything is saved.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: process-notes-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?process-notes"'

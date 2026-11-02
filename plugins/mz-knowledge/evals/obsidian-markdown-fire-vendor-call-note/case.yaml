@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: obsidian-markdown-fire-vendor-call-note
+description: A foldable box, a live view of another note's table and a metadata header in a named note are Obsidian syntax work even without the syntax names.
+tags: [routing, fire, held-out]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+execution:
+  prompt: >-
+    My vendor call note, Meetings/2026-10-14 vendor call.md, is a mess to read. Put the
+    pricing objection paragraph in a box I can fold away, swap my pasted copy of the
+    Q3 budget table for a live view of the one in Projects/Atlas/Budget.md, and give
+    the file a header block with the date, attendees and a draft status.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-markdown-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-markdown"'
