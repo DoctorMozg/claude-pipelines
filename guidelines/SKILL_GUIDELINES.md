@@ -136,11 +136,12 @@ The description is the main signal Claude uses to invoke a skill on its own. If 
 
 **Triggers.** Cover what the user is trying to do:
 
+- the user's goal, as a clause such as "Use when the user wants to …";
 - phrases users actually type;
 - at least one request that doesn't name the domain;
 - the nearest sibling skill, as a counter-trigger.
 
-Counter-triggers that must prevent a wrong invocation go in the description, because the body loads only after the skill is picked. Fix a miss by revising the wording in general terms, not by pasting in that query's keywords. When you rewrite a description, keep the phrases users type that the old one listed. In this repo's pilot, dropping them with the caps cut `document` on Sonnet from 3 of 6 routed runs to 0. Restoring them, still without caps, brought it to 4.
+Counter-triggers that must prevent a wrong invocation go in the description, because the body loads only after the skill is picked. Fix a miss by revising the wording in general terms, not by pasting in that query's keywords. Quoted phrases don't replace the goal clause: in this repo's rewrite, `build` fell from 6 of 6 routed runs to 1 with phrases alone and recovered when the clause came back. When you rewrite a description, keep the phrases users type that the old one listed. In this repo's pilot, dropping them with the caps cut `document` on Sonnet from 3 of 6 routed runs to 0. Restoring them, still without caps, brought it to 4.
 
 **Length.** Put the skill's distinctive domain words in the first sentence. Claude Code cuts `description` plus `when_to_use` at 1,536 characters (skills.md; changelog 2.1.105), and the Agent Skills spec and claude.ai uploads allow 1,024 (agentskills.io specification). When the listing goes over its budget, Claude Code drops whole descriptions, least-used skills first. Repo convention: keep `description` plus any `when_to_use` at or under 250 characters. This protects the shared listing budget; it isn't a platform limit.
 
@@ -150,7 +151,7 @@ Counter-triggers that must prevent a wrong invocation go in the description, bec
 description: "Builds a feature end to end, from plan to tested code. Use when the user asks to build, implement or add a feature or module. Not for bug fixes (use debug) or polishing working code (use polish)."
 ```
 
-**Measure before bulk changes.** Run `claude plugin eval` on a few skills before rewriting many descriptions (plugin-evals.md; changelog 2.1.269). A should-not-trigger case needs `min: 0, max: 0` and `arm: both`. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes: list the plugin's dependencies in `plugins:`, run through `make eval`, hold some should-trigger queries out, and cap a routing case at `max_turns: 2`.
+**Measure before bulk changes.** Run `claude plugin eval` on a few skills before rewriting many descriptions (plugin-evals.md; changelog 2.1.269). A should-not-trigger case needs `min: 0, max: 0` and `arm: both`. Set cases up as AGENTS_GUIDELINES.md, "Testing and Triggering", describes: list the plugin's dependencies in `plugins:`, run through `make eval`, hold some should-trigger queries out, and cap a routing case at `max_turns: 2`. A description change can move routing for other skills in the same listing, so re-measure the whole suite, not only the edited skill. In this repo's runs every miss was a bypass with no Skill call, never a wrong skill, so under-triggering is the failure to watch. Some skills barely fire on a request that names a file and describes the job, whatever the wording: `audit` and `polish` stayed at 0-1 of 6 across three versions, because Claude does that work inline. Stop rewriting such a description; users reach those skills by `/name` or through a project rule.
 
 Agent descriptions follow AGENTS_GUIDELINES.md, "Descriptions and Trigger Scenarios".
 
@@ -364,7 +365,7 @@ Run this before merging a new or changed skill.
 
 **Review checks**
 
-- [ ] The description opens with a capability clause and "Use when…", covers real phrasings and one request that doesn't name the domain, names the nearest sibling as a counter-trigger, uses plain directives with caps only where an eval backs them, and has no workflow summary (§3).
+- [ ] The description opens with a capability clause and a "Use when the user wants…" goal clause, keeps real phrasings alongside it, covers one request that doesn't name the domain, names the nearest sibling as a counter-trigger, uses plain directives with caps only where an eval backs them, and has no workflow summary (§3).
 - [ ] Gates sit before irreversible or expensive steps. Each has the delegation guard, the pre-read, state written first, the verbatim plan message, the selector, and response handling covering Approve, Reject, feedback (looping) and no answer (§1).
 - [ ] A variant gate with more than four actions lists the extra ones as typed replies or asks in two calls (§1).
 - [ ] Unattended mode, if supported, logs every skipped gate to chat, `state.md`, the journal and the final report, and never auto-approves a variant gate (§1).

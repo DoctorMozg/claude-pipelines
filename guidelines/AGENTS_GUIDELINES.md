@@ -406,8 +406,9 @@ Test every new or changed agent in proportion to the change.
 
 **Triggering.** For a standalone agent, use `claude plugin eval` (plugin-evals.md; changelog 2.1.269):
 
-- Write about 20 queries phrased the way users type, split between should-trigger cases and near misses. Run each 3 times. Near-miss graders run in both arms. The should-trigger `Agent` grader uses `arm: with-only`, so read delegation reliability from the with-plugin pass rate.
+- Write about 20 queries phrased the way users type, split between should-trigger cases and near misses. Near-miss graders run in both arms. The should-trigger `Agent` grader uses `arm: with-only`, so read delegation reliability from the with-plugin pass rate.
 - Tag some should-trigger queries as held-out, and don't tune the description on them. Phrase them without the description's trigger phrases, and name a concrete path, branch or file, as users do. Queries that echo the trigger phrases overstate routing: in this repo's pilot, held-out queries caught a rewrite regression that the training queries missed (observed on 2.1.316).
+- Repeat runs of one query aren't independent samples. In this repo's routing suite, 100 of 108 case-rounds were unanimous across their 3 runs. Three borderline cases flipped between 3/3 and 0/3 when only other skills' descriptions had changed, because routing depends on the whole listing. So spend the budget on more distinct queries, even at `--runs 1`, rather than repeats, and treat a per-skill change smaller than 3 runs in 6 as noise. After changing any description, rerun every routing case that loads its plugin, not only the changed skill's cases (observed on 2.1.316).
 - Grade with a `tool_used` grader on `Agent` whose `input_match` names the agent, and put `Agent` in `allowed_tools`. This setup is extrapolated from the docs' Skill example and hasn't been tested on an agent yet, so check one case by hand first.
 - Pick a pass threshold before running.
 - When a query misses, revise the description in general terms (§3).
