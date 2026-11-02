@@ -74,7 +74,7 @@ Update state file phase to `findings_ranked` and record total findings + files-w
 
 1. Read `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md` and extract the scanned file count (the `Total files: N` line under `## Scope`).
 
-1. If the scanned file count is **0**, do NOT exit cleanly. Instead:
+1. If the scanned file count is **0**, do not exit cleanly. Instead:
 
    - Emit `ZERO RESULTS UNVERIFIED` to the user.
    - Present this message: "All researchers returned zero findings, but the scoped file list was empty. This may indicate a scope resolution error (e.g., .gitignore over-exclusion). Please verify the scope and re-run, or confirm you intended to audit an empty file set."

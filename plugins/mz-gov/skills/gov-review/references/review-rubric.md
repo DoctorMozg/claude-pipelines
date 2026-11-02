@@ -12,7 +12,7 @@ The `gov-audit-reviewer` agent scores one governance artifact (ADR, RFD, or desi
 - Axis 5 — Considered-options completeness
 - Axis 6 — Status hygiene and provenance
 - Output format
-- Common false positives — do NOT flag
+- Common false positives — do not flag
 
 > **In-house heuristic, not an industry standard.** This rubric was synthesized from first principles for `mz-gov`. The research behind the plugin found **no external governance-review rubric that survived verification** — there is no Nygard/Oxide/Google "score your ADR" checklist to defer to. These axes encode what a careful reviewer looks for; treat them as a working heuristic, not a certified standard, and revise them as the team learns what actually catches problems.
 
@@ -151,7 +151,7 @@ VERDICT: PASS|FAIL
 
 Each non-clear axis line carries its severity-labeled finding(s). The `VERDICT:` line is `PASS` if and only if zero `Critical:` findings appear across all six axes.
 
-## Common false positives — do NOT flag
+## Common false positives — do not flag
 
 - A genuinely unambiguous, single-path decision with no alternatives (Axis 1) — absence is correct here, not a gap.
 - A two-way door that does not elaborately justify itself (Axis 3) — recognizing it as reversible is enough.

@@ -97,7 +97,7 @@ You receive:
 | <risk> | Low/Med/High | <what breaks> | <how to prevent> |
 
 ## Verification Criteria
-<Checklist of conditions that must ALL be true for the task to be complete>
+<Checklist of conditions that must all be true for the task to be complete>
 - [ ] <criterion 1>
 - [ ] <criterion 2>
 
@@ -130,9 +130,9 @@ Status meanings:
 - Work units that touch different files with no shared state should be PARALLEL.
 - Work units that modify the same file or depend on another's output must be SEQUENTIAL.
 - Don't plan changes to files you haven't read or confirmed exist.
-- Include ALL integration points — registrations, exports, configs, documentation.
+- Include all integration points — registrations, exports, configs, documentation.
 - The test strategy must cover every work unit's happy path + at least 2 edge cases.
-- If revising based on reviewer feedback, address EVERY issue raised. Don't skip any.
+- If revising based on reviewer feedback, address every issue raised. Don't skip any.
 
 ## Memory
 

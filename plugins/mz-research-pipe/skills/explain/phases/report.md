@@ -25,7 +25,7 @@ Read all `research_*.md` files from `<PROJECT_ROOT>/.mz/task/<task_name>/`. Merg
 
 ### 3.2 Diagram requirements
 
-Every report MUST include at minimum:
+Every report must include at minimum:
 
 **1. High-Level Architecture Diagram** (mandatory) — mermaid `graph TD` or `graph LR`:
 
@@ -36,7 +36,7 @@ Every report MUST include at minimum:
 - **Hard limit**: ≤ 20 nodes. Collapse sibling files into their parent directory as a subgraph when the count would exceed this.
 - **Subgraph usage**: one `subgraph` block per architectural layer (controller/service/repository) or per directory. Label the subgraph with a human-readable name in quotes. Do not nest subgraphs more than 2 levels deep.
 - **Node shapes**: cylinder `[(name)]` for databases, stadium `([name])` for external APIs, hexagon `{{name}}` for queues/brokers, rectangle `[name]` for code modules, rounded `(name)` for configuration sources.
-- **Node IDs**: alphanumeric and underscore only. Display labels containing special characters (`()`, `[]`, `-`, `:`, `|`) MUST be wrapped in double quotes.
+- **Node IDs**: alphanumeric and underscore only. Display labels containing special characters (`()`, `[]`, `-`, `:`, `|`) must be wrapped in double quotes.
 - **Edge labels**: required when the relationship is non-obvious ("reads from", "invalidates", "publishes to"). Bare arrows are acceptable only for plain imports.
 
 **2. Primary Execution Flow Diagram** (mandatory) — mermaid `sequenceDiagram` or `flowchart`:
@@ -51,7 +51,7 @@ Every report MUST include at minimum:
 - **Alt/opt blocks**: every error path gets its own `alt` branch — no single "error" box. For guard-only branches, use `opt`.
 - **Flowchart alternative**: decision diamonds `{condition?}`, ≤ 30 nodes, edge labels on both branches of every decision.
 
-**Additional diagrams** — include ALL that apply to the scope:
+**Additional diagrams** — include all that apply to the scope:
 
 | #   | Type       | Mermaid syntax    | When to include                                                | Authoring rules                                                                                                                 |
 | --- | ---------- | ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -156,7 +156,7 @@ Navigation aid — each diagram in this report answers one question. Use this ta
 | Transform | `file:line` | `<type>` | `<type>` | <what changes and why> |
 | Output | `file:line` | `<type>` | `<type>` | <serialization, formatting> |
 
-<Additional mermaid diagrams as applicable — sequence, class, ER, state, mindmap. Each diagram MUST have a one-sentence prose intro immediately above the code fence, and MUST appear in the Diagram Guide table above.>
+<Additional mermaid diagrams as applicable — sequence, class, ER, state, mindmap. Each diagram must have a one-sentence prose intro immediately above the code fence, and must appear in the Diagram Guide table above.>
 
 ## Design Decisions
 

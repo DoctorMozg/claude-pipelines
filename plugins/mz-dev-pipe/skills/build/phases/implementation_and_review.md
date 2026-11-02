@@ -23,7 +23,7 @@ ______________________________________________________________________
 
 **Goal**: Make the Phase 3 tests pass without modifying any test file. Implement the plan using parallel coders where possible.
 
-**Precondition**: Phase 5 must have completed with `red_verified`. Do NOT enter Phase 6 if any tests unexpectedly passed in Phase 5 — that means the test suite has gaps that no amount of implementation can close.
+**Precondition**: Phase 5 must have completed with `red_verified`. Do not enter Phase 6 if any tests unexpectedly passed in Phase 5 — that means the test suite has gaps that no amount of implementation can close.
 
 ### 6.1 Parse work units
 
@@ -62,9 +62,9 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/red_run.md for the current failure outp
 
 ## TDD Mode — Read carefully
 1. The failing tests describe the exact behavior your implementation must deliver. Make them pass.
-2. **DO NOT modify any test file.** If a test seems wrong, return STATUS: NEEDS_CONTEXT with the specific concern; do not edit the test.
-3. **DO NOT delete tests** to make them pass.
-4. **DO NOT weaken assertions** by stubbing the function under test to return whatever the test expects without doing the real work — implement the actual behavior.
+2. **Do not modify any test file.** If a test seems wrong, return STATUS: NEEDS_CONTEXT with the specific concern; do not edit the test.
+3. **Do not delete tests** to make them pass.
+4. **Do not weaken assertions** by stubbing the function under test to return whatever the test expects without doing the real work — implement the actual behavior.
 5. Write only the production code needed to satisfy the listed tests plus any plan requirements not yet covered by a test. Do not add features beyond the plan.
 6. If a test in your list passes for the wrong reason (e.g. you discover the assertion would pass with an empty function), flag it in your report — the test reviewer in the next pipeline run will need to know.
 
@@ -73,8 +73,8 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/red_run.md for the current failure outp
 2. Implement exactly what the plan specifies for this work unit.
 3. Follow existing code conventions in the project.
 4. Add appropriate logging at decision points.
-5. Do NOT write new tests — that phase is complete.
-6. Do NOT run linters — that's a separate phase.
+5. Do not write new tests — that phase is complete.
+6. Do not run linters — that's a separate phase.
 7. After implementation, list all files you created or modified and which tests you confirmed pass locally (if you ran any).
 
 Be precise. Don't add features not in the plan. Don't refactor unrelated code.
@@ -127,7 +127,7 @@ Review each modified production file for:
 6. **Integration** — Will changes work together? Any conflicts between work units?
 7. **Tests-as-spec** — Does the implementation deliver real behavior, or did it satisfy tests by hardcoding the expected return values? Spot-check at least 3 tests against their target functions.
 
-Read every production file that was modified. Do not skip any. Do NOT review test files in this pass — the test review already happened in Phase 4.
+Read every production file that was modified. Do not skip any. Do not review test files in this pass — the test review already happened in Phase 4.
 
 Output a structured review:
 - **VERDICT**: PASS or FAIL
@@ -147,7 +147,7 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<iteration>.md`.
 - Increment `code_review_iteration`
 - Group critical issues by file/work-unit
 - Spawn `pipeline-coder` agents in parallel to fix issues, giving each agent the specific issues for its files. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
-- Each fix agent gets: the review feedback for its files, the plan for context, the failing-test list, and the instruction to fix ONLY the flagged issues. Restate the no-test-modification rule.
+- Each fix agent gets: the review feedback for its files, the plan for context, the failing-test list, and the instruction to fix only the flagged issues. Restate the no-test-modification rule.
 - **After each coder dispatch, check the coder's STATUS.** If the coder returns `BLOCKED`: break the review loop immediately. Escalate via AskUserQuestion with: the coder's blocker message, the review iteration count consumed, and the current review failure details. Do not continue iterating. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Only proceed with the review loop on `DONE` or `DONE_WITH_CONCERNS`.
 - **Go to Loop start**
@@ -210,7 +210,7 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/test_results.md`.
 Set `green_iteration = 0`. Max iterations: `MAX_GREEN_ITERATIONS`.
 
 - Extract the failed test list from `test_results.md`. Classify each:
-  - **TDD test (from `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md`) failing** — implementation does not yet satisfy that test. Coder must finish the work; do NOT delete or weaken the test.
+  - **TDD test (from `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md`) failing** — implementation does not yet satisfy that test. Coder must finish the work; do not delete or weaken the test.
   - **Pre-existing test failing** — the implementation regressed something. Coder must adjust the implementation to stop breaking existing behavior. Pre-existing tests may not be modified to "make them pass" without explicit user approval.
 - Increment `green_iteration`.
 - Dispatch a `pipeline-coder` agent (model: **opus**) with the classified failure list. Reinforce: **no test modifications**.

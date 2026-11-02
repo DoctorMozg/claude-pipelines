@@ -46,9 +46,9 @@ You receive:
 
 ### Step 1: Understand the Target
 
-**TDD / RED mode**: there is no implementation yet. Read the plan (`plan.md`) and any diagnosis (`diagnosis.md`) to understand the public interface, behaviors, and edge cases you must assert. Read existing test files to learn the project's test patterns. Do NOT inspect or open the not-yet-existing production module to "see what it returns" — there is nothing to see, and writing tests from imagined implementations defeats the purpose.
+**TDD / RED mode**: there is no implementation yet. Read the plan (`plan.md`) and any diagnosis (`diagnosis.md`) to understand the public interface, behaviors, and edge cases you must assert. Read existing test files to learn the project's test patterns. Do not inspect or open the not-yet-existing production module to "see what it returns" — there is nothing to see, and writing tests from imagined implementations defeats the purpose.
 
-**GREEN mode**: read ALL implemented files to understand what needs testing.
+**GREEN mode**: read all implemented files to understand what needs testing.
 
 In both modes, read existing test files to learn:
 
@@ -80,7 +80,7 @@ Group tests logically by feature or component. For each test:
 
 ### Step 4: Run Tests
 
-**TDD / RED mode**: do NOT run the tests yourself to make them pass. The orchestrator's Verify-RED phase runs them and confirms each one fails (or errors on missing module/symbol). If you do run them locally to spot syntax problems, the expected outcome is failure or collection error. If a test passes against the empty implementation, rewrite it — it asserts nothing meaningful. The terminal status is `STATUS: DONE` only when every new test would FAIL or ERROR against the current code.
+**TDD / RED mode**: do not run the tests yourself to make them pass. The orchestrator's Verify-RED phase runs them and confirms each one fails (or errors on missing module/symbol). If you do run them locally to spot syntax problems, the expected outcome is failure or collection error. If a test passes against the empty implementation, rewrite it — it asserts nothing meaningful. The terminal status is `STATUS: DONE` only when every new test would FAIL or ERROR against the current code.
 
 **GREEN mode**: run the test suite after writing to verify all new tests pass:
 
@@ -145,14 +145,14 @@ End every response to the orchestrator with exactly one terminal status line:
 
 ## Rules
 
-- NEVER write tests that pass by accident (e.g., asserting on default values that happen to match).
-- NEVER mock the function/class/module under test. Mock external boundaries only.
-- NEVER stub the production module just to make TDD tests collect or import — the orchestrator's coder phase creates the production module.
-- NEVER over-mock — if the real dependency is fast and deterministic, use it.
-- NEVER test private/internal methods directly — test through the public interface.
-- ALWAYS use the project's existing test fixtures and helpers where they exist.
-- ALWAYS include at least one negative test (invalid input → expected error).
-- ALWAYS verify test files compile/parse correctly before reporting.
+- Never write tests that pass by accident (e.g., asserting on default values that happen to match).
+- Never mock the function/class/module under test. Mock external boundaries only.
+- Never stub the production module just to make TDD tests collect or import — the orchestrator's coder phase creates the production module.
+- Never over-mock — if the real dependency is fast and deterministic, use it.
+- Never test private/internal methods directly — test through the public interface.
+- Always use the project's existing test fixtures and helpers where they exist.
+- Always include at least one negative test (invalid input → expected error).
+- Always verify test files compile/parse correctly before reporting.
 - Keep test data minimal — only what's needed to verify the behavior.
 - One logical assertion per test (multiple asserts are fine if they verify one behavior).
 - If the project has a specific test directory structure, follow it.

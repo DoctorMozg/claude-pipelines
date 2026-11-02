@@ -22,7 +22,7 @@ correctness ground truth — the baseline must be green before any optimization 
 Do not modify any code.
 ```
 
-The suite MUST be green. A red baseline is a hard block: with pre-existing failures you cannot tell a regression introduced by a candidate from a failure that was already there. Stop, report which tests fail, and tell the user to fix the suite first (`/debug` for a known failure, `/polish` for general criteria), then re-run `/optimize`. Do not proceed.
+The suite must be green. A red baseline is a hard block: with pre-existing failures you cannot tell a regression introduced by a candidate from a failure that was already there. Stop, report which tests fail, and tell the user to fix the suite first (`/debug` for a known failure, `/polish` for general criteria), then re-run `/optimize`. Do not proceed.
 
 `pipeline-test-runner` checks correctness only — pass / fail. It is never the measurement harness; speedup numbers come solely from `pipeline-measure-runner` in step 1.3.
 
@@ -32,7 +32,7 @@ The suite MUST be green. A red baseline is a hard block: with pre-existing failu
 
 Run `measure_command` exactly once and confirm its output carries a machine-parseable scalar — the JSON field the contract names, or a trailing numeric line.
 
-If the command errors, emits nothing parseable, or emits a non-numeric value, this is a hard block. Do NOT guess a number and do NOT proceed. Report the command and its actual output, and ask the user to correct `measure_command` so it emits a parseable scalar; a corrected contract returns through the Phase 0.5 approval gate.
+If the command errors, emits nothing parseable, or emits a non-numeric value, this is a hard block. Do not guess a number and do not proceed. Report the command and its actual output, and ask the user to correct `measure_command` so it emits a parseable scalar; a corrected contract returns through the Phase 0.5 approval gate.
 
 This single run only proves the command is well-formed — it is **not** the baseline. Discard its value; warmup effects make one run unreliable.
 

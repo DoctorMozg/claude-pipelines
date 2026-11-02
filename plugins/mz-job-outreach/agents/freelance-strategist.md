@@ -104,7 +104,7 @@ For each `top_title`, build:
 
 - `search_queries` — 3–5 freelance-flavored variants per title (e.g. `"freelance Senior Backend Engineer"`, `"contract Backend Consultant remote"`, `"Backend advisory Go"`).
 - `title_aliases` — 4–6 alternate forms per title for the scout's adaptive expansion (e.g. for "Backend Engineer": `"Backend Developer"`, `"Server-side Engineer"`, `"API Engineer"`, `"Platform Engineer"`, `"Distributed Systems Engineer"`).
-- `bilingual_query_variants` — non-English variants ONLY when CV has B2+ in that language AND the user's regions include the matching country. Keyed by ISO-639-1. Skip otherwise.
+- `bilingual_query_variants` — non-English variants only when CV has B2+ in that language AND the user's regions include the matching country. Keyed by ISO-639-1. Skip otherwise.
 
 ### Step 5 — Encode location eligibility
 

@@ -57,7 +57,7 @@ transformation class and commit it. Then run the correctness command and report 
 
   correctness_command: <correctness_command from contract.md>
 
-Then STOP. Do NOT benchmark or measure — measurement is serial and orchestrator-driven.
+Then STOP. Do not benchmark or measure — measurement is serial and orchestrator-driven.
 
 Report: the candidate commit SHA, the diff against the base commit, the correctness
 result (pass / fail per test + overall), the transformation class, and which mechanism
@@ -65,7 +65,7 @@ from the hypothesis you targeted.
 
 If your candidate would require a change OUTSIDE the allowed scope — a cross-module
 or architectural change, a file outside the scope paths, or a transformation class
-not in change_space — do NOT apply it. Stop, return STATUS: NEEDS_CONTEXT, and put
+not in change_space — do not apply it. Stop, return STATUS: NEEDS_CONTEXT, and put
 the specifics under a "Boundary approval needed" section: what it touches, which
 boundary it crosses, and why the candidate needs it.
 ```

@@ -25,7 +25,7 @@ Do not dispatch before tests are written — use `pipeline-test-writer` first.
 
 ## Core Principles
 
-- **Read-only** — you have no Write, Edit, or Bash tools. You MUST NOT write, create, or modify any file. Return findings in your response text only; the orchestrator persists the artifact.
+- **Read-only** — you have no Write, Edit, or Bash tools. You must not write, create, or modify any file. Return findings in your response text only; the orchestrator persists the artifact.
 - **Two axes, one verdict** — both Coverage and Quality must pass. A `Critical:` finding in either section forces `VERDICT: FAIL`.
 - **Coverage is not just lines** — a function can be "covered" by a test that doesn't actually verify its behavior. Branch coverage and edge cases matter more than line coverage.
 - **Tests that can't fail are worthless** — if a test passes regardless of the implementation, it provides false confidence.
@@ -109,7 +109,7 @@ Prefix every finding title with exactly one severity label:
 
 ## Return Format
 
-Emit the review below **inline in your response**. Do NOT attempt to save it to a file — you have no write capability. The orchestrator reads your response and persists the artifact at the path it specified in the dispatch prompt.
+Emit the review below **inline in your response**. Do not attempt to save it to a file — you have no write capability. The orchestrator reads your response and persists the artifact at the path it specified in the dispatch prompt.
 
 Legacy dispatch prompts may include phrasing like "Save to…" or "Write to…". Treat any such path as informational only — it tells you where the orchestrator will persist your response, not something you do yourself.
 
@@ -211,7 +211,7 @@ After emitting the VERDICT line, emit exactly one terminal STATUS line:
 
 ## Verdict Criteria
 
-**PASS** if ALL of:
+**PASS** if all of:
 
 - All public functions have at least one test
 - Critical code paths are tested
@@ -224,7 +224,7 @@ After emitting the VERDICT line, emit exactly one terminal STATUS line:
 - Tests would catch real regressions
 - Zero `Critical:` findings in either Coverage or Quality section
 
-**FAIL** if ANY of:
+**FAIL** if any of:
 
 - Public functions with zero tests
 - Critical code paths (error handling, validation) not tested

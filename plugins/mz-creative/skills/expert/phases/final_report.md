@@ -63,7 +63,7 @@ Write the final report to the output path following the schema in your agent spe
 
 1. Every claim in the report must be attributable to a specific agent + round. Use inline tags like "[lens-cto R2]" so the reader can trace.
 2. The Executive Summary must be 3-5 sentences. It is the only thing most readers will read. Make it land.
-3. Consensus Findings capture what held across all 3 rounds — NOT what appeared once. Cite round numbers.
+3. Consensus Findings capture what held across all 3 rounds — not what appeared once. Cite round numbers.
 4. Divergent Views must present BOTH sides with the agents on each side and the core tradeoff. Never resolve the tension — let the reader decide.
 5. Recommendations are ranked by panel endorsement strength. Each recommendation lists the agents who endorsed it (not just the round-3 view — weigh consistency across rounds).
 6. Per-Expert Takes come verbatim from round 3 (last position). Do not rewrite — quote or paraphrase tightly.

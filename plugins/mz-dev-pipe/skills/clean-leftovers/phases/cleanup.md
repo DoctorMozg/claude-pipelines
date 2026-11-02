@@ -31,7 +31,7 @@ Category guidance:
   B. Pipeline phase markers      — delete autonomously. No per-instance review.
   C. Planning/generation comments — delete autonomously. No per-instance review.
   D. WHAT-not-WHY candidates     — per-instance decision required. Keep when the comment captures a real WHY (numbers/units, regulatory note, "because"/"due to"/"to avoid" patterns, perf workaround, surprising-behavior callout). Delete when it merely restates the next line.
-  E. Dead code & half-implementations — delete commented-out blocks ≥ 3 lines unless adjacent live code references them. Replace NotImplementedError stubs ONLY when the dispatch's per-file plan flags decision: delete-stub. Leave unused imports for the linter in Phase 4.
+  E. Dead code & half-implementations — delete commented-out blocks ≥ 3 lines unless adjacent live code references them. Replace NotImplementedError stubs only when the dispatch's per-file plan flags decision: delete-stub. Leave unused imports for the linter in Phase 4.
 
 Preservation rules (do not modify):
   - Code blocks inside string literals, docstrings used as test fixtures, or example sections of doc-comments.

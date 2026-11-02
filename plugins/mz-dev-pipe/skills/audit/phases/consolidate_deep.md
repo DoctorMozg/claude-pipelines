@@ -27,11 +27,11 @@ For each Wave B finding (blinded_production, blinded_security, blinded_ops):
    - If the matched Wave A finding's lens is in the role's corroborating list → boost `evidence_tier` one step (T3 → T2, T2 → T1, T1 stays T1, T0 is a no-op)
    - Record on the finding: `corroborated_by: blinded_<role>` and `tier_boosted: true`
    - If a finding is matched by multiple Wave B researchers, boost evidence_tier only once (record all corroborators as a list: `corroborated_by: [blinded_security, blinded_ops]`)
-   - If the matched Wave A finding's lens is NOT in the role's corroborating list → merge without tier boost; still record `corroborated_by: blinded_<role>`
+   - If the matched Wave A finding's lens is not in the role's corroborating list → merge without tier boost; still record `corroborated_by: blinded_<role>`
    - The boosted tier is subject to standard evidence-tier capping in §3.3 — the boost never bypasses the cap ladder
-1. If NO match exists → this is a **blind spot** — a gap that context-aware analysis missed
+1. If no match exists → this is a **blind spot** — a gap that context-aware analysis missed
 
-All unmatched Wave B findings are promoted to a dedicated "Blind Spots" section in `findings.md`. They receive a minimum evidence tier of T2 if they cite a specific file:line, T3 otherwise. They are NOT given severity ranks by Wave B researchers — the consolidation agent assigns severity based on the description, at the evidence-tier-capped maximum.
+All unmatched Wave B findings are promoted to a dedicated "Blind Spots" section in `findings.md`. They receive a minimum evidence tier of T2 if they cite a specific file:line, T3 otherwise. They are not given severity ranks by Wave B researchers — the consolidation agent assigns severity based on the description, at the evidence-tier-capped maximum.
 
 ## 3.3 Evidence-Tiered Severity Cap
 

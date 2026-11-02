@@ -55,7 +55,7 @@ For each window from `wave_offset` to `AtomizationWindows - 1`, in order:
       - Title: claim-style assertion under 70 characters (not a bare topic).
       - Frontmatter keys: title, created (YYYY-MM-DD), type: research, source_type: research-report, report_path: <ReportPath>, source: <ReportPath>, tags: [], status: draft.
       - Body: 150-400 words in the author's own words, self-contained.
-      - Do NOT write wikilinks in the body — linking is a later phase.
+      - Do not write wikilinks in the body — linking is a later phase.
 
    3. OUTPUT: Write the proposals YAML to the output_path above using the schema documented in the atomization-proposer agent definition.
 

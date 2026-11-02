@@ -310,7 +310,7 @@ ______________________________________________________________________
 - **Any other reply (feedback)** → incorporate (drop/add files, change mode, edit glossary, rename paths, change chunking), re-run affected sub-steps (typically 1.2, 1.5, 1.6, 1.7, 1.8 — 1.1 and 1.4 only re-run if the user changes the language or argument shape), overwrite the plan, return to this gate, re-read `<task_dir>/translation_plan.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Re-present the selector. Increment `approval_iterations` on every re-present. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
-**Feedback parsing**. Any reply that is not an explicit Approve or Reject is feedback. A conditional approval ("I approve if you drop the README") is feedback with conditions — do NOT auto-advance; re-present after applying them.
+**Feedback parsing**. Any reply that is not an explicit Approve or Reject is feedback. A conditional approval ("I approve if you drop the README") is feedback with conditions — do not auto-advance; re-present after applying them.
 
 **Feedback examples and the expected orchestrator action**:
 

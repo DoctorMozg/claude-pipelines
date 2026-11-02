@@ -44,7 +44,7 @@ Tokenizer notes:
 ## .sh / .bash / .zsh (Shell)
 
 Line comment: `#`
-Block: none (heredocs are NOT comments — `<<EOF ... EOF` blocks are string literals).
+Block: none (heredocs are not comments — `<<EOF ... EOF` blocks are string literals).
 String literals: `'...'`, `"..."`, `$'...'`, heredocs `<<EOF`, `<<-EOF`, `<<'EOF'`.
 Preserve markers:
 
@@ -54,7 +54,7 @@ Preserve markers:
 
 Tokenizer notes:
 
-- A `#` inside double-quoted or single-quoted string is NOT a comment.
+- A `#` inside double-quoted or single-quoted string is not a comment.
 - Heredoc bodies are strings, not comments.
 
 ## .ts / .tsx / .js / .jsx / .mjs / .cjs (TypeScript / JavaScript)
@@ -73,15 +73,15 @@ Preserve markers:
 
 Tokenizer notes:
 
-- Template-literal interiors `${...}` are expressions; the entire backtick-delimited region is a string and `//` inside it is NOT a comment.
+- Template-literal interiors `${...}` are expressions; the entire backtick-delimited region is a string and `//` inside it is not a comment.
 - A `/` after an operator can start a regex literal — the regex body is a string, not a comment.
 
 ## .rs (Rust)
 
 Line comment: `//`
 Block comment: `/* ... */` (NESTED — must count balanced pairs)
-Outer doc-comment: `///` (ALWAYS preserve)
-Inner doc-comment: `//!` (ALWAYS preserve)
+Outer doc-comment: `///` (always preserve)
+Inner doc-comment: `//!` (always preserve)
 Block doc-comment: `/** ... */` (preserve as docstring)
 String literals: `"..."`, raw strings `r"..."`, `r#"..."#`, byte strings `b"..."`, char `'.'`.
 Preserve markers:
@@ -95,7 +95,7 @@ Preserve markers:
 
 Tokenizer notes:
 
-- `///` is a doc-comment ONLY when it's three slashes at start of a comment region; `////` is a regular line comment.
+- `///` is a doc-comment only when it's three slashes at start of a comment region; `////` is a regular line comment.
 - Block comments nest — `/* /* */ */` is one comment.
 
 ## .cpp / .cc / .cxx / .c / .h / .hpp / .hxx / .hh (C / C++)

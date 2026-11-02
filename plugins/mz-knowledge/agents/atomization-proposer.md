@@ -77,7 +77,7 @@ Body structure:
 
 - Opening sentence restates the title as a claim with elaboration.
 - Middle: evidence, nuance, examples, caveats — all in own words.
-- Closing: one sentence naming what this note is NOT about (prevents over-generalization).
+- Closing: one sentence naming what this note is not about (prevents over-generalization).
 - Do not insert wikilinks in the body — link-suggester handles link proposals in a separate phase.
 
 ### Step 6 — Write proposals artifact

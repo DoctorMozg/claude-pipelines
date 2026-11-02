@@ -209,7 +209,7 @@ Review tests for the code in scope. Cover BOTH axes in one pass:
 
 Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for source and test file lists.
 Read <PROJECT_ROOT>/.mz/task/<task_name>/execution.md for test results.
-Focus ONLY on files in scope.md.
+Focus only on files in scope.md.
 
 Return the unified Test Review as markdown in your response — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/test_review.md`.
 The review must include both the Coverage section (with gap-count summary) and the Quality section, ending with a single VERDICT line.
@@ -264,7 +264,7 @@ Diagnose why these tests are failing.
 
 Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for source and test files.
 
-For each failure: determine root cause (bug in source? test? setup? environment?), category (logic_bug / missing_implementation / test_bug / configuration / environment / flaky), confidence (high/medium/low), and explanation (WHY it fails with file:line). Group tests failing for the same root cause. Do NOT propose fixes — diagnose only.
+For each failure: determine root cause (bug in source? test? setup? environment?), category (logic_bug / missing_implementation / test_bug / configuration / environment / flaky), confidence (high/medium/low), and explanation (WHY it fails with file:line). Group tests failing for the same root cause. Do not propose fixes — diagnose only.
 
 Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/diagnosis_tests.md`. Use this structure:
 Per group: affected tests, root cause, category, confidence, explanation with file:line, impact.
@@ -281,7 +281,7 @@ Diagnose the type errors in this project.
 
 Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for source files.
 
-For each error, determine if it's: genuine type mismatch (real bug), missing type stubs (third-party), overly strict config, or systemic pattern. Group by root cause. Do NOT propose fixes.
+For each error, determine if it's: genuine type mismatch (real bug), missing type stubs (third-party), overly strict config, or systemic pattern. Group by root cause. Do not propose fixes.
 
 Return the diagnosis as markdown **inline in your response** — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/diagnosis_types.md` using the same grouped format.
 ```

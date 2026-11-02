@@ -110,7 +110,7 @@ Flow and heuristic findings attract a specific family of push-back. Name the rat
 | "The error state isn't designed yet because errors are rare."                       | "Error states are the moments users are most stressed and most likely to abandon. Rare ≠ low-impact; a broken error state can lose the user entirely."                                 |
 | "We don't need to cover the back/cancel path, it's obvious."                        | "'Obvious to the designer' and 'discoverable by the user' are different claims. If the recovery path isn't documented, it won't be built, and the user is stranded."                   |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Visual layout problems (that's `ui-designer`'s lane).
 - Color and typography decisions (that's `art-designer`'s lane).

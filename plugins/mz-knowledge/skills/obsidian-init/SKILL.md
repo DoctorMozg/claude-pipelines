@@ -96,7 +96,7 @@ Files to write:
 
 <if existing content detected>
 Existing content preserved:
-- <list of files/folders that will NOT be overwritten>
+- <list of files/folders that will not be overwritten>
 </if>
 
 ---

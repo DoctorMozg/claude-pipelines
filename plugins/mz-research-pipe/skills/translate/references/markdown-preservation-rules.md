@@ -1,18 +1,18 @@
 # Markdown Preservation Rules — Translator Reference
 
-This file is the authoritative rule set for what a translator agent may and may not rewrite inside a Markdown (or MDX / frontmatter-wrapped) source document. It covers two tables (NEVER translate, ALWAYS translate), frontmatter handling policy, code-fence boundary discipline, the exact Tier-1 structural parity checks the verifier runs, known gotchas that break naive line-based parsers, and grep hints for locating any one section fast. Agents grep this file for the specific element they need (e.g., `rg -A5 'fenced code'`), not read it in full.
+This file is the authoritative rule set for what a translator agent may and may not rewrite inside a Markdown (or MDX / frontmatter-wrapped) source document. It covers two tables (never translate, always translate), frontmatter handling policy, code-fence boundary discipline, the exact Tier-1 structural parity checks the verifier runs, known gotchas that break naive line-based parsers, and grep hints for locating any one section fast. Agents grep this file for the specific element they need (e.g., `rg -A5 'fenced code'`), not read it in full.
 
 ## Contents
 
-- Table A — NEVER Translate
-- Table B — ALWAYS Translate
+- Table A — Never Translate
+- Table B — Always Translate
 - Frontmatter Handling
 - Code-Block Boundary Preservation
 - Structural Parity Checks (Tier-1 Verifier)
 - Known Gotchas
 - Grep Access Hints
 
-## Table A — NEVER Translate
+## Table A — Never Translate
 
 Elements whose content must be preserved byte-identical across source and output. A single altered character here breaks runtime, routing, or the document's machine-readable contract.
 
@@ -65,7 +65,7 @@ This is note content.
 [api-ref]: https://api.example.com/v1   <-- `[api-ref]` label frozen
 ````
 
-## Table B — ALWAYS Translate
+## Table B — Always Translate
 
 Elements whose textual content is the human-readable content of the document. These are the agent's target surface.
 
@@ -118,7 +118,7 @@ Frontmatter (`---`-delimited YAML at the top of a Markdown file) is split into p
 - **Default non-translatable keys**: `date`, `slug`, `draft`, `tags`, `layout`, `permalink`, `author`, `id`, `order`, `weight`, `aliases`, `type`.
 - **Unknown keys default to non-translatable** — the safer direction. A skipped prose translation is a noticeable miss; a translated slug silently breaks routing.
 - **Orchestrator override**: the pipeline-translator dispatch prompt may ship an explicit allowlist of translatable keys that supersedes the defaults for a given task. When present, follow the allowlist verbatim; do not merge with defaults.
-- **Value-type guardrail**: boolean (`true` / `false`), integer (`42`), and date (`2026-04-11`, ISO 8601) values are NEVER translated regardless of key name. Translate only when the value is a quoted or bare string of natural-language prose.
+- **Value-type guardrail**: boolean (`true` / `false`), integer (`42`), and date (`2026-04-11`, ISO 8601) values are never translated regardless of key name. Translate only when the value is a quoted or bare string of natural-language prose.
 
 Example:
 
@@ -192,10 +192,10 @@ Line-based grep is fast and exact for most of Markdown but fails on these edge c
 Use these greps to jump straight to the rule you need; do not load the whole file into context. Set `RULES` to the path you opened this file from.
 
 ```bash
-# Jump to the NEVER-translate table.
+# Jump to the never-translate table.
 rg -A30 'Table A' "$RULES"
 
-# Jump to the ALWAYS-translate table.
+# Jump to the always-translate table.
 rg -A20 'Table B' "$RULES"
 
 # Find the exact fenced-code rules.

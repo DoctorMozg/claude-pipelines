@@ -83,7 +83,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 **Approve** → proceed to Phase 2 (rewriting)  ·  **Reject** → task marked aborted, no rewrite performed  ·  reply with feedback to revise
 ```
 
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the analysis — it lives in the plan message above.
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must not re-embed the analysis — it lives in the plan message above.
 
 - question: `The analysis above is ready for review.`
 - header: `Analysis`

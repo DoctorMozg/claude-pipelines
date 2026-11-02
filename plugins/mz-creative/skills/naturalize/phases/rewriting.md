@@ -90,7 +90,7 @@ Sample of changes (first 3):
 **Apply** → overwrite the original file  ·  **Skip** → leave both files unchanged  ·  **Diff** → show fuller diff, then choose  ·  reply with feedback to revise
 ```
 
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the summary — it lives in the plan message above.
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must not re-embed the summary — it lives in the plan message above.
 
 - question: `The rewrite above is ready. Choose an action.`
 - options:

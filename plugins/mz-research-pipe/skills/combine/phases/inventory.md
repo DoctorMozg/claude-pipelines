@@ -15,7 +15,7 @@ ______________________________________________________________________
 
 ## Phase 1.1: Fast Inventory
 
-**The orchestrator runs these commands inline.** Do NOT delegate this step to a subagent — these are cheap, bounded shell calls whose output is a handful of filenames, and a subagent round-trip would add latency with no benefit.
+**The orchestrator runs these commands inline.** Do not delegate this step to a subagent — these are cheap, bounded shell calls whose output is a handful of filenames, and a subagent round-trip would add latency with no benefit.
 
 Run each command and append the raw output to `<PROJECT_ROOT>/.mz/task/<task_name>/inventory_raw.txt` (create the file on first write, then append each block with a one-line header of the command string). The orchestrator only reads filenames and mtimes from these results — **never read the body of any listed file in this phase**.
 
@@ -33,7 +33,7 @@ Notes on each bucket:
 - `.mz/research/` — prior `/deep-research` reports. Uses `RESEARCH_STALE_DAYS = 90`.
 - `.mz/reports/` — final reports from previous pipeline runs. Uses `REPORT_STALE_DAYS = 60`.
 - `.mz/reviews/` — review outputs from `/review` or similar. Uses `REPORT_STALE_DAYS = 60`.
-- `.mz/task/` — per-task working artifacts. `head -40` bounds the listing to the 40 most recently touched task directories; do NOT recurse into them here. Uses `TASK_ARTIFACT_STALE_DAYS = 30`.
+- `.mz/task/` — per-task working artifacts. `head -40` bounds the listing to the 40 most recently touched task directories; do not recurse into them here. Uses `TASK_ARTIFACT_STALE_DAYS = 30`.
 - `git log --oneline -50` — bounded 50-commit window for the `git_history` lens.
 - `git status --short` — captures any in-flight dirty state the synthesis should mention.
 
@@ -43,7 +43,7 @@ If `git log --oneline -50` or `git status --short` fail (non-zero exit, empty ou
 
 1. Record `git_history: unavailable` in `state.md` under a `buckets_unavailable` key.
 1. Note the reason (e.g., `not a git repository`, `git command not found`) next to the bucket entry.
-1. Skip the `git_history` lens entirely in §Phase 1.3 — do NOT dispatch a lens with zero sources.
+1. Skip the `git_history` lens entirely in §Phase 1.3 — do not dispatch a lens with zero sources.
 1. Do **not** count `git_history` toward the 3-lens floor in §Phase 1.3. If the remaining available buckets cannot reach 3 lenses, fall through to the codebase-only-or-abort AskUserQuestion described in SKILL.md §Error Handling.
 
 This degradation is intentional: `/combine` must work in non-git project roots (documentation bundles, fresh scratch dirs) without silently dropping a required lens. Unavailable buckets are surfaced to the user in the Phase 1.5 gate so the decomposition is transparent.
@@ -181,7 +181,7 @@ ______________________________________________________________________
 
 ## Phase 1.5 Gate
 
-**This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent.** The orchestrator reads this section, then presents the gate itself from SKILL.md §Phase 1.5. Delegating the read would defeat the approval-gate guarantee — an agent holding the gate body could make the approval decision on the user's behalf, which is exactly what the approval gate exists to prevent.
+**This gate body is read by the orchestrator directly. It must never be delegated to a subagent.** The orchestrator reads this section, then presents the gate itself from SKILL.md §Phase 1.5. Delegating the read would defeat the approval-gate guarantee — an agent holding the gate body could make the approval decision on the user's behalf, which is exactly what the approval gate exists to prevent.
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
@@ -215,7 +215,7 @@ ______________________________________________________________________
 
 ### Orchestrator-only notice
 
-This gate body is read by the orchestrator directly. It must NEVER be delegated to a subagent. The orchestrator reads this section, then issues the gate itself from SKILL.md §Phase 1.5. If a subagent is ever observed reading this file, it is an approval-gate violation and the pipeline must abort.
+This gate body is read by the orchestrator directly. It must never be delegated to a subagent. The orchestrator reads this section, then issues the gate itself from SKILL.md §Phase 1.5. If a subagent is ever observed reading this file, it is an approval-gate violation and the pipeline must abort.
 
 ______________________________________________________________________
 

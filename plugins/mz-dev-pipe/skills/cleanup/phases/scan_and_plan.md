@@ -51,7 +51,7 @@ Output:
 - Confidence: high / medium / low
 - If low confidence: list 2-3 alternative interpretations so the orchestrator can ask the user
 
-Do NOT build the import graph yet — that's a separate step.
+Do not build the import graph yet — that's a separate step.
 ```
 
 If the researcher returns low confidence or multiple plausible interpretations, **ask the user** which to use via AskUserQuestion. Do not guess.

@@ -106,7 +106,7 @@ Read each scoped file. Look for:
 - Inconsistent patterns within the same module
 - Magic numbers/strings that should be named constants
 
-Severity reflects cost-of-maintenance, not aesthetic preference. Do NOT flag style issues covered by the project's formatter.
+Severity reflects cost-of-maintenance, not aesthetic preference. Do not flag style issues covered by the project's formatter.
 
 For each finding, include an `evidence_tier` field.
 
@@ -192,7 +192,7 @@ Once Wave A responses are persisted, emit a post-wave rollup — a `<returned>/<
 
 Dispatch 3 `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin because blinded attacker-path tracing is accuracy-critical) in a **single message**, AFTER Wave A completes. Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its blinded lens role — so the wave is visible to the user.
 
-**Critical**: Wave B researchers receive ONLY the raw git diff output. They must NOT receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
+**Critical**: Wave B researchers receive only the raw git diff output. They must not receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
 
 Obtain the raw diff:
 
@@ -207,7 +207,7 @@ The three blinded prompt blocks are the single source of truth at `<PLUGIN_ROOT>
 1. Read `<PLUGIN_ROOT>/shared/blinded_lenses.md`.
 1. For each role (`blinded_production`, `blinded_security`, `blinded_ops`), extract the literal text inside the fenced ```` ``` ```` block under that role's `###` header.
 1. Replace the literal placeholder `<raw diff output>` with the unified diff captured above (still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template).
-1. Dispatch all three `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin as above) in a single message using parallel tool calls. Each role's prompt becomes that agent's full input — do NOT add scope.md, the Known Concerns Map, Wave A findings, or any prior consolidation table.
+1. Dispatch all three `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin as above) in a single message using parallel tool calls. Each role's prompt becomes that agent's full input — do not add scope.md, the Known Concerns Map, Wave A findings, or any prior consolidation table.
 
 The dispatch invariants in `<PLUGIN_ROOT>/shared/blinded_lenses.md` (typed agents with diff-only prompts in their own wave after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
 

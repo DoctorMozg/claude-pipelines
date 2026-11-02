@@ -126,7 +126,7 @@ VERDICT: PASS | FAIL
 - No broken integration points
 - No regressions
 
-**FAIL** (task incomplete) if ANY of:
+**FAIL** (task incomplete) if any of:
 
 - A requirement from the task description is not implemented
 - A verification criterion is not satisfied

@@ -17,7 +17,7 @@ Stripping robotic section banners, phase headers and restate-the-signature docst
 
 - Wider AI residue such as signatures, phase markers in code, half-built stubs and dead code — use `clean-leftovers`.
 - Markdown or prose files — use `naturalize`.
-- Deleting ALL comments wholesale — this skill targets AI artifacts only, not every comment.
+- Deleting all comments wholesale — this skill targets AI artifacts only, not every comment.
 - Code refactor or function-body rewriting — comment-region edits only.
 - Executable code rewriting — out of scope; the proposer tokenizes per-language and never edits non-comment regions.
 - String-literal cleanup — strings are preserved by the tokenizer.
@@ -118,7 +118,7 @@ Single gate, two paths only — no Apply/Skip/Diff submenu inside the AskUserQue
 
 Each phase updates `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` per the per-phase steps in its phase file; never rely on conversation memory for cross-phase state.
 
-Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it must be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.
 
 ## References
 

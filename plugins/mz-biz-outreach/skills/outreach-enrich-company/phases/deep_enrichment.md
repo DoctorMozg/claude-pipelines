@@ -10,7 +10,7 @@ The base `/outreach-research` skill produced the card. Its enrichment phase ran 
 
 ## 2.1 Build the existing-findings payload
 
-Read `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json` (written in Phase 1). From it, derive a compact per-agent "what is already known" block. Each agent gets a different slice — only the parts of the card it must NOT duplicate.
+Read `<PROJECT_ROOT>/.mz/task/<task_name>/card_parsed.json` (written in Phase 1). From it, derive a compact per-agent "what is already known" block. Each agent gets a different slice — only the parts of the card it must not duplicate.
 
 ```json
 // existing_findings shape (computed in-memory, not written to disk)
@@ -54,7 +54,7 @@ Company context:
 Output path: <PROJECT_ROOT>/.mz/task/<task_name>/enrichment/<artifact>.json
   (use exactly this path; do not write anywhere else)
 
-Existing findings ALREADY documented in the company card (do NOT duplicate
+Existing findings ALREADY documented in the company card (do not duplicate
 these; treat them as ground truth and look for gaps, deeper specifics, more
 recent data, or contradicting evidence):
 
@@ -146,13 +146,13 @@ Paste only the matching block into each agent's dispatch.
 ```
 - Beyond the named contacts already in the card, find:
   (a) one additional named decision-maker per relevant function (eng,
-      product, marketing, sales, founder/CEO) NOT already listed;
+      product, marketing, sales, founder/CEO) not already listed;
   (b) per-contact public-activity signals (recent post, talk, GitHub
       contribution, podcast) that could seed personalization;
   (c) generic role-based contact patterns the card lacks
       (careers@, partnerships@, security@, press@) — verified by visiting
       the company site, not guessed.
-- Do NOT re-emit the contacts already in the card. Only ADD.
+- Do not re-emit the contacts already in the card. Only ADD.
 - For each new contact, mark `is_addition: true`.
 ```
 
@@ -167,7 +167,7 @@ After the wave returns, for each of the five outputs:
 
 If 3 or more subagents failed, the section will still be emitted (per `SKILL.md` Error Handling) but with `unavailable: <reason>` rows; downgrade the final STATUS to `DONE_WITH_CONCERNS`.
 
-Do NOT auto-retry. If the user wants another pass, they re-invoke the skill (resume support picks up at `Phase: card_parsed` and re-dispatches Phase 2).
+Do not auto-retry. If the user wants another pass, they re-invoke the skill (resume support picks up at `Phase: card_parsed` and re-dispatches Phase 2).
 
 ## 2.5 Synthesize the `## Deeper Intelligence` section
 
@@ -218,7 +218,7 @@ Sentiment trend: <improving|deteriorating|polarized|steady> over <window>.>
 
 ### Additional Contacts (deeper pass)
 
-<from enrichment/contacts.json — list ONLY contacts with is_addition: true.
+<from enrichment/contacts.json — list only contacts with is_addition: true.
 Format same as the card's Key Contacts section. Also list any generic
 role-based contacts found (careers@, partnerships@, etc.).>
 
@@ -229,7 +229,7 @@ role-based contacts found (careers@, partnerships@, etc.).>
 
 If a category is `unavailable`, still emit the heading so the user can see the failure surface — just leave the body as the `*unavailable — <reason>*` line.
 
-If `enrich_mode == "only"`, the deeper-intel personalization signals do NOT flow into letter briefs (since no letters are drafted). If `enrich_mode == "both"` (default), Phase 3 brief-building reads `deeper_intelligence.md` plus the raw `enrichment/*.json` files and pushes any high-signal facts into the per-contact `verified_entities` and `personalization_hooks` arrays.
+If `enrich_mode == "only"`, the deeper-intel personalization signals do not flow into letter briefs (since no letters are drafted). If `enrich_mode == "both"` (default), Phase 3 brief-building reads `deeper_intelligence.md` plus the raw `enrichment/*.json` files and pushes any high-signal facts into the per-contact `verified_entities` and `personalization_hooks` arrays.
 
 ## 2.6 Update state and hand off
 

@@ -59,7 +59,7 @@ Iterate every contributing proposal in dispatch order. For each edit in the prop
 - `old_string` — verbatim from proposer (full bytes, never truncated)
 - `new_string` — verbatim from proposer (full bytes, never truncated)
 
-Every `file_path` MUST be absolute. If a proposal carries a relative path, log to `apply_warnings.md` malformed table and drop the proposal entirely.
+Every `file_path` must be absolute. If a proposal carries a relative path, log to `apply_warnings.md` malformed table and drop the proposal entirely.
 
 ### 4. Overlap detection
 

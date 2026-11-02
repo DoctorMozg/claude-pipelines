@@ -113,7 +113,7 @@ Aesthetic critiques are easy to dismiss as taste. Do not let the following excus
 | "Type scale ratios are arbitrary — pick numbers that look right."         | "Perceptual harmony in type scale is the reason musical ratios (1.125, 1.25, 1.333, 1.618) keep winning. 'Looks right' is usually 'accidentally near a musical ratio'; make the ratio explicit."  |
 | "The semantic colors are close to the primary but users will learn them." | "Users don't learn colors; they scan for them. Success/warning/danger that are hue-adjacent to the primary accent cause misreads in peripheral vision and under stress."                          |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Contrast ratios (that's `accessibility-specialist`'s lane).
 - Grid and spacing structure (that's `ui-designer`'s lane).

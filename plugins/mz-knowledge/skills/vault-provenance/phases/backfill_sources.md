@@ -86,7 +86,7 @@ If verification fails, halt and escalate via AskUserQuestion. Never assume a Wri
 
 ## Step 4: Apply inline annotations (opt-in only)
 
-This step runs ONLY if `AnnotationMode == true` in the task state. The default is `false` — frontmatter-only.
+This step runs only if `AnnotationMode == true` in the task state. The default is `false` — frontmatter-only.
 
 ### 4.1 Locate each classified claim in the body
 

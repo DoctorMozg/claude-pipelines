@@ -110,7 +110,7 @@ Reversibility findings draw a predictable set of excuses. Name the rationalizati
 | "We have to commit to something, analysis paralysis is worse."      | "Agreed for two-way doors — decide fast and move. This rebuttal is only valid once the door is classified. For a one-way door, a higher bar is the point, not paralysis; the asymmetry says an expensive-to-reverse choice earns more scrutiny, not less." |
 | "Deleting the old data simplifies the design and we won't need it." | "Deletion is the canonical one-way door. 'We won't need it' is a prediction; if it is wrong, the data is gone. Either keep an export/escape hatch or have the artifact explicitly accept permanent loss with sign-off."                                    |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Whether enough alternatives were considered — that is `gov-critic-alternatives`'s lane.
 - How many systems or people the change affects — blast radius is `gov-critic-blast-radius`'s lane.

@@ -71,7 +71,7 @@ Emit disclosure tokens where applicable:
 - CONFLICT DETECTED: <when codebase contradicts the brief's assumptions>
 - UNVERIFIED: <when a claim cannot be grounded in code>
 
-Focus on what an expert panel would need to critique the idea realistically — not an implementation plan. Do NOT propose solutions.
+Focus on what an expert panel would need to critique the idea realistically — not an implementation plan. Do not propose solutions.
 
 Terminal status line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
@@ -149,7 +149,7 @@ Update state: `Phase: 1`, `PhaseName: panel_selected`.
 **Approve** → begin 3 rounds of expert critique  ·  **Reject** → cancel task, no rounds will run  ·  reply with feedback to revise
 ```
 
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the panel — it lives in the plan message above.
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must not re-embed the panel — it lives in the plan message above.
 
 - question: `The panel above is ready for review.`
 - header: `Panel`

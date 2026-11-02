@@ -10,6 +10,21 @@ ROOTED_PATH = re.compile(
 MARKDOWN_LINK = re.compile(r"\]\((?P<target>\.{1,2}/[^)\s#]+)")
 QUESTION_HEADER = re.compile(r"\bheader(?::|\s)\s*[`\"](?P<header>[^`\"\n]+)[`\"]")
 MAX_HEADER_CHARS = 12
+# Models over-apply all-caps rules; descriptions keep their trigger wording and are skipped.
+EMPHASIS = re.compile(r"\b(?:MUST|ALWAYS|NEVER|IMPORTANT|NOT|ONLY|ANY|EVERY)\b")
+FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+# Code spans, quotes, hyphenated labels such as DOC-ONLY, and fixed names that hold a capital word.
+NOT_EMPHASIS = re.compile(
+    r"`[^`\n]*`|\"[^\"\n]*\"|\b[A-Z]+(?:-[A-Z]+)+\b|When NOT to [Uu]se|NOT FOUND|Logical NOT"
+)
+
+
+def _body_lines(text: str) -> list[tuple[int, str]]:
+    """Numbered lines after the frontmatter."""
+    head = FRONTMATTER.match(text)
+    offset = head.end() if head else 0
+    first = text[:offset].count("\n") + 1
+    return list(enumerate(text[offset:].splitlines(), start=first))
 
 
 def _inside(target: Path, root: Path) -> bool:
@@ -78,5 +93,14 @@ class TestMarkdown:
             f"{source.relative}: a {fence} fence is never closed"
             for source in plugin_files
             if (fence := split_fences(source.text)[1]) is not None
+        ]
+        assert_no_violations(violations)
+
+    def test_bodies_skip_all_caps_emphasis(self, plugin_files: tuple[PluginFile, ...]) -> None:
+        violations = [
+            f"{source.relative}:{number}: all-caps {match[0]!r}; write it in lowercase"
+            for source in plugin_files
+            for number, line in _body_lines(source.text)
+            if (match := EMPHASIS.search(NOT_EMPHASIS.sub("", line)))
         ]
         assert_no_violations(violations)

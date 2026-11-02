@@ -116,9 +116,9 @@ Per-instance judgment. For each candidate in `detection.md` flagged `decision: p
    - Perf/correctness notes (fastpath, race condition, requires lock, must be, cannot be).
    - Regulatory keywords (GDPR, HIPAA, PCI, SOX, regulatory, legal requires).
    - Surprising-behavior callouts (surprisingly, gotcha:, caveat:, note that, careful:).
-1. If ANY marker is present → KEEP, record `decision: kept (WHY: <marker>)`.
-1. If NO marker AND token overlap with adjacent code ≥ 0.7 → DELETE, record `decision: deleted (pure WHAT)`.
-1. If NO marker AND token overlap between 0.5 and 0.7 → record `decision: uncertain`, do NOT edit. Return `NEEDS_CONTEXT` for the file if you accumulate ≥ 5 uncertain decisions; otherwise list them in the wave report for the verification phase to surface.
+1. If any marker is present → KEEP, record `decision: kept (WHY: <marker>)`.
+1. If no marker AND token overlap with adjacent code ≥ 0.7 → DELETE, record `decision: deleted (pure WHAT)`.
+1. If no marker AND token overlap between 0.5 and 0.7 → record `decision: uncertain`, do not edit. Return `NEEDS_CONTEXT` for the file if you accumulate ≥ 5 uncertain decisions; otherwise list them in the wave report for the verification phase to surface.
 
 Token overlap: lowercase, split on non-alphanumeric, drop stop words (`the`, `a`, `is`, `to`, `of`, `for`, `and`, `with`, `in`, `on`, `at`) and code keywords (`def`, `function`, `class`, `var`, `let`, `const`, `return`, `if`, `else`). Compute as `|comment_tokens ∩ code_tokens| / max(|comment_tokens|, |code_tokens|)`.
 
@@ -129,7 +129,7 @@ Per-instance with dispatch flags:
 - **Commented-out blocks ≥ 3 lines**: delete if no live code in the file calls or references the block's commented-out names. Search the file (and adjacent files in the same directory) to check. If callers exist, KEEP and record `decision: kept (has callers)`.
 - **Stub functions** (`NotImplementedError`, empty body, `pass # TODO`): delete only when the dispatch's per-file plan flags `decision: delete-stub`. Otherwise KEEP. The orchestrator pre-computes call-count; trust its decision unless you find evidence to the contrary, in which case return `NEEDS_CONTEXT`.
 - **Stale removed/deleted markers**: delete the marker line.
-- **Unused imports**: do NOT edit. The Phase 4 linter handles these with full project context.
+- **Unused imports**: do not edit. The Phase 4 linter handles these with full project context.
 
 ## Output Format
 

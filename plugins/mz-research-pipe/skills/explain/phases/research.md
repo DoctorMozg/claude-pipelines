@@ -64,7 +64,7 @@ Read every file in scope line by line. For each file:
 
 **Structure**: purpose and system role, public API (exports, endpoints), internal organization, dependencies (imports and importers), configuration (env vars, config files, feature flags)
 
-**Execution Flow**: entry points (handlers, main, event listeners, CLI), call chains step-by-step with file:line, ALL branches (not just happy path), data transformations with types at each stage, side effects (DB writes, I/O, cache mutations, logging), concurrency (async/await, threads, locks, ordering)
+**Execution Flow**: entry points (handlers, main, event listeners, CLI), call chains step-by-step with file:line, all branches (not just happy path), data transformations with types at each stage, side effects (DB writes, I/O, cache mutations, logging), concurrency (async/await, threads, locks, ordering)
 
 **Design Rationale**: design patterns used and WHY they fit, trade-offs made (performance vs readability, flexibility vs simplicity), defensive coding (validation, retries, timeouts), historical context (git blame for surprising patterns, TODOs, workarounds)
 
@@ -82,7 +82,7 @@ Return the report as markdown **in your response** — the orchestrator persists
 
 ### Diagram Suggestions format
 
-Write one structured block per proposed diagram. Do NOT write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
+Write one structured block per proposed diagram. Do not write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
 
 ### Diagram: <type>
 - **Type**: one of `flowchart`, `sequenceDiagram`, `classDiagram`, `stateDiagram-v2`, `erDiagram`, `mindmap`
@@ -102,7 +102,7 @@ Used for large scopes (> 10 files). Handles static structure and design. Spawn a
 ```
 You are the STRUCTURE analyst for a deep code explanation report.
 
-Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do NOT trace runtime execution — another researcher handles that.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do not trace runtime execution — another researcher handles that.
 
 ## Analysis Checklist
 
@@ -121,7 +121,7 @@ Return the report as markdown **in your response** — the orchestrator persists
 
 ### Diagram Suggestions format
 
-Write one structured block per proposed diagram. Do NOT write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
+Write one structured block per proposed diagram. Do not write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
 
 ### Diagram: <type>
 - **Type**: one of `flowchart`, `classDiagram`, `mindmap`
@@ -139,7 +139,7 @@ Used for large scopes (> 10 files). Handles runtime behavior tracing. Spawn a `p
 ```
 You are the EXECUTION FLOW analyst for a deep code explanation report.
 
-Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do NOT analyze static structure or design patterns — another researcher handles that.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do not analyze static structure or design patterns — another researcher handles that.
 
 ## Analysis Checklist
 
@@ -147,7 +147,7 @@ Read every file in scope. Trace how code RUNS:
 
 **Entry Points**: catalog all entry points (HTTP handlers, CLI commands, event listeners, cron, main, signal handlers) — trigger, arguments/context, ultimate output/effect
 
-**Call Chains**: happy-path traces step-by-step with file:line and args, error paths (which exceptions caught where, retries, propagation), branching points (guards vs genuine forks — document ALL branches), recursion/loops (termination conditions, iteration count drivers)
+**Call Chains**: happy-path traces step-by-step with file:line and args, error paths (which exceptions caught where, retries, propagation), branching points (guards vs genuine forks — document all branches), recursion/loops (termination conditions, iteration count drivers)
 
 **Data Flow**: input shapes at each entry point (types, validation), transformations at each handoff (type → type with file:line), output shapes (serialization, formatting), intermediate state (accumulators, caches, context objects)
 
@@ -160,7 +160,7 @@ Return the report as markdown **in your response** — the orchestrator persists
 
 ### Diagram Suggestions format
 
-Write one structured block per proposed diagram. Do NOT write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
+Write one structured block per proposed diagram. Do not write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
 
 ### Diagram: <type>
 - **Type**: one of `sequenceDiagram`, `flowchart`, `stateDiagram-v2`
@@ -178,7 +178,7 @@ Dispatched when external dependencies are detected. Spawn a `pipeline-researcher
 ```
 You are the DOMAIN researcher for a deep code explanation report.
 
-Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do NOT analyze internal code structure or trace execution — other researchers handle that. You provide external context that makes their findings make sense.
+Read <PROJECT_ROOT>/.mz/task/<task_name>/scope.md for the file list and user's question. Do not analyze internal code structure or trace execution — other researchers handle that. You provide external context that makes their findings make sense.
 
 ## External Dependencies Detected
 <list of external libraries, protocols, and services identified during dispatch configuration>
@@ -200,7 +200,7 @@ Return the report as markdown **in your response** — the orchestrator persists
 
 ### Diagram Suggestions format
 
-Write one structured block per proposed diagram. Do NOT write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
+Write one structured block per proposed diagram. Do not write mermaid syntax; the orchestrator synthesizes it at Phase 3. Each block:
 
 ### Diagram: <type>
 - **Type**: one of `sequenceDiagram`, `flowchart`, `erDiagram`

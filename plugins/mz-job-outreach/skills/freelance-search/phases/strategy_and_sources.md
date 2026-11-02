@@ -23,13 +23,13 @@ the full freelance schema:
 - derived_from_cv (titles, skills, seniority, languages, location,
   discipline, secondary_disciplines, prior_freelance_experience)
 - preferences (engagement_types subset of [project_gig, contractor_placement,
-  consulting_advisory] — NEVER fractional_retainer; regions_allowed;
+  consulting_advisory] — never fractional_retainer; regions_allowed;
   vetted_only; excluded_companies)
 - rate_floor (hourly_usd, daily_usd, project_total_usd, fx_basis,
   normalization_notes)
 - search_queries (3-5 per top title, freelance-flavored)
 - title_aliases (4-6 per top title)
-- bilingual_query_variants (ISO-639-1 keyed, ONLY when CV has B2+ in the
+- bilingual_query_variants (ISO-639-1 keyed, only when CV has B2+ in the
   matching language AND that region is in regions_allowed)
 - must_have_skills, nice_to_have_skills
 - location_eligibility_rule (derived from region_scope)
@@ -46,7 +46,7 @@ Read `search_strategy.json`. Extract derived discipline, must-have/nice-to-have 
 Validate the strategy file contains all required fields before proceeding:
 
 - `derived_from_cv.discipline` is one of the allowed enum values.
-- `preferences.engagement_types` is a non-empty subset of the three allowed values and does NOT contain `fractional_retainer`.
+- `preferences.engagement_types` is a non-empty subset of the three allowed values and does not contain `fractional_retainer`.
 - `rate_floor.hourly_usd`, `daily_usd`, `project_total_usd` are all present (or all `null` if user gave no floor).
 - `must_have_skills` is non-empty (unless CV has fewer than 5 skills — `DONE_WITH_CONCERNS` acceptable).
 - Every `must_have_skill` appears in `derived_from_cv.skills`.

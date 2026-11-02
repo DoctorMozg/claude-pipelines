@@ -68,7 +68,7 @@ Persist the YAML output to `<PROJECT_ROOT>/.mz/task/<task_name>/blast_radius.yml
 - Cap the expansion: do not add more than **2× the original scoped file count** of impacted files. If `impacted[]` exceeds that cap, take the highest-risk entries first.
 - Files added via blast-radius expansion are tagged in `scope.md` as `expanded_via: blast_radius` so researchers can distinguish them from the user's stated scope.
 
-Surface `blast_radius.yml`'s `verdict` (SAFE / CAUTION / RISKY / DANGEROUS) and `cap_reached` in the `scope.md` artifact (see §1.4) so the final report header can show it. The verdict does NOT gate audit progression — it is informational; the user's scope intent is honored.
+Surface `blast_radius.yml`'s `verdict` (SAFE / CAUTION / RISKY / DANGEROUS) and `cap_reached` in the `scope.md` artifact (see §1.4) so the final report header can show it. The verdict does not gate audit progression — it is informational; the user's scope intent is honored.
 
 ### 1.3 Select lenses
 
@@ -281,7 +281,7 @@ Read each scoped file. Look for:
 - Inconsistent patterns within the same module
 - Magic numbers/strings that should be named constants
 
-Severity reflects cost-of-maintenance, not aesthetic preference. Do NOT flag style issues covered by the project's formatter.
+Severity reflects cost-of-maintenance, not aesthetic preference. Do not flag style issues covered by the project's formatter.
 
 Return findings as markdown in your response — the orchestrator persists to `<PROJECT_ROOT>/.mz/task/<task_name>/findings_maintainability.md`.
 ```

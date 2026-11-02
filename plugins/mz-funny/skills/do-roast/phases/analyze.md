@@ -33,7 +33,7 @@ result. Emit both `resolved_target_kind` and `resolved_target_list` into
    `resolved_target_kind = diff` and use the changed files as the list.
 1. **Raw text / stdin**. If the remainder contains `--stdin` OR is wrapped in
    matching quotes (`"..."` or `'...'`), treat the unwrapped content as a raw
-   text blob (do NOT look it up on disk). Set `resolved_target_kind = raw_text` and use the blob as `resolved_target_list` (one entry).
+   text blob (do not look it up on disk). Set `resolved_target_kind = raw_text` and use the blob as `resolved_target_list` (one entry).
 1. **Natural language**. Otherwise the remainder is a natural-language
    description like "the auth module". Tokenize on whitespace, lowercase,
    strip English stopwords (a, an, the, of, in, on, at, to, for, with, and,
@@ -85,8 +85,8 @@ that).
 
 ### Author-attack prohibition (hard rule)
 
-Do NOT run git blame, git log --author, or any command that maps code to
-real people. Do NOT include author names, emails, or commit attributions in
+Do not run git blame, git log --author, or any command that maps code to
+real people. Do not include author names, emails, or commit attributions in
 the dossier. Author data is prohibited input.
 
 This rule is structural, not advisory. Author data must never enter the

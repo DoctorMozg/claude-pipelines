@@ -24,7 +24,7 @@ Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 
 Your task:
 
-Find existing vault notes that should be linked to or from this target note. Do NOT propose links to notes you have not actually read — every proposal must be grounded in both notes' content.
+Find existing vault notes that should be linked to or from this target note. Do not propose links to notes you have not actually read — every proposal must be grounded in both notes' content.
 
 Steps:
 

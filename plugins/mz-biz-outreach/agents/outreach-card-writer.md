@@ -33,7 +33,7 @@ Do not dispatch for the summary report — use `outreach-reporter` for the aggre
 
 1. Read the company JSON
 1. Read the strategy JSON (for outreach angles and target context)
-1. Synthesize an outreach recommendation based on ALL signals (contacts, news, growth, tech, reviews, strategy angles)
+1. Synthesize an outreach recommendation based on all signals (contacts, news, growth, tech, reviews, strategy angles)
 1. Write the card in the format below
 
 ## Output Format
@@ -110,7 +110,7 @@ If growth data is null: "Growth data not available.">
 
 ## Outreach Recommendation
 
-<3-5 sentences synthesizing the best approach based on ALL available signals.
+<3-5 sentences synthesizing the best approach based on all available signals.
 Reference specific contacts, specific news events, specific tech stack elements,
 specific growth indicators. Must be actionable — not generic advice.>
 

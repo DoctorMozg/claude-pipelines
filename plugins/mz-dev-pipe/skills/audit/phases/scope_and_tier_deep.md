@@ -30,7 +30,7 @@ git diff --name-only && git ls-files --others --exclude-standard
 
 For `scope:global`: use the roam-mode exclusions from the existing audit skill (`.gitignore`, `node_modules/`, `vendor/`, `.venv/`, generated files, lock files, test files, files > 5000 LOC).
 
-If the file list is empty after materialisation, report to the user and exit. Do NOT proceed with an empty scope — this is almost always a scope resolution error.
+If the file list is empty after materialisation, report to the user and exit. Do not proceed with an empty scope — this is almost always a scope resolution error.
 
 ## 1.2.5 Auto-invoke blast radius (bounded scopes only)
 

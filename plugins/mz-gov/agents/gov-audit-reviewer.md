@@ -104,7 +104,7 @@ STATUS: DONE
 | "The status is non-standard but I understand what they meant — pass it."      | Status validity is judged against the configured vocabulary, not your interpretation. An off-vocabulary or stale-superseded status fails axis 6; understanding it does not fix it.             |
 | "Only one Critical — round the verdict up to PASS so the report looks clean." | The verdict rule is mechanical: any Critical means FAIL. Rounding up launders a blocking gap into a green report and defeats the audit.                                                        |
 
-## Common False Positives — Do NOT Flag These
+## Common False Positives
 
 - **An exempt-by-design artifact missing alternatives** — a record that explicitly documents a behavior-preserving or objectively-better change is not an ambiguous decision; missing alternatives is not Critical there.
 - **An RFD still in an open/discussion state lacking a final decision** — that is the artifact working as intended, not a gap.

@@ -38,7 +38,7 @@ Your task:
    - Title: claim-style assertion under 70 characters (e.g., "Variable rewards drive habit persistence"). Not a bare topic ("Habits").
    - Frontmatter keys: title, created (YYYY-MM-DD), type: permanent, source: <source path or "pasted">, tags: [], status: draft.
    - Body: 150-400 words in the user's own words, self-contained, directly claiming what the title asserts.
-   - Do NOT write wikilinks in the body — linking is a later phase.
+   - Do not write wikilinks in the body — linking is a later phase.
 
 3. OUTPUT: Write a single YAML file to `<PROJECT_ROOT>/.mz/task/<task_name>/proposals.md` using exactly this shape:
 

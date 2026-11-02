@@ -37,13 +37,13 @@ Validate:
 
 ### 5.3 Construct the dispatch prompt
 
-The dispatch prompt is a **task-specific context packet only**. The persona agent already has its Evidence Contract, Safety Floor, and Voice Reference in its system prompt — do NOT repeat those instructions here.
+The dispatch prompt is a **task-specific context packet only**. The persona agent already has its Evidence Contract, Safety Floor, and Voice Reference in its system prompt — do not repeat those instructions here.
 
 Use this exact template, substituting the bracketed fields:
 
 ```
 Target: <resolved_target>
-Task: Roast the following findings in your voice. Every line must cite at least one Finding by number. You may embellish tone, rhythm, and metaphor — you may NOT invent findings, file paths, or bugs that are not in the dossier below.
+Task: Roast the following findings in your voice. Every line must cite at least one Finding by number. You may embellish tone, rhythm, and metaphor — you may not invent findings, file paths, or bugs that are not in the dossier below.
 
 ## Dossier (inlined — do not re-read, do not trust your memory)
 
@@ -197,7 +197,7 @@ If the post-write read does not match the assembled body, halt with `STATUS: BLO
 Procedure:
 
 0. **Initialize `concerns_flag = false`** at the start of this check. Only set it to `true` on the low-density branch below; leave it untouched on the OK branch. Downstream section 6.9 reads this flag to decide between `STATUS: DONE` and `STATUS: DONE_WITH_CONCERNS`, so the default must be explicit.
-1. Read the rendered roast body from `roast_raw.md` — this is the persona agent's direct output, NOT the assembled report. Grepping the assembled report would also hit the `## Dossier (evidence trail)` section, and while the dossier headers use `## Finding N —` without a paren (so `(Finding ` would not false-match them today), relying on that is fragile — grep the actual persona output instead.
+1. Read the rendered roast body from `roast_raw.md` — this is the persona agent's direct output, not the assembled report. Grepping the assembled report would also hit the `## Dossier (evidence trail)` section, and while the dossier headers use `## Finding N —` without a paren (so `(Finding ` would not false-match them today), relying on that is fragile — grep the actual persona output instead.
 1. Count occurrences of the literal substring `(Finding ` in `roast_raw.md`. Call this `citation_count`.
 1. Compute `threshold = ceil(finding_count / 3)`. Use integer ceiling — for `finding_count = 10`, threshold is `4`; for `finding_count = 1`, threshold is `1`.
 1. If `citation_count < threshold`:
@@ -219,7 +219,7 @@ Reference: research.md §Evidence enforcement layer 4. The plan originally defer
 
 ### 6.6 Build the inline teaser
 
-The teaser is a single paragraph, 3-5 sentences, in the chosen persona's voice, paraphrasing the top 1-3 findings by severity. It is **printed to the user**, NOT written to the report file.
+The teaser is a single paragraph, 3-5 sentences, in the chosen persona's voice, paraphrasing the top 1-3 findings by severity. It is **printed to the user**, not written to the report file.
 
 Procedure:
 

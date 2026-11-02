@@ -134,7 +134,7 @@ When the author pushes back on an a11y finding, the pressure to soften the gate 
 | "This is an internal tool, so a11y is optional."                          | "Internal does not mean exempt. Employees with disabilities exist, ADA/EN 301 549 apply to internal systems, and 'internal' tools routinely leak into partner workflows."               |
 | "The computed ratio is 4.48, close enough to 4.5."                        | "WCAG is a threshold, not a target. 4.48 fails. Fix the color or formally accept the failure in writing — do not round it away."                                                        |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Subjective preferences on color choice (that's `art-designer`'s lane).
 - Visual hierarchy issues that are not accessibility failures (that's `ui-designer`'s lane).

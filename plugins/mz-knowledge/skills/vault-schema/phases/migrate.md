@@ -8,7 +8,7 @@ This phase file covers two orchestrator phases: Phase 2 (planning, rollback capt
 
 ## Preconditions
 
-Phase 1 has completed with a valid `validation_report.md`. The user has NOT yet approved any vault writes — that approval is gated by Phase 2.5.
+Phase 1 has completed with a valid `validation_report.md`. The user has not yet approved any vault writes — that approval is gated by Phase 2.5.
 
 Constants in use from `SKILL.md`:
 
@@ -138,7 +138,7 @@ The Phase 2.5 gate ends with one of three responses:
 
 ## Step 4: Apply frontmatter patches
 
-This step runs ONLY after Phase 2.5 returns `approve` AND after the user has filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder in the plan.
+This step runs only after Phase 2.5 returns `approve` AND after the user has filled in every `"<NEEDS_VALUE>"` and `"<PICK: ...>"` placeholder in the plan.
 
 ### 4.1 Verify plan is fully resolved
 

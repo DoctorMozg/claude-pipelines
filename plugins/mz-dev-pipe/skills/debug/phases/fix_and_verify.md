@@ -24,8 +24,8 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/reproduction.md for how the bug manifes
    - Includes a docstring: "Regression test: <one-line bug description>"
 3. Place the test in the appropriate test file following project conventions. If no existing test file covers this module, create one following the project's test directory structure.
 4. The test must be self-contained — no manual setup required beyond normal test fixtures.
-5. Do NOT fix the bug. Only write the test.
-6. Do NOT modify any non-test files.
+5. Do not fix the bug. Only write the test.
+6. Do not modify any non-test files.
 
 ## Scope constraint
 <scope file list if scope parameter was set, otherwise "all project files eligible">
@@ -124,9 +124,9 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/regression_test.md for the test that mu
 ## Instructions
 1. Read the diagnosed root cause file(s) before making changes.
 2. Apply the MINIMAL fix — fewest lines changed to resolve the root cause.
-3. Do NOT refactor surrounding code, add features, or fix other bugs.
-4. Do NOT modify the regression test.
-5. Do NOT add new dependencies unless the diagnosis explicitly requires it.
+3. Do not refactor surrounding code, add features, or fix other bugs.
+4. Do not modify the regression test.
+5. Do not add new dependencies unless the diagnosis explicitly requires it.
 6. The regression test must PASS after your fix.
 
 ## Report

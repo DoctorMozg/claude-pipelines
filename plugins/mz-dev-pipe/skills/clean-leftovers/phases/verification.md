@@ -28,7 +28,7 @@ If no linter is detected, record `linter: n/a` in the final report. Do not silen
 
 Record results to `<PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md` with: linter name, files checked, failures, fixable vs non-fixable counts.
 
-The linter pass surfaces unused-import dead code (category E item) that the cleaner agent did NOT touch. If unused-import findings exist, the orchestrator may dispatch one final cleanup wave scoped specifically to those findings.
+The linter pass surfaces unused-import dead code (category E item) that the cleaner agent did not touch. If unused-import findings exist, the orchestrator may dispatch one final cleanup wave scoped specifically to those findings.
 
 ## 4.3 Decide: complete, loop, or escalate
 

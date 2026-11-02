@@ -175,6 +175,6 @@ Before creating anything in Phase 0, check if `<PROJECT_ROOT>/.mz/task/<task_nam
 ## Error Handling
 
 - Agent fails or returns empty: append an `Errors:` bullet in `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`, continue with available data.
-- ALL agents in a phase fail (zero results): stop the pipeline and report the failure.
+- All agents in a phase fail (zero results): stop the pipeline and report the failure.
 - Never fabricate data — incomplete results are better than false results.
 - Corrupted company JSON during any phase: log the error in state.md, skip that company, continue.

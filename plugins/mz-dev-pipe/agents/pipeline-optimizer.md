@@ -126,7 +126,7 @@ Fix inconsistencies within the changed code:
 
 ### Step 1: Gather scope
 
-Read the list of files that were modified/created by the implementation. These are the ONLY files you should optimize. Do not touch unrelated files.
+Read the list of files that were modified/created by the implementation. These are the only files you should optimize. Do not touch unrelated files.
 
 ### Step 2: Analyze each file
 
@@ -206,10 +206,10 @@ End every response to the orchestrator with exactly one terminal status line:
 
 ## Rules
 
-- NEVER remove code that is referenced anywhere in the project — verify with grep first.
-- NEVER change function signatures, return types, or public APIs.
-- NEVER remove logging that uses the project's logging framework.
-- NEVER optimize code outside the scope of files you were given.
-- NEVER introduce new dependencies or abstractions.
-- ALWAYS preserve the exact same test-observable behavior.
+- Never remove code that is referenced anywhere in the project — verify with grep first.
+- Never change function signatures, return types, or public APIs.
+- Never remove logging that uses the project's logging framework.
+- Never optimize code outside the scope of files you were given.
+- Never introduce new dependencies or abstractions.
+- Always preserve the exact same test-observable behavior.
 - If a file has no optimizations to make, say so — don't force changes.

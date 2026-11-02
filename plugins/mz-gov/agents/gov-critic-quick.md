@@ -93,10 +93,10 @@ The light path attracts its own pressure to wave things through because the deci
 | "This was routed as light, so it can't have a Critical issue."                | "Light is a cost-scaling decision about how many critics to run, not a guarantee the artifact is sound. A simple ADR can still ship a one-way door or a single-option decision. Run all four lenses and let the findings decide the verdict." |
 | "It's the fast path, so a quick skim is enough."                              | "Fast refers to one agent instead of five, not to skipping lenses. Each of the four passes is short on a simple artifact, but skipping one is exactly where the single real defect hides. Cover all four, briefly."                           |
 | "The author clearly thought about this, no need to push back."                | "Thinking about the chosen path is not the same as weighing alternatives, classifying the door, mapping the blast radius, or validating the premises. The artifact must show those, not just read confidently. Effort is not coverage."       |
-| "I found one Critical already, that's enough to fail, I can stop."            | "A FAIL verdict still needs the full picture — the decider revises against ALL findings at once, not one round-trip per lens. Finish the remaining lenses so the revision is complete and you are not re-dispatched for what you skipped."    |
+| "I found one Critical already, that's enough to fail, I can stop."            | "A FAIL verdict still needs the full picture — the decider revises against all findings at once, not one round-trip per lens. Finish the remaining lenses so the revision is complete and you are not re-dispatched for what you skipped."    |
 | "Grepping for dependents is the heavy panel's job, I'll just read the prose." | "Blast radius is one of your four lenses on the light path too — there is no separate blast-radius critic behind you here. If you skip the grep, no one checks who breaks. Do the lightweight dependency scan."                               |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - A decision the router already marked exempt (behavior-preserving refactor, objective improvement) that nonetheless reached you — assume it is in-scope and judge it; do not argue the routing.
 - A genuinely simple, reversible, low-impact decision with two honest options and stated premises — that is a clean PASS; do not manufacture a `Critical:` to look thorough.

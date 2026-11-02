@@ -101,7 +101,7 @@ Blast-radius findings draw a recurring set of excuses. Name the rationalization,
 | "Downstream impact is the implementer's problem, not the decision record's." | "The decision record exists to make the consequences visible at decision time. Deferring blast radius to implementation means it is discovered after the irreversible commit, when changing course is most expensive."                      |
 | "It's behind a feature flag, so nothing is really affected."                 | "A flag bounds activation, not the dependency graph. The code, schema, and contracts still change; the flag controls who hits them, not who builds against them. State the radius the flag is gating."                                      |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Whether two real alternatives were weighed — that is `gov-critic-alternatives`'s lane.
 - Whether the decision is reversible or a one-way door — that is `gov-critic-reversibility`'s lane (impact and reversibility overlap conceptually; you map who is hit, not how hard it is to undo).

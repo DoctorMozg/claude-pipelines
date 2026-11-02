@@ -253,7 +253,7 @@ Detection here is heuristic; deletion requires per-instance judgment by the clea
 
 ## WHY content markers (when present, KEEP the comment)
 
-The cleaner keeps a flagged candidate when ANY of these signal WHY:
+The cleaner keeps a flagged candidate when any of these signal WHY:
 
 - Numbers with units: `\b\d+\s*(ms|s|sec|min|hr|day|MB|GB|KB|TB|%|x|×)\b`
 - Named references: `RFC\s*\d+`, `CVE-\d{4}-\d+`, `#\d+` (issue/PR refs), `[A-Z]+-\d+` (Jira-style tickets)
@@ -262,7 +262,7 @@ The cleaner keeps a flagged candidate when ANY of these signal WHY:
 - Regulatory / compliance: `GDPR`, `HIPAA`, `PCI`, `SOX`, `regulatory`, `legal requires`
 - Surprising-behavior callouts: `surprisingly`, `counterintuitively`, `note that`, `gotcha:`, `caveat:`, `careful:`
 
-When ANY of the above is present, KEEP — even if the comment otherwise looks like a WHAT restatement.
+When any of the above is present, KEEP — even if the comment otherwise looks like a WHAT restatement.
 
 ## Removal rules
 

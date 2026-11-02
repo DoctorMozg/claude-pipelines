@@ -37,14 +37,14 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/baseline.md for pre-optimization test/l
 
 ## Rules
 1. Work through your full optimization checklist on these files.
-2. OWN the files above. If you MUST edit a file in another chunk or outside scope to keep code compiling, report it in a "Cross-Scope Edits" section with the reason.
+2. OWN the files above. If you must edit a file in another chunk or outside scope to keep code compiling, report it in a "Cross-Scope Edits" section with the reason.
 3. Never change test-observable behavior.
 4. Search before removing — verify "dead code" is unreferenced across the full project.
 ```
 
 **If this is a rejection re-run** (iteration > 0, dispatched for rejected chunks only): include in the prompt the specific reviewer feedback for this chunk from `review_<iteration-1>.md`, and instruct the optimizer to address that feedback while preserving any changes that were already approved.
 
-Do NOT dispatch optimizers for chunks that previously passed review — they are frozen for the remainder of this run.
+Do not dispatch optimizers for chunks that previously passed review — they are frozen for the remainder of this run.
 
 ### 3.2 Collect reports and detect conflicts
 
@@ -133,7 +133,7 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/optimization_<iteration>.md for full re
 ## Instructions
 1. Read failing tests and modified files to understand the break
 2. Prefer adjusting the optimization to preserve behavior over full revert
-3. If optimization is fundamentally unsafe, revert ONLY that specific change
+3. If optimization is fundamentally unsafe, revert only that specific change
 4. No NEW optimizations — regression repair only
 ```
 
@@ -162,7 +162,7 @@ Optimizations applied this iteration:
 Options:
 1. Revert the entire optimization batch and restart
 2. Revert only specific chunks (name them)
-3. Accept the regression and proceed (NOT recommended)
+3. Accept the regression and proceed (not recommended)
 4. Pause for manual investigation
 ```
 

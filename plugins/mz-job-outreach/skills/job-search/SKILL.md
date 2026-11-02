@@ -216,6 +216,6 @@ Before creating anything in Phase 0, check if `<PROJECT_ROOT>/.mz/task/<task_nam
 ## Error Handling
 
 - Agent fails or returns empty: append an `Errors:` bullet in `state.md`, continue with available data.
-- ALL agents in a phase fail (zero results): stop the pipeline and report the failure.
+- All agents in a phase fail (zero results): stop the pipeline and report the failure.
 - Never fabricate data — incomplete results are better than false results.
 - An agent returns `STATUS: NEEDS_CONTEXT` for missing user input (e.g. no location in CV but remote-only preferences): invoke `AskUserQuestion` to fill the gap, then re-dispatch.

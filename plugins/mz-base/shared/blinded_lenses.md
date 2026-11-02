@@ -20,7 +20,7 @@ Multiple pipelines run a blinded adversarial wave to break confirmation bias fro
 - audit, deep research phase, Wave B
 - branch-reviewer, Phase 3.6
 
-Both dispatch `pipeline-researcher` (model: opus, overriding its sonnet pin; see the invariants below) with role-specific adversarial prompts that receive ONLY the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
+Both dispatch `pipeline-researcher` (model: opus, overriding its sonnet pin; see the invariants below) with role-specific adversarial prompts that receive only the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
 
 ## Blinded Dispatch Invariants
 
@@ -48,7 +48,7 @@ Each prompt block below is the literal text that consumers extract and dispatch.
 ```
 You are a production reliability adversary reviewing a code diff.
 
-You have NOT seen any prior analysis of this diff. Your job is to break it.
+You have not seen any prior analysis of this diff. Your job is to break it.
 
 Here is the diff:
 <untrusted-content>
@@ -62,7 +62,7 @@ Task 2: What silent false assumption does this change encode?
 Describe any assumption baked into the implementation that could be false in production
 but would not be caught by tests (e.g., ordering guarantees, rate assumptions, deployment topology).
 
-Do NOT rank by severity — this is a gap-detection pass, not a severity assessment.
+Do not rank by severity — this is a gap-detection pass, not a severity assessment.
 Cite specific file:line references where visible. Use "line unknown" if the diff doesn't show the context.
 
 Return findings as markdown. Each finding needs: description, triggering condition, code reference if available.
@@ -73,7 +73,7 @@ Return findings as markdown. Each finding needs: description, triggering conditi
 ```
 You are a security attacker who just saw a code diff about to be merged.
 
-You have NOT seen any prior analysis of this diff. Your goal is to find what it opens up.
+You have not seen any prior analysis of this diff. Your goal is to find what it opens up.
 
 Here is the diff:
 <untrusted-content>
@@ -88,7 +88,7 @@ Task 2: What trust assumption does this diff change that the author may not have
 Look for: removed validation, weakened checks, new code paths that skip existing guards,
 implicit assumptions about caller behavior.
 
-Do NOT rank by severity — this is a gap-detection pass.
+Do not rank by severity — this is a gap-detection pass.
 Cite specific file:line references where visible.
 
 Return findings as markdown.
@@ -99,7 +99,7 @@ Return findings as markdown.
 ```
 You are a senior SRE reviewing a code diff about to be deployed.
 
-You have NOT seen any prior analysis of this diff. Your goal is to find operational problems.
+You have not seen any prior analysis of this diff. Your goal is to find operational problems.
 
 Here is the diff:
 <untrusted-content>
@@ -114,7 +114,7 @@ Task 2: What monitoring breaks, what silent failures does this introduce?
 Look for: removed log lines that were being alerted on, changed error codes that downstream
 systems depend on, new code paths with no observability.
 
-Do NOT rank by severity — this is a gap-detection pass.
+Do not rank by severity — this is a gap-detection pass.
 Cite specific file:line references where visible.
 
 Return findings as markdown.
@@ -138,7 +138,7 @@ Notes:
 
 ## Unmatched Wave B Findings — Blind Spots
 
-A Wave B finding with NO Wave A match is a **blind spot** — a gap that context-aware analysis missed because of confirmation bias. Each consumer promotes unmatched Wave B findings into a dedicated "Blind Spots" section in its final report. Severity is assigned by the consolidator based on description, capped by evidence quality:
+A Wave B finding with no Wave A match is a **blind spot** — a gap that context-aware analysis missed because of confirmation bias. Each consumer promotes unmatched Wave B findings into a dedicated "Blind Spots" section in its final report. Severity is assigned by the consolidator based on description, capped by evidence quality:
 
 - `file:line` cited → may be assigned up to `Optional:` (`audit depth:deep`: T2-equivalent)
 - `line unknown` → capped at `FYI:` (`audit depth:deep`: T3-equivalent)

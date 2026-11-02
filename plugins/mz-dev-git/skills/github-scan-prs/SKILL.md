@@ -71,7 +71,7 @@ Output the triage report path (`.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_n
 - **Missing tooling** (`Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
 - **Empty scanner result** (zero PRs returned or no priority-ranked list) → check the scanner's `pr_data.md` / report for `ZERO RESULTS` disclosure tokens before trusting:
   - `ZERO RESULTS VERIFIED` (per-repo smoke test passed) → report "no PRs need attention" and exit cleanly.
-  - `ZERO RESULTS UNVERIFIED` or `ZERO RESULTS GLOBAL` → do NOT treat as a clean inbox; surface the warning in the final output and prompt the user to verify the GitHub username and repo list via AskUserQuestion before a silent "all clear" masks a real misconfiguration.
+  - `ZERO RESULTS UNVERIFIED` or `ZERO RESULTS GLOBAL` → do not treat as a clean inbox; surface the warning in the final output and prompt the user to verify the GitHub username and repo list via AskUserQuestion before a silent "all clear" masks a real misconfiguration.
   - An agent returns nothing usable (no `ZERO RESULTS` token with an empty list, or a malformed response) → `<PLUGIN_ROOT>/shared/retry-policy.md`: re-dispatch once with a clarified prompt, and don't retry API errors or usage limits.
 - Never guess — on any ambiguity (unresolvable repo, invalid URL, missing auth) escalate via AskUserQuestion rather than proceed silently.
 

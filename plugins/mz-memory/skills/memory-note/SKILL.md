@@ -64,7 +64,7 @@ File: .mz/memory/MEMORY.md
 **Approve** → write the entry to MEMORY.md  ·  **Reject** → discard, no file changes  ·  reply with feedback to revise
 ```
 
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the entry — it lives in the plan message above.
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must not re-embed the entry — it lives in the plan message above.
 
 - question: `The memory note above is ready for review.`
 - header: `Memory note`

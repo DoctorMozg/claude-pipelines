@@ -31,7 +31,7 @@ Tone decisions: <copy three lines from brief.md>
 Format-specific constraints: <copy from brief.md>
 Signature vocabulary to preserve: <copy from brief.md codebase tone-match>
 Evidence available: <named customers, numbers, behaviors from brief.md>
-Open questions / gaps: <copy from brief.md — agent must NOT invent answers>
+Open questions / gaps: <copy from brief.md — agent must not invent answers>
 ```
 
 Dispatch as a single Agent tool call. Use `subagent_type: expert-copywriter`. Wait for its result before Phase 3.

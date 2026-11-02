@@ -41,7 +41,7 @@ Brief and factual; not a sales pitch.>
 - <what this design must achieve — observable, ideally measurable>
 
 **Non-goals**
-- <what we are explicitly NOT solving here — the things a reader might
+- <what we are explicitly not solving here — the things a reader might
   assume are in scope but aren't. Non-goals are as important as goals;
   they bound the discussion.>
 

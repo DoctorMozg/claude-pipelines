@@ -98,7 +98,7 @@ If null: "No named recruiter surfaced from posting, careers page, or LinkedIn se
 - **Careers-page email (verified)**: <contacts.careers_page_email or "_none verified_">
 - **LinkedIn company page**: <contacts.linkedin_company or "_n/a_">
 
-## Generic-pattern guesses (NOT verified)
+## Generic-pattern guesses (not verified)
 <bulleted list of contacts.generic_pattern_guesses; if empty: "No generic patterns derivable — domain unknown.">
 
 > These addresses are derived from the domain only and have not been observed

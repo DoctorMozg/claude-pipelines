@@ -112,7 +112,7 @@ End every response to the orchestrator with exactly one terminal status line:
 - **Imperative for steps** ("Install the dependency," not "You should install the dependency").
 - **English only in comments and docs,** even in multi-language codebases.
 
-## Common Pitfalls — Do NOT Do These
+## Common Pitfalls
 
 - **Inventing APIs that don't exist.** If a search doesn't find it, it isn't there. Ask the user or flag the gap.
 - **Documenting private internals as public.** Check module boundaries, `__all__`, `export` statements, and visibility modifiers before including something in a public reference.

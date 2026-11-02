@@ -99,7 +99,7 @@ Assumption findings draw a recurring set of excuses. Name the rationalization, a
 | "Every decision has assumptions, you could nitpick forever."     | "True, which is why this lens flags load-bearing premises with serious failure modes, not every background fact. The filter is: does the decision collapse if this is wrong, and would we notice in time? If yes to the first and no to the second, it blocks." |
 | "Performance/scale assumptions don't matter, we're small."       | "'Small' is itself a temporal assumption with an expiry date. State the threshold the decision assumes ('holds under N requests/sec') so that when you cross it, the premise is on record to revisit instead of failing as a mystery outage."                   |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Whether enough alternatives were considered — that is `gov-critic-alternatives`'s lane.
 - Whether the decision is reversible — that is `gov-critic-reversibility`'s lane.

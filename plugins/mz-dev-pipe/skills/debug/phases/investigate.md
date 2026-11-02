@@ -89,7 +89,7 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md for test/lint commands.
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Reproduced**          | Save to `reproduction.md` with test/command output, proceed to Phase 2.                                                                                                                                                                                               |
 | **Static confirmation** | Code analysis confirms the bug but no runtime trigger found. Note it, proceed to Phase 2.                                                                                                                                                                             |
-| **Can't reproduce**     | Escalate via AskUserQuestion with what was tried and found. Ask for more context. Do NOT proceed with guesswork. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. |
+| **Can't reproduce**     | Escalate via AskUserQuestion with what was tried and found. Ask for more context. Do not proceed with guesswork. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. |
 
 Write `<PROJECT_ROOT>/.mz/task/<task_name>/reproduction.md`:
 

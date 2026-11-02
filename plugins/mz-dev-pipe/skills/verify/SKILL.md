@@ -9,7 +9,7 @@ allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, Tas
 
 ## Overview
 
-Orchestrates a deep verification pass that checks whether code in scope is correct, clean, well-tested, and functional. This pipeline reports findings — it does NOT auto-fix anything. The user decides what to fix based on the report.
+Orchestrates a deep verification pass that checks whether code in scope is correct, clean, well-tested, and functional. This pipeline reports findings — it does not auto-fix anything. The user decides what to fix based on the report.
 
 ## When to Use
 
@@ -64,7 +64,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 1. **Parse argument** — split (after removing `scope:`) into path-like tokens (globs, dirs, files) and focus tokens (free text).
 1. **Task name** — `<YYYY_MM_DD>_verify_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
-1. **Task dir & state** — run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
+1. **Task dir & state** — run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by `Status`, `Phase`, `Started`, plus the progress-ledger keys `phase_complete: false` and `what_remains: []`.
 1. **Task tracking** — TaskCreate per pipeline phase.
 
 ### Phase 1–6
@@ -99,7 +99,7 @@ Output the final report block: per-check pass/fail status, coverage percentages,
 - **No test framework detected**: ask the user for a test command. Do not skip.
 - **No linter detected**: note it in the report, skip lint checks.
 - **No formatter detected**: note it in the report, skip format checks.
-- **No type checker configured**: note it in the report, skip type checks. Do NOT suggest adding one.
+- **No type checker configured**: note it in the report, skip type checks. Do not suggest adding one.
 - **Test command times out**: report timeout with partial output, flag in report.
 - **Example script crashes**: capture the error output, include in report, do not retry.
 - **Ambiguous scope**: ask the user to clarify.
@@ -113,4 +113,4 @@ After each phase, update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:
 - Per-check results (pass/fail/skip)
 - Any issues encountered
 
-Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it must be `[]` when `Status: complete`. Stamp `last_verified` whenever a verification gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.

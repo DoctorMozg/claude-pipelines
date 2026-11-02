@@ -35,14 +35,14 @@ Severity: Light
    this is short cold outreach, not generic long copy)
 Strategy:
   - Vocabulary swaps only where an avoid-list term degrades trust
-  - Remove ALL em-dashes and en-dashes - convert each to a hyphen, a comma, or
+  - Remove all em-dashes and en-dashes - convert each to a hyphen, a comma, or
     a sentence break. Zero tolerance, not "reduce".
   - Strip curly quotes and the ellipsis character; output straight ASCII
     quotes and "..." only
   - Break mechanical antithesis if present
   - Restore natural contractions ("don't", "you're") where the tone allows
-  - Do NOT cut sentences for length compliance - preserve length within +/-5%
-  - Do NOT rebuild paragraph variance - short letters are 1-3 paragraphs
+  - Do not cut sentences for length compliance - preserve length within +/-5%
+  - Do not rebuild paragraph variance - short letters are 1-3 paragraphs
 Preserve list (immutable):
   - The YAML frontmatter block at the top of the file (auto-preserved)
   - The salutation line and the sign-off lines (gratitude close + sender first
@@ -66,7 +66,7 @@ Word-count target: preserve length within +/-5%. Channel budget is the hard
   input unchanged with a note in the change report.
 Long-document handling: N/A - input is 60-180 words.
 Web research: no
-Format awareness: <email | email_generic | linkedin_dm> - do NOT introduce
+Format awareness: <email | email_generic | linkedin_dm> - do not introduce
   headings, bullet lists, or markdown decoration.
 Medium routing override: "Email between colleagues" for email and
   email_generic; "Chat, DMs, comments, casual Markdown" for linkedin_dm.
@@ -236,7 +236,7 @@ After `target_path` is written and its contents verified by re-reading:
     ! -path "<target_path>" -delete 2>/dev/null
   ```
 
-If the `rm` fails (permission, missing file), do NOT fail the run — log `relocation_cleanup_failed: <reason>` in `state.md` and downgrade the final STATUS to `DONE_WITH_CONCERNS`. The card content at `target_path` is canonical regardless.
+If the `rm` fails (permission, missing file), do not fail the run — log `relocation_cleanup_failed: <reason>` in `state.md` and downgrade the final STATUS to `DONE_WITH_CONCERNS`. The card content at `target_path` is canonical regardless.
 
 Update `state.md`: Phase → `complete`, `Status: complete`, `phase_complete: true`, `what_remains: []`, set `CompletedAt: <ISO timestamp>`, record `LettersWritten: <count>`, `LettersSkipped: <count>`, `NaturalizeReverted: <count>`, `SubagentsDispatched: <count>`, `SubagentsFailed: <count>`, `LightQueries: <count>`, `TargetPath: <target_path>`, `SourceDeleted: <yes | no | failed:<reason>>`.
 

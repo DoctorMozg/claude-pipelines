@@ -28,7 +28,7 @@ Scope is ONE note per dispatch. The orchestrator (`vault-provenance`) resolves t
 - Every classification must cite the exact phrase from the note that triggered it (stored as `claim_text`).
 - Confidence is a secondary dimension with a closed vocabulary: `high | medium | low`.
 - Source proposals come from in-body citations, wikilinks, or the note's existing `sources:` frontmatter — never fabricated.
-- `inferred` claims MUST carry a `reasoning` chain noting what was combined to produce the inference. The reasoning is what makes the audit auditable.
+- `inferred` claims must carry a `reasoning` chain noting what was combined to produce the inference. The reasoning is what makes the audit auditable.
 - Cap at `MAX_CLAIMS_PER_NOTE` (25). If more claims exist, process the first 25 and set `summary.capped: true`.
 - Never modify the vault note. Write only the classification artifact to `output_path`.
 
@@ -74,9 +74,9 @@ Each surviving sentence is a candidate claim. Record:
 
 For each candidate claim, search the surrounding text for attribution markers and classify against the closed vocabulary:
 
-- **first-hand** — the claim carries a first-person experiential marker: `I observed`, `I measured`, `in my own experiment`, `when I ran`, explicit author-authored data. The marker must be present; absence of attribution is NOT first-hand.
+- **first-hand** — the claim carries a first-person experiential marker: `I observed`, `I measured`, `in my own experiment`, `when I ran`, explicit author-authored data. The marker must be present; absence of attribution is not first-hand.
 - **cited** — the claim quotes or paraphrases an identifiable source: `according to <author>`, `per <paper>`, `[<author>, <year>]`, a `[[wikilink]]` pointing at a source note, or a URL in the same sentence.
-- **inferred** — the claim is the author's conclusion drawn from other claims in the same note. When classifying as `inferred`, the `reasoning` field MUST name the input claims or evidence path (e.g., "combines the cited 2024 benchmark with the first-hand measurement in §2").
+- **inferred** — the claim is the author's conclusion drawn from other claims in the same note. When classifying as `inferred`, the `reasoning` field must name the input claims or evidence path (e.g., "combines the cited 2024 benchmark with the first-hand measurement in §2").
 - **received** — the claim restates commonly-held knowledge without attribution: "as everyone knows", "it is well established", or an assertion stated as received wisdom with no source and no experiential marker.
 - **unmarked** — the origin is unknown: no attribution, no first-person marker, no inference chain detectable from the note itself. Default to this when evidence is absent. Do not default to `first-hand` to inflate confidence.
 

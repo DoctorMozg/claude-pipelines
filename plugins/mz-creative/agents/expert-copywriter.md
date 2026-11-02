@@ -75,7 +75,7 @@ NNG research: trust explains 52% of variability in copy desirability; friendline
 - Hyperbolic adjective stacks ("revolutionary, groundbreaking, transformative")
 - Vague social proof ("trusted by leading companies") — name the companies or omit
 
-### 10. When NOT to apply persuasive frameworks
+### 10. When not to apply persuasive frameworks
 
 PAS (Problem-Agitate-Solution), AIDA, and similar frameworks are designed to convert reluctant readers. They are wrong for:
 

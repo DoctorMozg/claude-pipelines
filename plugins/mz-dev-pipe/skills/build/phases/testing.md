@@ -34,13 +34,13 @@ Read the plan at <PROJECT_ROOT>/.mz/task/<task_name>/plan.md (includes work unit
 Read the research at <PROJECT_ROOT>/.mz/task/<task_name>/research.md for codebase conventions.
 
 ## TDD Mode — Read carefully
-The production code described by the plan has NOT been written. You are in the RED phase of red-green-refactor. Your job:
+The production code described by the plan has not been written. You are in the RED phase of red-green-refactor. Your job:
 
 1. Write tests that describe the BEHAVIOR each work unit must deliver, drawn from the plan's work units, test strategy, edge cases, and verification criteria.
 2. Tests will reference functions, classes, or modules that do not exist yet. That is expected.
 3. Imports for not-yet-created modules are allowed — the test file may fail to import, fail to collect, or raise `NotImplementedError` / `AttributeError` / `ModuleNotFoundError` against missing symbols. Treat all of those as the RED bar.
-4. Do NOT write any implementation code. Do NOT stub the production module just to make the import succeed. The coder phase will create the module.
-5. Do NOT use mocks to fake the missing implementation into existence. A test that passes only because the production code is mocked out tests nothing.
+4. Do not write any implementation code. Do not stub the production module just to make the import succeed. The coder phase will create the module.
+5. Do not use mocks to fake the missing implementation into existence. A test that passes only because the production code is mocked out tests nothing.
 6. Each test name must describe the behavior under test, not the function name being called.
 
 ## Instructions
@@ -53,7 +53,7 @@ The production code described by the plan has NOT been written. You are in the R
 3. Use the project's existing test infrastructure (fixtures, helpers, factories).
 4. Each test must be independent and not rely on test execution order.
 5. Group tests by feature / work unit in logical test classes or modules.
-6. Do NOT modify any production code. Do NOT modify pre-existing tests unless the plan explicitly calls for it.
+6. Do not modify any production code. Do not modify pre-existing tests unless the plan explicitly calls for it.
 
 ## Report
 List every test file created or modified, the work unit it covers, and the specific behaviors asserted. Note any test that intentionally crosses work-unit boundaries (integration tests).
@@ -86,7 +86,7 @@ Read the plan at <PROJECT_ROOT>/.mz/task/<task_name>/plan.md (focus on work unit
 Read the test file list at <PROJECT_ROOT>/.mz/task/<task_name>/tests.md.
 Then read all test files.
 
-The production code does NOT exist yet. Evaluate coverage against the PLAN, not against any implementation.
+The production code does not exist yet. Evaluate coverage against the PLAN, not against any implementation.
 
 ## Coverage axis (Critical findings here block verdict):
 1. Does every work unit in the plan have at least one test?

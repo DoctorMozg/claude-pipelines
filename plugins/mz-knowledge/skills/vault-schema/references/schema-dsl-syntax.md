@@ -10,7 +10,7 @@ Lazy-loaded reference for the YAML schema DSL consumed by `vault-schema`. Search
 - Semantics
 - Interaction with the migrator
 - Common patterns
-- What v1 does NOT support
+- What v1 does not support
 - Bootstrap via AskUserQuestion
 
 ## File location
@@ -33,7 +33,7 @@ note_types:
 
 Three rule keys are supported in v1:
 
-- `required` — list of frontmatter keys that MUST be present for notes of this type. Missing a required key produces a `Critical:` finding.
+- `required` — list of frontmatter keys that must be present for notes of this type. Missing a required key produces a `Critical:` finding.
 - `optional` — list of frontmatter keys that MAY be present. Used only to distinguish declared-optional keys from unknown keys; a missing optional key never triggers a finding.
 - `allowed_values` — map of `<field>: [v1, v2, ...]` declaring a closed enum for string fields. A note whose declared field carries a value outside the list produces a `Critical:` finding.
 
@@ -81,7 +81,7 @@ If a note has no `type:` field in its frontmatter, the validator skips it. `type
 
 ### Unknown keys become Nit findings
 
-When a note's frontmatter contains a key that is NOT in `required`, NOT in `optional`, and NOT the literal `type:` key, the validator records a `Nit:` finding suggesting either the key be removed or added to the `optional` list. Nit findings never fail the verdict — they are advisory.
+When a note's frontmatter contains a key that is not in `required`, not in `optional`, and not the literal `type:` key, the validator records a `Nit:` finding suggesting either the key be removed or added to the `optional` list. Nit findings never fail the verdict — they are advisory.
 
 ## Interaction with the migrator
 
@@ -119,7 +119,7 @@ Remove the field from `required` and (if still allowed) add it to `optional`. No
 
 Add an entry under `allowed_values` for an existing string field. The next validation run will surface any out-of-enum values as `Critical:` findings.
 
-## What v1 does NOT support
+## What v1 does not support
 
 Document what is intentionally out-of-scope so future schema authors know where the edges are.
 

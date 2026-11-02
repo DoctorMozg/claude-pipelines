@@ -25,12 +25,12 @@ Output format:
 - List all key findings with evidence and source URLs.
 - Rate confidence for each finding (high/medium/low).
 - End with a "Sources consulted" section listing every URL visited with a one-line description of what it contributed.
-- End with "Gaps" — what you could NOT find or verify.
+- End with "Gaps" — what you could not find or verify.
 ```
 
 Before dispatching, emit a pre-dispatch manifest — wave label, a one-line purpose, and one bullet per researcher with its subtopic — so the wave is visible to the user.
 
-IMPORTANT: Launch ALL pipeline-web-researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
+Launch all pipeline-web-researcher agents in a single message using parallel tool calls. Do not launch them sequentially.
 
 ## Step 3: Collect and synthesize
 

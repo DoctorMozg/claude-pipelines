@@ -109,7 +109,7 @@ Emit these inline wherever applicable:
 - `CONFLICT DETECTED:` — when the codebase contradicts a claim the brief makes (e.g., brief says "our system uses X" but code clearly uses Y).
 - `UNVERIFIED:` — when you couldn't ground a claim in code (e.g., brief mentions a performance number you can't find evidence for).
 
-## What NOT to do
+## What not to do
 
 - **Do not propose solutions.** Your job is to provide context. Implementation planning belongs in `/build`, not here.
 - **Do not critique the idea.** That's the panelists' job across 3 rounds. You are lens-neutral.

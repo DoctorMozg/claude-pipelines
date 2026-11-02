@@ -99,11 +99,11 @@ Considered-options gaps attract a predictable family of push-back. Name the rati
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | "The author clearly thought hard about this, so the single option is fine."  | "Effort spent on one option is not the same as comparison across options. A thorough write-up of the chosen path still hides what it beat. The artifact must show the alternatives, not just the winner."                       |
 | "There really is only one sensible way to do this."                          | "That claim is itself the finding. If it is genuinely true, the artifact should say so explicitly and name the status quo as the one rejected alternative — 'no real alternatives exist' is a sentence, not an empty section."  |
-| "Listing alternatives we already rejected is busywork; we know they lose."   | "The reader is the future maintainer who does NOT know why they lose. Recording the rejected options with their trade-offs is the entire point of a decision record — it prevents re-litigating the same debate in six months." |
+| "Listing alternatives we already rejected is busywork; we know they lose."   | "The reader is the future maintainer who does not know why they lose. Recording the rejected options with their trade-offs is the entire point of a decision record — it prevents re-litigating the same debate in six months." |
 | "The chosen option works in the prototype, so it is obviously the best one." | "Works-in-prototype proves viability, not optimality. First-found-that-works is exactly the bias this lens exists to catch. Compare it against at least one real alternative on shared criteria before calling it best."        |
 | "We are a solo dev moving fast, alternatives are corporate ceremony."        | "The two-alternative floor exists precisely because a solo dev plus an AI has no reviewer to surface the option they both skipped. The trade-off table is the missing second opinion, not ceremony."                            |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - The decision being irreversible or a one-way door — that is `gov-critic-reversibility`'s lane.
 - Downstream breakage, dependency fan-out, or who is affected — that is `gov-critic-blast-radius`'s lane.

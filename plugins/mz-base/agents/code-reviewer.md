@@ -100,7 +100,7 @@ Verdict logic:
 - Group related issues together rather than repeating similar feedback.
 - When suggesting a fix, show the minimal change needed — not a full rewrite.
 
-## Common False Positives — Do NOT Flag These
+## Common False Positives
 
 - **Missing null check when the type system guarantees non-null.**
 - **"Missing error handling" on framework-managed code** (Express middleware, FastAPI DI, Spring controllers handle exceptions automatically).

@@ -20,7 +20,7 @@ must include the full schema:
 - preferences (parsed from $ARGUMENTS body)
 - search_queries (3-5 per top title)
 - title_aliases (4-6 per top title — recall expansion for scout)
-- bilingual_query_variants (ONLY when CV has non-English at B2+; ISO-639-1 keyed)
+- bilingual_query_variants (only when CV has non-English at B2+; ISO-639-1 keyed)
 - must_have_skills (2-4 from CV — primary stack)
 - must_have_or_groups (when user wrote "X or Y" preferences)
 - nice_to_have_skills (everything else from CV)
@@ -138,7 +138,7 @@ the matching code when the source's listings are predominantly non-English).
 Annotate canonical entries with `language_hint: "en"` on read-back; do not
 modify their other fields.
 
-Do NOT duplicate any canonical entry. Total combined entries must not
+Do not duplicate any canonical entry. Total combined entries must not
 exceed 10.
 ```
 

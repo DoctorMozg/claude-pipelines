@@ -181,5 +181,5 @@ Applies to the synthesizer (and researcher in Phase 1). Does **not** apply to pa
 
 - The synthesizer is lens-neutral on purpose. Rotating synthesizers (brainstorm's pattern) bias the inter-round context and pull the panel toward whichever lens synthesized.
 - Round 3 receives only `round_2_summary.md`, not round 1 summary. The panelist's own prior files carry their self-history. This prevents context bloat.
-- If a panelist's round 2 Changelog is empty across all 5 panelists, the panel has saturated — but that is NOT an early-exit signal. Continue to round 3. The report writer can note the saturation if it matters.
+- If a panelist's round 2 Changelog is empty across all 5 panelists, the panel has saturated — but that is not an early-exit signal. Continue to round 3. The report writer can note the saturation if it matters.
 - Parallelism discipline: one message per round with all 5 Agent calls. Never serialize.

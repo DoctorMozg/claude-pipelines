@@ -95,7 +95,7 @@ If Step 2 reported any failures, skip Step 3 entirely. The writer's partial stat
 
 ## Step 4: Hand off to post-write verification
 
-Return to SKILL Phase 2.5 (inline post-write search verification). Do NOT declare the skill complete from this phase — the search pass is the final gate.
+Return to SKILL Phase 2.5 (inline post-write search verification). Do not declare the skill complete from this phase — the search pass is the final gate.
 
 ## Step 5: Update state on success
 
@@ -130,7 +130,7 @@ rollback_path: ".mz/task/<task_name>/rollback.md"
 ## Error handling
 
 - **Rollback manifest write fails** → halt before Step 2; the skill cannot proceed without a complete manifest. Surface the failure verbatim via AskUserQuestion.
-- **Writer `STATUS: DONE_WITH_CONCERNS` (partial apply)** → do NOT proceed to Step 3. Preserve the writer_result.md failure list. Print the rollback manifest path and the failing file paths. Emit `STATUS: BLOCKED` and surface the partial state via AskUserQuestion with manual recovery instructions: `Review .mz/task/<task_name>/rollback.md to restore pre-edit contents for the successfully modified files if you want to abort the rename.`
+- **Writer `STATUS: DONE_WITH_CONCERNS` (partial apply)** → do not proceed to Step 3. Preserve the writer_result.md failure list. Print the rollback manifest path and the failing file paths. Emit `STATUS: BLOCKED` and surface the partial state via AskUserQuestion with manual recovery instructions: `Review .mz/task/<task_name>/rollback.md to restore pre-edit contents for the successfully modified files if you want to abort the rename.`
 - **Writer `STATUS: BLOCKED` (rollback manifest missing)** → indicates the Step 1 manifest was not persisted correctly; do not retry the writer until Step 1 is re-run and verified on disk.
 - **File `mv` in Step 3 fails** → the referrers have already been updated; use the rollback manifest to restore the referrers if the user chooses to abort. Emit `STATUS: BLOCKED` with the exact `mv` error and the rollback pointer.
 - **Phase 2.5 search finds residual old name occurrences** → do not silently proceed. Surface every residual occurrence verbatim via AskUserQuestion along with the rollback manifest path.

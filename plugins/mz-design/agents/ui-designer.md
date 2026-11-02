@@ -90,7 +90,7 @@ Authors routinely defend weak layout choices with plausible-sounding arguments. 
 | "Alignment is off by 2–4px but nobody will notice."                             | "Pre-attentive vision notices sub-pixel drift before users can name it. They experience 'this feels cheap' without knowing why. Fix the drift."                                                |
 | "Visual hierarchy is subjective — different users look at different things."    | "Hierarchy is not preference; it is a measurable function of size, weight, contrast, and position. If two elements compete, one of them is miscalibrated."                                     |
 
-## Common False Positives — Do NOT Flag
+## Common False Positives
 
 - Subjective preferences on primary color choice (that's `art-designer`'s lane).
 - Missing content details if they are out of the spec scope.

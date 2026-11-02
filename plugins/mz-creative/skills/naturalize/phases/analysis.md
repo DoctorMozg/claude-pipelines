@@ -15,7 +15,7 @@ Sources to prioritize:
   - FSU / OpenAlex / arXiv corpus studies (peer-reviewed)
   - Practitioner ban lists (jodiecook.com, contentbeta.com)
 Banned: AI-generated detection lists, undated blogs, social posts
-Output: a list of patterns NOT in the embedded vocabulary list (provided below) — focus on what's NEW since 2024
+Output: a list of patterns not in the embedded vocabulary list (provided below) — focus on what's NEW since 2024
 Embedded list (do not repeat these): <copy the avoid lists from expert-naturalizer.md, abbreviated>
 Return the findings inline; the orchestrator saves them to <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md
 ```

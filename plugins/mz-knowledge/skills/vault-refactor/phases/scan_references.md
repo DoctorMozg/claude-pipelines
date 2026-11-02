@@ -22,9 +22,9 @@ Output path: <PROJECT_ROOT>/.mz/task/<task_name>/references_report.md
 
 Your task:
 
-Scan the entire vault (excluding `.obsidian/` and the task directory) for every reference to the old note. Every reference must be captured with path, line number, column, the exact matched text, and the proposed replacement. The replacement must swap ONLY the name token — any alias, heading, or block identifier must be preserved verbatim.
+Scan the entire vault (excluding `.obsidian/` and the task directory) for every reference to the old note. Every reference must be captured with path, line number, column, the exact matched text, and the proposed replacement. The replacement must swap only the name token — any alias, heading, or block identifier must be preserved verbatim.
 
-You must cover all twelve reference forms enumerated in your agent system prompt. Do NOT skip form families because you assume they are rare — Bases formulas and quoted frontmatter wikilinks are both silent-failure surfaces if missed.
+You must cover all twelve reference forms enumerated in your agent system prompt. Do not skip form families because you assume they are rare — Bases formulas and quoted frontmatter wikilinks are both silent-failure surfaces if missed.
 
 Write proposals to `<PROJECT_ROOT>/.mz/task/<task_name>/references_report.md` using exactly this YAML shape:
 

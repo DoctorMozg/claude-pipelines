@@ -58,7 +58,7 @@ Detect the language from the file extension. Search `${CLAUDE_PLUGIN_ROOT}/skill
 
 ### Step 5 — Tokenize line-by-line
 
-Walk the file line by line, maintaining quote/escape state per the language's string-literal rules. For each line decide whether each position lies inside a string, inside a comment region, or in code. Build a list of comment regions structured as `(start_line, end_line, kind, content)` where `kind` is one of `line`, `block`, or `docstring`. Coalesce runs of consecutive single-line comments at the same indentation into a single block region. Do NOT treat heredoc bodies, raw strings, or template-literal interiors as comments.
+Walk the file line by line, maintaining quote/escape state per the language's string-literal rules. For each line decide whether each position lies inside a string, inside a comment region, or in code. Build a list of comment regions structured as `(start_line, end_line, kind, content)` where `kind` is one of `line`, `block`, or `docstring`. Coalesce runs of consecutive single-line comments at the same indentation into a single block region. Do not treat heredoc bodies, raw strings, or template-literal interiors as comments.
 
 ### Step 6 — Apply the preserve-zone filter
 
@@ -90,7 +90,7 @@ These rules are reference material. Consult them on every dispatch — never rel
 
 **Category C — Restating-WHAT comments.** Delete a comment immediately above a single line of code when (a) comment ≤ 8 words AND (b) every content word also appears (case-insensitive, stem-matched) in the next 1–2 code lines OR is a stopword. Any non-code-derived concept → preserve.
 
-**Category D — Verbose docstrings restating signature.** Delete the docstring entirely (no replacement) when ALL hold:
+**Category D — Verbose docstrings restating signature.** Delete the docstring entirely (no replacement) when all hold:
 
 1. Function is fully type-annotated.
 1. Opens with: `This function`, `This method`, `Handles the`, `Responsible for`, `Is used to`, `Takes a`, `Performs the`.
@@ -102,7 +102,7 @@ These rules are reference material. Consult them on every dispatch — never rel
 
 **Category F — Robotic section labels.** Delete a single-line comment whose entire content is exactly one of `{Helper functions, Helpers, Main logic, Utility functions, Utilities, Constants, Globals, Setup, Cleanup, Initialization, Imports, Types, Interfaces, Exports}` when the next non-blank line is a definition.
 
-## Preserve-zone (NEVER touch)
+## Preserve-zone (never touch)
 
 These rules win over every detection category. If any line in a candidate region matches any rule below, drop the entire region.
 

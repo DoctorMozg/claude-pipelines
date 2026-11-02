@@ -143,6 +143,6 @@ Before creating anything in Phase 0, check if `<PROJECT_ROOT>/.mz/task/<task_nam
 ## Error Handling
 
 - A research agent fails or returns empty: append an `Errors:` bullet in `state.md` and continue with available combos.
-- ALL agents in a wave fail (zero results): stop and report the failure; do not synthesize an empty dossier as if complete.
+- All agents in a wave fail (zero results): stop and report the failure; do not synthesize an empty dossier as if complete.
 - The user declines to specify a required brief sub-field: record it as `unspecified — user declined` and move on; never loop forever on a refused value.
 - Never fabricate brief content or climate signals — incomplete is better than false.

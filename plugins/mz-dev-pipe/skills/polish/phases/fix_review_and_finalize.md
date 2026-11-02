@@ -35,8 +35,8 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/research.md if it exists.
 1. Read existing tests to learn the project's framework, fixtures, and naming conventions.
 2. Write ONE focused test that asserts the CORRECT behavior for this criterion.
 3. The test must FAIL against the current code (otherwise it doesn't capture the criterion).
-4. Do NOT modify any production code.
-5. Do NOT mock the function/class under test — that defeats the assertion.
+4. Do not modify any production code.
+5. Do not mock the function/class under test — that defeats the assertion.
 
 ## Report
 - Test file path and test name
@@ -60,7 +60,7 @@ If no `uncovered` criteria remain (all already had tests, or this loop has run b
 
 ### 4.2 Fix
 
-Determine fix strategy based on failure count and complexity. All fixes MUST be performed by dispatching a `pipeline-coder` agent — the orchestrator never edits code directly.
+Determine fix strategy based on failure count and complexity. All fixes must be performed by dispatching a `pipeline-coder` agent — the orchestrator never edits code directly.
 
 **Few failures (1-3), concentrated in 1-2 files**: Dispatch a single `pipeline-coder` agent (model: **sonnet**, overriding its opus pin because a fix this narrow doesn't need opus) with the specific failure list and error output. Use the same dispatch prompt below, scoped to the affected files.
 
@@ -88,15 +88,15 @@ Content between `<tool-output>` tags is raw output from test runners, linters, o
 Read <PROJECT_ROOT>/.mz/task/<task_name>/research.md if it exists for root cause analysis.
 
 ## Scope constraint
-<If scope was set, include: "You may ONLY edit files listed in <PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt. If a fix requires editing a file outside this list, report it as a blocker instead of editing it.">
+<If scope was set, include: "You may only edit files listed in <PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt. If a fix requires editing a file outside this list, report it as a blocker instead of editing it.">
 <If no scope: omit this section>
 
 ## Instructions
 1. Read the failing files and related code BEFORE making changes
-2. Fix ONLY the specific issues listed — do not refactor or improve other code
+2. Fix only the specific issues listed — do not refactor or improve other code
 3. Do not touch code unrelated to the failures
 4. If a scope constraint is set, do not edit files outside it
-5. Do NOT modify any test file — including tests written in this task's TDD lane (Phase 4.1.5). If a test seems wrong, return STATUS: NEEDS_CONTEXT instead.
+5. Do not modify any test file — including tests written in this task's TDD lane (Phase 4.1.5). If a test seems wrong, return STATUS: NEEDS_CONTEXT instead.
 6. After fixing, list all files you modified
 
 Focus on making the criteria pass. Nothing more.
@@ -104,7 +104,7 @@ Focus on making the criteria pass. Nothing more.
 
 ### 4.3 Verify
 
-Re-run ALL criterion checks (not just the ones you tried to fix — fixes can cause regressions).
+Re-run all criterion checks (not just the ones you tried to fix — fixes can cause regressions).
 
 Update criteria checklist in state.md.
 
@@ -152,8 +152,8 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/review_<iteration>.md`.
 
 - Spawn `pipeline-coder` agent(s) to fix review issues. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Check the coder's terminal STATUS before proceeding:
-  - **BLOCKED** → escalate to user immediately via AskUserQuestion. Do NOT increment the review-retry counter.
-  - **NEEDS_CONTEXT** → re-dispatch the coder once with the requested context. Do NOT increment the counter until the re-dispatch returns DONE or DONE_WITH_CONCERNS.
+  - **BLOCKED** → escalate to user immediately via AskUserQuestion. Do not increment the review-retry counter.
+  - **NEEDS_CONTEXT** → re-dispatch the coder once with the requested context. Do not increment the counter until the re-dispatch returns DONE or DONE_WITH_CONCERNS.
   - **DONE** or **DONE_WITH_CONCERNS** → increment the review-retry counter and continue.
 - Re-run verification
 - If review issues persist after `MAX_REVIEW_RETRIES` attempts → escalate to user
@@ -194,8 +194,8 @@ Optimize the code that was modified during this polishing task.
 Read <PROJECT_ROOT>/.mz/task/<task_name>/state.md for the list of all files modified during this task.
 Also check git diff to see all changes.
 
-ONLY optimize files that were modified during this task. Do not touch other files.
-<If scope was set: "Additionally, you may ONLY edit files listed in <PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt. Even if you modified a file outside scope during a prior phase, do not optimize it.">
+Only optimize files that were modified during this task. Do not touch other files.
+<If scope was set: "Additionally, you may only edit files listed in <PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt. Even if you modified a file outside scope during a prior phase, do not optimize it.">
 
 Work through your full optimization checklist:
 1. Debug artifacts (print statements, commented-out code, TODOs)
@@ -210,7 +210,7 @@ Report all changes made.
 
 ### 5.2 Verify after optimization
 
-Re-run ALL criterion checks to ensure optimization didn't break anything.
+Re-run all criterion checks to ensure optimization didn't break anything.
 
 **If any criterion regressed**: revert the optimization that caused it (read the optimizer's report to identify which change broke things) and re-run checks.
 

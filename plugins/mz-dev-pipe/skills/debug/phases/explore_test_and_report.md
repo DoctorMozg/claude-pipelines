@@ -55,8 +55,8 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/domain_research.md for correct behavior
 3. Place tests in the appropriate test file following project conventions.
 4. Tests must be self-contained — no manual setup beyond normal test fixtures.
 5. If a test requires mocking external dependencies, mock at the boundary (HTTP client, DB connection), not internal functions.
-6. Do NOT fix any production code. Only write tests.
-7. Do NOT modify existing tests.
+6. Do not fix any production code. Only write tests.
+7. Do not modify existing tests.
 
 ## Scope constraint
 <scope file list if set, otherwise "standard test location for the project">
@@ -84,7 +84,7 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/test_runner_results.md` and interpret 
 | Result     | Interpretation                                                                       |
 | ---------- | ------------------------------------------------------------------------------------ |
 | **Passes** | Code handles this case correctly — evidence AGAINST the hypothesis (for this aspect) |
-| **Fails**  | Code does NOT handle this case correctly — evidence FOR the hypothesis               |
+| **Fails**  | Code does not handle this case correctly — evidence FOR the hypothesis               |
 | **Errors** | Test is broken (import error, setup failure, etc.) — not evidence either way         |
 
 **Handle errors**: if tests error out, re-dispatch `pipeline-test-writer` with the error output from the artifact. Max `MAX_TEST_RETRIES = 2` re-dispatches, then re-dispatch `pipeline-test-runner`. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.

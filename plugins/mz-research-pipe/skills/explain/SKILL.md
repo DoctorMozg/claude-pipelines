@@ -113,7 +113,7 @@ Resolve the argument into a concrete file list:
 - **Path-like tokens**: expand by listing the matching files or walking the directory
 - **Free-text only (no paths, no `scope:`)**: spawn a `pipeline-researcher` agent (model: **sonnet**) to identify which files match the description. If low confidence or multiple plausible interpretations, ask the user via AskUserQuestion.
 
-**Exclusions**: `.gitignore`, vendored deps, generated/lock files, files > 5000 LOC. Test files are NOT excluded — they're valuable context.
+**Exclusions**: `.gitignore`, vendored deps, generated/lock files, files > 5000 LOC. Test files are not excluded — they're valuable context.
 
 **If the file list is empty**: report and exit. **If `scope:global` with no focusing question**: ask the user what aspect to explain.
 

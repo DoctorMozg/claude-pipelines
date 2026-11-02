@@ -35,7 +35,7 @@ You are researching context for a new UI/UX design task.
 ## Your Job
 1. Parse the brief and modifiers. Record them into intake.md.
 2. For each @doc: reference, read the file in full and record a summary in intake.md.
-3. For each @image: reference, acknowledge the path in intake.md but DO NOT attempt to decode binary image data. The writer will leave placeholders for visual references the user later supplies.
+3. For each @image: reference, acknowledge the path in intake.md but do not attempt to decode binary image data. The writer will leave placeholders for visual references the user later supplies.
 4. Scan the codebase within the declared scope for:
    - Existing component library (components/, ui/, design-system/)
    - Design tokens / theme files (theme.*, tokens.*, tailwind.config.*, CSS variables)

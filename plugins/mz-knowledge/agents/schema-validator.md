@@ -46,7 +46,7 @@ If the vault directory is not accessible, emit `STATUS: BLOCKED` with the offend
 
 Read `schema_path` using the Read tool. Parse the YAML body and extract the `note_types:` map. For each note_type key, capture:
 
-- `required`: list of frontmatter keys that MUST be present.
+- `required`: list of frontmatter keys that must be present.
 - `optional`: list of frontmatter keys that MAY be present.
 - `allowed_values`: map of `<field>: [v1, v2, ...]` constraining specific string fields to a closed enum.
 
@@ -69,8 +69,8 @@ For each note file:
 1. If `type:` is present but the schema has no matching `note_types.<type>` entry, skip the note (pass-through).
 1. If the schema HAS a matching entry, run the following checks against the frontmatter block:
    - **Required-key check** — for every key in `required`, if the key is missing from the frontmatter, record a `Critical:` finding with `rule_violated: required_field_missing` and `suggestion: "Add <key>: <value> to frontmatter."`.
-   - **Allowed-values check** — for every key in `allowed_values`, if the frontmatter contains the key and its value is NOT in the declared list, record a `Critical:` finding with `rule_violated: allowed_values_violation` and `suggestion: "Change <key> to one of: <list>."`.
-   - **Unknown-key suggestion** — for every frontmatter key that is NOT in `required`, NOT in `optional`, and NOT `type`, record a `Nit:` finding with `rule_violated: unknown_key` and `suggestion: "Either remove <key> or add it to the schema's 'optional' list."`.
+   - **Allowed-values check** — for every key in `allowed_values`, if the frontmatter contains the key and its value is not in the declared list, record a `Critical:` finding with `rule_violated: allowed_values_violation` and `suggestion: "Change <key> to one of: <list>."`.
+   - **Unknown-key suggestion** — for every frontmatter key that is not in `required`, not in `optional`, and not `type`, record a `Nit:` finding with `rule_violated: unknown_key` and `suggestion: "Either remove <key> or add it to the schema's 'optional' list."`.
 
 Record each finding shape: `{path, note_type, severity, rule_violated, suggestion}`.
 

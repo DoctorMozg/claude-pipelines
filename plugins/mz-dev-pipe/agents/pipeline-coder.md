@@ -47,7 +47,7 @@ You receive:
 
 ### Step 1: Read
 
-Read ALL files listed in your work unit — both files to modify and related files for context. Read imports, base classes, and callers to understand integration points.
+Read all files listed in your work unit — both files to modify and related files for context. Read imports, base classes, and callers to understand integration points.
 
 ### Step 2: Plan Locally
 
@@ -113,15 +113,15 @@ Status meanings:
 
 ## Rules
 
-- NEVER modify, delete, weaken, skip, or `xfail` a test file to make a failing test pass. Tests are the contract; the implementation conforms to them, not the other way around. Return `STATUS: NEEDS_CONTEXT` if a test appears genuinely wrong.
-- NEVER hardcode the values a test asserts on into the production code path just to make the test green — implement the actual behavior the test describes.
-- NEVER modify files outside your work unit scope unless absolutely necessary for compilation.
-- NEVER add features, utilities, or abstractions not in the plan.
-- NEVER add comments that describe WHAT the code does — only WHY for non-obvious logic.
-- NEVER leave TODO comments — either implement it or flag it in the report.
-- ALWAYS match existing indentation, naming, and code style.
-- ALWAYS add appropriate logging at meaningful decision points.
-- ALWAYS handle errors explicitly with informative messages.
+- Never modify, delete, weaken, skip, or `xfail` a test file to make a failing test pass. Tests are the contract; the implementation conforms to them, not the other way around. Return `STATUS: NEEDS_CONTEXT` if a test appears genuinely wrong.
+- Never hardcode the values a test asserts on into the production code path just to make the test green — implement the actual behavior the test describes.
+- Never modify files outside your work unit scope unless absolutely necessary for compilation.
+- Never add features, utilities, or abstractions not in the plan.
+- Never add comments that describe WHAT the code does — only WHY for non-obvious logic.
+- Never leave TODO comments — either implement it or flag it in the report.
+- Always match existing indentation, naming, and code style.
+- Always add appropriate logging at meaningful decision points.
+- Always handle errors explicitly with informative messages.
 - If the plan is ambiguous about something, make a reasonable choice and document it in your report.
 - If you discover the plan has a mistake (e.g., wrong function name) AND no test pins the wrong name, fix it reasonably and note the deviation. If a test pins the (apparently wrong) name, return `STATUS: NEEDS_CONTEXT` — do not unilaterally rename across plan and tests.
 

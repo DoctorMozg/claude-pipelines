@@ -37,7 +37,7 @@ Create `<vault>/.mz/memory/` for project memory.
 
 ## Step 2: Write CLAUDE.md
 
-If `ExistingCLAUDE` is true, do NOT overwrite. Instead:
+If `ExistingCLAUDE` is true, do not overwrite. Instead:
 
 1. Read the existing `<vault>/CLAUDE.md`.
 1. Check which sections are missing compared to the template (Vault Context, Obsidian Syntax, Folder Layout, Note Conventions, Compounding Wiki Principle, Don'ts, Rename Safety, Health Checks).

@@ -89,7 +89,7 @@ Git links:    <commit / branch / PR, or "implementation pending">
 Recommended:  <the /build … line, or the circulate-RFD line>
 ```
 
-Then mark `state.md`: `Status: complete`, `Phase: 5`, `phase_complete: true`, `what_remains: []`, stamp `last_verified: <ISO>`, and confirm the `docs/` artifact path is in `FilesWritten`. `what_remains` MUST be `[]` at completion.
+Then mark `state.md`: `Status: complete`, `Phase: 5`, `phase_complete: true`, `what_remains: []`, stamp `last_verified: <ISO>`, and confirm the `docs/` artifact path is in `FilesWritten`. `what_remains` must be `[]` at completion.
 
 ## Notes
 

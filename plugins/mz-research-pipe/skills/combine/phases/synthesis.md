@@ -94,7 +94,7 @@ The top-level report sections come from one of two sources, chosen by whether th
 1. Log `sections_source: user-supplied` in `state.md`.
 1. If synthesis content does not map cleanly into one of the user-supplied sections, keep that section header in the report with the body `See Executive Summary` — do not silently drop it and do not silently re-derive additional sections.
 
-**If `sections:` was NOT supplied**, derive report sections from the task text. This is `/combine`'s task-adaptive behavior and has no in-repo precedent:
+**If `sections:` was not supplied**, derive report sections from the task text. This is `/combine`'s task-adaptive behavior and has no in-repo precedent:
 
 1. Tokenize the task text on whitespace. Lowercase the tokens. Remove stopwords (`the`, `a`, `and`, `or`, `of`, `to`, `in`, `on`, `for`, `with`, `our`, `we`, `i`, `about`, `from`, `that`, `this`, `what`, `how`, `why`, `when`).
 1. Extract noun phrases. A noun phrase is any 1–3 contiguous token run that does not contain a stopword and that names a concrete artifact, component, or concept (e.g., `auth refactor`, `websocket reconnection logic`, `caching layer invalidation`, `rate limiter`). If the task text is short, single-token phrases are acceptable.

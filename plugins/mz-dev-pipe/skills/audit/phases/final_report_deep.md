@@ -78,7 +78,7 @@ Tracks BLOCKING findings across audit runs. Each row is a single finding.
 
 For each **BLOCKING finding** (findings with ID `ROLLBACK-N` or findings with `BLOCKING` in their description from rollback rehearsal) produced by this run: append one row with `status=open`, `first_seen=<today>`, `needs_resolution_by=<today + 14 days>`.
 
-Do NOT modify existing rows in the ledger. Append-only. Deduplication across runs (same `file_line` + same finding semantics) is out of scope for this skill — users can manually close rows when resolved in follow-up work.
+Do not modify existing rows in the ledger. Append-only. Deduplication across runs (same `file_line` + same finding semantics) is out of scope for this skill — users can manually close rows when resolved in follow-up work.
 
 ## 4.3 Report to user
 

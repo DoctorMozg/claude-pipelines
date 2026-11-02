@@ -150,7 +150,7 @@ On completion, print the summary block from `<task_dir>/summary.md` covering fil
 ## References
 
 - `${CLAUDE_SKILL_DIR}/references/language-codes.md`: ISO 639-1 normalization table, regional-variant collapse, script-based language detection and the anti-injection allow-list. Grep it in Phase 1 for the row or section a target or source token needs.
-- `${CLAUDE_SKILL_DIR}/references/markdown-preservation-rules.md`: what a translator may and may not rewrite in Markdown (NEVER and ALWAYS translate tables, frontmatter, code fences) and the Tier-1 structural parity checks. Grep it for the element type a chunk contains.
+- `${CLAUDE_SKILL_DIR}/references/markdown-preservation-rules.md`: what a translator may and may not rewrite in Markdown (never and always translate tables, frontmatter, code fences) and the Tier-1 structural parity checks. Grep it for the element type a chunk contains.
 - `${CLAUDE_SKILL_DIR}/references/placeholder-patterns.md`: regexes for i18n and format-string placeholders by framework, plus the combined ripgrep recipe and substitution strategy. Grep it for the framework section a chunk uses; translators do this in Phase 2.
 
 ## State Management

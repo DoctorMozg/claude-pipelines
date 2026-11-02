@@ -137,7 +137,7 @@ Seed signal (already gathered, may be empty): <the Phase 1 light-pass public-act
 Recency window: 12 months.
 Output file: <PROJECT_ROOT>/.mz/task/<task_name>/profiles/<contact_slug>.json
 
-Assert a Social Style ONLY with at least one citable public-footprint cue. With no
+Assert a Social Style only with at least one citable public-footprint cue. With no
 citable cue, leave social_style null and populate role_priorities from the title.
 Emit a calibration_directive that shapes structure, length-bias, pacing, and which
 angle leads - never naming or alluding to the trait, never touching the salutation,
@@ -190,7 +190,7 @@ Greeting: open with ONE salutation line, then the hook on the next line.
   Voice-adaptive: "Hi <first_name>," (warm) / "Hello <first_name>," (neutral)
   / "Dear <title last_name>," (formal). For email_generic keep "Hi <first_name>,"
   when the recipient name is known, else "Hello,". For linkedin_dm always the
-  casual "Hi <first_name>,". The salutation is NOT the opening hook - the first
+  casual "Hi <first_name>,". The salutation is not the opening hook - the first
   sentence after it must still carry the personalization hook.
 Opening hook: pick exactly ONE item from brief.personalization_hooks (use
   the most specific, verifiable one - prefer items tagged source: deeper_intel
@@ -212,7 +212,7 @@ Sign-off: close with a voice-adaptive gratitude line, then the sender's first
   "Best regards,"; formal -> "Sincerely,". At most one thank-you; do not
   over-thank. For linkedin_dm use a short "Thanks," then the first name -
   nothing formal.
-Punctuation: plain ASCII only. Do NOT use em-dashes or en-dashes anywhere -
+Punctuation: plain ASCII only. Do not use em-dashes or en-dashes anywhere -
   use a hyphen "-", a comma, or split the sentence. Straight quotes only, no
   curly quotes, no ellipsis character.
 Channel-specific constraints:
@@ -221,7 +221,7 @@ Frontmatter requirement: emit the YAML block at the very top of the output
   file with no content above it. The block must contain `subject` (email only,
   <=55 chars, about 6-7 words), `channel`, and `recipient`. The naturalizer
   preserves the frontmatter automatically - the subject is safest inside it.
-Evidence available (use as written - do NOT extend):
+Evidence available (use as written - do not extend):
   - Verified entities: <list from brief.verified_entities>
   - Personalization signals: <list from brief.personalization_hooks>
   - Recent news with implications: <list from brief.card_recent_news>

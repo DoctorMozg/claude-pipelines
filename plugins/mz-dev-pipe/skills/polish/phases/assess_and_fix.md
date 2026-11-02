@@ -42,7 +42,7 @@ I need clarification on these criteria:
 1. "<ambiguous criterion>" — How should I verify this? What does "correct" look like?
 ```
 
-Do NOT proceed with unclear criteria. Get clarity first.
+Do not proceed with unclear criteria. Get clarity first.
 
 ### 1.4 Save assessment
 
@@ -70,7 +70,7 @@ For each **simple** failure, fix it directly (no agent needed):
 After quick fixes, re-run all failing criteria checks.
 Update the criteria checklist in state.md.
 
-If ALL criteria now pass → skip to Phase 5 (Optimization). Read `phases/fix_review_and_finalize.md` and jump to Phase 5.
+If all criteria now pass → skip to Phase 5 (Optimization). Read `phases/fix_review_and_finalize.md` and jump to Phase 5.
 
 ______________________________________________________________________
 

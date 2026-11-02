@@ -88,7 +88,7 @@ Use the brief to balance primary, adjacent, and productive-tension lenses. Behav
 **Approve** → begin 3 rounds of expert critique  ·  **Reject** → cancel task, no rounds will run  ·  reply with feedback to revise
 ```
 
-**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must NOT re-embed the panel — it lives in the plan message above.
+**Surface 2 — call AskUserQuestion.** After the plan message, call AskUserQuestion. The question must not re-embed the panel — it lives in the plan message above.
 
 - question: `The panel above is ready for review.`
 - header: `Panel`

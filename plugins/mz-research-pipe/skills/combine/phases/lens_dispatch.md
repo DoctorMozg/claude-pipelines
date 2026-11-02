@@ -45,8 +45,8 @@ You are the <LENS_NAME> lens of a /combine synthesis run.
 <NEWLINE_SEPARATED_FILE_LIST>
 
 ## Hard constraints
-- LOCAL-ONLY: do NOT use WebSearch or WebFetch. If you need a fact that is not in the listed files, mark it as a gap — do not search the web.
-- Read ONLY the listed files. Do not open any file not in the list above, regardless of references found within them.
+- LOCAL-ONLY: do not use WebSearch or WebFetch. If you need a fact that is not in the listed files, mark it as a gap — do not search the web.
+- Read only the listed files. Do not open any file not in the list above, regardless of references found within them.
 - Output budget: <=300 lines total. Favor extracts over paraphrase.
 
 ## What to extract
@@ -67,7 +67,7 @@ End your response with a final line: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_C
 
 After the parallel wave returns, the **orchestrator** (not a sub-agent) writes each response to its `extract_<LENS_NAME>.md` artifact via the Write tool — one Write call per returned lens, before Phase 2.3 reads the extract files.
 
-**Why the ban is absolute**. The "Read ONLY the listed files" line has no escape clause. A prior draft allowed "unless a listed file references another file essential to understanding it" — that clause is banned because it lets the agent follow import chains indefinitely and detonates the context budget. If a referenced file is actually needed, Phase 1.3 should have included it; if Phase 1.3 missed it, the agent reports it as a `GAP` and the user adds it at the next decomposition pass.
+**Why the ban is absolute**. The "Read only the listed files" line has no escape clause. A prior draft allowed "unless a listed file references another file essential to understanding it" — that clause is banned because it lets the agent follow import chains indefinitely and detonates the context budget. If a referenced file is actually needed, Phase 1.3 should have included it; if Phase 1.3 missed it, the agent reports it as a `GAP` and the user adds it at the next decomposition pass.
 
 ### Per-lens customizations
 
@@ -81,7 +81,7 @@ The five structural default lenses each have characteristic inputs and extract p
 
 **codebase** — The file list is source files narrowed by the `scope:` parameter if set, otherwise by task-text filename hints from Phase 1.2. Favor extracts that capture concrete function signatures, module boundaries, invariant-bearing constants, and any `TODO` / `FIXME` / `HACK` markers that are relevant to the task. Quote short excerpts with `file:line` citations rather than long copy-pastes — the 300-line output budget is easy to blow here. When the codebase contradicts what the `research` or `tasks` lens says on disk, that is the most load-bearing `CONFLICT DETECTED` the orchestrator will receive; flag it clearly.
 
-**git_history** — The file list is a bounded slice of `git log --oneline` output plus any specific commits the task text references by hash or message. Favor extracts that capture the chronology: who changed what, when, and why (commit messages are first-class extracts here — quote them). If the task is asking "what did we try", the git_history lens is the primary source for the answer. Do NOT run `git show` on every commit; only pull full diffs for commits whose messages the task explicitly names. If the `git_history` bucket was marked unavailable in Phase 1.1, the orchestrator did not dispatch this lens and this paragraph does not apply.
+**git_history** — The file list is a bounded slice of `git log --oneline` output plus any specific commits the task text references by hash or message. Favor extracts that capture the chronology: who changed what, when, and why (commit messages are first-class extracts here — quote them). If the task is asking "what did we try", the git_history lens is the primary source for the answer. Do not run `git show` on every commit; only pull full diffs for commits whose messages the task explicitly names. If the `git_history` bucket was marked unavailable in Phase 1.1, the orchestrator did not dispatch this lens and this paragraph does not apply.
 
 ______________________________________________________________________
 
@@ -162,7 +162,7 @@ When the wave returns, emit a post-wave rollup — a `<returned>/<dispatched>` c
    - **`DONE`** / **`DONE_WITH_CONCERNS`** — Accept. The answer (or `UNVERIFIED` marker) is usable.
    - **`NEEDS_CONTEXT`** — A web researcher that needs context from local sources is a design error; escalate via `AskUserQuestion` rather than re-dispatching, because the web researcher does not have the local file list and should not be asked to read it.
    - **`BLOCKED`** — Never auto-retry; escalate, or if the blocker is "no network", see Error Handling below.
-1. **Merge by reference, not by copy**. Do NOT inline the full gap-fill text into the synthesis or the final report. Cite only the one-line answer, the primary source URL, and the confidence. The full `gapfill_<GAP_ID>.md` stays on disk as the audit trail. This matters because gap-fills are often long and citation-heavy; copying them in would blow the report length and make it unreadable.
+1. **Merge by reference, not by copy**. Do not inline the full gap-fill text into the synthesis or the final report. Cite only the one-line answer, the primary source URL, and the confidence. The full `gapfill_<GAP_ID>.md` stays on disk as the audit trail. This matters because gap-fills are often long and citation-heavy; copying them in would blow the report length and make it unreadable.
 1. **Update `state.md`**:
    - `gapfill_wave: complete`
    - `gaps_resolved: <N>` — gaps whose gap-fill returned `DONE` / `DONE_WITH_CONCERNS` with a non-`UNVERIFIED` answer.

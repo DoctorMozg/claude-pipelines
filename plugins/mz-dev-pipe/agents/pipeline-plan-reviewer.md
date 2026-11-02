@@ -38,7 +38,7 @@ For every file path in the plan:
 
 ### Step 2: Check Completeness
 
-- Does the plan cover ALL aspects of the task description?
+- Does the plan cover all aspects of the task description?
 - Are integration points complete? Check for:
   - Factory registrations
   - Router/endpoint registrations
@@ -65,7 +65,7 @@ The downstream pipeline (build skill) writes tests BEFORE any implementation exi
 - Are negative/error cases covered?
 - Would these tests actually catch regressions?
 - Is the test strategy achievable with the project's test infrastructure?
-- **Test-first authorability**: for each work unit, can a test writer with NO reference implementation author the listed tests from the plan alone? Specifically:
+- **Test-first authorability**: for each work unit, can a test writer with no reference implementation author the listed tests from the plan alone? Specifically:
   - Is the public interface (signatures, inputs, outputs, error types) concrete?
   - Are inputs and expected outputs specified with concrete values, or only as "valid input → correct result" abstractions that require reading an implementation to instantiate?
   - Are error tests pinned to specific exception classes or sentinel values?
@@ -158,7 +158,7 @@ After emitting the VERDICT line, emit exactly one terminal STATUS line:
 - No architectural red flags
 - Zero `Critical:` findings exist
 
-**FAIL** if ANY of:
+**FAIL** if any of:
 
 - Referenced files or functions don't exist
 - Task requirements are missing from the plan

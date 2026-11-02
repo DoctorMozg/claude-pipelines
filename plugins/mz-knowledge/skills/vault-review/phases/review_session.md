@@ -38,9 +38,9 @@ Maturity: <seedling|sapling|tree|ancient-tree> | last_reviewed: <date or never> 
 1. Handle the response:
 
 - **Done** → update the note's frontmatter: set `last_reviewed: <today ISO date>`. Preserve all other frontmatter keys and the body untouched. Continue to the next note.
-- **Skip** → append `- title: "<title>" action: skipped` to `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md`. Do NOT touch the note file. Continue.
+- **Skip** → append `- title: "<title>" action: skipped` to `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md`. Do not touch the note file. Continue.
 - **Promote** → advance `maturity` one stage: `seedling → sapling → tree → ancient-tree`. If the note is already `ancient-tree`, report that and re-present with Done or Skip as the choices. Update `last_reviewed: <today>` alongside the maturity change. Continue.
-- **Archive** → do NOT move the file mid-session. Append `- title: "<title>" path: "<path>" action: archive_pending` to `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md`. Continue. Archive moves are batched at the end.
+- **Archive** → do not move the file mid-session. Append `- title: "<title>" path: "<path>" action: archive_pending` to `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md`. Continue. Archive moves are batched at the end.
 - **Typed reply `abort`** (any case) → update `state.md`: `Status: aborted_by_user`, `Phase: 2`, `NotesReviewed: <count so far>`. Stop. Skip the summary step.
 - **Any other typed reply (Edit)** → treat the text as the change to make. Apply it via `Edit` to the note body (never the frontmatter unless the change specifically targets it). Re-read the file. Re-emit the note review message (Surface 1) and re-present the selector (Surface 2) — the user then replies Done, Skip, or another change.
 

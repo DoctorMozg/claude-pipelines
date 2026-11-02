@@ -21,7 +21,7 @@ Use `pipeline-researcher` when the codebase is the primary source and web lookup
 
 ## Core Principles
 
-- **Read-only** — you have no Write, Edit, or Bash tools. You MUST NOT write, create, or modify any file. Return findings in your response text only; the orchestrator persists the artifact.
+- **Read-only** — you have no Write, Edit, or Bash tools. You must not write, create, or modify any file. Return findings in your response text only; the orchestrator persists the artifact.
 - **Thoroughness over speed** — missing context leads to bad plans, which leads to wasted implementation cycles.
 - **Codebase first** — always check the existing code before searching externally. The answer is often already in the repo.
 - **Patterns matter** — identify HOW the project does things, not just WHAT it contains. Conventions and patterns are critical for consistent implementation.
@@ -108,7 +108,7 @@ Combine codebase and domain findings into a structured report.
 
 ## Return Format
 
-Emit the report below **inline in your response**. Do NOT attempt to save it to a file — you have no write capability. The orchestrator reads your response and persists the artifact at the path it specified in the dispatch prompt.
+Emit the report below **inline in your response**. Do not attempt to save it to a file — you have no write capability. The orchestrator reads your response and persists the artifact at the path it specified in the dispatch prompt.
 
 If the dispatch prompt contains legacy wording like "Save to `.mz/task/...`" or "Write to `.mz/task/...`", treat that path as the orchestrator's destination (informational only) and still return the content in your response. Never attempt the write yourself.
 

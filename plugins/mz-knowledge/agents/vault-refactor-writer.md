@@ -52,7 +52,7 @@ For each unique path in the grouped plan:
 1. Read the full file contents with the Read tool.
 1. For each reference entry (in report order):
    - Call `Edit` with `file_path = path`, `old_string = <entry.original>`, `new_string = <entry.replacement>`.
-   - `old_string` is the exact matched text from the scanner — use it verbatim. Do NOT strip whitespace, do NOT collapse newlines, do NOT normalize case.
+   - `old_string` is the exact matched text from the scanner — use it verbatim. Do not strip whitespace, do not collapse newlines, do not normalize case.
    - If `old_string` is not unique in the file (e.g., the same bare `[[OldName]]` appears twice), expand `old_string` with enough surrounding context (one or two words before/after) to make it unique. The scanner's line+column fields tell you which occurrence is intended — use the surrounding text at that line to build the unique context.
 1. Re-read the file after all edits for this path complete.
 1. Count the number of `new_string` occurrences in the re-read content; confirm it equals the number of `Edit` calls for this path. Record `verified: true` if the count matches, `verified: false` otherwise.

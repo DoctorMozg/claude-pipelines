@@ -84,7 +84,7 @@ Each section has a one-line description, example inputs, PCRE2-compatible regex 
 
 **Description**: Plural-selection block. The `#` inside the body is a back-reference to the selector variable. Body text inside each category branch IS translatable, but it must be translated per target-language plural rules, not as free prose.
 
-**Nesting**: **Yes — contains translatable text.** Do NOT flatten with naive substitution. See **Nested-placeholder handling** below. The inner bodies can themselves contain other placeholders (e.g. `{count, plural, one {one {item}} other {# {item}s}}`).
+**Nesting**: **Yes — contains translatable text.** Do not flatten with naive substitution. See **Nested-placeholder handling** below. The inner bodies can themselves contain other placeholders (e.g. `{count, plural, one {one {item}} other {# {item}s}}`).
 
 **Substitution**: Extract the entire block as one `[[Pn]]` token, translate the bodies separately per target plural-rule set, reassemble.
 
@@ -194,7 +194,7 @@ Each section has a one-line description, example inputs, PCRE2-compatible regex 
 <[A-Za-z][A-Za-z0-9]*>[^<]*</[A-Za-z][A-Za-z0-9]*>
 ```
 
-**Description**: Named JSX child placeholder. The tag name maps to a component/function in the Trans `components` prop. Inner text IS translatable, tag names are NOT.
+**Description**: Named JSX child placeholder. The tag name maps to a component/function in the Trans `components` prop. Inner text IS translatable, tag names are not.
 
 **Nesting**: Inner text is translatable. Tag name must match opening and closing — a typo breaks the render.
 
@@ -383,7 +383,7 @@ ICU plural and select blocks are the one class of placeholder where the body tex
 1. Reassemble: `{count, plural, <forms>}` with the translated bodies, keeping the selector variable name (`count`) and the keyword (`plural`) identical.
 1. Restore the assembled block in place of `[[Pn]]` in the final output.
 
-Do NOT pass ICU plural/select blocks through the flat substitution + translate + restore loop. The inner bodies will never be translated, or worse, the outer structure will be mangled. These blocks need structural handling.
+Do not pass ICU plural/select blocks through the flat substitution + translate + restore loop. The inner bodies will never be translated, or worse, the outer structure will be mangled. These blocks need structural handling.
 
 ## Known gotchas
 

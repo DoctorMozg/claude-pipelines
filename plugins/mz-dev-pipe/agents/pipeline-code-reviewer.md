@@ -186,7 +186,7 @@ The orchestrator branches on `STATUS:` first; the verdict line is read only when
 
 Nits, Optionals, and FYIs are advisory and never block PASS.
 
-**FAIL** if ANY `Critical:` finding exists, including:
+**FAIL** if any `Critical:` finding exists, including:
 
 - Logic bugs that cause incorrect behavior
 - Security vulnerabilities
@@ -194,7 +194,7 @@ Nits, Optionals, and FYIs are advisory and never block PASS.
 - Integration points missing (registrations, exports, etc.)
 - Resource leaks or error handling gaps in critical paths
 
-## Common False Positives — Do NOT Flag These
+## Common False Positives
 
 - **Missing null check when the type system guarantees non-null.**
 - **"Missing error handling" on framework-managed code** (the framework catches exceptions).

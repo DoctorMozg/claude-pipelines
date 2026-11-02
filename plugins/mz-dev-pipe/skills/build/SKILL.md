@@ -68,7 +68,7 @@ Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's 
 
 **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
 
-**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line MUST be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
+**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
 
 Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Pass `project_root: <PROJECT_ROOT>` and `output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`. If it returns `DONE_WITH_CONCERNS` with the test or lint command set to "none detected", note `tooling: not_detected` in `state.md` and proceed. If it returns `BLOCKED` (it couldn't write `tooling.md`), record the reason in `state.md` and proceed the same way. Tooling gaps are non-fatal at setup time.
 
@@ -119,7 +119,7 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet
 
 - **Approve** → add `- plan approved: .mz/task/<task_name>/plan.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: plan_approved`, and proceed to Phase 3.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
-- **Any other reply (feedback)** → spawn `pipeline-planner` with feedback, overwrite `plan.md`. Do NOT re-run plan review — user's word is final. Return to Surface 1, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
+- **Any other reply (feedback)** → spawn `pipeline-planner` with feedback, overwrite `plan.md`. Do not re-run plan review — user's word is final. Return to Surface 1, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
@@ -149,7 +149,7 @@ Detect tooling, run linters/formatters, then run the **full test suite** includi
 
 ### Phase 9: Final Code Review
 
-Last validation pass over ALL code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 9. Set `Phase: final_review_passed`.
+Last validation pass over all code with `pipeline-code-reviewer`. See `phases/finalization.md` → Phase 9. Set `Phase: final_review_passed`.
 
 ### Phase 10: Refactor (Optimization)
 
@@ -189,4 +189,4 @@ An agent returns nothing usable → `<PLUGIN_ROOT>/shared/retry-policy.md`: re-d
 
 After each phase, update `state.md` with current phase, iteration counts, files modified, and escalation notes. Allows resumption if interrupted.
 
-Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it MUST be `[]` when `Status: complete`. Stamp `last_verified` whenever a lint/test/review gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.
+Maintain the progress ledger on every phase transition: set `phase_complete: false` on entering a phase and `true` only once its artifacts are written and its gates pass; refresh `what_remains` (outstanding work as plain strings) — it must be `[]` when `Status: complete`. Stamp `last_verified` whenever a lint/test/review gate passes clean. Reading a `schema_version: 1` or unversioned `state.md` upgrades it in place: add the ledger keys, set `schema_version: 2`, and log the upgrade. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`.
