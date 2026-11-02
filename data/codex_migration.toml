@@ -2,7 +2,7 @@ schema_version = 1
 source_marketplace = ".claude-plugin/marketplace.json"
 
 [[packages]]
-name = "mz-dev-base"
+name = "mz-base"
 disposition = "ready"
 # init-rules writes Claude settings.json hooks, and the CLAUDE.md -> AGENTS.md rewrite garbles its AGENTS.md guard.
 excluded_skills = ["init-rules"]

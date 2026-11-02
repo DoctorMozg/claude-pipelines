@@ -67,7 +67,7 @@ flowchart LR
 </details>
 
 <details>
-<summary><b>Take over a legacy codebase</b> &nbsp;·&nbsp; <code>mz-dev-base</code> + <code>mz-research-pipe</code> + <code>mz-dev-pipe</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
+<summary><b>Take over a legacy codebase</b> &nbsp;·&nbsp; <code>mz-base</code> + <code>mz-research-pipe</code> + <code>mz-dev-pipe</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
 
 ```mermaid
 flowchart LR
@@ -207,7 +207,7 @@ flowchart LR
 claude plugin marketplace add DoctorMozg/claude-pipelines
 
 # Install the plugins you need
-claude plugin install mz-dev-base       # Standalone agents + rules
+claude plugin install mz-base           # Standalone agents + rules
 claude plugin install mz-dev-git        # Branch & GitHub PR review
 claude plugin install mz-dev-pipe       # Autonomous dev pipelines
 claude plugin install mz-research-pipe  # Research & content pipelines
@@ -233,7 +233,7 @@ After installation, skills are available as slash commands:
 
 ## Plugins
 
-### [`mz-dev-base`](plugins/mz-dev-base/) — Foundation
+### [`mz-base`](plugins/mz-base/) — Foundation
 
 Standalone agents and skills for everyday development. No pipeline orchestration — each tool works independently.
 
@@ -244,7 +244,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 
 2 user-facing agents: code-reviewer (single-file/staged-diff review) and technical-writer (source-grounded docs). Ships 14 curated coding rules installable via `/init-rules`, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
 
-**[Full documentation →](plugins/mz-dev-base/)**
+**[Full documentation →](plugins/mz-base/)**
 
 ______________________________________________________________________
 
@@ -478,7 +478,7 @@ See [CLAUDE.md](CLAUDE.md) for repository structure and conventions.
 
 ## Credits
 
-Some rules in `mz-dev-base` were inspired by [iamfakeguru/claude-md](https://github.com/iamfakeguru/claude-md).
+Some rules in `mz-base` were inspired by [iamfakeguru/claude-md](https://github.com/iamfakeguru/claude-md).
 
 ## License
 

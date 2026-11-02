@@ -34,7 +34,7 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
 
     assert report.is_valid is True
     assert tuple(package.plan.name for package in packages) == (
-        "mz-dev-base",
+        "mz-base",
         "mz-dev-pipe",
         "mz-research-pipe",
         "mz-dev-git",
@@ -80,7 +80,7 @@ def test_migration_plan_excludes_skills_that_cannot_run_under_codex() -> None:
         package.plan.name: package.plan.excluded_skills
         for package in packages
         if package.plan.excluded_skills
-    } == {"mz-dev-base": ("init-rules",), "mz-dev-pipe": ("optimize",)}
+    } == {"mz-base": ("init-rules",), "mz-dev-pipe": ("optimize",)}
     skill_names = {
         Path(source).parent.name for package in packages for source in package.skill_sources
     }
@@ -157,7 +157,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
     )
 
     assert tuple(spec.catalog.suite_name for spec in specs) == (
-        "mz-dev-base",
+        "mz-base",
         "mz-dev-pipe",
         "mz-research-pipe",
         "mz-dev-git",
@@ -210,7 +210,7 @@ def test_blocked_package_cannot_build_a_codex_spec(
 ) -> None:
     plan = load_migration_plan(_PLAN_PATH)
     packages = discover_packages(plan, _REPOSITORY_ROOT)
-    package = next(item for item in packages if item.plan.name == "mz-dev-base")
+    package = next(item for item in packages if item.plan.name == "mz-base")
     package = package.model_copy(
         update={
             "plan": package.plan.model_copy(

@@ -194,7 +194,7 @@ For each rule in the approved plan:
    ```
    # Project Rules
 
-   <!-- This file is partially managed by mz-dev-base init-rules. Sentinel-wrapped blocks below are maintained automatically; content outside them is user-authored. -->
+   <!-- This file is partially managed by mz-base init-rules. Sentinel-wrapped blocks below are maintained automatically; content outside them is user-authored. -->
    ```
 
    Use `# Project Rules` for project scope, `# Global Rules` for global. Never overwrite an existing header.

@@ -1,6 +1,6 @@
-<p align="center"><img src="../../assets/hero/mz-dev-base.webp" alt="mz-dev-base: everyday dev foundations" width="100%"></p>
+<p align="center"><img src="../../assets/hero/mz-base.webp" alt="mz-base: everyday dev foundations" width="100%"></p>
 
-# mz-dev-base
+# mz-base
 
 Foundation plugin for Claude Code — standalone agents, coding rules, and utility skills for everyday development workflows.
 
@@ -8,7 +8,7 @@ Foundation plugin for Claude Code — standalone agents, coding rules, and utili
 
 ```bash
 claude plugin marketplace add DoctorMozg/claude-pipelines
-claude plugin install mz-dev-base
+claude plugin install mz-base
 ```
 
 ## Skills

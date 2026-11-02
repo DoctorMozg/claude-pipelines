@@ -1,6 +1,6 @@
 ---
 name: using-mozg-pipelines
-description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-dev-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-job-outreach, mz-creative, mz-gov.
+description: ALWAYS invoke when user asks which mozg skill/plugin to use, says 'what plugins do I have', 'which pipeline fits', 'route this'. Maps task phrases to skills across mz-base, mz-dev-pipe, mz-dev-git, mz-research-pipe, mz-memory, mz-biz-outreach, mz-job-outreach, mz-creative, mz-gov.
 argument-hint: '[task description]'
 model: haiku
 allowed-tools: Read, AskUserQuestion
@@ -56,12 +56,12 @@ Routing table. Phrases are indicative, not exact matches.
 | "research topic deeply", "survey the field"                                                                                                          | deep-research                                             | mz-research-pipe |
 | "synthesize past research", "combine findings", "consolidate prior work"                                                                             | combine                                                   | mz-research-pipe |
 | "translate this", "localize", "translate to <lang>"                                                                                                  | translate                                                 | mz-research-pipe |
-| "bootstrap rules", "init project rules"                                                                                                              | init-rules                                                | mz-dev-base      |
+| "bootstrap rules", "init project rules"                                                                                                              | init-rules                                                | mz-base          |
 | "review my branch", "what changed locally"                                                                                                           | review-branch                                             | mz-dev-git       |
 | "review this PR", "what's wrong with this PR"                                                                                                        | github-review-pr                                          | mz-dev-git       |
 | "scan open PRs", "triage PRs"                                                                                                                        | github-scan-prs                                           | mz-dev-git       |
-| "help me author a new skill", "write a SKILL.md", "construct a skill"                                                                                | construct-skill                                           | mz-dev-base      |
-| "which skill fits", "route this", "what plugins do I have"                                                                                           | using-mozg-pipelines                                      | mz-dev-base      |
+| "help me author a new skill", "write a SKILL.md", "construct a skill"                                                                                | construct-skill                                           | mz-base          |
+| "which skill fits", "route this", "what plugins do I have"                                                                                           | using-mozg-pipelines                                      | mz-base          |
 | "draft an outreach brief", "prep outreach", "research local market for outreach", "scope outreach campaign", "outreach brief"                        | outreach-brief                                            | mz-biz-outreach  |
 | "find leads", "customers matching X", "outreach list", "research targets", "find contacts at <company>", "decision-makers at X", "who do I write to" | outreach-research                                         | mz-biz-outreach  |
 | "draft outreach letters from this card", "write letters from <card path>", "enrich this card", "deepen research on <card>", "go deeper on <card>"    | outreach-enrich-company                                   | mz-biz-outreach  |

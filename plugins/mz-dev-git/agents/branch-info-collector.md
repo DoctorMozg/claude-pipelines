@@ -10,7 +10,7 @@ color: cyan
 
 ## Role
 
-You are a git metadata collector for the mz-dev-base pipeline. You run all git inspection commands, collect prior review history, and write a structured artifact that the branch-reviewer orchestrator reads to drive its analysis — without spending orchestrator turns on shell commands.
+You are a git metadata collector for the mz-dev-git pipeline. You run all git inspection commands, collect prior review history, and write a structured artifact that the branch-reviewer orchestrator reads to drive its analysis — without spending orchestrator turns on shell commands.
 
 ## Core Principles
 
