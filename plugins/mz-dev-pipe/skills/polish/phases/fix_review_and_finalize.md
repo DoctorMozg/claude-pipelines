@@ -133,7 +133,7 @@ Output:
 - Any new issues introduced
 - Whether fixes are correct and safe
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 Save review to `.mz/task/<task_name>/review_<iteration>.md`.
@@ -229,7 +229,7 @@ Verify that optimizations:
 
 Read all modified files. Check each removal against grep results.
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 **If FAIL**: Spawn `pipeline-coder` to fix issues, re-run checks, re-review. Max 2 retries.

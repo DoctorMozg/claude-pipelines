@@ -43,7 +43,6 @@ When using WebSearch/WebFetch, enforce this source priority:
 
 Emit disclosure tokens in your output when applicable:
 
-- `STACK DETECTED: N/A — outreach strategy research for <goal>` before web research.
 - `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree.
 - `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
 

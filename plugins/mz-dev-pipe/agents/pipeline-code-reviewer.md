@@ -157,7 +157,7 @@ The orchestrator branches on `STATUS:` first; the verdict line is read only when
 ## Notes
 <Observations that don't require changes but are worth noting>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ## Common Rationalizations

@@ -2,7 +2,7 @@
 
 ## Phase 4: Scan
 
-Dispatch one `outreach-scanner` per company in parallel **waves of ≤6 concurrent agents per single assistant message**. Scanners are writer agents (they rewrite the company JSON), so the 6-agent wave cap applies. Run sequential waves until every company has been scanned. Never dispatch with `run_in_background: true` — backgrounded writer agents have their writes silently dropped.
+Dispatch one `outreach-scanner` per company in parallel **waves of ≤6 concurrent agents per single assistant message**. Scanners are writer agents (they rewrite the company JSON), so the 6-agent wave cap applies. Run sequential waves until every company has been scanned. Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
 ```
 Scan this company for reviews and reputation data.
@@ -39,7 +39,7 @@ For each company JSON in companies/ (skip any with enrichment_skipped: true), pr
    - outreach-news-finder → _enrichment/<slug>/news.json
    - outreach-growth-analyst → _enrichment/<slug>/growth.json
    - outreach-tech-analyst → _enrichment/<slug>/tech.json
-1. Wait for all 4 agents to return (artifact files present on disk). Never dispatch with `run_in_background: true` — the 4 agents are writer agents.
+1. Wait for all 4 agents to report, then check that each artifact file exists on disk before using it.
 1. Read temps, merge into the company JSON (contacts, news, growth, tech_profile fields)
 1. Write updated JSON back to companies/<slug>.json
 1. Delete _enrichment/<slug>/
@@ -80,7 +80,7 @@ ______________________________________________________________________
 
 ## Phase 7: Write Cards
 
-Dispatch `outreach-card-writer` agents one per non-skipped company, in parallel **waves of ≤6 concurrent agents per single assistant message**. Card writers only read JSONs and write separate `.md` files, so there is zero conflict risk, but the 6-agent wave cap from `CLAUDE.md` Plugin Authoring Conventions still applies to every parallel dispatch. Run sequential waves until every non-skipped company has a card. Never dispatch with `run_in_background: true` — card writers are writer agents, and backgrounded writes are silently dropped.
+Dispatch `outreach-card-writer` agents one per non-skipped company, in parallel **waves of ≤6 concurrent agents per single assistant message**. Card writers only read JSONs and write separate `.md` files, so there is zero conflict risk, but the 6-agent wave cap still applies to every parallel dispatch. Run sequential waves until every non-skipped company has a card. Wait for every agent in the wave to report, then check that each card exists on disk before using it.
 
 ```
 Write a complete company dossier card.

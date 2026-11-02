@@ -70,7 +70,7 @@ Use severity labels on every finding:
 - **Impact**: What the user experiences as a result
 - **Fix**: Specific fix — "align the action bar to the 8-col grid edge", "increase vertical spacing between card title and body from 4px to 12px", etc.
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ## Verdict Criteria

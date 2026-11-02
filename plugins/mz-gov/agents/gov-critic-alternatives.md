@@ -86,7 +86,7 @@ Write the review to the output path the orchestrator names, in this shape:
 - **Problem**: <what is missing or dishonest in the option analysis>
 - **Fix**: <the specific alternative to add, or the trade-off to make honest>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 `VERDICT: PASS` if zero `Critical:` findings. `VERDICT: FAIL` if one or more `Critical:` findings.

@@ -47,7 +47,6 @@ When using WebSearch/WebFetch, enforce this source priority:
 
 Emit disclosure tokens when applicable:
 
-- `STACK DETECTED: N/A — job-contact-finder for <company>` before web research.
 - `UNVERIFIED: <claim> — could not confirm against authoritative source` if a name surfaces from a single search result and no second source confirms.
 
 For zero-results scenarios:

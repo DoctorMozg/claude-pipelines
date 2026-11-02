@@ -105,7 +105,7 @@ Use TaskCreate for each pipeline phase.
 Resolve the argument into a concrete file list:
 
 - **`scope:` parameter given**: use the git-derived file list, applying standard exclusions
-- **Path-like tokens**: expand via Glob or directory walk
+- **Path-like tokens**: expand by listing the matching files or walking the directory
 - **Free-text only (no paths, no `scope:`)**: spawn a `pipeline-researcher` agent (model: **sonnet**) to identify which files match the description. If low confidence or multiple plausible interpretations, ask the user via AskUserQuestion.
 
 **Exclusions**: `.gitignore`, vendored deps, generated/lock files, files > 5000 LOC. Test files are NOT excluded — they're valuable context.

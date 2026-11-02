@@ -182,7 +182,7 @@ Legacy dispatch prompts may include phrasing like "Save to…" or "Write to…".
 ### Well-Written Tests
 <Acknowledge tests that are exemplary — good patterns worth keeping>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ### Status Protocol

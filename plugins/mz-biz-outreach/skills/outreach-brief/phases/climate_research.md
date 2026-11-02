@@ -1,6 +1,6 @@
 # Phase 2: Local-Climate Research
 
-Read `SKILL.md` first. This phase picks up after the brief is approved at Phase 1.5. It runs two agent waves per industry × region combo, then synthesizes the dossier inline. All research agents are writers — never dispatch with `run_in_background: true`, and never exceed `MAX_AGENTS_PER_WAVE` (6) concurrent agents per assistant message.
+Read `SKILL.md` first. This phase picks up after the brief is approved at Phase 1.5. It runs two agent waves per industry × region combo, then synthesizes the dossier inline. All research agents are writers. Wait for every agent in the wave to report, then check that each artifact exists on disk before using it. Never exceed `MAX_AGENTS_PER_WAVE` (6) concurrent agents per assistant message.
 
 ## 2.0 Build and cap the combo list
 
@@ -23,7 +23,7 @@ Dispatching climate source discovery — <N> agents in parallel
   …one line per combo in this wave
 ```
 
-Spawn one `outreach-climate-source-finder` per combo (waves of ≤6, foreground):
+Spawn one `outreach-climate-source-finder` per combo (waves of ≤6):
 
 ```
 Find the best local business-climate sources for this market:
@@ -45,7 +45,7 @@ Update `.mz/task/<task_name>/state.md` `Phase` to `climate_sources_complete`.
 
 ## 2.2 Wave B — climate research
 
-Emit the pre-dispatch manifest, then spawn one `outreach-climate-researcher` per combo (waves of ≤6, foreground):
+Emit the pre-dispatch manifest, then spawn one `outreach-climate-researcher` per combo (waves of ≤6):
 
 ```
 Research the local business climate for this market:

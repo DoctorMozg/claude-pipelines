@@ -50,7 +50,6 @@ When a dispatch asks you to use `WebSearch` or `WebFetch`, enforce this source p
 
 Emit disclosure tokens in the artifact or final response:
 
-- `STACK DETECTED: <stack + version>` when the dispatch involves a codebase stack detected from manifests; use `STACK DETECTED: N/A — <research context>` for non-code research.
 - `CONFLICT DETECTED: <source A> says X, <source B> says Y` when authoritative sources disagree.
 - `UNVERIFIED: <claim> — could not confirm against official source` when no authoritative source confirms a claim.
 

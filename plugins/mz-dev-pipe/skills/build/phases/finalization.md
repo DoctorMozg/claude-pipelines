@@ -125,7 +125,7 @@ Verify that:
 
 Read all modified files and spot-check removals.
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 **If FAIL**: Spawn `pipeline-coder` to fix issues, re-run checks. Max 2 retries before escalating.

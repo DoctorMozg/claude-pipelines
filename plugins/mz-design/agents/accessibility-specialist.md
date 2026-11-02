@@ -102,7 +102,7 @@ Emit both a `VERDICT:` line (for per-critic status) and a `WCAG_GATE:` line (the
 - **Impact**: Who is affected
 - **Fix**: Specific fix — "darken text.muted from #8A8A8A to #767676 to hit 4.54:1 on #FFFFFF"
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ## WCAG_GATE: PASS | FAIL
 ```
 

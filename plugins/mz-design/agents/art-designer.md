@@ -93,7 +93,7 @@ Use severity labels:
 - **Impact**: What mood or tone is broken
 - **Fix**: Specific fix
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ## Verdict Criteria

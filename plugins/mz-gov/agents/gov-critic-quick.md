@@ -79,7 +79,7 @@ Write the consolidated review to the output path the orchestrator names, in this
 - **Problem**: <the concern>
 - **Fix**: <specific remedy>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 `VERDICT: PASS` if zero `Critical:` findings across all four lenses. `VERDICT: FAIL` if one or more `Critical:` findings on any lens.

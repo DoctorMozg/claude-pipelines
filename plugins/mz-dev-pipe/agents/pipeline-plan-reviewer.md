@@ -32,7 +32,7 @@ Do not dispatch for creating plans — use `pipeline-planner`.
 
 For every file path in the plan:
 
-- Does it exist? (use Glob/Grep to check)
+- Does it exist? (list or search for the path to check)
 - Does it contain the functions/classes the plan references?
 - Are there other files the plan should mention but doesn't?
 
@@ -125,7 +125,7 @@ Prefix every finding title with exactly one severity label:
 ## What's Good
 <Acknowledge aspects of the plan that are well done>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ### Status Protocol

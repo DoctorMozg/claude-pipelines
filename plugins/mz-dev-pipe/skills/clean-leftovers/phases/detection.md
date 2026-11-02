@@ -6,7 +6,7 @@ This phase runs in the orchestrator itself — no subagent dispatch — because 
 
 ## 2.1 Load the catalog
 
-Use Grep against `references/artifact-catalog.md` for the per-category pattern blocks. Do not read the entire file. The catalog uses these grep anchors:
+Search `references/artifact-catalog.md` for the per-category pattern blocks. Do not read the entire file. The catalog uses these grep anchors:
 
 - `# Category A:` — AI signatures & watermarks
 - `# Category B:` — Pipeline phase markers

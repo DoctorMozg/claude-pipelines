@@ -93,7 +93,7 @@ Write the review to the output path the orchestrator names, in this shape:
 - **Problem**: <mismatch between door class and decision bar, or undisclosed irreversibility>
 - **Fix**: <state the class, justify the lock-in, add an escape hatch, or raise the bar>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 `VERDICT: PASS` if zero `Critical:` findings. `VERDICT: FAIL` if one or more `Critical:` findings.

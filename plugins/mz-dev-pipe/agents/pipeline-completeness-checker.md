@@ -102,7 +102,7 @@ Write the full report to `output_path`. The orchestrator reads this file as the 
 ## Summary
 <Final assessment — what was done well, what was missed, overall quality>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ## Common Rationalizations

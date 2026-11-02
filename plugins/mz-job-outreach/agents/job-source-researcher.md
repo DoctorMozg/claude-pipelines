@@ -75,7 +75,6 @@ Job mode emits no guidance-only entries.
 
 Emit when applicable:
 
-- `STACK DETECTED: N/A — <mode> board augmentation for <region/specialty>` before web research.
 - `CONFLICT DETECTED: <source A> says X, <source B> says Y` if you find conflicting access notes.
 - `UNVERIFIED: <claim> — could not confirm against authoritative source` when a board's region or specialty claim could not be verified.
 

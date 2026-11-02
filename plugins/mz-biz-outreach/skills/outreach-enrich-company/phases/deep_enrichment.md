@@ -27,7 +27,7 @@ If a field is missing in the card, pass `null` — that subagent then has wide-o
 
 ## 2.2 Dispatch plan (single wave, 5 agents in parallel)
 
-Dispatch all five subagents in **one parallel wave** via the Agent tool. The cap is 6 concurrent agents per wave; five fits cleanly in one. Foreground only — these agents write artifact files, so they must run in the foreground.
+Dispatch all five subagents in **one parallel wave** via the Agent tool. The cap is 6 concurrent agents per wave; five fits cleanly in one. Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
 | Subagent                  | Output path                                       | Existing-findings slice |
 | ------------------------- | ------------------------------------------------- | ----------------------- |

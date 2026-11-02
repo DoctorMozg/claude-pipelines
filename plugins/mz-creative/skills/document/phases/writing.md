@@ -31,7 +31,7 @@ Audience: <e.g., developers integrating the API, end users following a tutorial>
 Constraints from research.md: <copy any hard constraints listed there>
 ```
 
-Dispatch as a single Agent tool call. Use `subagent_type: expert-technical-writer`. Do not background the call — the orchestrator must wait for the result before Phase 3.
+Dispatch as a single Agent tool call. Use `subagent_type: expert-technical-writer`. Wait for its result before Phase 3.
 
 ### 2.3 Validate the output
 

@@ -42,8 +42,7 @@ For each wave in ascending order:
    - The `task_dir` path.
    - The reference table path: `<SKILL_DIR>/references/per-language-comment-syntax.md`.
    - The reminder line: `Read the reference table for your file's extension before tokenizing. Emit exactly one STATUS: line at end.`
-1. Wait for every agent in the current wave to return before launching the next wave. Sequential messages are sequential — a wave is exactly one assistant message with N parallel Agent calls.
-1. Never background a proposer (`run_in_background: true`). Proposers write proposal artifacts; background mode silently drops writes.
+1. Wait for every agent in the current wave to report, then check that each proposal artifact exists on disk before using it. Launch the next wave only after that. Sequential messages are sequential — a wave is exactly one assistant message with N parallel Agent calls.
 1. Never dispatch more than `MAX_PARALLEL` agents in one wave — split overflow into the next sequential wave.
 
 For each agent's terminal `STATUS:` line, update the row's `status` column in `dispatch_plan.md`:
@@ -95,7 +94,6 @@ Dispatch complete: <N> DONE, <N> DONE_WITH_CONCERNS, <N> blocked. Consolidating.
 ## Red Flags
 
 - You dispatched more than `MAX_PARALLEL` (=6) agents in a single message — the cap belongs to the orchestrator; the agents themselves do not enforce it.
-- You backgrounded any writer agent (proposers write proposal artifacts — they must complete in-foreground per the wave protocol).
 - You retried a `BLOCKED` proposer agent — BLOCKED is terminal and never auto-retried.
 - You retried a `NEEDS_CONTEXT` proposer more than once — escalate to `blocked` on the second attempt rather than looping a third time.
 - You forgot to set `state.md` → `Phase: 2_complete` before Phase 3 starts — consolidation runs against a stale phase marker.

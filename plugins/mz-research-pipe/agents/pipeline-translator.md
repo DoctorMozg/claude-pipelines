@@ -48,7 +48,6 @@ When a dispatch asks you to use `WebSearch` or `WebFetch`, enforce this source p
 
 Emit disclosure tokens in the artifact or final response:
 
-- `STACK DETECTED: <stack + version>` when the dispatch involves a codebase stack detected from manifests; use `STACK DETECTED: N/A — <research context>` for non-code research.
 - `CONFLICT DETECTED: <source A> says X, <source B> says Y` when authoritative sources disagree.
 - `UNVERIFIED: <claim> — could not confirm against official source` when no authoritative source confirms a claim.
 
@@ -80,7 +79,7 @@ For `mode: translate`, follow this sequence. Each step is a hard requirement, no
 
 1. **Read the source unit in full.** If a `chunk_range` was supplied, read only that range. Do not read beyond what the dispatch names.
 1. **Read the glossary.** Open `glossary.json` and note every source term that could appear in this chunk. Treat its assigned target translation as the only valid rendering.
-1. **Enumerate placeholders.** Grep the source chunk with the combined placeholder regex (see `## Placeholder Substitution Rules`). Record every match with its exact spelling and position.
+1. **Enumerate placeholders.** Search the source chunk with the combined placeholder regex (see `## Placeholder Substitution Rules`). Record every match with its exact spelling and position.
 1. **Substitute placeholders with neutral tokens.** Replace each occurrence with `[[P0]]`, `[[P1]]`, … `[[Pn]]`, keeping a map from token to original spelling. The token format is deliberately opaque to every known translation engine.
 1. **Translate the substituted text.** Translate only the prose. Leave `[[Pn]]` tokens untouched. Respect the glossary. Preserve every structural marker (fences, headings, list bullets, table pipes, HTML tags, frontmatter keys, URLs).
 1. **Restore placeholders.** Replace each `[[Pn]]` token with its original spelling from the substitution map. One pass. Verify that every token was restored — zero stragglers.
@@ -91,9 +90,9 @@ For `mode: translate`, follow this sequence. Each step is a hard requirement, no
 
 ## Placeholder Substitution Rules
 
-The full catalog of placeholder syntaxes — i18next, ICU MessageFormat, vue-i18n, react-i18next Trans, printf family, Python/.NET/Ruby/Symfony — plus the combined ripgrep-compatible regex lives in a reference file. Do not load the whole file. Grep it for the framework you need:
+The full catalog of placeholder syntaxes — i18next, ICU MessageFormat, vue-i18n, react-i18next Trans, printf family, Python/.NET/Ruby/Symfony — plus the combined ripgrep-compatible regex lives in a reference file. Do not load the whole file. Search it for the framework you need:
 
-- `Grep '${CLAUDE_PLUGIN_ROOT}/skills/translate/references/placeholder-patterns.md'` for the specific framework section (e.g., `## i18next`, `## ICU MessageFormat`, `## printf`) and for `## Combined Regex`. Do not load the whole file.
+- Search `${CLAUDE_PLUGIN_ROOT}/skills/translate/references/placeholder-patterns.md` for the specific framework section (e.g., `## i18next`, `## ICU MessageFormat`, `## printf`) and for `## Combined Regex`. Do not load the whole file.
 
 The substitution strategy is always the same regardless of framework: enumerate, replace with `[[Pn]]`, translate, restore, verify parity. The reference file has worked examples per framework.
 
@@ -155,10 +154,9 @@ When the dispatch instructs you to verify uncertain terms via WebFetch, follow t
 
 ### Disclosure tokens
 
-Every dispatch response opens with a translator-specific stack token:
+Every dispatch response opens with a translator-specific token:
 
-- `STACK DETECTED: N/A — translation <source_lang>/<target_lang> <format>` — canonical non-code disclosure token required before WebFetch-backed term verification.
-- `TRANSLATION STACK: <source_lang>/<target_lang> — <format>` — translator-specific token used by translation orchestrators in addition to the canonical token.
+- `TRANSLATION STACK: <source_lang>/<target_lang> — <format>` — names the language pair and format of the chunk for the translation orchestrator.
 
 Other grep-able tokens stay canonical:
 
@@ -170,7 +168,6 @@ Other grep-able tokens stay canonical:
 Report back to the orchestrator with this shape:
 
 ```markdown
-STACK DETECTED: N/A — translation <src>/<tgt> <format>
 TRANSLATION STACK: <src>/<tgt> — <format>
 
 # Translation: <chunk_id>

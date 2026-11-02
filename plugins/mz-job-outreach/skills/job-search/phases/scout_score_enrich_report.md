@@ -6,7 +6,7 @@
 
 - **MAX_SCOUTS_PER_WAVE**: 6
 
-Spawn one `job-scout` per source from `sources.json`, in parallel **waves of ≤MAX_SCOUTS_PER_WAVE (6) concurrent agents per single assistant message**. If `sources.json` contains more than 6 sources, dispatch in sequential waves until every source has been scouted. Scouts are writer agents (they write `<RUN_DIR>/_scout/<source_slug>.json`), so never dispatch with `run_in_background: true`.
+Spawn one `job-scout` per source from `sources.json`, in parallel **waves of ≤MAX_SCOUTS_PER_WAVE (6) concurrent agents per single assistant message**. If `sources.json` contains more than 6 sources, dispatch in sequential waves until every source has been scouted. Scouts are writer agents (they write `<RUN_DIR>/_scout/<source_slug>.json`). Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
 Per-source dispatch prompt:
 
@@ -219,7 +219,7 @@ Write each batch to `_prescore_batches/batch_<i>.json` (one array of listing obj
 
 ### 4.5.2 Dispatch prescorers
 
-Spawn `job-prescorer` agents in parallel waves of ≤6 concurrent agents per assistant message. Prescorers are writer agents (they write `_prescore_batches/batch_<i>_rated.json`), so never dispatch with `run_in_background: true`.
+Spawn `job-prescorer` agents in parallel waves of ≤6 concurrent agents per assistant message. Prescorers are writer agents (they write `_prescore_batches/batch_<i>_rated.json`). Wait for every agent in the wave to report, then check that each artifact exists on disk before using it.
 
 Per-batch dispatch prompt:
 

@@ -46,7 +46,7 @@ Before any web query, detect the relevant project stack from manifests (`package
 When given a documentation task:
 
 1. **Clarify audience and scope** — Who will read this? What do they need to do after reading? What's explicitly out of scope? If unclear, ask the user before writing.
-1. **Read the code.** Use `Read`, `Grep`, and `Glob` to inspect the actual implementation, public interfaces, config schemas, and existing tests. Tests are the best source for realistic usage examples.
+1. **Read the code.** Search the repo and read the actual implementation, public interfaces, config schemas, and existing tests. Tests are the best source for realistic usage examples.
 1. **Survey existing docs** — Find what already exists (README, docstrings, previous guides). Reuse terminology and structure for consistency. Do not silently duplicate or contradict existing material.
 1. **Check external references** — For protocol/spec/standard references, use `WebFetch` or `WebSearch` to verify version-specific details. APIs and standards drift; don't rely on memory.
 1. **Draft with examples first** — Build the example set before writing prose. Every concept should have at least one runnable example pulled from or verified against the real code.
@@ -114,7 +114,7 @@ End every response to the orchestrator with exactly one terminal status line:
 
 ## Common Pitfalls — Do NOT Do These
 
-- **Inventing APIs that don't exist.** If `Grep` doesn't find it, it isn't there. Ask the user or flag the gap.
+- **Inventing APIs that don't exist.** If a search doesn't find it, it isn't there. Ask the user or flag the gap.
 - **Documenting private internals as public.** Check module boundaries, `__all__`, `export` statements, and visibility modifiers before including something in a public reference.
 - **Copy-pasting code without verifying it runs.** Examples must match current signatures, imports, and behavior.
 - **Restating obvious code in prose.** `increments the counter by one` next to `counter += 1` is noise.

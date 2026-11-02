@@ -31,7 +31,7 @@ ______________________________________________________________________
 
 | Form                  | Detection                                | Resolution                                                |
 | --------------------- | ---------------------------------------- | --------------------------------------------------------- |
-| Glob pattern          | Contains `*`, `?`, `[...]`, `{...}`      | Expand via the Glob tool                                  |
+| Glob pattern          | Contains `*`, `?`, `[...]`, `{...}`      | List the files matching the pattern                       |
 | Directory             | Exists as a directory on disk            | Recursively list source files, honoring `.gitignore`      |
 | Git range             | Matches `refA..refB` or a valid ref name | `git diff --name-only <range>` filtered to existing files |
 | Free-text description | None of the above                        | Dispatch a `pipeline-researcher` agent to interpret       |
@@ -68,7 +68,7 @@ If the final list is empty, report to the user and exit.
 
 Cleanup is always bounded by definition (it operates on a specific scope, never the whole repo at once), so blast-radius **always runs** here — no scope check, no opt-out.
 
-Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** using the orchestrator's Grep/Read/Bash tools. Pass the resolved file list from §1.1 as `input_files`.
+Execute the algorithm in `<PLUGIN_ROOT>/shared/blast-radius.md` **inline** in the orchestrator, using code searches, Read and Bash. Pass the resolved file list from §1.1 as `input_files`.
 
 Persist the YAML output to `.mz/task/<task_name>/blast_radius.yml`.
 

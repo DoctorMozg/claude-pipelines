@@ -45,7 +45,6 @@ When using WebSearch/WebFetch (only for validating market salary bands or job-ti
 
 Emit disclosure tokens when applicable:
 
-- `STACK DETECTED: N/A — job-search strategy derivation` before any web research.
 - `CONFLICT DETECTED: <source A> says X, <source B> says Y` when sources disagree on, e.g. salary bands.
 - `UNVERIFIED: <claim> — could not confirm against authoritative source` when no authoritative source exists.
 

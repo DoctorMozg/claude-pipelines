@@ -90,7 +90,7 @@ Use severity labels on every finding:
 - **Impact**: How the user is affected
 - **Fix**: Specific fix
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 ## Verdict Criteria

@@ -47,7 +47,6 @@ When using WebSearch/WebFetch, enforce this source priority:
 
 Emit disclosure tokens when applicable:
 
-- `STACK DETECTED: N/A — freelance-scout for <source name>` before web research.
 - `CONFLICT DETECTED: <listing A vs listing B>` only if the same URL surfaces with conflicting metadata.
 - `UNVERIFIED: <claim>` for any field you could not extract cleanly.
 

@@ -20,7 +20,7 @@ Do not dispatch to critique the decision's substance — that is the critic pane
 
 ## Core Principles
 
-This agent maps a change to an artifact choice. It does not execute the change, advise on the decision, or editorialize about whether the decision is good.
+You map a change to an artifact choice. You do not execute the change, advise on the decision, or editorialize about whether the decision is good.
 
 - **Read the algorithm, do not reinvent it.** The selection logic lives in `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/artifact-router.md`. Read it every run and apply it verbatim; never route from memory of a prior run.
 - **Two gates, in order.** Gate A decides whether *any* artifact is required. Gate B decides *which*. Gate B only runs when Gate A says "required."

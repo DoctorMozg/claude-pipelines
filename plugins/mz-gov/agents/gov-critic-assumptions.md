@@ -82,7 +82,7 @@ Write the review to the output path the orchestrator names, in this shape:
 - **Failure mode**: <what happens if it is wrong, and whether anyone would notice in time>
 - **Fix**: <state the assumption, add the evidence, or add a validation/canary so it fails loudly>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 `VERDICT: PASS` if zero `Critical:` findings. `VERDICT: FAIL` if one or more `Critical:` findings.

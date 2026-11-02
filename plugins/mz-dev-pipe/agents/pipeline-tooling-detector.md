@@ -39,7 +39,7 @@ If NOT_FOUND: proceed to Step 2.
 
 ### Step 2 — Scan manifests
 
-Read the following files if they exist (use Glob to find them):
+Read the following files if they exist (list the files matching these names to find them):
 
 **Python**:
 

@@ -428,7 +428,6 @@ When the dispatch asks for `WebFetch` / `WebSearch`:
 
 Emit:
 
-- `STACK DETECTED: N/A — copywriting research` for marketing research without code
 - `CONFLICT DETECTED:` when sources disagree on a competitor claim
 - `UNVERIFIED:` when a brief makes a claim you cannot ground
 

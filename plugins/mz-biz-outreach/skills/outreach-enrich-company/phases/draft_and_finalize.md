@@ -118,7 +118,7 @@ Skipped entirely when `personality_mode == "off"` (the brief's `reader_style` st
 
 This wave calibrates each letter to how the recipient prefers to be addressed, using the Social Styles model (Driver / Analytical / Amiable / Expressive). It is grounded-only: a style is asserted solely when a citable public-footprint cue supports it; otherwise the read falls back to role-based priorities and never guesses a personality from a title.
 
-For each brief whose `chosen_channel` is not `skip` (dedupe by contact — one profile per person even when both an email and a DM brief exist), dispatch one `outreach-personality-profiler`. Dispatch in parallel waves of at most 6 concurrent agents per wave; up to 5 contacts fit in one wave. Foreground only — do not background the profiler.
+For each brief whose `chosen_channel` is not `skip` (dedupe by contact — one profile per person even when both an email and a DM brief exist), dispatch one `outreach-personality-profiler`. Dispatch in parallel waves of at most 6 concurrent agents per wave; up to 5 contacts fit in one wave. Wait for every agent in the wave to report, then check that each profile exists on disk before using it.
 
 Output path per contact: `.mz/task/<task_name>/profiles/<contact_slug>.json`.
 
@@ -150,7 +150,7 @@ Update `state.md`: append a `Profiles` list (one path per profiled contact with 
 
 ### 3.1 Dispatch plan
 
-Read every brief file under `.mz/task/<task_name>/briefs/`. For each brief whose `chosen_channel` is not `skip`, dispatch one `expert-copywriter` agent. Dispatch in parallel waves of at most 6 concurrent agents per wave. Wait for each wave to complete before starting the next. Do not background any agent — writer agents must run in the foreground.
+Read every brief file under `.mz/task/<task_name>/briefs/`. For each brief whose `chosen_channel` is not `skip`, dispatch one `expert-copywriter` agent. Dispatch in parallel waves of at most 6 concurrent agents per wave. Wait for every agent in the wave to report, then check that each draft exists on disk before using it. Start the next wave only after that.
 
 Per-brief output path: `.mz/task/<task_name>/drafts/<channel>_<contact_slug>.md` (use `<channel>_<contact_slug>` from the brief filename).
 
@@ -281,7 +281,7 @@ The snapshots are used to revert any draft that the naturalizer damages.
 
 ### 4.2 Dispatch plan
 
-Dispatch one `expert-naturalizer` agent per surviving draft, in parallel waves of at most 6 concurrent agents per wave. Foreground only. Use `subagent_type: expert-naturalizer`.
+Dispatch one `expert-naturalizer` agent per surviving draft, in parallel waves of at most 6 concurrent agents per wave. Use `subagent_type: expert-naturalizer`.
 
 ### 4.3 Dispatch template (one Agent call per draft)
 

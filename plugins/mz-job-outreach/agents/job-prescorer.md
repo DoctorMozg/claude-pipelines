@@ -35,11 +35,10 @@ You receive:
 
 ## Source Discipline
 
-This agent does not perform web research. It operates entirely on the supplied artifacts.
+You do not perform web research. You operate entirely on the supplied artifacts.
 
 Emit disclosure tokens when applicable:
 
-- `STACK DETECTED: N/A — job-prescorer for batch <i>` before rating.
 - `UNVERIFIED: <claim>` only if you had to guess because a listing was unparseable.
 
 ## Process

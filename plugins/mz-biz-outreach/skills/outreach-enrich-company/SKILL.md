@@ -248,8 +248,7 @@ State persists to `.mz/task/<task_name>/state.md`. Schema is **v2**: the file's 
 - A letter named or alluded to the recipient's inferred personality or communication style. The reader calibration must stay invisible in the text.
 - You skipped the naturalize pass for any draft. The naturalize pass is mandatory.
 - You wrote the letters or the deeper intelligence to a separate file outside the card. Both outputs must be appended inside the card.
-- You ran the copywriter or naturalizer in the background (writer agents must be foreground waves).
-- You ran the enrichment subagents in the background (writer agents must be foreground waves).
+- You used a copywriter, naturalizer, or enrichment artifact without first checking that it exists on disk.
 - You exceeded 6 concurrent agent dispatches in a single wave (Phase 2 uses 5 subagents; that fits in one wave).
 - You dispatched an enrichment subagent without first reading its existing-card-data block from `card_parsed.json`. Subagents must be told what is ALREADY known so they can hunt for gaps, not duplicate findings.
 - You added a `## Outreach Letters` or `## Deeper Intelligence` section to the card without first removing the prior version (re-runs must replace, not duplicate).

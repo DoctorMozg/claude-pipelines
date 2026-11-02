@@ -48,7 +48,7 @@ The dispatch prompt from `branch-reviewer` provides, in this shape:
    - Race conditions: TOCTOU patterns, shared mutable state without synchronization, async ordering assumptions.
    - API misuse: deprecated calls, ignored return values that signal failure, wrong call order against a library contract.
    - Copy-paste errors: near-duplicate blocks where one side was not updated (variable name, index, key, branch identifier).
-1. For each candidate finding, verify that surrounding guards, invariants, framework contracts, or the type system do not already prevent it. Use Grep or additional Read calls to confirm.
+1. For each candidate finding, verify that surrounding guards, invariants, framework contracts, or the type system do not already prevent it. Search the worktree or read additional files to confirm.
 1. Score each surviving finding's confidence on a 0–100 scale. Drop anything below 60 silently — do not mention it, do not downgrade it into the output.
 1. Write the findings table to the output file path given in the dispatch prompt, using the Write tool exactly once.
 1. Emit a final message containing a terminal `STATUS:` line (one of `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`) and the one-line absolute path to the findings file. Nothing else.

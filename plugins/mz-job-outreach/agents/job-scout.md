@@ -46,11 +46,10 @@ When using WebSearch/WebFetch, enforce this source priority:
 
 Emit disclosure tokens when applicable:
 
-- `STACK DETECTED: N/A — job-scout for <source name>` before web research.
 - `CONFLICT DETECTED: <listing A title vs listing B title>` only if the same URL surfaces with conflicting metadata.
 - `UNVERIFIED: <claim> — could not confirm against authoritative source` for any field you could not extract cleanly.
 
-For zero-results scenarios, follow the project disclosure protocol (`CLAUDE.md` Plugin Authoring Conventions):
+When your queries return zero results, emit one of these disclosure tokens:
 
 - `ZERO RESULTS VERIFIED` — your queries returned nothing AND a smoke-test bare-keyword query also returned nothing.
 - `ZERO RESULTS UNVERIFIED` — your queries returned nothing AND the smoke test was blocked (rate-limited, login required, page not loading).

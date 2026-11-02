@@ -9,7 +9,7 @@ Resolve the argument into two file lists:
 **Source files in scope** (what's being verified):
 
 - **`scope:` parameter given**: use the git-derived file list, applying standard exclusions (vendored, generated, lock files)
-- **Path-like tokens**: expand via Glob or directory walk
+- **Path-like tokens**: expand by listing the matching files or walking the directory
 - **Free-text only**: spawn a `pipeline-researcher` agent (model: **sonnet**) to identify matching files. If low confidence, ask the user.
 - **Empty**: roam — all source files minus `.gitignore`, vendored deps, generated code
 

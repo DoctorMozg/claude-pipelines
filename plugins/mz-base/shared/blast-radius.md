@@ -4,7 +4,7 @@ Callable module that computes the downstream impact set of a target file or dire
 
 ## Status
 
-Active. The standalone `/blast-radius` skill was demoted in v0.33.x; this module is the only source of truth for impact analysis. Calling skills execute the import-graph walk inline using `Grep` / `Read` / `Bash` per the Algorithm below — no subagent fan-out, no token cost beyond the calling agent's window.
+Active. The standalone `/blast-radius` skill was demoted in v0.33.x; this module is the only source of truth for impact analysis. Calling skills execute the import-graph walk inline using code searches, `Read` and `Bash` per the Algorithm below — no subagent fan-out, no token cost beyond the calling agent's window.
 
 ## Invocation contract
 
@@ -84,7 +84,7 @@ When either bound is hit, mark `cap_reached: true`, record which bound in `trunc
 
 ## Algorithm
 
-The calling skill executes these steps inline. No agent dispatch is needed — Grep + Read + Bash on the orchestrator are sufficient.
+The calling skill executes these steps inline. No agent dispatch is needed — code search, Read and Bash on the orchestrator are sufficient.
 
 ### Step 1: Build seed identifiers
 
@@ -92,11 +92,11 @@ For each input file, derive matchers:
 
 - **Filename without extension** (e.g., `middleware` from `src/auth/middleware.ts`)
 - **Full relative path** for import-statement matching (e.g., `src/auth/middleware`)
-- **Top-level public symbols** declared in the file (functions, classes, exported types) — extracted via Grep on language-specific patterns (`^def `, `^class `, `^export (function|class|const|interface|type) `, `^pub fn `, `^func `).
+- **Top-level public symbols** declared in the file (functions, classes, exported types) — extracted by searching the file for language-specific patterns (`^def `, `^class `, `^export (function|class|const|interface|type) `, `^pub fn `, `^func `).
 
 ### Step 2: Discover direct dependents (Depth 1)
 
-For every seed identifier, run targeted Grep across the project (excluding vendored/generated dirs). Capture results in four categories:
+For every seed identifier, run a targeted search across the project (excluding vendored/generated dirs). Capture results in four categories:
 
 1. **Imports & direct calls** — import statements referencing the file/module path; direct function calls to top-level public symbols; method invocations.
 1. **Type-level references** — type annotations, generics, inheritance, type aliases, Protocol/ABC implementations.
@@ -112,13 +112,13 @@ The set of unique files at this point is **Depth 1**.
 For each hop from 2 to `MAX_BLAST_DEPTH`:
 
 1. Take all files discovered in the previous hop.
-1. For each file, Grep for imports/references targeting it from anywhere in the project. Skip type-level and test references on expansion hops (they add noise without adding blast-radius signal — keep the walk focused on call/import edges).
+1. For each file, search for imports/references targeting it from anywhere in the project. Skip type-level and test references on expansion hops (they add noise without adding blast-radius signal — keep the walk focused on call/import edges).
 1. Add new files (not already in the graph) to the current hop, recording `via: <previous-hop-file>`.
 1. If no new files found, stop expansion early.
 1. If total graph nodes exceed `MAX_BLAST_FILES`, stop expansion and set `cap_reached: true`, `truncated_at: files`.
 1. If hop reaches `MAX_BLAST_DEPTH` and there are still unexpanded files, set `cap_reached: true`, `truncated_at: depth`.
 
-**Performance guard**: Run Grep searches sequentially within an expansion hop. Each Grep is cheap; agent dispatch is not.
+**Performance guard**: Run the searches sequentially within an expansion hop. Each search is cheap; agent dispatch is not.
 
 ### Step 4: Git-age overlay
 

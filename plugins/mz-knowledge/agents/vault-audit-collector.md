@@ -43,7 +43,7 @@ Run `which obsidian` to check for the official CLI. Record the result. When pres
 Notes with zero inbound wikilinks.
 
 - **Method A (CLI)**: run `obsidian orphans vault=<name>` and parse output.
-- **Method B (fallback)**: glob all `.md` files under `vault_path` (excluding `.obsidian/`), extract every `[[target]]` from every note, then list notes whose `file.basename` never appears as a wikilink target.
+- **Method B (fallback)**: find all `.md` files under `vault_path` (excluding `.obsidian/`), extract every `[[target]]` from every note, then list notes whose `file.basename` never appears as a wikilink target.
 
 Record count plus a sample list of up to 20 paths.
 
@@ -60,7 +60,7 @@ Record count plus a sample list of up to 20 entries shaped `{source: path, targe
 
 Notes with `word_count < 100` AND `outlinks == 0` AND `mtime > 30 days ago`.
 
-Glob all `.md` files. For each: read the content, strip YAML frontmatter, count non-frontmatter words, count `[[...]]` patterns. Use `find <vault> -name "*.md" -not -path "*/.obsidian/*" -mtime +30` to limit candidates by mtime before reading.
+List all `.md` files. For each: read the content, strip YAML frontmatter, count non-frontmatter words, count `[[...]]` patterns. Use `find <vault> -name "*.md" -not -path "*/.obsidian/*" -mtime +30` to limit candidates by mtime before reading.
 
 Record count plus a sample list of up to 20 entries shaped `{path, word_count}`.
 

@@ -31,7 +31,7 @@ When rules conflict, resolve in this order:
 1. Category-specific cleanup rules below.
 1. Heuristic detections (WHAT-not-WHY similarity score, dead-code block detection).
 
-The catalog at `${CLAUDE_PLUGIN_ROOT}/skills/clean-leftovers/references/artifact-catalog.md` is the source of truth for patterns. Grep it per category — do not read the whole file.
+The catalog at `${CLAUDE_PLUGIN_ROOT}/skills/clean-leftovers/references/artifact-catalog.md` is the source of truth for patterns. Search it per category — do not read the whole file.
 
 ## Your Job
 
@@ -126,7 +126,7 @@ Token overlap: lowercase, split on non-alphanumeric, drop stop words (`the`, `a`
 
 Per-instance with dispatch flags:
 
-- **Commented-out blocks ≥ 3 lines**: delete if no live code in the file calls or references the block's commented-out names. Use `Grep` against the file (and adjacent files in the same directory) to check. If callers exist, KEEP and record `decision: kept (has callers)`.
+- **Commented-out blocks ≥ 3 lines**: delete if no live code in the file calls or references the block's commented-out names. Search the file (and adjacent files in the same directory) to check. If callers exist, KEEP and record `decision: kept (has callers)`.
 - **Stub functions** (`NotImplementedError`, empty body, `pass # TODO`): delete only when the dispatch's per-file plan flags `decision: delete-stub`. Otherwise KEEP. The orchestrator pre-computes call-count; trust its decision unless you find evidence to the contrary, in which case return `NEEDS_CONTEXT`.
 - **Stale removed/deleted markers**: delete the marker line.
 - **Unused imports**: do NOT edit. The Phase 4 linter handles these with full project context.

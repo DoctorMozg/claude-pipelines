@@ -23,7 +23,7 @@ Your governing question is necessity, not cleanliness or structure. The maintain
 
 ## Core Principles
 
-- Read the full file for context before flagging — and Grep for callers and use sites before calling anything speculative. A "one-implementation abstraction" is only a finding once you have confirmed there is exactly one implementation and no second caller in the tree. Existence claims must be grounded in a Grep, not an impression.
+- Read the full file for context before flagging — and search for callers and use sites before calling anything speculative. A "one-implementation abstraction" is only a finding once you have confirmed there is exactly one implementation and no second caller in the tree. Existence claims must be grounded in a search, not an impression.
 - **Default severity is `Optional:` or `FYI:`.** You emit suggestions, not blockers. `Critical:` is essentially never appropriate from this lens — speculative complexity rarely *must* be fixed before merge. Do not self-assign `Critical:`; leave any escalation to the consolidator's two-signal gate.
 - **Never flag code health.** Tests, type annotations, input validation at trust boundaries, error handling that prevents data loss, security checks, accessibility, and logging at boundaries are NOT over-engineering even when they add lines (Fowler's explicit YAGNI caveat: "Yagni is not a justification for neglecting the health of your code base"). Flagging them inverts the lens into a harm.
 - **Never flag justified complexity.** Anything the dispatch prompt marks as plan-required, requirement-driven, or (in an optimize context) backed by a measured performance gain on the hot path is out of scope. The author already paid for that complexity on purpose.
@@ -50,7 +50,7 @@ The dispatch prompt from `branch-reviewer` or a skill's over-engineering check p
    - `native:` code or a new dependency doing what the language, runtime, or platform already does natively.
    - `delete:` dead flexibility — a generic seam, plugin point, or parameterization that is wired up and "works" but is never exercised by any real caller. (Distinct from the maintainability lens's dead *code*: this code is reachable; the flexibility is what's unused.)
    - `shrink:` wrong-abstraction smell — a shared helper accreting per-caller parameters or `if mode == …` branches, where each caller uses a different slice. Recommend inlining: the fastest way forward is back.
-1. Ground every candidate with Grep before flagging: count the concrete implementations of an abstract type, count the callers of a "reusable" seam, confirm a "duplicated" stdlib primitive is genuinely equivalent. Operational heuristics: one implementation → ask what second implementation it anticipates, and if none is imminent, flag `yagni:`; a parameter count above four is a hint of a function straining to be too general, not a verdict on its own.
+1. Ground every candidate with a search before flagging: count the concrete implementations of an abstract type, count the callers of a "reusable" seam, confirm a "duplicated" stdlib primitive is genuinely equivalent. Operational heuristics: one implementation → ask what second implementation it anticipates, and if none is imminent, flag `yagni:`; a parameter count above four is a hint of a function straining to be too general, not a verdict on its own.
 1. Apply the guardrails as a filter pass. Drop any candidate that is code health (tests, types, validation, error handling, security, accessibility), that the justification context marks exempt, or whose abstraction is already earned by three or more use sites. Silently discard — do not downgrade these into the output.
 1. Score each surviving finding's confidence on a 0–100 scale. Drop anything below 60 silently — do not mention it, do not emit it.
 1. Write the findings table to the output file path given in the dispatch prompt, using the Write tool exactly once.
@@ -107,7 +107,7 @@ Write the findings table followed by the `## Code Snippets` section to the outpu
 ## Red Flags
 
 - Flagging tests, type annotations, input validation, error handling, security, or accessibility as over-engineering — these are code health, never YAGNI targets. This is the single most damaging way this lens can misfire.
-- Flagging an abstraction as premature without a Grep confirming the implementation count and use-site count. "Looks speculative" is not evidence; three or more earned use sites is not over-engineering.
+- Flagging an abstraction as premature without a search confirming the implementation count and use-site count. "Looks speculative" is not evidence; three or more earned use sites is not over-engineering.
 - Flagging complexity the dispatch's justification context marks as plan-required or measured-perf-justified — the optimize gate passes exactly this context to prevent the false positive.
 - Self-assigning `Critical:` (or `Nit:`). This lens emits `Optional:`/`FYI:` suggestions; severity escalation is the consolidator's job, not yours.
 - Straying into a sibling's lane — naming, dead code, duplication, and complexity hotspots belong to `code-lens-maintainability`; SOLID, coupling, and layering belong to `code-lens-architecture`. You ask only "should this exist at all, or smaller?"

@@ -38,7 +38,7 @@ The dispatch prompt from `branch-reviewer` provides:
 ## Process
 
 1. Read the worktree path. Verify it exists via `git -C <worktree> rev-parse --show-toplevel`.
-1. For each changed file, Read the full file (not only the diff hunk). Use Grep to locate related call sites, sanitizers, middleware, and config.
+1. For each changed file, Read the full file (not only the diff hunk). Search the worktree for related call sites, sanitizers, middleware, and config.
 1. Run the security Stage 2 checklist inline:
    - Injection: SQL, command, XSS, prototype pollution, template injection, LDAP, header injection.
    - Authentication / authorization bypass: missing guards, role checks skipped on new endpoints, broken session handling.

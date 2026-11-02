@@ -84,7 +84,7 @@ Write the review to the output path the orchestrator names, in this shape:
 - **Problem**: <what breaks downstream that the artifact does not surface>
 - **Fix**: <name the dependent in the impact section; add the migration/notification it implies>
 
-## VERDICT: PASS | FAIL
+VERDICT: PASS | FAIL
 ```
 
 `VERDICT: PASS` if zero `Critical:` findings. `VERDICT: FAIL` if one or more `Critical:` findings.

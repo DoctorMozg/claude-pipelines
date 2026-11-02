@@ -34,7 +34,7 @@ Evidence available: <named customers, numbers, behaviors from brief.md>
 Open questions / gaps: <copy from brief.md — agent must NOT invent answers>
 ```
 
-Dispatch as a single Agent tool call. Use `subagent_type: expert-copywriter`. Do not background the call — the orchestrator must wait for the result before Phase 3.
+Dispatch as a single Agent tool call. Use `subagent_type: expert-copywriter`. Wait for its result before Phase 3.
 
 ### 2.3 Validate the output
 
