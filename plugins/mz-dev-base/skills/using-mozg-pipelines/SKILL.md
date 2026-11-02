@@ -8,7 +8,7 @@ allowed-tools: Read, AskUserQuestion
 
 ## Overview
 
-This is a routing map, not a discipline skill. It is loaded into every new session via the mz-dev-base SessionStart hook and tells Claude which concrete skill to invoke for a given user task phrase. When the user describes work in natural language, consult this map first, then delegate to the matching skill. Do not attempt the work under this skill's own identity.
+This is a routing map, not a discipline skill. It loads on demand, when the user asks which skill fits or describes work without naming one, and tells Claude which concrete skill to invoke for that task phrase. Consult the map, then delegate to the matching skill. Do not attempt the work under this skill's own identity.
 
 ## When to Use
 
@@ -87,8 +87,8 @@ N/A — informational routing skill, not a discipline skill.
 
 ## Verification
 
-To confirm the router was loaded into this session:
+Before handing off, confirm:
 
-- Grep the initial system/context for the string `using-mozg-pipelines` or `Mozg pipelines routing map`.
-- Ask Claude to recite the first column header of the routing table (`Task phrase | Skill | Plugin`).
-- If neither is present, the SessionStart hook did not fire — re-enable the mz-dev-base plugin or run the session-start script manually.
+- The chosen skill appears in the routing table above, or you told the user that no entry matches.
+- When several skills matched, you named the condition that decided between them, or asked the user.
+- You invoked the target skill instead of doing the work under this skill's identity.

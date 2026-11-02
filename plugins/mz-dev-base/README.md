@@ -41,7 +41,7 @@ Helps draft new skills following the conventions in `guidelines/SKILL_GUIDELINES
 
 ### `/using-mozg-pipelines` — Routing Map
 
-Loaded into every session via SessionStart hook. Maps natural-language task phrases to the right skill across all `mz-*` plugins. Invoked when the user asks "which skill fits", "route this", or "what plugins do I have".
+Maps natural-language task phrases to the right skill across all `mz-*` plugins. Invoked when the user asks "which skill fits", "route this", or "what plugins do I have".
 
 ## Agents
 
