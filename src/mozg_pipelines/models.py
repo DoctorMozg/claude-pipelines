@@ -162,6 +162,18 @@ class PackagePlanSpec(FrozenModel):
     disposition: PackageDisposition
     dependencies: tuple[Identifier, ...] = ()
     blockers: tuple[NonEmptyText, ...] = ()
+    # Skills that cannot work under Codex; the rest of the package still renders.
+    excluded_skills: tuple[Identifier, ...] = ()
+
+    @model_validator(mode="after")
+    def excluded_skills_are_unique(self) -> Self:
+        duplicate = next(
+            (name for name in self.excluded_skills if self.excluded_skills.count(name) > 1),
+            None,
+        )
+        if duplicate is not None:
+            raise ValueError(f"duplicate excluded skill: {duplicate}")
+        return self
 
     @model_validator(mode="after")
     def disposition_matches_requirements(self) -> Self:

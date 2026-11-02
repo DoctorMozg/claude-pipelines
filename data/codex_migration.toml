@@ -4,10 +4,14 @@ source_marketplace = ".claude-plugin/marketplace.json"
 [[packages]]
 name = "mz-dev-base"
 disposition = "ready"
+# init-rules writes Claude settings.json hooks, and the CLAUDE.md -> AGENTS.md rewrite garbles its AGENTS.md guard.
+excluded_skills = ["init-rules"]
 
 [[packages]]
 name = "mz-dev-pipe"
 disposition = "ready"
+# optimize isolates each candidate in a Claude Code worktree; Codex has no equivalent.
+excluded_skills = ["optimize"]
 
 [[packages]]
 name = "mz-research-pipe"

@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from mozg_pipelines.inventory import (
     MigrationInventoryError,
@@ -12,7 +13,12 @@ from mozg_pipelines.inventory import (
     load_migration_plan,
     validate_migration_plan,
 )
-from mozg_pipelines.models import HookEvent, HookScriptAdapter, PackageDisposition
+from mozg_pipelines.models import (
+    HookEvent,
+    HookScriptAdapter,
+    PackageDisposition,
+    PackagePlanSpec,
+)
 from mozg_pipelines.rendering import render_codex_package
 
 _REPOSITORY_ROOT = Path(__file__).parents[2]
@@ -40,7 +46,7 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-knowledge",
         "mz-gov",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 54
+    assert sum(len(package.skill_sources) for package in packages) == 52
     assert sum(len(package.role_sources) for package in packages) == 116
     assert not any(package.plan.disposition is PackageDisposition.BLOCKED for package in packages)
     assert tuple(
@@ -62,6 +68,43 @@ def test_migration_plan_rejects_marketplace_membership_drift() -> None:
     report = validate_migration_plan(changed_plan, _REPOSITORY_ROOT)
 
     assert tuple(issue.code for issue in report.issues) == ("marketplace-plan-mismatch",)
+
+
+def test_migration_plan_excludes_skills_that_cannot_run_under_codex() -> None:
+    plan = load_migration_plan(_PLAN_PATH)
+
+    packages = discover_packages(plan, _REPOSITORY_ROOT)
+
+    assert {
+        package.plan.name: package.plan.excluded_skills
+        for package in packages
+        if package.plan.excluded_skills
+    } == {"mz-dev-base": ("init-rules",), "mz-dev-pipe": ("optimize",)}
+    skill_names = {
+        Path(source).parent.name for package in packages for source in package.skill_sources
+    }
+    assert skill_names.isdisjoint({"init-rules", "optimize"})
+
+
+def test_migration_plan_rejects_unknown_excluded_skill() -> None:
+    plan = load_migration_plan(_PLAN_PATH)
+    stale_package = plan.packages[0].model_copy(update={"excluded_skills": ("no-such-skill",)})
+    changed_plan = plan.model_copy(update={"packages": (stale_package, *plan.packages[1:])})
+
+    report = validate_migration_plan(changed_plan, _REPOSITORY_ROOT)
+
+    assert tuple(issue.code for issue in report.issues) == ("unknown-excluded-skill",)
+    with pytest.raises(MigrationInventoryError, match="no-such-skill"):
+        discover_packages(changed_plan, _REPOSITORY_ROOT)
+
+
+def test_package_plan_rejects_duplicate_excluded_skills() -> None:
+    with pytest.raises(ValidationError, match="duplicate excluded skill: optimize"):
+        PackagePlanSpec(
+            name="mz-dev-pipe",
+            disposition=PackageDisposition.READY,
+            excluded_skills=("optimize", "optimize"),
+        )
 
 
 def test_load_migration_plan_reports_missing_file(tmp_path: Path) -> None:

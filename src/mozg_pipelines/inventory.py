@@ -209,6 +209,15 @@ def validate_migration_plan(plan: MigrationPlan, repository_root: Path) -> Valid
                     package.name,
                 )
             )
+        for skill_name in sorted(set(package.excluded_skills) - _skill_names(source_root)):
+            issues.append(
+                _error(
+                    "unknown-excluded-skill",
+                    f"Package {package.name} excludes a skill it does not have: {skill_name}",
+                    marketplace_plugin.source,
+                    package.name,
+                )
+            )
     return ValidationReport(issues=tuple(issues))
 
 
@@ -241,7 +250,7 @@ def discover_packages(plan: MigrationPlan, repository_root: Path) -> tuple[Packa
                 marketplace=marketplace_plugin,
                 source_manifest=_load_source_manifest(source_root / "plugin.json"),
                 author_name=marketplace.owner.name,
-                skill_sources=_source_files(root, source_root / "skills", "SKILL.md"),
+                skill_sources=_skill_sources(root, source_root, package_plan),
                 role_sources=_source_files(root, source_root / "agents", "*.md"),
                 hook_config=_source_file(root, source_root / "hooks" / "hooks.json"),
                 hook_script_sources=_source_files(root, source_root / "scripts", "*"),
@@ -408,6 +417,29 @@ def _source_files(root: Path, directory: Path, pattern: str) -> tuple[Repository
         return ()
     files = (path for path in sorted(directory.rglob(pattern)) if path.is_file())
     return tuple(path.relative_to(root).as_posix() for path in files)
+
+
+def _skill_names(source_root: Path) -> frozenset[str]:
+    skills_dir = source_root / "skills"
+    if not skills_dir.is_dir():
+        return frozenset()
+    return frozenset(path.parent.name for path in skills_dir.rglob("SKILL.md") if path.is_file())
+
+
+def _skill_sources(
+    root: Path, source_root: Path, package_plan: PackagePlanSpec
+) -> tuple[RepositoryPath, ...]:
+    sources = _source_files(root, source_root / "skills", "SKILL.md")
+    if not package_plan.excluded_skills:
+        return sources
+    logger.info(
+        "Excluding skills from Codex package %s: %s",
+        package_plan.name,
+        ", ".join(package_plan.excluded_skills),
+    )
+    return tuple(
+        source for source in sources if Path(source).parent.name not in package_plan.excluded_skills
+    )
 
 
 def _source_file(root: Path, path: Path) -> RepositoryPath | None:
