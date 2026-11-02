@@ -1,4 +1,5 @@
 from enum import StrEnum
+from graphlib import CycleError, TopologicalSorter
 from pathlib import PurePosixPath
 from typing import Annotated, Literal, Self
 
@@ -213,6 +214,12 @@ class MigrationPlan(FrozenModel):
             if unknown_dependencies:
                 dependency = sorted(unknown_dependencies)[0]
                 raise ValueError(f"package {package.name} depends on unknown package: {dependency}")
+        try:
+            TopologicalSorter(
+                {package.name: package.dependencies for package in self.packages}
+            ).prepare()
+        except CycleError as error:
+            raise ValueError(f"dependency cycle: {' -> '.join(error.args[1])}") from error
         return self
 
 

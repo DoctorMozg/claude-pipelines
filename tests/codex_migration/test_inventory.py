@@ -147,6 +147,58 @@ def test_migration_plan_reads_manifest_only_from_claude_plugin_dir(tmp_path: Pat
     assert packages[0].source_manifest.version == "1.0.0"
 
 
+def _dependent(name: str, *dependencies: str) -> PackagePlanSpec:
+    return PackagePlanSpec(
+        name=name, disposition=PackageDisposition.DEPENDENT, dependencies=dependencies
+    )
+
+
+class TestPackageDependencies:
+    def test_manifest_dependencies_must_match_the_codex_plan(self, tmp_path: Path) -> None:
+        ready_plan = _write_marketplace(tmp_path, "mz-base", "mz-x")
+        manifest_path = tmp_path / "mz-x/.claude-plugin/plugin.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_path.write_text(
+            json.dumps({**manifest, "dependencies": ["mz-base"]}), encoding="utf-8"
+        )
+        dependent_plan = MigrationPlan(
+            schema_version=1,
+            source_marketplace=ready_plan.source_marketplace,
+            packages=(ready_plan.packages[0], _dependent("mz-x", "mz-base")),
+        )
+
+        report = validate_migration_plan(ready_plan, tmp_path)
+
+        assert tuple(issue.code for issue in report.issues) == ("manifest-dependency-mismatch",)
+        assert "mz-x" in report.issues[0].message
+        assert validate_migration_plan(dependent_plan, tmp_path).is_valid is True
+
+    def test_dependency_order_does_not_count_as_drift(self, tmp_path: Path) -> None:
+        base_plan = _write_marketplace(tmp_path, "mz-base", "mz-y", "mz-x")
+        manifest_path = tmp_path / "mz-x/.claude-plugin/plugin.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_path.write_text(
+            json.dumps({**manifest, "dependencies": ["mz-y", "mz-base"]}), encoding="utf-8"
+        )
+        plan = MigrationPlan(
+            schema_version=1,
+            source_marketplace=base_plan.source_marketplace,
+            packages=(*base_plan.packages[:2], _dependent("mz-x", "mz-base", "mz-y")),
+        )
+
+        assert validate_migration_plan(plan, tmp_path).is_valid is True
+
+    def test_plan_rejects_a_dependency_cycle(self) -> None:
+        with pytest.raises(
+            ValidationError, match=r"dependency cycle: (mz-a -> mz-b -> mz-a|mz-b -> mz-a -> mz-b)"
+        ):
+            MigrationPlan(
+                schema_version=1,
+                source_marketplace=".claude-plugin/marketplace.json",
+                packages=(_dependent("mz-a", "mz-b"), _dependent("mz-b", "mz-a")),
+            )
+
+
 class TestSharedFolderDiscovery:
     def test_real_and_linked_shared_folders_reach_the_catalog(self, tmp_path: Path) -> None:
         plan = _write_marketplace(tmp_path, "mz-base", "mz-x")

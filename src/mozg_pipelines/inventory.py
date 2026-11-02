@@ -66,6 +66,7 @@ class SourcePluginManifest(MarketplaceModel):
     name: Identifier
     version: NonEmptyText
     description: NonEmptyText
+    dependencies: tuple[Identifier, ...] = ()
 
 
 class RoleFrontmatter(MarketplaceModel):
@@ -196,6 +197,18 @@ def validate_migration_plan(plan: MigrationPlan, repository_root: Path) -> Valid
                     "manifest-name-mismatch",
                     f"Source manifest name {source_manifest.name!r} does not match "
                     f"{package.name!r}.",
+                    marketplace_plugin.source,
+                    package.name,
+                )
+            )
+        # The Codex plan restates the manifest's dependencies; any drift would ship two graphs.
+        if set(source_manifest.dependencies) != set(package.dependencies):
+            issues.append(
+                _error(
+                    "manifest-dependency-mismatch",
+                    f"Package {package.name} declares dependencies "
+                    f"{sorted(source_manifest.dependencies)} in its manifest but "
+                    f"{sorted(package.dependencies)} in the Codex plan.",
                     marketplace_plugin.source,
                     package.name,
                 )
