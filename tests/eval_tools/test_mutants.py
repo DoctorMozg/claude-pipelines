@@ -5,32 +5,15 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-import yaml
 
-from tests.eval_tools.mutants import (
-    MUTANTS,
-    REPO_ROOT,
-    Edit,
-    Mutant,
-    MutantError,
-    build_snapshot,
-    judge,
-    plan_edits,
-)
+from tests.eval_tools.local_graders import EvalCase, load_cases
+from tests.eval_tools.mutant_catalog import MUTANTS, Edit, Mutant
+from tests.eval_tools.mutants import REPO_ROOT, MutantError, build_snapshot, judge, plan_edits
 
-type Suite = dict[str, dict[str, Any]]
+type Suite = dict[str, EvalCase]
 type CaseResult = dict[str, Any]
 
 BY_ID = [pytest.param(mutant, id=mutant.id) for mutant in MUTANTS]
-
-
-def _load_suite(plugin: str) -> Suite:
-    cases = (yaml.safe_load(path.read_text(encoding="utf-8")) for path in _case_files(plugin))
-    return {case["name"]: case for case in cases}
-
-
-def _case_files(plugin: str) -> list[Path]:
-    return sorted((REPO_ROOT / "plugins" / plugin / "evals").glob("*/case.yaml"))
 
 
 def _selected(select: tuple[str, ...], suite: Suite) -> set[str]:
@@ -39,7 +22,7 @@ def _selected(select: tuple[str, ...], suite: Suite) -> set[str]:
         if flag == "--case":
             chosen = {name for name in chosen if fnmatch.fnmatchcase(name, value)}
         elif flag == "--tag":
-            chosen = {name for name in chosen if value in (suite[name].get("tags") or [])}
+            chosen = {name for name in chosen if value in suite[name].tags}
         else:
             pytest.fail(f"no selection rule for eval flag {flag}")
     return chosen
@@ -47,7 +30,8 @@ def _selected(select: tuple[str, ...], suite: Suite) -> set[str]:
 
 @pytest.fixture(scope="module")
 def suites() -> dict[str, Suite]:
-    return {plugin: _load_suite(plugin) for plugin in sorted({m.plugin for m in MUTANTS})}
+    plugins = sorted({mutant.plugin for mutant in MUTANTS})
+    return {plugin: load_cases(REPO_ROOT / "plugins" / plugin / "evals") for plugin in plugins}
 
 
 @pytest.fixture
@@ -106,7 +90,7 @@ class TestReferences:
         missing = [
             f"{case}/{grader}"
             for case, grader in mutant.must_fail
-            if grader not in {g["name"] for g in suite.get(case, {}).get("graders", [])}
+            if case not in suite or grader not in {g["name"] for g in suite[case].graders}
         ]
 
         assert not missing, f"{mutant.id} names graders its cases don't have: {missing}"
