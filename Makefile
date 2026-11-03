@@ -1,4 +1,4 @@
-.PHONY: smoke contract-matrix pytest test validate gh-smoke hooks-smoke gate-smoke eval help
+.PHONY: smoke contract-matrix pytest test validate gh-smoke hooks-smoke gate-smoke eval eval-mutants help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
@@ -26,6 +26,8 @@ help:
 	@echo "  gate-smoke        Answer memory-note and decomment gates headlessly, check the journal (spends tokens)"
 	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
 	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads plugins/<n>/evals/flags; spends tokens)"
+	@echo "  eval-mutants      Break plugin code in a HEAD snapshot and check the evals catch it"
+	@echo "                    (MUTANTS=<id ...>, all by default; EVAL_MODEL, EVAL_JUDGE, EVAL_JOBS; spends tokens)"
 
 contract-matrix:
 	@./plugins/mz-dev-pipe/tests/run_contract_matrix.sh
@@ -76,3 +78,9 @@ eval:
 		$(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") \
 		$(shell cat "plugins/$(PLUGIN)/evals/flags" 2>/dev/null) $(EVAL_ARGS) \
 		--json "plugins/$(PLUGIN)/evals/results/last-$(EVAL_MODEL).json"
+
+# Runs every mutant unless MUTANTS names some. The anchors are checked for free in `make test`.
+MUTANTS ?=
+eval-mutants:
+	@$(PYTHON) -E -s -m tests.eval_tools.mutants --model "$(EVAL_MODEL)" --judge-model "$(EVAL_JUDGE)" \
+		-j "$(EVAL_JOBS)" $(MUTANTS)
