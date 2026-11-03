@@ -16,6 +16,8 @@ Sources (official docs):
 
 Use via grep — locate the pattern, run the command, read the confidence level. Do not load the whole file.
 
+`npx --no` runs the copy already installed in the project and never downloads a package. If the tool isn't installed, skip it and say so in the findings; don't install it.
+
 ## Contents
 
 - unused imports
@@ -60,7 +62,7 @@ tsc --noUnusedLocals --noUnusedParameters --noEmit
 **TypeScript (`knip`)**:
 
 ```bash
-npx knip
+npx --no knip
 ```
 
 - Better than `tsc` for multi-entry projects because it follows the dependency graph from `package.json` `main`/`exports`/`bin`.
@@ -115,7 +117,7 @@ vulture path/to/src/ --min-confidence 80
 
 ```bash
 tsc --noFallthroughCasesInSwitch --noImplicitReturns --noEmit
-npx eslint --rule '{"no-unreachable": "error"}' src/
+npx --no eslint --rule '{"no-unreachable": "error"}' src/
 ```
 
 - `no-unreachable` flags statements after `return`/`throw`/`break`/`continue`.
@@ -157,8 +159,8 @@ An export that no one imports is dead weight — SKILL.md can slim down without 
 **TypeScript (`ts-prune`)**:
 
 ```bash
-npx ts-prune
-npx ts-prune --error    # exit non-zero if any dead exports found
+npx --no ts-prune
+npx --no ts-prune --error    # exit non-zero if any dead exports found
 ```
 
 - Uses the TS program graph. Confidence: high for app code, **lower for libraries** because consumers are outside the repo.
@@ -167,8 +169,8 @@ npx ts-prune --error    # exit non-zero if any dead exports found
 **TypeScript (`knip`)** — recommended replacement for `ts-prune`:
 
 ```bash
-npx knip
-npx knip --dependencies --exports --files
+npx --no knip
+npx --no knip --dependencies --exports --files
 ```
 
 - Flags unused files, exports, types, members, dependencies, devDependencies, binaries.
@@ -228,7 +230,7 @@ done < /tmp/all_files.txt
 **TypeScript (`knip`)**:
 
 ```bash
-npx knip --files
+npx --no knip --files
 ```
 
 - Reports unused files via dep graph from `package.json` entries. Confidence: high with correct config.
@@ -254,8 +256,8 @@ Clone detection — identical or near-identical code blocks scattered across fil
 **AST-based (`jscpd`)**:
 
 ```bash
-npx jscpd src/ --min-lines 5 --min-tokens 50 --reporters console,html
-npx jscpd src/ --min-lines 10 --min-tokens 100 --threshold 5 --format javascript,typescript,python
+npx --no jscpd src/ --min-lines 5 --min-tokens 50 --reporters console,html
+npx --no jscpd src/ --min-lines 10 --min-tokens 100 --threshold 5 --format javascript,typescript,python
 ```
 
 - Multi-language (30+). Token-based: catches renamed-variable clones.
@@ -284,7 +286,7 @@ radon cc src/ -s          # cyclomatic complexity (clone hotspots)
 **TypeScript (`jscpd` or `copy-paste-detector`)**:
 
 ```bash
-npx jscpd --threshold 3 --min-tokens 50 src/
+npx --no jscpd --threshold 3 --min-tokens 50 src/
 ```
 
 **Rust**:

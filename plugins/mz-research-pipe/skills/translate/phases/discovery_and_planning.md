@@ -88,27 +88,23 @@ If the researcher reports zero matching files, or every matching file is skipped
 
 ### 1.3 Source Language Detection
 
-Run only when 1.1 did not supply an explicit source. The tier order is fall-through with a 5-second budget per tier and a global minimum-input guard.
+Run only when 1.1 did not supply an explicit source. The tiers fall through in order, behind a global minimum-input guard. Detection sends no file content to a third-party service.
 
-1. **LibreTranslate `/detect`** — `WebFetch` the configured mirror with the first 500 characters of the largest discovered file. 5-second timeout. Accept if the response confidence is ≥ 0.6 and the detected code is in the canonical set.
 1. **Unicode script heuristic** — grep `<SKILL_DIR>/references/language-codes.md` for the `## Script → Language Fallback Heuristic` table, count code points in the first 500 characters of the sample per range, and pick the majority. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `## Script → Language Fallback Heuristic`.
 1. **One-shot haiku agent** — dispatch a single haiku-model `pipeline-researcher` with the 500-char sample and the prompt "What ISO 639-1 language code is this? Reply with a single two-letter code only." Accept if the reply is in the canonical set.
 1. **AskUserQuestion** — escalate with the first line of the sample and the list of discovered files; never guess past this point.
 
-**Minimum input guard**: if the concatenated sample across discovered files is fewer than 20 characters, skip all four tiers and escalate immediately via `AskUserQuestion` — short strings carry too little signal for any heuristic to be reliable. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `Minimum input length`.
+**Minimum input guard**: if the concatenated sample across discovered files is fewer than 20 characters, skip every tier and escalate immediately via `AskUserQuestion` — short strings carry too little signal for any heuristic to be reliable. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `Minimum input length`.
 
-Persist to `state.md`: `source_lang` and `source_lang_method` (`libretranslate` / `script_heuristic` / `haiku_agent` / `user`). The method is audit-only; the approval gate echoes it so the user can see how detection landed.
+Persist to `state.md`: `source_lang` and `source_lang_method` (`script_heuristic` / `haiku_agent` / `user`). The method is audit-only; the approval gate echoes it so the user can see how detection landed.
 
 Example fall-through for a mixed-content file:
 
 ```
-tier 1 libretranslate: timeout after 5s                  → fall through
-tier 2 script heuristic: 340 Latin chars, ambiguous      → fall through
-tier 3 haiku agent: "en"                                 → accept
+tier 1 script heuristic: 340 Latin chars, ambiguous      → fall through
+tier 2 haiku agent: "en"                                 → accept
 state.md source_lang: en, source_lang_method: haiku_agent
 ```
-
-Early stop: if tier 1 returns ≥ 0.9 confidence and the detected code is in the canonical set, skip tiers 2–4. Reference: grep `<SKILL_DIR>/references/language-codes.md` for `Early stop on high confidence`.
 
 ### 1.4 Target Language Normalization
 

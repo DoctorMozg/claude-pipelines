@@ -225,7 +225,7 @@ Worked example: `uncertain_spans` has `"idempotent"` and `"распределё�
 Select up to 3 uncertain-span sentences across the whole job, prioritized by Tier-2 severity. Call:
 
 ```text
-https://api.mymemory.translated.net/get?q=<sentence>&langpair=<src>|<tgt>&de=<placeholder_email>
+https://api.mymemory.translated.net/get?q=<sentence>&langpair=<src>|<tgt>
 ```
 
 via WebFetch. Compare against the LLM translation for the same sentence. Flag only **hard content mismatches** (meaning diverges, not phrasing). Paraphrase differences are expected and must not be flagged. Global cap: `MAX_MYMEMORY_QUERIES` per run (keeps us comfortably under MyMemory's 5000-character/day free tier). Record every query, result, and outcome in `<task_dir>/tier3_ledger.md`.

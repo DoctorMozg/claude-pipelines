@@ -147,8 +147,7 @@ The orchestrator consumes this report to decide which chunks advance to Tier-3 d
 When the dispatch instructs you to verify uncertain terms via WebFetch, follow this strict ladder. Do not invent sources the dispatch did not name.
 
 1. **`en.wiktionary.org` REST API** — `https://en.wiktionary.org/w/api.php` for single-word term lookups. Highest authority for etymology, senses, and target-language renderings.
-1. **MyMemory API** — `https://api.mymemory.translated.net/get` for sentence-level spot-checks. Include `&de=<placeholder_email>` per upstream quota rules.
-1. **LibreTranslate public mirror** — only as a fallback when Wiktionary and MyMemory are both unavailable.
+1. **MyMemory API** — `https://api.mymemory.translated.net/get` for sentence-level spot-checks. Add no email or other identifier to the request.
 
 **Banned sources**: machine-generated blog posts, Stack Overflow translation threads, AI-generated summary pages, undated forum comments. If an authoritative source yields no answer, emit `UNVERIFIED: <claim> — could not confirm against upstream` rather than substituting a banned source.
 

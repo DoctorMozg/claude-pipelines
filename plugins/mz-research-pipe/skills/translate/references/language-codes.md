@@ -1,6 +1,6 @@
 # Language Codes — Canonicalization, Detection, Validation
 
-Grep-first reference. Agents never load this file whole. The pipeline's internal canonical form for every language code is **ISO 639-1 two-letter lowercase** (`en`, `ru`, `ja`, `zh`, `fr`, `de`, ...). All three external services the translate skill can reach — MyMemory, LibreTranslate, Wiktionary — accept ISO 639-1 directly without transformation, so canonicalizing at the skill boundary removes every downstream code-shape branch. Use this file to (1) normalize user input into the canonical form, (2) recognize preservable regional variants, (3) run the script-based detection fallback when network detection fails, and (4) validate incoming language tokens against prompt-injection.
+Grep-first reference. Agents never load this file whole. The pipeline's internal canonical form for every language code is **ISO 639-1 two-letter lowercase** (`en`, `ru`, `ja`, `zh`, `fr`, `de`, ...). Both external services the translate skill can reach, MyMemory and Wiktionary, accept ISO 639-1 directly without transformation, so canonicalizing at the skill boundary removes every downstream code-shape branch. Use this file to (1) normalize user input into the canonical form, (2) recognize preservable regional variants, (3) run the script-based detection fallback when network detection fails, and (4) validate incoming language tokens against prompt-injection.
 
 ## Contents
 
@@ -23,7 +23,7 @@ hr  sk  sl  sr  lt  lv  et  fa  ur  bn  ta  te  ml  kn  mr
 gu  pa  am  sw  zu
 ```
 
-Rationale: MyMemory (`langpair=en|ru`), LibreTranslate (`source`/`target`), and Wiktionary (language section headers via the MediaWiki API) all expect the ISO 639-1 two-letter code. Canonicalizing once removes branching from every caller.
+Rationale: MyMemory (`langpair=en|ru`) and Wiktionary (language section headers via the MediaWiki API) both expect the ISO 639-1 two-letter code. Canonicalizing once removes branching from every caller.
 
 ## Normalization Table
 
@@ -156,16 +156,13 @@ Explicit limits:
 
 When the user did not specify `--from <lang>` (or the NL equivalent), run detection in the following fallback order. Each tier has a failure mode that falls through to the next.
 
-1. **LibreTranslate `/detect`** — `WebFetch` to a reachable mirror with a 5-second timeout. Body: `{"q": "<first 500 chars of content>"}`. Success criterion: HTTP 200 + `detectedLanguage.confidence >= 0.6`. Mirrors and reliability are documented in research.md. On any network/timeout/low-confidence failure, fall through.
 1. **Script-based heuristic** — the Unicode-range table above. Scan the first 500 chars, count code points per range, pick the range with the highest non-Latin count. If the winning range is Latin, fall through — script alone cannot pick a Latin language.
 1. **LLM heuristic** — dispatch a one-shot `pipeline-researcher` or `haiku` agent with the first 500 chars and the prompt "What language is this? Reply with a single ISO 639-1 code only." Accept the response if it is in the canonical set above. On ambiguity, fall through.
 1. **Abort with AskUserQuestion** — present a clear error: `Could not auto-detect source language. Please specify --from <lang> (ISO 639-1 code) explicitly.` Never guess past this point.
 
-**Minimum input length**: 20 characters. Below 20 characters, skip all four tiers and require the user to specify source language explicitly — short strings carry too little signal for any heuristic to be reliable.
+**Minimum input length**: 20 characters. Below 20 characters, skip every tier and require the user to specify source language explicitly — short strings carry too little signal for any heuristic to be reliable.
 
 **Sampling window**: detection reads the first 500 characters of the content, not the whole file. Short samples are cheaper, hit fewer false positives from embedded code fences, and fit MyMemory's 500-byte per-request cap when a spot-check is layered on top. Skip the first line if it looks like a shebang or YAML frontmatter delimiter (`---`); both are locale-neutral noise.
-
-**Early stop on high confidence**. If tier 1 returns a confidence ≥ 0.9 and the language is in the canonical set, stop there and skip tiers 2–4. Never waste LLM dispatches on high-confidence detections.
 
 ## Validation Rules
 
