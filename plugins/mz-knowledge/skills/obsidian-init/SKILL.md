@@ -2,7 +2,7 @@
 name: obsidian-init
 description: 'Bootstraps an Obsidian vault with CLAUDE.md, folders and schema. Use when the user wants a vault set up ("init vault", "bootstrap obsidian", "setup knowledge base", "create vault structure"). Not for a code repo''s coding rules (use init-rules).'
 argument-hint: <vault path> [--minimal]
-allowed-tools: Agent, Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Grep, Glob, AskUserQuestion
+allowed-tools: Read, Write, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Grep, Glob, AskUserQuestion
 ---
 
 # Obsidian Init

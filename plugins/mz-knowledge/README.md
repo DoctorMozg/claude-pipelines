@@ -24,7 +24,7 @@ The hooks need `jq`. `/vault-ingest` needs one local tool per input type and ask
 | PDF                              | `pdftotext`                       |
 | YouTube link                     | `yt-dlp`                          |
 
-Homebrew: `brew install whisper-cpp tesseract poppler yt-dlp`. Optional: `ffprobe` and `pdfinfo` add warnings for audio over an hour or PDFs over 50 pages. `/vault-health` uses the `obsidian` CLI if present.
+Homebrew: `brew install whisper-cpp tesseract poppler yt-dlp`. On macOS, `ocrit` comes as `ocrit.pkg` from its [GitHub releases](https://github.com/insidegui/ocrit/releases). Optional: `ffprobe` and `pdfinfo` add warnings for audio over an hour or PDFs over 50 pages. `/vault-health` uses the `obsidian` CLI if present.
 
 ## Usage
 
@@ -146,7 +146,7 @@ Unless noted, a skill shows its plan and waits for approval before writing. `/va
 - `/vault-refactor` shows every affected file with before and after text. After approval it saves a rollback manifest of each file's original content, edits the referring notes, and renames or moves the note last.
 - `/vault-triage` applies one batch approval: `promote` moves a note to the permanent folder, `merge` appends it to a note you name and deletes it, `discard` deletes it, `defer` sets `review_after`.
 - `/vault-schema migrate`, `/vault-connect`, `/vault-provenance`, `/vault-research`, `/vault-health` and `/vault-ingest` gate their writes the same way: frontmatter patches, links, `epistemic_status` and `sources`, imported notes, `_vault_audit_<date>.md`, one `inbox/` note.
-- `/vault-review` updates `last_reviewed` and `maturity` on notes you confirm, and moves flagged notes to `<vault>/archive/` after a last confirmation.
+- `/vault-review` updates `last_reviewed` and `maturity` on notes you confirm, and moves flagged notes to `07 - Archives/` (or `archive/` in a vault without it) after a last confirmation.
 - `/obsidian-cli` has no gate: its `allowed-tools` pre-approve `obsidian create`, `append`, `daily:append` and `property:set`.
 
 ### Network and local tools

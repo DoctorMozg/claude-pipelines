@@ -8,12 +8,12 @@ Verify the right transcription or OCR tool is available for the detected modalit
 
 For the modality resolved in Phase 0, run `which` checks in the order below. Record every result — present AND missing — to `<PROJECT_ROOT>/.mz/task/<task_name>/tooling.md` so downstream skills can read the same detection instead of re-running it.
 
-| Modality | Primary         | Fallback           | Install (primary)          |
-| -------- | --------------- | ------------------ | -------------------------- |
-| voice    | `whisper-cpp`   | `whisper` (openai) | `brew install whisper-cpp` |
-| image    | `ocrit` (macOS) | `tesseract`        | `brew install tesseract`   |
-| pdf      | `pdftotext`     | —                  | `brew install poppler`     |
-| youtube  | `yt-dlp`        | —                  | `brew install yt-dlp`      |
+| Modality | Primary         | Fallback           | Install                                                                                          |
+| -------- | --------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
+| voice    | `whisper-cpp`   | `whisper` (openai) | `brew install whisper-cpp`                                                                       |
+| image    | `ocrit` (macOS) | `tesseract`        | macOS: `ocrit.pkg` from github.com/insidegui/ocrit/releases; elsewhere: `brew install tesseract` |
+| pdf      | `pdftotext`     | —                  | `brew install poppler`                                                                           |
+| youtube  | `yt-dlp`        | —                  | `brew install yt-dlp`                                                                            |
 
 Run the checks via `Bash`:
 
@@ -61,12 +61,12 @@ Selection order:
 
 1. Otherwise, if the modality's fallback tool resolved to a path, select the fallback and note the degradation in `state.md` under `ToolFallback: true`.
 
-1. Otherwise (both primary and fallback missing, or primary missing for a modality with no fallback), escalate via `AskUserQuestion`. Name the install command for the primary tool and offer two options:
+1. Otherwise (both primary and fallback missing, or primary missing for a modality with no fallback), escalate via `AskUserQuestion`. Name the tool and its install command from the table, `tesseract` for an image off macOS, and offer two options:
 
    ```
    No transcription tool found for modality <modality>.
 
-   Required: <primary tool name>
+   Required: <tool name>
    Install command: <install command from the table above>
 
    Options:

@@ -72,7 +72,7 @@ entries:
 
 **This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md` and collect every `archive_pending` entry.
+**Pre-read**: Read `<PROJECT_ROOT>/.mz/task/<task_name>/session_log.md` and collect every `archive_pending` entry. Set `<archive_dir>` to `<vault>/07 - Archives/`, the folder `obsidian-init` creates, when it exists, else `<vault>/archive/`.
 
 **State**: write `state.md` with the artifact path and `what_remains: [awaiting approval: archive gate]`; `Status` stays `running`.
 
@@ -88,7 +88,7 @@ entries:
 ...
 
 ---
-**Approve** → move all flagged notes to <vault>/archive/  ·  **Reject** → leave all notes in their current locations  ·  reply with note numbers (e.g. 1,3) to archive a subset
+**Approve** → move all flagged notes to <archive_dir>  ·  **Reject** → leave all notes in their current locations  ·  reply with note numbers (e.g. 1,3) to archive a subset
 ```
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the list in the question body:
@@ -96,12 +96,12 @@ entries:
 - question: `The archive list above is ready for confirmation.`
 - header: `Archive`
 - options:
-  - **Approve** — move all flagged notes to `<vault>/archive/`
+  - **Approve** — move all flagged notes to `<archive_dir>`
   - **Reject** — leave all notes in their current locations
 
 **Response handling**:
 
-- **Approve** → add `- archive approved: .mz/task/<task_name>/session_log.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: archive_approved`, then for each flagged note move the file to `<vault>/archive/` (create the folder if absent). Preserve filename. Update `session_log.md` action to `archived`.
+- **Approve** → add `- archive approved: .mz/task/<task_name>/session_log.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry, set `Phase: archive_approved`, then for each flagged note move the file to `<archive_dir>` (create the folder if absent). Preserve filename. Update `session_log.md` action to `archived`.
 - **Reject** → leave all notes in place. Update `session_log.md` action to `archive_cancelled` for each flagged entry.
 - **Any other reply (number list)** → archive only the listed entries; leave the rest. Update `session_log.md` accordingly.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: archive gate`, stop. A missing answer is never approval.
