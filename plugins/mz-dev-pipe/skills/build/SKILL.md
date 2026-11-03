@@ -51,7 +51,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 | 1   | Research                               | `phases/research_and_planning.md`     | —                   |
 | 2   | Planning + User Approval               | `phases/research_and_planning.md`     | plan review (max 3) |
 | 3   | Test Writing (RED)                     | `phases/testing.md`                   | —                   |
-| 4   | Test Review (3 parallel reviewers)     | `phases/testing.md`                   | max 3               |
+| 4   | Test Review (2 parallel reviewers)     | `phases/testing.md`                   | max 3               |
 | 5   | Verify RED                             | `phases/testing.md`                   | max 2               |
 | 6   | Implementation (GREEN, parallel waves) | `phases/implementation_and_review.md` | —                   |
 | 7   | Code Review                            | `phases/implementation_and_review.md` | max 3               |
@@ -92,7 +92,7 @@ See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface patter
 
 **Compute the cost preview** before emitting the Surface 1 message:
 
-- Count `N` from the plan: `N = 1 (test-writer) + 3 (test-reviewers) + W (parallel coder waves from plan.md work units) + 1 (code-reviewer) + 1 (final-reviewer) + 1 (optimizer) + 1 (completeness-checker)` where `W` is the number of work units in `plan.md`.
+- Count `N` from the plan: `N = 1 (test-writer) + 2 (test-reviewers) + W (parallel coder waves from plan.md work units) + 1 (code-reviewer) + 1 (final-reviewer) + 1 (optimizer) + 1 (completeness-checker)` where `W` is the number of work units in `plan.md`.
 - Default per-agent budget: ~20k tokens (mixed Sonnet + Opus). For a typical 5-work-unit plan, `N ≈ 12`, total ≈ 240k tokens.
 - Use the formula in `<PLUGIN_ROOT>/shared/approval-gate.md` to convert to a dollar estimate at the active price.
 

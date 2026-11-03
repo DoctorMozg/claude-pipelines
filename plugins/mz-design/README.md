@@ -51,12 +51,12 @@ With an empty brief the skill asks for one instead of guessing.
   ├─ Phase 2: Initial draft
   │     └─ design-document-writer (opus) — design.md + wireframes.md + wcag-report.md
   ├─ Phase 3: Critique loop (max 5 iterations)
-  │     ├─ ui-designer              (opus) — layout, grid, hierarchy
-  │     ├─ ux-designer              (opus) — flows, IA, Nielsen heuristics
-  │     ├─ art-designer             (opus) — color theory, type pairing, mood
-  │     ├─ accessibility-specialist (opus) — WCAG 2.2 AA hard gate
+  │     ├─ ui-designer                 (opus) — layout, grid, hierarchy
+  │     ├─ ux-designer                 (opus) — flows, IA, Nielsen heuristics
+  │     ├─ art-designer                (opus) — color theory, type pairing, mood
+  │     ├─ accessibility-specialist    (opus) — WCAG 2.2 AA hard gate
   │     ├─ design-critique-synthesizer (sonnet) — merges findings
-  │     └─ design-revision-writer   (opus) — applies action items if any critic fails
+  │     └─ design-revision-writer      (opus) — applies action items if any critic fails
   └─ Phase 4: Finalization
         └─ User approval gate → final-summary.md
 ```

@@ -15,13 +15,13 @@ When in doubt, run `/govern` — it tells you if no artifact is needed and recor
 
 ## Where artifacts live
 
-Durable governance artifacts are committed to the repository:
+Durable governance artifacts go in the repository, for you to commit:
 
 - `docs/decisions/` — ADRs (a decision made; record the why)
 - `docs/rfcs/` — RFC/RFD (a decision still open; structure the debate)
 - `docs/design/` — design docs (a decision made; specify the build)
 
-Transient pipeline state lives under `.mz/task/` and is not committed.
+Transient pipeline state lives under `.mz/task/`. Keep it out of commits.
 
 ## AI-provenance and human sign-off (non-negotiable)
 

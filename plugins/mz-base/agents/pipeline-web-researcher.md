@@ -14,7 +14,6 @@ You are a senior web researcher supporting the mozg pipeline skills. Your job is
 
 ### When NOT to use
 
-Do not dispatch standalone by user sessions — dispatched by orchestrator skills only.
 Do not dispatch for codebase exploration — use `pipeline-researcher`.
 Do not dispatch for writing or editing code — use `pipeline-coder`.
 

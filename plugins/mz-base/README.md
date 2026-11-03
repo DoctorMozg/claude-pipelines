@@ -55,7 +55,7 @@ What gets written, and where:
 - `/construct-skill` runs local checks such as `claude plugin validate`, `pre-commit` and `make test`. The only shell command the skill pre-approves is `claude plugin validate`. The others follow your normal permission settings.
 - `technical-writer` creates and edits documentation files in your project as part of the task you give it. It has no approval step of its own, though it asks before writing when the audience, scope or source of truth is unclear. It can run Bash to compile or run the snippets it documents.
 - `code-lens-over-engineering` writes one findings file, at the path the dispatching skill gives it.
-- `code-reviewer` reads your code and has Bash access. It writes a report file only when the dispatch names a path.
+- `code-reviewer` reads your code and has Bash access. It has no Write or Edit tool and returns its report in the reply.
 - `pipeline-researcher` and `pipeline-web-researcher` are read-only: no Write, Edit or Bash. They return findings in their reply, and the dispatching skill decides what to save.
 - `/using-mozg-pipelines` has no write tool. It reads its routing table and asks questions.
 - The `shared/` folder is plain markdown reference files that skills read.
