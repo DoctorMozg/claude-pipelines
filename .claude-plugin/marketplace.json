@@ -12,10 +12,11 @@
     {
       "category": "development",
       "keywords": [
+        "agents",
         "code-review",
-        "rules",
-        "coding-standards",
-        "init"
+        "web-research",
+        "technical-writing",
+        "routing"
       ],
       "name": "mz-base",
       "source": "./plugins/mz-base"
@@ -190,6 +191,18 @@
       ],
       "name": "mz-gov",
       "source": "./plugins/mz-gov"
+    },
+    {
+      "category": "development",
+      "keywords": [
+        "rules",
+        "coding-standards",
+        "init",
+        "claude-md",
+        "settings"
+      ],
+      "name": "mz-rules",
+      "source": "./plugins/mz-rules"
     }
   ],
   "renames": {

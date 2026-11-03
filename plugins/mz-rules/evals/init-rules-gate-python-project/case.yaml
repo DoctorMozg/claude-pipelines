@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: init-rules-gate-python-project
 description: 'init-rules on a Python repo with pre-commit shows an install plan of the detected rules and writes no rules file, settings entry or git exclude before approval.'
 tags: [track-d, gate]
-plugins: ["../.."]
+plugins: ["../..", "../../../mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh

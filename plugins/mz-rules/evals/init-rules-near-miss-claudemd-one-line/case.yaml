@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: init-rules-near-miss-claudemd-one-line
 description: Swapping one command line in an existing CLAUDE.md is a trivial edit that needs no skill, not a rules install.
 tags: [routing, near-miss]
-plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
 execution:
   prompt: >-
     Quick one. The CLAUDE.md in the repo root has a Build section, and the first

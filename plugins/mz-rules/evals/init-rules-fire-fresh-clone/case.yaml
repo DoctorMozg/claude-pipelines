@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: init-rules-fire-fresh-clone
 description: Getting Claude's conventions in place for one named repo on a known stack is a project-scoped rules install, so it belongs to init-rules.
 tags: [routing, fire, held-out]
-plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
 execution:
   prompt: >-
     Just cloned git@github.com:acme-robotics/fleet-api.git into ~/work/fleet-api and

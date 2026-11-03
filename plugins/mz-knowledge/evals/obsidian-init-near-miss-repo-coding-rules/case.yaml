@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: obsidian-init-near-miss-repo-coding-rules
 description: Installing coding and development rules for a software repo belongs to init-rules, not to bootstrapping an Obsidian vault.
 tags: [routing, near-miss]
-plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe"]
+plugins: ["../..", "../../../mz-base", "../../../mz-rules", "../../../mz-dev-pipe"]
 execution:
   prompt: >-
     I just cloned our team's payments-service repo (Go, mostly) and Claude keeps ignoring

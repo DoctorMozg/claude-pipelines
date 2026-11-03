@@ -69,7 +69,7 @@ PROMOTE_DESCRIPTION = (
     ".claude/rules/, one approval per lesson. Use when the session hint names promotion "
     'candidates or the user asks to "promote lessons". Not for saving a lesson (use memory-note).\''
 )
-INIT_RULES = "plugins/mz-base/skills/init-rules/SKILL.md"
+INIT_RULES = "plugins/mz-rules/skills/init-rules/SKILL.md"
 INIT_RULES_DESCRIPTION = (
     "description: 'Installs coding rules per project or globally. Use when the user wants Claude "
     'to follow the same habits or conventions in a project or every session ("init rules", '

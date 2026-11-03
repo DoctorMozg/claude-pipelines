@@ -58,10 +58,15 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-design",
         "mz-knowledge",
         "mz-gov",
+        "mz-rules",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 53
+    assert sum(len(package.skill_sources) for package in packages) == 54
     assert sum(len(package.role_sources) for package in packages) == 116
-    assert not any(package.plan.disposition is PackageDisposition.BLOCKED for package in packages)
+    assert {
+        package.plan.name
+        for package in packages
+        if package.plan.disposition is PackageDisposition.BLOCKED
+    } == {"mz-rules"}
     assert {
         package.plan.name: package.plan.dependencies
         for package in packages
@@ -88,11 +93,15 @@ def test_migration_plan_excludes_skills_that_cannot_run_under_codex() -> None:
         package.plan.name: package.plan.excluded_skills
         for package in packages
         if package.plan.excluded_skills
-    } == {"mz-base": ("init-rules",), "mz-dev-pipe": ("optimize",)}
-    skill_names = {
-        Path(source).parent.name for package in packages for source in package.skill_sources
+    } == {"mz-dev-pipe": ("optimize",)}
+    # init-rules lives alone in mz-rules, which is blocked from rendering instead.
+    renderable_skill_names = {
+        Path(source).parent.name
+        for package in packages
+        if package.plan.disposition is not PackageDisposition.BLOCKED
+        for source in package.skill_sources
     }
-    assert skill_names.isdisjoint({"init-rules", "optimize"})
+    assert renderable_skill_names.isdisjoint({"init-rules", "optimize"})
 
 
 def test_migration_plan_rejects_unknown_excluded_skill() -> None:

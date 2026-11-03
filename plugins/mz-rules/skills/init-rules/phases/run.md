@@ -79,17 +79,17 @@ These files carry one person's taste rather than broadly evidenced defaults, so 
 
 **Delegation group (only when chosen in Step 4):**
 
-| Group      | Rule files                                                                   | Offered when | Summary                                                                                                                                                                                    |
-| ---------- | ---------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Delegation | `delegation.md`, plus `delegation-naturalize.md` when mz-creative is enabled | always       | Sends sourced web research to `pipeline-web-researcher`, wide read-only searches to `Explore` and docs writing to `technical-writer`; with mz-creative, docs then go through `/naturalize` |
+| Group      | Rule files                                                                   | Offered when    | Summary                                                                                                                                                                                    |
+| ---------- | ---------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Delegation | `delegation.md`, plus `delegation-naturalize.md` when mz-creative is enabled | mz-base enabled | Sends sourced web research to `pipeline-web-researcher`, wide read-only searches to `Explore` and docs writing to `technical-writer`; with mz-creative, docs then go through `/naturalize` |
 
-mz-base ships the agents `delegation.md` names, so the group is always offered. `delegation-naturalize.md` names a mz-creative skill, so it joins only when `enabledPlugins` holds a `mz-creative@<marketplace>` key set to `true`. Check the settings files in precedence order, skipping any that don't exist: in project scope `.claude/settings.local.json`, then `.claude/settings.json` (both at the repository root), then `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`; in global scope only the last one. For each file run:
+`delegation.md` names agents that mz-base ships, so the group is offered only when mz-base is enabled; otherwise skip its question in Step 4 and record `Delegation: skip`. `delegation-naturalize.md` names a mz-creative skill, so it joins only when mz-creative is enabled. A plugin counts as enabled when `enabledPlugins` holds a `<plugin>@<marketplace>` key set to `true`. Check the settings files in precedence order, skipping any that don't exist: in project scope `.claude/settings.local.json`, then `.claude/settings.json` (both at the repository root), then `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`; in global scope only the last one. For each file and plugin (`mz-base`, `mz-creative`) run:
 
 ```bash
-jq -r '[(.enabledPlugins // {}) | to_entries[] | select(.key | startswith("mz-creative@")) | .value] | if length == 0 then "unset" elif any(. == true) then "true" else "false" end' "<settings file>"
+jq -r --arg p "<plugin>@" '[(.enabledPlugins // {}) | to_entries[] | select(.key | startswith($p)) | .value] | if length == 0 then "unset" elif any(. == true) then "true" else "false" end' "<settings file>"
 ```
 
-The first `true` or `false` decides; `unset`, or a file jq can't parse, moves on to the next file. When no file decides, mz-creative counts as not enabled. Without `jq`, read the same files with the Read tool and apply the same rule.
+The first `true` or `false` decides; `unset`, or a file jq can't parse, moves on to the next file. When no file decides, the plugin counts as not enabled. Without `jq`, read the same files with the Read tool and apply the same rule.
 
 ## Step 4: Choose optional groups
 
@@ -151,7 +151,7 @@ In rules mode "present" means `<target>/<filename>` exists and its version is th
 Rules target: <resolved path> (<create-new | create-new, imports AGENTS.md | modify-existing>)
 Detected: <context tags>
 Personal groups: <chosen groups | none>
-Delegation: <install | installed | skip> (mz-creative <enabled in <settings file> | not enabled>)
+Delegation: <install | installed | skip> (mz-base <enabled in <settings file> | not enabled>, mz-creative <enabled in <settings file> | not enabled>)
 
 Rules:
 <one line per rule: <id> — install | replace (--force) | upgrade <old> → <new> | skip (<reason>)>
@@ -222,7 +222,7 @@ For each rule in the approved plan:
    ```
    # Project Rules
 
-   <!-- This file is partially managed by mz-base init-rules. Sentinel-wrapped blocks below are maintained automatically; content outside them is user-authored. -->
+   <!-- This file is partially managed by mz-rules init-rules. Sentinel-wrapped blocks below are maintained automatically; content outside them is user-authored. -->
    ```
 
    Use `# Project Rules` for project scope, `# Global Rules` for global. Never overwrite an existing header.

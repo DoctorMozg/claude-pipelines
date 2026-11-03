@@ -19,7 +19,7 @@ The SessionStart hint lists promotion candidates (lessons seen 3+ times) and the
 
 - Saving a new lesson — use `/memory-note --lesson`.
 - Editing or deleting a lesson — edit `.mz/memory/lessons.md` by hand.
-- Installing curated rule packs — use `init-rules` (mz-base).
+- Installing curated rule packs — use `init-rules` (mz-rules).
 
 ## Arguments
 

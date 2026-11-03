@@ -67,14 +67,14 @@ flowchart LR
 </details>
 
 <details>
-<summary><b>Take over a legacy codebase</b> &nbsp;·&nbsp; <code>mz-base</code> + <code>mz-research-pipe</code> + <code>mz-dev-pipe</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
+<summary><b>Take over a legacy codebase</b> &nbsp;·&nbsp; <code>mz-rules</code> + <code>mz-research-pipe</code> + <code>mz-dev-pipe</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
 
 ```mermaid
 flowchart LR
-    A["/init-rules"]:::base --> B["/explain"]:::research
+    A["/init-rules"]:::rules --> B["/explain"]:::research
     B --> C["/audit"]:::pipe
     C --> D["/audit depth:deep scope:branch"]:::pipe
-    classDef base fill:#ddf4ff,stroke:#0969da,color:#0969da
+    classDef rules fill:#ddf4ff,stroke:#0969da,color:#0969da
     classDef research fill:#eaeef2,stroke:#57606a,color:#57606a
     classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
 ```
@@ -207,7 +207,8 @@ flowchart LR
 claude plugin marketplace add DoctorMozg/claude-pipelines
 
 # Install the plugins you need
-claude plugin install mz-base           # Standalone agents + rules
+claude plugin install mz-base           # Standalone agents + skills
+claude plugin install mz-rules          # Curated coding rules
 claude plugin install mz-dev-git        # Branch & GitHub PR review
 claude plugin install mz-dev-pipe       # Autonomous dev pipelines
 claude plugin install mz-research-pipe  # Research & content pipelines
@@ -239,14 +240,27 @@ After installation, skills are available as slash commands:
 
 Standalone agents and skills for everyday development. No pipeline orchestration — each tool works independently.
 
-| Skill               | Command                                                    | What it does                                                        |
-| ------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
-| **init-rules**      | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
-| **construct-skill** | `/construct-skill <intent>`                                | Drafts a plugin skill in a marketplace repo, test-first             |
+| Skill               | Command                     | What it does                                            |
+| ------------------- | --------------------------- | ------------------------------------------------------- |
+| **construct-skill** | `/construct-skill <intent>` | Drafts a plugin skill in a marketplace repo, test-first |
 
-3 user-facing agents: code-reviewer (single-file/staged-diff review), technical-writer (source-grounded docs) and pipeline-web-researcher (sourced web research, which other plugins' pipelines also dispatch), plus 2 shared pipeline agents (pipeline-researcher, code-lens-over-engineering). Ships 19 curated coding rules installable via `/init-rules`, with the personal and delegation groups opt-in, plus a `using-mozg-pipelines` routing map that answers "which skill fits".
+3 user-facing agents: code-reviewer (single-file/staged-diff review), technical-writer (source-grounded docs) and pipeline-web-researcher (sourced web research, which other plugins' pipelines also dispatch), plus 2 shared pipeline agents (pipeline-researcher, code-lens-over-engineering). Also ships a `using-mozg-pipelines` routing map that answers "which skill fits". The coding rules and `/init-rules` moved to `mz-rules` in 0.54.0.
 
 **[Full documentation →](plugins/mz-base/)**
+
+______________________________________________________________________
+
+### [`mz-rules`](plugins/mz-rules/) — Coding Rules
+
+One skill that installs curated coding rules for the languages and tooling it detects, as rule files or CLAUDE.md sentinel blocks, plus a few settings entries Claude Code enforces itself. One approval gate covers every write.
+
+| Skill          | Command                                                    | What it does                                                        |
+| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| **init-rules** | `/init-rules [project\|global] [--target=rules\|claudemd]` | Installs curated coding rules as files or CLAUDE.md sentinel blocks |
+
+Ships 19 rules, with the personal and delegation groups opt-in. Until 0.54.0 this skill was part of `mz-base`.
+
+**[Full documentation →](plugins/mz-rules/)**
 
 ______________________________________________________________________
 
@@ -485,7 +499,7 @@ Shared reference files are edited in one place, `plugins/mz-base/shared/`. Each 
 
 ## Credits
 
-Some rules in `mz-base` were inspired by [iamfakeguru/claude-md](https://github.com/iamfakeguru/claude-md).
+Some rules in `mz-rules` were inspired by [iamfakeguru/claude-md](https://github.com/iamfakeguru/claude-md).
 
 ## License
 

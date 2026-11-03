@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: init-rules-fire-rust-workspace
 description: A plain request to set up coding rules for the current project is the core job of init-rules.
 tags: [routing, fire]
-plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
 execution:
   prompt: >-
     Set up the coding rules for this project. It's a Rust workspace with clippy and

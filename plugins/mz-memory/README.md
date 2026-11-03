@@ -187,7 +187,7 @@ It never edits the blocks init-rules manages. An approved lesson moves to `lesso
 ## Pair With
 
 - **mz-dev-pipe**: Pipeline agents (planner, coder) have `memory: project` for agent-specific persistent memory; the per-agent bridge in `memory-capture.sh` automatically routes tagged task entries into their files
-- **mz-base**: `init-rules` installs curated rule packs into `.claude/rules/`; `/lessons-promote` adds the project's own lessons alongside them
+- **mz-rules**: `init-rules` installs curated rule packs into `.claude/rules/`; `/lessons-promote` adds the project's own lessons alongside them
 
 ## Per-Agent Native Memory
 

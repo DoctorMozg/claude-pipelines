@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: init-rules-near-miss-obsidian-vault
 description: Laying out folders, a CLAUDE.md and frontmatter conventions for a new Obsidian vault is vault bootstrapping, so it belongs to obsidian-init rather than init-rules.
 tags: [routing, near-miss]
-plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
+plugins: ["../..", "../../../mz-base", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-knowledge"]
 execution:
   prompt: >-
     Starting a fresh Obsidian vault at ~/Documents/second-brain for my reading and

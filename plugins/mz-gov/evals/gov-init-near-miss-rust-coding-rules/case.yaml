@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: gov-init-near-miss-rust-coding-rules
 description: Putting general coding rules into the project CLAUDE.md is a job for init-rules, not for the governance policy install.
 tags: [routing, near-miss]
-plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base"]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-dev-git", "../../../mz-base", "../../../mz-rules"]
 execution:
   prompt: >-
     New Rust crate, and two people join on Monday. Put our usual coding rules into
