@@ -233,7 +233,7 @@ class Catalog(FrozenModel):
     # Hooks and skills both run files from scripts/, so scripts render whether or not hooks exist.
     scripts: tuple[ScriptSpec, ...] = ()
     transforms: tuple[ExactTransformSpec, ...] = ()
-    # The plugin's shared/ folder (often a link to mz-base's); it renders to shared/ in the package.
+    # The plugin's shared/ folder (a generated copy of mz-base's); it renders to shared/ in the package.
     shared_root: RepositoryPath | None = None
 
     @model_validator(mode="after")

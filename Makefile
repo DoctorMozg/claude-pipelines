@@ -1,4 +1,4 @@
-.PHONY: smoke contract-matrix pytest test validate gh-smoke hooks-smoke gate-smoke eval eval-mutants help
+.PHONY: smoke contract-matrix pytest test validate vendor-shared gh-smoke hooks-smoke gate-smoke eval eval-mutants help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
@@ -21,6 +21,7 @@ help:
 	@echo "  pytest            Run the Python test suite (hook scripts, Codex migration)"
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
+	@echo "  vendor-shared     Copy plugins/mz-base/shared into every other plugin that has a shared/ folder"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
 	@echo "  hooks-smoke       Run the memory, tooling and vault hooks in live headless sessions (spends tokens)"
 	@echo "  gate-smoke        Answer memory-note and decomment gates headlessly, check the journal (spends tokens)"
@@ -53,6 +54,14 @@ validate:
 	done; \
 	if [ -n "$$failed" ]; then echo "validate --strict failed:$$failed"; exit 1; fi; \
 	echo "validate --strict passed: marketplace and $$(ls -d plugins/*/ | wc -l) plugins"
+
+# Anthropic's directory blocks plugins that load symlinks, so each consumer carries a real copy.
+# Edit only mz-base/shared; tests/plugin_lint/test_shared_copies.py fails when a copy drifts.
+vendor-shared:
+	@for copy in plugins/*/shared; do \
+		[ "$$copy" = plugins/mz-base/shared ] && continue; \
+		rm -rf "$$copy" && cp -R plugins/mz-base/shared "$$copy" && echo "vendored $$copy"; \
+	done
 
 # Live GitHub and model calls, so they stay out of `test` and CI. Run as modules so they share smoke_common.
 gh-smoke:

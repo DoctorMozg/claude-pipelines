@@ -457,7 +457,7 @@ Not allowed in any file under `plugins/`:
 Instead:
 
 - State the substance: write "Evidence is required for every finding.", not "Rule N requires evidence."
-- Where a plugin needs the full text of a rule, ship it once in `plugins/mz-base/shared/`, with one line naming the canonical source, and reach it through the plugin-root `shared` link (SKILL_GUIDELINES.md, "Phase and Reference Files").
+- Where a plugin needs the full text of a rule, ship it once in `plugins/mz-base/shared/`, with one line naming the canonical source, and reach it through the plugin's own `shared/` copy (SKILL_GUIDELINES.md, "Phase and Reference Files").
 - Delete decorative citations that trail a sentence which already states the rule.
 
 Exceptions:

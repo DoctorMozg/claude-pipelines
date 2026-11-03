@@ -481,7 +481,7 @@ Pipelines are designed around:
 
 See [CLAUDE.md](CLAUDE.md) for repository structure and conventions.
 
-Shared reference files live once in `plugins/mz-base/shared/`. Each plugin that reads them has a `shared` symlink to that folder, and Claude Code copies the files into the plugin cache at install time. On Windows, clone with `git clone -c core.symlinks=true` (this needs Developer Mode or an elevated shell) before you add the clone as a local marketplace. Without it, the links check out as small text files and those plugins lose their shared files.
+Shared reference files are edited in one place, `plugins/mz-base/shared/`. Each plugin that reads them carries a generated copy in its own `shared/` folder: `make vendor-shared` refreshes the copies, and `make test` fails when one drifts.
 
 ## Credits
 

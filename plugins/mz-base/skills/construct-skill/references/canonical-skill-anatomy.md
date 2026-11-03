@@ -128,8 +128,8 @@ A multi-phase skill has two or more phase files or any approval gate. Inline gat
 - Phase files write `<SKILL_DIR>/...`, `<PLUGIN_ROOT>/...` and `<PROJECT_ROOT>/...`. The orchestrator expands each placeholder to the absolute path before reading a file, running a command or passing a path to an agent.
 - Read each phase file at the start of its phase with `Read <SKILL_DIR>/phases/<file>.md`, not all of them up front, and re-read the current one after compaction.
 - List every reference file in SKILL.md as `${CLAUDE_SKILL_DIR}/references/<file>.md`, with what it holds and when to read it. Phase files may name it again as `<SKILL_DIR>/references/<file>.md`. Give dispatched agents absolute paths, without an `@` prefix. Search a lookup catalog for the entry you need; read templates, rubrics, threshold tables and short rule sets in full.
-- A file several plugins use lives once, in `plugins/mz-base/shared/`. Each consumer plugin has a `shared` symlink at its root pointing to `../mz-base/shared`, and mz-base holds the real directory. Skills reach it as `<PLUGIN_ROOT>/shared/<file>.md`.
-- Don't write a path into another plugin's directory (`../other-plugin/...`); only the `shared` link crosses plugins. Keep directory symlinks out of `skills/`. A file the skill needs on every surface, claude.ai included, stays inside the skill's own folder.
+- A file several plugins use is edited once, in `plugins/mz-base/shared/`. Each consumer plugin carries a generated copy at `shared/` in its root, refreshed by `make vendor-shared`, because Anthropic's directory blocks symlinks. Skills reach it as `<PLUGIN_ROOT>/shared/<file>.md`.
+- Don't write a path into another plugin's directory (`../other-plugin/...`): an installed plugin holds only its own folder. Keep symlinks out of plugin folders. A file the skill needs on every surface, claude.ai included, stays inside the skill's own folder.
 
 ## State blocks
 

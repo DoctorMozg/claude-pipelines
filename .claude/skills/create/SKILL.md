@@ -1,8 +1,8 @@
 ---
 name: create
-description: 'Scaffolds a new plugin, skill or agent in this repo, following its authoring guidelines. Use when the user wants to "create a skill", "add a new agent", start a "new plugin" or "scaffold" a component. Not for changing an existing one.'
+description: Scaffolds a new plugin, skill or agent in this repo, following its authoring guidelines. Use when the user wants to "create a skill", "add a new agent", start a "new plugin" or "scaffold" a component. Not for changing an existing one.
 argument-hint: <plugin|skill|agent> <name> [description]
-allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash(ln -s *), Bash(pre-commit run *), Bash(make test *), Bash(make validate *)
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash(mkdir *), Bash(make vendor-shared), Bash(pre-commit run *), Bash(make test *), Bash(make validate *)
 ---
 
 # Component Creator
@@ -105,7 +105,7 @@ Write what the plan lists. The guideline's checklist holds every rule; these are
 **Plugin**: follow "Adding a New Plugin" in `CLAUDE.md`. Easy to miss:
 
 - `version` in `plugin.json` is the marketplace's current `metadata.version`. Read it; never invent one.
-- When its skills or agents read shared rule files, link `shared` at the plugin root with `ln -s ../mz-base/shared plugins/<name>/shared`.
+- When its skills or agents read shared rule files, create an empty `plugins/<name>/shared/` folder and run `make vendor-shared` to fill it with a copy of mz-base's. Never symlink it: Anthropic's directory blocks symlinks.
 - A plugin with `dependencies` also goes into `_EXPECTED_DEPENDENCIES` in `tests/codex_migration/test_inventory.py`, next to the pinned plugin list.
 - Give it a `README.md`, and add it to the install list and the plugin sections of the root `README.md`.
 

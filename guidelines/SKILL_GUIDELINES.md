@@ -119,11 +119,11 @@ Reference implementation: `plugins/mz-design/skills/design-document/phases/final
 - A reference file over 100 lines opens with a table of contents (platform: skills best-practices). Repo convention: at most about 400 lines.
 - Example: `explain/references/mermaid-syntax-by-type.md`.
 
-**Shared files.** Repo convention: a file that several plugins use lives once, in `plugins/mz-base/shared/`. Each consumer plugin has a `shared` symlink at its root pointing to `../mz-base/shared`. Skills reach it as `<PLUGIN_ROOT>/shared/<file>.md` and agent bodies as `${CLAUDE_PLUGIN_ROOT}/shared/<file>.md`.
+**Shared files.** Repo convention: a file that several plugins use is edited in one place, `plugins/mz-base/shared/`. Each consumer plugin carries a generated copy at `shared/` in its root. Skills reach it as `<PLUGIN_ROOT>/shared/<file>.md` and agent bodies as `${CLAUDE_PLUGIN_ROOT}/shared/<file>.md`.
 
-- Claude Code copies a marketplace plugin into its own cache directory and dereferences a symlink whose target is elsewhere in the same marketplace (plugins/host-marketplace.md). The doc says installs from a local path, or from a `command` source in copy mode, keep only links inside the plugin. A probe of an install from a locally added marketplace on 2.1.316 found the link dereferenced anyway (observed). `--plugin-dir` loads the plugin in place, so the link resolves directly (plugins/loading.md). Test an install after changing the layout.
-- Don't write a path into another plugin's directory (`../other-plugin/...`) in skill or agent text. Only the `shared` link crosses plugins, because Claude Code resolves it at install time; a path written in prose finds nothing in the cache (plugins/loading.md).
-- Keep directory symlinks out of `skills/`: `claude plugin validate --strict` refuses them, while a link at the plugin root passes (observed on 2.1.316).
+- The copies are real files, not a symlink, because Anthropic's directory blocks a plugin that loads a symbolic link (claude.com: plugin pre-submission checklist). A user who installs a plugin gets only its folder.
+- After editing `mz-base/shared`, run `make vendor-shared`. `tests/plugin_lint/test_shared_copies.py` fails while any copy differs from the source or any symlink remains under `plugins/`. A new consumer gets an empty `shared/` folder, then the same command fills it.
+- Don't write a path into another plugin's directory (`../other-plugin/...`) in skill or agent text. An installed plugin holds only its own folder, so a path written in prose finds nothing in the cache (plugins/loading.md).
 - On claude.ai only the skill's own folder may be present (claude.com: skills how-to; anthropics/claude-code#103509). A file that a skill needs on every surface stays inside that skill's folder.
 
 ## 3. Skill Descriptions

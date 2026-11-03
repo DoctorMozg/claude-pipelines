@@ -8,7 +8,7 @@ Claims about Claude Code behavior carry the short source tags described at the t
 
 **Runtime copies.** This file is for authors. Claude Code doesn't copy files outside a plugin's directory when it installs the plugin, so no skill can read `guidelines/` at runtime (plugins/loading.md). Two copies carry the schema into plugins:
 
-- `plugins/mz-base/shared/state-schema.md` is the runtime mirror of the full schema. It reaches each consumer plugin through that plugin's `shared` link, and mz-dev-pipe skills read it as `<PLUGIN_ROOT>/shared/state-schema.md` (SKILL_GUIDELINES.md, "Phase and Reference Files").
+- `plugins/mz-base/shared/state-schema.md` is the runtime mirror of the full schema. Each consumer plugin carries a generated copy in its `shared/` folder, and mz-dev-pipe skills read it as `<PLUGIN_ROOT>/shared/state-schema.md` (SKILL_GUIDELINES.md, "Phase and Reference Files").
 - Skills in other plugins embed the compact contract (§9) in their State Management section.
 
 When this file changes, update the mirror in the same release, and check `plugins/mz-base/shared/resume-protocol.md` and every inline copy against this file. Nothing checks them automatically.
