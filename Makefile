@@ -1,4 +1,4 @@
-.PHONY: smoke contract-matrix pytest test validate gh-smoke hooks-smoke eval help
+.PHONY: smoke contract-matrix pytest test validate gh-smoke hooks-smoke gate-smoke eval help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
@@ -22,7 +22,8 @@ help:
 	@echo "  test              Run all checks (contract-matrix + smoke + pytest)"
 	@echo "  validate          Run claude plugin validate --strict on the marketplace and every plugin"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
-	@echo "  hooks-smoke       Run the memory and tooling hooks in live headless sessions (spends tokens)"
+	@echo "  hooks-smoke       Run the memory, tooling and vault hooks in live headless sessions (spends tokens)"
+	@echo "  gate-smoke        Answer memory-note and decomment gates headlessly, check the journal (spends tokens)"
 	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
 	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads plugins/<n>/evals/flags; spends tokens)"
 
@@ -57,6 +58,10 @@ gh-smoke:
 
 hooks-smoke:
 	@$(PYTHON) -E -s -m tests.e2e.hooks_smoke
+
+# GATE_ARGS passes harness flags, such as `--scenario note-approve`.
+gate-smoke:
+	@$(PYTHON) -E -s -m tests.e2e.gate_smoke $(GATE_ARGS)
 
 # Targets the repo root so a case's `plugins:` may also load sibling plugins: dependencies and
 # cross-plugin near misses. --trust-plugin and --scaffold are safe only because every suite and

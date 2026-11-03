@@ -1,29 +1,25 @@
-"""Live smoke test for plugin hooks in headless runs: start, end, resume, compact, frontmatter.
+"""Live smoke test for plugin hooks in headless runs: start, end, resume, compact, clear, vault.
 Spends a few cents on haiku and covers what plugin evals can't reach, so it stays out of CI."""
 
 import argparse
 import logging
-import os
-import re
 import shutil
-import subprocess
 import sys
 import tempfile
 import uuid
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
-from typing import Any
 
 from tests.e2e.smoke_common import (
     Check,
-    Event,
+    HeadlessClaude,
+    Session,
     SmokeError,
+    forget_session,
     print_checks,
-    result_event,
-    run_claude,
-    stream_events,
+    run_seed,
 )
 
 log = logging.getLogger("hooks_smoke")
@@ -47,10 +43,10 @@ NUDGE = "If this corrects something you did"
 STARTUP_PROMPT = "Reply with just OK. Don't search the files, and you must never call a tool here."
 RESUME_PROMPT = "No, that's not what I asked. Reply with just OK again."
 
-# A real vault in the caller's environment would pull the frontmatter run away from the temp vault.
-VAULT_ENV = frozenset({"OBSIDIAN_VAULT_PATH", "MZ_VAULT_PATH"})
 VAULT_NOTE = Path("notes/smoke.md")
 VAULT_PLAIN = Path("notes/plain.txt")
+VAULT_MOC = Path("00 - MOCs/Smoke-MOC.md")
+MOC_LINE = "Vault MOCs: Smoke-MOC"
 NORMALIZED = "---\ntags:\n  - AI-Ethics\ncreated: {today}\n---\n"
 # The .txt write proves the if-rules skip other files; the Edit proves Claude survives the rewrite.
 FRONTMATTER_PROMPT = """Do these three steps with your tools, in order, then reply with just OK.
@@ -73,82 +69,19 @@ printf '[project]\\nname = "smoke"\\n\\n[tool.ruff]\\nline-length = 100\\n' > py
 
 
 @dataclass(frozen=True)
-class Session:
-    label: str
-    events: list[Event]
-    cost_usd: float
-
-    def hook_outputs(self, hook_name: str) -> list[str]:
-        return [
-            str(event.get("output") or "")
-            for event in self.events
-            if event.get("subtype") == "hook_response" and event.get("hook_name") == hook_name
-        ]
-
-    def failed_hooks(self) -> list[object]:
-        return [
-            event.get("hook_name")
-            for event in self.events
-            if event.get("subtype") == "hook_response" and event.get("outcome") != "success"
-        ]
-
-    def tool_inputs(self, tool: str) -> list[dict[str, Any]]:
-        return [
-            block.get("input") or {}
-            for event in self.events
-            if event.get("type") == "assistant"
-            for block in (event.get("message") or {}).get("content") or []
-            if isinstance(block, dict)
-            and block.get("type") == "tool_use"
-            and block.get("name") == tool
-        ]
-
-
-@dataclass(frozen=True)
 class Harness:
     plugins_root: Path
-    workdir: Path
-    repo: Path
-    max_usd: float
+    claude: HeadlessClaude
+
+    @property
+    def repo(self) -> Path:
+        return self.claude.cwd
 
     def memory_plugins(self) -> list[Path]:
         return [*(self.plugins_root / name for name in PLUGINS), RECORDER]
 
     def knowledge_plugins(self) -> list[Path]:
         return [self.plugins_root / name for name in KNOWLEDGE_PLUGINS]
-
-    def run(
-        self, label: str, prompt: str, session_args: Sequence[str], plugins: Sequence[Path]
-    ) -> Session:
-        plugin_dirs = [arg for path in plugins for arg in ("--plugin-dir", str(path))]
-        command = [
-            "claude",
-            "-p",
-            prompt,
-            "--model",
-            MODEL,
-            # Only local settings: the user's own installed plugins and hooks would add noise.
-            "--setting-sources",
-            "local",
-            *plugin_dirs,
-            *session_args,
-            "--max-budget-usd",
-            f"{self.max_usd:.2f}",
-            "--output-format",
-            "stream-json",
-            "--verbose",
-            "--include-hook-events",
-        ]
-        transcript = self.workdir / f"{label}.jsonl"
-        log.info("starting %s", label)
-        env = {key: value for key, value in os.environ.items() if key not in VAULT_ENV}
-        if not run_claude(command, self.repo, transcript, RUN_TIMEOUT_S, env):
-            raise SmokeError(f"{label} timed out; see {transcript}")
-        events = stream_events(transcript)
-        result = result_event(events)
-        if result is None:
-            raise SmokeError(f"{label} left no result event; see {transcript}")
-        return Session(label, events, float(result.get("total_cost_usd", 0.0)))
 
     def last_source(self) -> str:
         path = self.repo / RECORDS
@@ -169,17 +102,12 @@ def check_preconditions(plugins_root: Path) -> None:
             raise SmokeError(f"no plugin manifest for {name} under {plugins_root}")
 
 
-def seed_project(repo: Path, plugins_root: Path) -> None:
-    try:
-        subprocess.run(
-            ["bash", "-c", SEED, "seed", str(plugins_root / FIXTURE_LIB)],
-            cwd=repo,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as error:
-        raise SmokeError(f"seeding the smoke project failed: {error.stderr.strip()}") from error
+def make_vault(vault: Path) -> None:
+    """A vault with one MOC and today's daily note, beside the project like most real vaults."""
+    for folder in (".obsidian", VAULT_NOTE.parent, VAULT_MOC.parent, Path("daily")):
+        (vault / folder).mkdir(parents=True, exist_ok=True)
+    (vault / VAULT_MOC).write_text("# Smoke map\n", encoding="utf-8")
+    (vault / "daily" / f"{date.today().isoformat()}.md").write_text("# Today\n", encoding="utf-8")
 
 
 def startup_checks(session: Session, harness: Harness) -> list[Check]:
@@ -262,29 +190,39 @@ def frontmatter_checks(session: Session, vault: Path) -> list[Check]:
     ]
 
 
-def forget_session(session_id: str, repo: Path) -> None:
-    """Delete the transcript the runs left in the claude config dir, which `--resume` needed."""
-    config = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
-    # Claude Code names a project's transcript folder after its path, every other character a dash.
-    project_name = re.sub(r"[^A-Za-z0-9]", "-", str(repo.resolve()))
-    for transcript in config.glob(f"projects/*/{session_id}.jsonl"):
-        if transcript.parent.name == project_name:
-            shutil.rmtree(transcript.parent)
-        else:
-            transcript.unlink()
-        log.info("removed %s", transcript)
+def vault_startup_checks(session: Session) -> list[Check]:
+    start = session.hook_outputs("SessionStart:startup")
+    daily = f"Today's daily note: {date.today().isoformat()}.md"
+    return [
+        Check("vault-context listed the MOC", True, any(MOC_LINE in out for out in start)),
+        Check("vault-context named today's daily note", True, any(daily in out for out in start)),
+        Check("every hook exited successfully", [], session.failed_hooks()),
+    ]
+
+
+def clear_checks(session: Session, harness: Harness) -> list[Check]:
+    start = session.hook_outputs("SessionStart:clear")
+    return [
+        Check("recorder saw source=clear", "clear", harness.last_source()),
+        Check(
+            "vault context re-injected after /clear", True, any(MOC_LINE in out for out in start)
+        ),
+        Check("every hook exited successfully", [], session.failed_hooks()),
+    ]
 
 
 def run_all(harness: Harness) -> list[tuple[Session, list[Check]]]:
     session_id = str(uuid.uuid4())
     try:
         plugins = harness.memory_plugins()
-        startup = harness.run("startup", STARTUP_PROMPT, ["--session-id", session_id], plugins)
+        startup = harness.claude.run(
+            "startup", STARTUP_PROMPT, plugins, ["--session-id", session_id]
+        )
         results = [(startup, startup_checks(startup, harness))]
         tooling_mtime = harness.tooling_mtime()
-        resume = harness.run("resume", RESUME_PROMPT, ["--resume", session_id], plugins)
+        resume = harness.claude.run("resume", RESUME_PROMPT, plugins, ["--resume", session_id])
         results.append((resume, resume_checks(resume, harness, tooling_mtime)))
-        compact = harness.run("compact", "/compact", ["--resume", session_id], plugins)
+        compact = harness.claude.run("compact", "/compact", plugins, ["--resume", session_id])
         results.append((compact, compact_checks(compact, harness)))
         return results
     finally:
@@ -296,8 +234,23 @@ def run_frontmatter(harness: Harness, vault: Path) -> tuple[Session, list[Check]
     prompt = FRONTMATTER_PROMPT.format(note=vault / VAULT_NOTE, plain=vault / VAULT_PLAIN)
     args = ["--session-id", session_id, "--add-dir", str(vault), "--permission-mode", "acceptEdits"]
     try:
-        session = harness.run("frontmatter", prompt, args, harness.knowledge_plugins())
+        session = harness.claude.run("frontmatter", prompt, harness.knowledge_plugins(), args)
         return session, frontmatter_checks(session, vault)
+    finally:
+        forget_session(session_id, harness.repo)
+
+
+def run_vault_context(harness: Harness, vault: Path) -> list[tuple[Session, list[Check]]]:
+    session_id = str(uuid.uuid4())
+    claude = replace(harness.claude, extra_env={"OBSIDIAN_VAULT_PATH": str(vault)})
+    plugins = [*harness.knowledge_plugins(), RECORDER]
+    try:
+        startup = claude.run("vault-startup", STARTUP_PROMPT, plugins, ["--session-id", session_id])
+        results = [(startup, vault_startup_checks(startup))]
+        # `/clear` costs nothing under -p, yet still runs SessionStart with source=clear.
+        cleared = claude.run("clear", "/clear", plugins, ["--resume", session_id])
+        results.append((cleared, clear_checks(cleared, harness)))
+        return results
     finally:
         forget_session(session_id, harness.repo)
 
@@ -321,13 +274,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         workdir = Path(tempfile.mkdtemp(prefix="hooks_smoke_"))
         repo = workdir / "project"
         repo.mkdir()
-        seed_project(repo, plugins_root)
-        # The vault sits beside the project, outside the working directory, like most real vaults.
+        run_seed(repo, SEED, str(plugins_root / FIXTURE_LIB))
         vault = workdir / "vault"
-        (vault / ".obsidian").mkdir(parents=True)
-        (vault / VAULT_NOTE.parent).mkdir()
-        harness = Harness(plugins_root, workdir, repo, args.max_usd_per_run)
-        results = [*run_all(harness), run_frontmatter(harness, vault)]
+        make_vault(vault)
+        claude = HeadlessClaude(workdir, repo, MODEL, args.max_usd_per_run, RUN_TIMEOUT_S)
+        harness = Harness(plugins_root, claude)
+        results = [
+            *run_all(harness),
+            run_frontmatter(harness, vault),
+            *run_vault_context(harness, vault),
+        ]
     except SmokeError as error:
         log.error("%s", error)
         return 2

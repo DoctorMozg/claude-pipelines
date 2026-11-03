@@ -25,8 +25,9 @@ packages = ["src/mozg_pipelines"]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
-pythonpath = ["src"]
-testpaths = ["tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_creative", "tests/mz_dev_git", "tests/mz_research_pipe", "tests/mz_biz_outreach", "tests/mz_job_outreach", "tests/plugin_lint"]
+# The repo root is on the path because the e2e harness modules import each other as tests.e2e.
+pythonpath = ["src", "."]
+testpaths = ["tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_creative", "tests/mz_dev_git", "tests/mz_research_pipe", "tests/mz_biz_outreach", "tests/mz_job_outreach", "tests/plugin_lint", "tests/e2e"]
 
 [tool.ruff]
 line-length = 100
