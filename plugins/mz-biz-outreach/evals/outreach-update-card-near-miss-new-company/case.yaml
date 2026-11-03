@@ -19,3 +19,7 @@ graders:
     min: 0
     max: 0
     arm: both
+  - name: outreach-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'

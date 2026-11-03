@@ -19,3 +19,7 @@ graders:
     min: 0
     max: 0
     arm: both
+  - name: job-recruiter-info-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-recruiter-info"'
