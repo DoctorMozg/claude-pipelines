@@ -94,7 +94,7 @@ Run each check and keep its output for the checklist:
 
 - `pre-commit run --files <every file in TARGET_DIR>` from `<REPO_ROOT>`, which runs the repo's `skill-description-shape`, `skill-reference-path` and `no-rule-citations` hooks along with mdformat.
 
-- `make test` from `<REPO_ROOT>`. Its `tests/plugin_lint/` suite checks every skill's frontmatter, structure, sizes, paths and dispatched agents, the draft included.
+- `make test` from `<REPO_ROOT>`. Its `tests/plugin_lint/` suite checks every skill's frontmatter, structure, sizes, paths, dispatched agents and routing-table row, the draft included.
 
 - A strict YAML parse of the frontmatter, which also prints the `description` plus `when_to_use` character count. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this check:
 
@@ -124,6 +124,7 @@ Print every item as a visible list marked PASS, FAIL or n/a (with the reason), w
 - [ ] No anatomy section is empty, `N/A` or a pointer line ("Skill Anatomy").
 - [ ] Agent names in dispatch prompts are bare names that match real agent definitions. When a dispatched agent belongs to another plugin, this plugin's `.claude-plugin/plugin.json` lists that plugin in `dependencies` (AGENTS_GUIDELINES.md, "Naming, Organization and Dependencies").
 - [ ] The skill cites no guideline rule or section numbers (AGENTS_GUIDELINES.md, "No Rule-Number Citations").
+- [ ] A skill without `user-invocable: false` or `disable-model-invocation: true` has a row in the routing table of `<REPO_ROOT>/plugins/mz-base/skills/using-mozg-pipelines/SKILL.md`, with trigger phrases from its description and its plugin in the last column ("Pre-Publish Checklist").
 
 **Review checks**
 
