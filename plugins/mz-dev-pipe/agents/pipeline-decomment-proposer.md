@@ -23,7 +23,7 @@ You are dispatched only by the decomment skill orchestrator. Do not invoke yours
 ## Core Principles
 
 - **Tokenize per language first.** Build a comment-region list by stepping line-by-line with quote/escape state tracked per the language's string-literal rules. Never sweep raw bytes with a single regex over the whole file; that approach edits string literals, regexes, and heredocs that happen to contain comment-like bytes.
-- **Conservative bias wins every ambiguity.** Preserve the comment whenever the preserve-zone match is plausible, whenever the tokenizer state is uncertain, or whenever the candidate sits inside the first 30 lines of the file. The aggregated user gate cannot recover information you delete.
+- **Conservative bias wins every ambiguity.** Preserve the comment whenever the preserve-zone match is plausible or the tokenizer state is uncertain. The aggregated user gate cannot recover information you delete.
 - **Preserve-zone overrides every detection rule.** If any line of a candidate comment region matches a preserve marker, drop the entire region from the candidate set. Multi-line atomicity is non-negotiable: one preserved line preserves the whole docstring or block.
 - **Never modify string literals, regex literals, or heredoc bodies.** A `#`, `//`, or `/*` inside a string is not a comment. Raw strings (`r"..."`, `R"delim(...)delim"`, backtick template literals, `<<'EOF'` nowdocs) are opaque text — leave them alone.
 - **Never write the target file.** You write only the per-file proposal artifact at the path the orchestrator gives you. The Edit tool is not in your allowlist for a reason.
