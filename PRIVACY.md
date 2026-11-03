@@ -15,7 +15,8 @@ Every outside call goes through Claude Code or a tool you installed and signed i
 - **Anthropic.** Your prompts, the files Claude reads and the work of every subagent go to the model you use in Claude Code, under your own account and Anthropic's terms. mz-memory's background curation also runs `claude -p` on your account; `MZ_MEMORY_COMPRESS=0` turns it off.
 - **Websites.** Research, review and writing skills use Claude Code's WebSearch and WebFetch tools, which fetch the pages Claude picks for your question.
 - **GitHub.** mz-dev-git, mz-dev-pipe and mz-gov reach GitHub through `gh`, the GitHub MCP server, or, when neither works, the REST API with the `GITHUB_TOKEN` from your environment. The token is only ever sent to `https://api.github.com`.
-- **YouTube.** mz-knowledge's `/vault-ingest` runs `yt-dlp` to fetch the subtitles of a YouTube link you give it. Voice notes are transcribed locally with whisper-cpp or whisper.
+- **Translation checks.** mz-research-pipe's `/translate` sends short excerpts of the text you translate to public services: the first 500 characters of the largest file to a LibreTranslate server to detect the language when you don't name it, up to 9 sentences per run to MyMemory (`api.mymemory.translated.net`), and single words to Wiktionary. Don't translate confidential text with it.
+- **YouTube.** mz-knowledge's `/vault-ingest` runs `yt-dlp` to fetch the subtitles of a YouTube link you give it. Voice notes are transcribed locally with whisper-cpp or whisper. The `whisper` CLI downloads its model weights on first use, and your audio stays local.
 
 ## Support
 

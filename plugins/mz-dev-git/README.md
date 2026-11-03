@@ -1,8 +1,10 @@
-<p align="center"><img src="../../assets/hero/mz-dev-git.webp" alt="mz-dev-git: multi-lens code review" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-dev-git.webp" alt="mz-dev-git: multi-lens code review" width="100%"></p>
 
 # mz-dev-git
 
-Git and GitHub review pipelines for Claude Code. Multi-lens deep review of local branch changes and GitHub pull requests, plus daily PR triage.
+mz-dev-git adds three skills to Claude Code: a deep review of your local branch, a deep review of a GitHub pull request, and a ranked triage of the PRs that need your attention. Each review fans out to six parallel lenses (bugs, security, architecture, performance, maintainability, over-engineering) plus a blind adversarial pass, and ends in a severity-labeled report with a pass/fail verdict. It's for developers who want a thorough read before they push, and for reviewers who juggle PRs across several repositories.
+
+**Works in:** Claude Code and Cowork. The skills dispatch agents, and claude.ai chat loads skills without their agents, so the pipelines don't run there.
 
 ## Installation
 
@@ -11,70 +13,105 @@ claude plugin marketplace add DoctorMozg/claude-pipelines
 claude plugin install mz-dev-git
 ```
 
-## Dependencies
+Installing `mz-dev-git` also installs [mz-base](https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-base), its dependency. Disabling `mz-base` disables `mz-dev-git`.
 
-`mz-dev-git` declares **`mz-base`** as a dependency because it dispatches three shared agents from there (see [Cross-plugin dispatch](#cross-plugin-dispatch)). `claude plugin install mz-dev-git` installs and enables `mz-base` too.
+## Requirements
 
-GitHub-PR skills additionally require the `gh` CLI authenticated, or `$GITHUB_TOKEN` set, or a GitHub MCP server exposed in the session.
+- `git` for the two review skills.
+- For the GitHub skills, one of: the `gh` CLI authenticated, a GitHub MCP server in the session, or `$GITHUB_TOKEN` set. The agents try them in that order.
+- `/github-review-pr` must run inside a clone of the PR's repository, meaning one with a remote that names `owner/repo`. Otherwise the agent stops and asks you to run it from one.
 
 ## Skills
 
-### `/review-branch` — Branch Review
+Plugin skills are also available under their namespaced names, such as `/mz-dev-git:review-branch`.
 
-Reviews all changes on the current branch against its base branch. Walks every modified file, runs six parallel code-review lenses (bugs, security, architecture, performance, maintainability, over-engineering), optionally consults `pipeline-web-researcher` for unfamiliar domains, and produces a structured report saved to `.mz/reviews/`.
+### `/review-branch`: branch review
 
-```
+Reviews every change on the current branch against a base branch (default `main`). It stops if you're on `main` or `master`, since there is nothing to diff.
+
+```text
 /review-branch              # compare against main
 /review-branch develop      # compare against develop
 ```
 
-**Pipeline**: branch-info-collector (git metadata + prior reviews) → branch-reviewer fan-out (6 code-lens agents in parallel + optional web research) → consolidated findings report.
+`branch-reviewer` walks each changed file and runs six lenses in parallel with full repo context. It then runs a blind audit: three adversarial researchers (production reliability, security, ops/SRE) see only the raw diff and surface "Blind Spots" the first wave missed. A branch in an unfamiliar domain also gets a web research pass. The report is saved to `.mz/reviews/`.
 
-### `/github-review-pr` — Pull Request Review
+**Pipeline**: branch-info-collector gathers git metadata and prior review reports. Optional web research comes next, then 6 code-lens agents in parallel, then 3 blinded researchers, and finally the consolidated report.
 
-Deep-reviews a GitHub PR in a temporary worktree that it creates and removes. Reads the diff, comments, and discussions, runs the same multi-lens analysis as `/review-branch`, cross-references existing reviewer feedback, and writes a severity-labeled report.
+### `/github-review-pr`: pull request review
 
-```
+Reviews a GitHub PR given as a URL or `owner/repo#number`. It reads the metadata, diff, review threads and comments, checks the code out in a temporary worktree, and runs the same analysis as `/review-branch` there.
+
+```text
 /github-review-pr https://github.com/owner/repo/pull/123
 /github-review-pr owner/repo#123
 ```
 
-**Pipeline**: github-pr-reviewer (worktree setup + PR metadata) → branch-reviewer fan-out on the worktree → consolidated report with verdict and Critical-finding count.
+Findings are cross-referenced with what reviewers and bots such as Copilot and CodeQL already said. Each one lands under New Issues or Previously Reported (Still Open, Addressed With Reply, Resolved Silently, Outdated). Threads marked resolved without a reply are re-checked against the code.
 
-### `/github-scan-prs` — PR Triage
+The review is skipped, with the reason written to the report, when the PR is closed, merged, a draft, empty, authored by you (unless you ask explicitly), or already approved by you.
 
-Scans GitHub repositories for PRs needing your attention — review requested, mentioned, assigned, or your own PRs with changes requested. Fans out one haiku scorer per PR and produces a tier-ranked daily triage report. Deep reviews are not part of this skill — for any single PR, run `/github-review-pr` separately.
+**Pipeline**: github-pr-reviewer gathers the PR data, builds the map of existing concerns and sets up the worktree. branch-reviewer then fans out on the worktree, the findings are cross-referenced, and the report carries the verdict and Critical-finding count.
 
-```
+### `/github-scan-prs`: PR triage
+
+Scans GitHub repositories for PRs that need your attention: review requested, mentioned, assigned, or your own PRs with changes requested. It scores every PR it finds and ranks them into three tiers. Tier 1 is directly asked and unanswered, Tier 2 is review or action requested, Tier 3 is informational. Within a tier, complexity and age set the order.
+
+```text
 /github-scan-prs                              # current repo only
 /github-scan-prs owner/repo1, owner/repo2     # explicit list
 ```
 
-**Pipeline**: github-pr-data-fetcher (multi-repo PR list with dedup + smoke tests) → github-pr-scanner orchestrator → per-PR github-pr-info-scorer (haiku, parallel waves of 6) → tier-ranked report.
+The scan reads metadata and counts, never diff content, and doesn't review code. For any PR in the report, run `/github-review-pr` separately.
+
+**Pipeline**: github-pr-scanner dispatches github-pr-data-fetcher (multi-repo PR list, dedup, zero-result smoke tests), then one github-pr-info-scorer per PR (haiku, parallel waves of up to 6), and writes the tier-ranked report to `.mz/reviews/`.
+
+## Reading the report
+
+Every finding carries one label: `Critical:`, `Nit:`, `Optional:` or `FYI:`. A new finding becomes `Critical:` only when its confidence is 80 or higher and two independent signals agree, either two lenses or a lens plus a matching blind-audit finding. Findings that only the blind audit raised are capped at `Optional:` or `FYI:` and listed under Blind Spots.
+
+The verdict line is `VERDICT: PASS` when there are no `Critical:` findings, `VERDICT: FAIL` otherwise.
 
 ## Agents
 
-Specialized worker agents used by the skills above. You don't invoke these directly — the skills orchestrate them.
+The skills dispatch these agents. Claude can also pick up the three orchestrators directly, since their descriptions say when to use them. The rest are pipeline-only and never user-triggered.
 
-| Agent                         | Role                                                                                             |
-| ----------------------------- | ------------------------------------------------------------------------------------------------ |
-| **branch-reviewer**           | Top-level orchestrator. Walks each changed file, fans out 6 code-lens agents, merges findings    |
-| **branch-info-collector**     | Pipeline collector — runs git metadata commands and scans for prior review reports               |
-| **github-pr-reviewer**        | Top-level PR orchestrator. Sets up a temp PR worktree, dispatches branch-reviewer, writes report |
-| **github-pr-scanner**         | Multi-repo PR triage orchestrator. Fans out github-pr-info-scorer per PR, produces tier ranking  |
-| **github-pr-data-fetcher**    | Pipeline collector — bulk PR list + dedup + zero-result smoke tests across multiple repos        |
-| **github-pr-info-scorer**     | Per-PR haiku scorer — lightweight metadata + complexity + answered/unanswered classification     |
-| **code-lens-bugs**            | Pipeline lens — scans diff for logic errors, off-by-one, null access, races, resource leaks      |
-| **code-lens-security**        | Pipeline lens — scans for injection, auth bypass, secret exposure, SSRF, IDOR, weak crypto       |
-| **code-lens-architecture**    | Pipeline lens — scans for SOLID violations, coupling, layering, pattern drift, god classes       |
-| **code-lens-performance**     | Pipeline lens — scans for N+1, blocking I/O in async, missing indexes, O(n²) hot paths           |
-| **code-lens-maintainability** | Pipeline lens — scans for unclear naming, complexity, magic values, dead code, duplication       |
-
-All five `code-lens-*` agents and the four `github-pr-*` collectors/scorers are **pipeline-only** — dispatched exclusively by their orchestrators. They are not user-invocable.
+| Agent                         | Model  | Role                                                                                             |
+| ----------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
+| **branch-reviewer**           | opus   | Top-level orchestrator. Walks each changed file, fans out 6 code-lens agents, merges findings    |
+| **branch-info-collector**     | haiku  | Pipeline collector: runs git metadata commands and scans for prior review reports                |
+| **github-pr-reviewer**        | opus   | Top-level PR orchestrator. Sets up a temp PR worktree, dispatches branch-reviewer, writes report |
+| **github-pr-scanner**         | sonnet | Multi-repo PR triage orchestrator. Fans out github-pr-info-scorer per PR, produces tier ranking  |
+| **github-pr-data-fetcher**    | haiku  | Pipeline collector: bulk PR list, dedup and zero-result smoke tests across multiple repos        |
+| **github-pr-info-scorer**     | haiku  | Per-PR scorer: lightweight metadata, complexity and answered/unanswered classification           |
+| **code-lens-bugs**            | sonnet | Pipeline lens: logic errors, off-by-one, null access, races, resource leaks                      |
+| **code-lens-security**        | sonnet | Pipeline lens: injection, auth bypass, secret exposure, SSRF, IDOR, weak crypto                  |
+| **code-lens-architecture**    | sonnet | Pipeline lens: SOLID violations, coupling, layering, pattern drift, god classes                  |
+| **code-lens-performance**     | sonnet | Pipeline lens: N+1, blocking I/O in async, missing indexes, O(n²) hot paths                      |
+| **code-lens-maintainability** | sonnet | Pipeline lens: unclear naming, complexity, magic values, dead code, duplication                  |
 
 ## Cross-plugin dispatch
 
-`branch-reviewer` dispatches `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering`; `github-pr-reviewer` dispatches `pipeline-web-researcher`. All three live in `mz-base` because skills in other plugins dispatch them too. Claude Code resolves agent names across all loaded plugins. Because the manifest declares `mz-base`, it installs with `mz-dev-git`, and disabling `mz-base` disables `mz-dev-git` too.
+`branch-reviewer` dispatches `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering`. `github-pr-reviewer` dispatches `pipeline-web-researcher`. Those three agents live in `mz-base` because skills in other plugins dispatch them too. Claude Code resolves agent names across all loaded plugins, and the manifest declares `mz-base` as a dependency, so it installs with `mz-dev-git`.
+
+## Data and network
+
+The plugin runs inside your Claude session and has no server of its own. As in any session, the code and PR text Claude reads goes to the model you use there. Beyond that:
+
+- **`/review-branch` works on local git only.** It reads branch metadata, the diff against the base and the changed files. It makes no GitHub calls and never fetches or pushes. Its only outside access is the web research below.
+- **`/github-review-pr` fetches the PR head and the base branch from your git remote** and checks the PR out into a temporary worktree at `<project>/.claude/worktrees/pr-<number>-<random>`, inside your project. The checkout is detached, so no local branch is created or moved. `github-pr-reviewer` removes the worktree (`git worktree remove --force`, then `git worktree prune`) before it returns, including when it stops with an error. After the agent returns, the skill removes any `pr-<number>-*` worktree left behind by a crash or turn limit. Reports are never written into the worktree.
+- **GitHub access.** `/github-scan-prs`, `/github-review-pr` and their agents query GitHub with `gh`. If a `gh` call fails, they try a GitHub MCP server in your session, then the REST API with `$GITHUB_TOKEN` from your environment. The token goes only to `https://api.github.com`.
+  - The scan reads your login, the PRs in the repos you name that match review-requested, assigned, mentioned or authored by you, and per PR the title, author, labels, dates, draft flag, review decision, file paths, line counts, reviews and comment text. It does not read diff content.
+  - The review reads your login, the PR title, description, labels and state, the full diff, reviews, inline and issue comments, review-thread resolution state, and the title and state of issues the PR links with `Fixes #N` or `Closes #N`.
+- **No agent writes to GitHub.** Nothing in the agent or skill files posts a comment, submits a review, applies a label or changes a PR. The `curl` fallback sends plain GET requests, the one GraphQL call is a read query, and results go only to local reports. The agents' MCP access is a `mcp__github__*` wildcard, so the allowlist doesn't itself block a write tool. No prompt calls one.
+- **Web research uses Claude Code's WebSearch and WebFetch.** `branch-reviewer` and `github-pr-reviewer` have both tools. They use them, directly or through mz-base's `pipeline-web-researcher`, when the change touches an unfamiliar domain. The three blind-audit researchers (mz-base's `pipeline-researcher`, dispatched on every review) have the same tools. Claude picks the queries and pages. The prompts steer agents toward official docs and away from Stack Overflow, forums and undated blogs, which is guidance rather than a network filter. The scan agents, the collector and the five code-lens agents have no web tools.
+- **Reports and state stay in your project.** Reports go to `.mz/reviews/`, task state and working files to `.mz/task/<task_name>/`. The working files include a copy of the branch diff. The plugin ships no hooks and no telemetry, and nothing is sent to the author.
+
+## Support
+
+- Issues: https://github.com/DoctorMozg/claude-pipelines/issues
+- Email: drmozg@gmail.com
+- Privacy: [PRIVACY.md](https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md)
 
 ## License
 
