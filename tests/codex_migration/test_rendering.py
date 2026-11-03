@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -290,6 +290,36 @@ def test_renderer_adapts_hook_events_and_scripts_for_codex(
         'echo "${PLUGIN_ROOT}"\n'
     )
     assert validate_package(spec.catalog, spec.policy, spec.package_root).is_valid is True
+
+
+def test_renderer_keeps_only_codex_handler_fields(hook_package: HookPackageBuilder) -> None:
+    handler = {
+        **_command("memory-inject.sh"),
+        "if": "Write(//**/*.md)",
+        "once": True,
+        "timeout": 5,
+        "statusMessage": "Injecting",
+    }
+    spec = hook_package((), {"PostToolUse": [{"matcher": "Write", "hooks": [handler]}]})
+
+    render_codex_package(spec)
+
+    rendered: dict[str, Any] = json.loads(
+        (spec.package_root / "hooks/hooks.json").read_text(encoding="utf-8")
+    )
+    assert rendered["hooks"]["PostToolUse"] == [
+        {
+            "matcher": "Write",
+            "hooks": [
+                {
+                    "command": "${PLUGIN_ROOT}/scripts/memory-inject.sh",
+                    "type": "command",
+                    "timeout": 5,
+                    "statusMessage": "Injecting",
+                }
+            ],
+        }
+    ]
 
 
 def test_renderer_rejects_unsupported_hook_event_move(

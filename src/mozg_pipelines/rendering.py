@@ -59,6 +59,18 @@ _SUPPORTED_HOOK_EVENT_MOVES = frozenset(
         (HookEvent.POST_TOOL_USE, HookEvent.USER_PROMPT_SUBMIT),
     }
 )
+# The command-handler fields Codex documents; Claude-only ones such as `once` and `if` are dropped.
+_CODEX_COMMAND_HANDLER_FIELDS = frozenset(
+    {
+        "type",
+        "command",
+        "timeout",
+        "statusMessage",
+        "async",
+        "commandWindows",
+        "additionalContextLimit",
+    }
+)
 _DEPENDENCY_CONTRACT_PATH = Path("mozg-dependencies.json")
 _CODEX_USER_PROMPT_JOURNAL = """#!/usr/bin/env bash
 set -euo pipefail
@@ -392,7 +404,12 @@ def _adapt_hook_group(
                 RenderFailure.INVALID_SOURCE,
                 "Codex hook adapters require command handlers",
             )
-        adapted_handlers.append({key: value for key, value in handler.items() if key != "once"})
+        dropped = sorted(set(handler) - _CODEX_COMMAND_HANDLER_FIELDS)
+        if dropped:
+            logger.debug("Dropping Claude-only hook fields %s from %s", dropped, source_path)
+        adapted_handlers.append(
+            {key: value for key, value in handler.items() if key in _CODEX_COMMAND_HANDLER_FIELDS}
+        )
 
     if source_event is HookEvent.POST_TOOL_USE and target_event is HookEvent.USER_PROMPT_SUBMIT:
         adapted_group.pop("matcher", None)
