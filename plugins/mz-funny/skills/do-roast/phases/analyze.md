@@ -12,7 +12,7 @@ Referenced constants (defined in SKILL.md `## Constants`): `TASK_DIR`,
 
 ______________________________________________________________________
 
-## Phase 1 preamble — target resolution detail
+## Phase 0.5: Target resolution detail
 
 SKILL.md Phase 0.5 runs this ladder before any analysis. It is written out
 here so a re-run, such as a typed `Other` answer to the target question,
@@ -20,7 +20,7 @@ resolves the same way.
 
 Apply the ladder in order. Stop at the first branch that produces a non-empty
 result. Emit both `resolved_target_kind` and `resolved_target_list` into
-`TASK_DIR<task_name>/state.md` before proceeding to Phase 2.
+`TASK_DIR<task_name>/state.md` before proceeding to Phase 1.
 
 1. **Path-like tokens**. Tokenize the free-form remainder on whitespace. For
    each token, treat it as path-like if it contains `/` or ends in a common
@@ -54,7 +54,7 @@ via AskUserQuestion — never guess a target.
 
 ______________________________________________________________________
 
-## Phase 2: Static structural / smell analysis
+## Phase 1: Static structural / smell analysis
 
 Read-only analysis of the resolved target list. No linters, no type-checkers,
 no shell-based analyzers. The user excluded tooling-dependent checks in the
@@ -76,11 +76,11 @@ analysis is grounded in the project itself, not external references:
    silent on the claim being checked.
 1. **Tier 5**: language-level official specifications (e.g. PEP docs for
    Python) — only for resolving ambiguous idioms, never for recording
-   findings in this phase (Phase 4 owns external references).
+   findings in this phase (Phase 3 owns external references).
 
-**Banned in Phase 2**: Stack Overflow, AI-generated summaries (including
+**Banned in Phase 1**: Stack Overflow, AI-generated summaries (including
 other LLMs' output), undated blog posts, forum threads, linter output
-(excluded by user requirements), and any external web source (Phase 4 owns
+(excluded by user requirements), and any external web source (Phase 3 owns
 that).
 
 ### Author-attack prohibition (hard rule)
@@ -135,11 +135,11 @@ roastable and must be dropped.
 - `FYI`: stylistic inconsistencies with sibling files that are not wrong.
 
 Record every signal that crosses a threshold into a running candidate list
-keyed by file:line. This candidate list feeds Phase 4b.
+keyed by file:line. This candidate list feeds Phase 4.
 
 ______________________________________________________________________
 
-## Phase 3: Docs coherence analysis
+## Phase 2: Docs coherence analysis
 
 Compare documented behavior to actual behavior. Docs are one of the three
 prongs of the analysis backbone (structure, docs, web best-practice) per the
@@ -175,12 +175,12 @@ locked requirements — a README that lies to the user is as roastable as a
    the counter-evidence (from the code), each with file:line coordinates.
    The dossier entry uses both as evidence.
 
-Author-attack prohibition from Phase 2 applies here too — if the docs
+Author-attack prohibition from Phase 1 applies here too — if the docs
 contain an author byline, the byline never enters the dossier.
 
 ______________________________________________________________________
 
-## Phase 4: Web best-practice delta research
+## Phase 3: Web best-practice delta research
 
 Stack-aware one-shot research pass. The goal is to surface findings where
 the target code diverges from the current official best practice for its
@@ -260,16 +260,16 @@ a finding without that token attached.
    (SQL injection, unvalidated deserialization, known-bad crypto primitive,
    deprecated API with CVE).
 
-Every Phase 4 finding must carry the source URL, the tier number, and the
+Every Phase 3 finding must carry the source URL, the tier number, and the
 target file:line evidence. If any of those three fields is missing, drop
 the finding.
 
 ______________________________________________________________________
 
-## Phase 4b: Dossier writer
+## Phase 4: Dossier writer
 
-This phase consolidates the candidate findings from Phase 2, Phase 3, and
-Phase 4 into the single artifact the persona agent will read. The dossier
+This phase consolidates the candidate findings from Phase 1, Phase 2, and
+Phase 3 into the single artifact the persona agent will read. The dossier
 schema below is THE contract between analysis and persona rendering.
 Persona agents cite findings by `(Finding N)` inline. Any deviation from
 the schema header format breaks the pipeline — treat the header shape as
@@ -285,7 +285,7 @@ structure:
 
 **Target**: <resolved_target_list, one line>
 **Persona**: <chosen persona, lowercase>
-**Stack detected**: <stack fingerprint from Phase 4>
+**Stack detected**: <stack fingerprint from Phase 3>
 **Analyzed**: <ISO8601 timestamp>
 
 ## Finding 1 — <severity> — <file>:<line> — <short description>
@@ -321,7 +321,7 @@ referenced by persona agents as `(Finding N)` inline citations. Constraints:
 Every finding must have all three body fields:
 
 - **Category** — one of `structure`, `docs`, `best-practice`. These map to
-  the three analysis phases (Phase 2, Phase 3, Phase 4 respectively).
+  the three analysis phases (Phase 1, Phase 2, Phase 3 respectively).
 - **Evidence** — concrete, quoted, and traceable. A line count, a
   parameter count, a quoted docs claim alongside the code that contradicts
   it, a URL with the tier number. No vague summaries — "this function is
@@ -354,8 +354,8 @@ After writing the dossier, append to `TASK_DIR<task_name>/state.md`:
 - `Phase: dossier_complete`
 - `dossier_path: <absolute path>`
 - `finding_counts: {Critical: N, Nit: N, Optional: N, FYI: N}`
-- `stack_fingerprint: <from Phase 4>`
-- `cache_hit: true | false` (from Phase 4 cache check)
+- `stack_fingerprint: <from Phase 3>`
+- `cache_hit: true | false` (from Phase 3 cache check)
 
 Control returns to SKILL.md, which then reads `phases/render.md` and
 proceeds to Phase 5 (persona dispatch).
