@@ -71,9 +71,9 @@ PROMOTE_DESCRIPTION = (
 )
 INIT_RULES = "plugins/mz-rules/skills/init-rules/SKILL.md"
 INIT_RULES_DESCRIPTION = (
-    "description: 'Installs coding rules per project or globally. Use when the user wants Claude "
-    'to follow the same habits or conventions in a project or every session ("init rules", '
-    '"install rules", "onboard project"). Not for an Obsidian vault (use obsidian-init).\''
+    "description: 'Installs coding rules per project or globally, fitted to the stack it reads "
+    'itself. Use when the user wants the same habits in a project or every session ("init '
+    'rules", "install rules", "onboard project"). Not for Obsidian vaults (use obsidian-init).\''
 )
 NOTES_PROCESS = "plugins/mz-knowledge/skills/process-notes/SKILL.md"
 NOTES_PROCESS_DESCRIPTION = (
