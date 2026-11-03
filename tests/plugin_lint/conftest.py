@@ -161,7 +161,7 @@ class PluginFile:
 
 @pytest.fixture(scope="session")
 def plugin_files() -> tuple[PluginFile, ...]:
-    # Consumer plugins carry generated copies of mz-base/shared; reading the source once avoids double counts.
+    # Consumers carry generated copies of mz-base/shared; reading only the source avoids recounts.
     paths = [
         *PLUGINS_DIR.glob("*/skills/**/*.md"),
         *PLUGINS_DIR.glob("*/agents/*.md"),
