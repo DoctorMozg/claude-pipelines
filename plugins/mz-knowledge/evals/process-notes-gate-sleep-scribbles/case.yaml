@@ -1,0 +1,87 @@
+schema_version: "1.1"
+name: process-notes-gate-sleep-scribbles
+description: 'process-notes has atomization-proposer split a three-idea inbox note into proposals with titles of at most 70 characters, then stops at the proposals gate with no note written and link-suggester never dispatched.'
+tags: [gate, track-d]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'process-notes-gate-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:process-notes inbox/sleep scribbles.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: process-notes-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_process-notes_'
+    target: trace
+  - name: atomization-proposer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?atomization-proposer"'
+    min: 1
+    max: 2
+  # Linking is Phase 2, behind the proposals gate.
+  - name: link-suggester-not-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?link-suggester"'
+    min: 0
+    max: 0
+  # The orchestrator records ProposalCount only after it has read and validated proposals.md.
+  - name: proposals-validated-in-state
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*ProposalCount:\s*[3-9]'
+    flags: m
+    target: trace
+  # The gate wait is written to state.md; a state.md call is the only tool call that can hold the text.
+  - name: state-awaits-proposals-gate
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*awaiting approval: proposals gate'
+    flags: m
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  - name: no-title-over-70-characters
+    type: regex
+    pattern: 'title:\s*(?:\\")?[^"\\\n]{71,}'
+    match: not_contains
+    target: trace
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: source-note-intact
+    type: regex
+    pattern: 'memories are not just stored overnight, they get replayed'
+    target: { source: file, path: "inbox/sleep scribbles.md" }
+  - name: source-note-not-turned-into-a-draft
+    type: regex
+    pattern: 'status: draft'
+    match: not_contains
+    target: { source: file, path: "inbox/sleep scribbles.md" }

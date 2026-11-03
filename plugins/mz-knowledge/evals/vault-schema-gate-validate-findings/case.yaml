@@ -1,0 +1,109 @@
+schema_version: "1.1"
+name: vault-schema-gate-validate-findings
+description: 'vault-schema validate has schema-validator label three violations by severity, skips untyped and undeclared-type notes, and stops at the findings gate with no vault note changed and no migration plan written.'
+tags: [gate, track-d]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-schema-gate-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:vault-schema validate
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: vault-schema-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_vault-schema_validate'
+    target: trace
+  - name: schema-validator-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?schema-validator"'
+    min: 1
+    max: 2
+  # The gate wait is written to state.md; a state.md call is the only tool call that can hold the text.
+  - name: state-awaits-findings-gate
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*awaiting approval: findings gate'
+    flags: m
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  # Each finding sits under its own path: entry, so the tempered gap keeps a match inside one entry.
+  - name: missing-tags-is-critical
+    type: regex
+    pattern: 'Cache invalidation\.md(?:(?!path:)[\s\S]){0,300}required_field_missing'
+    target: trace
+  - name: wrong-status-value-is-critical
+    type: regex
+    pattern: 'Merge sort\.md(?:(?!path:)[\s\S]){0,300}allowed_values_violation'
+    target: trace
+  - name: extra-key-is-nit
+    type: regex
+    pattern: 'Binary search\.md(?:(?!path:)[\s\S]){0,300}unknown_key'
+    target: trace
+  - name: untyped-and-undeclared-notes-skipped
+    type: regex
+    pattern: '\bpath:\s*[^\n]{0,200}(?:Untyped scribble|Pasta recipe|Clean note)\.md'
+    match: not_contains
+    target: trace
+  # Validate mode writes nothing to the vault, and the migrate artifacts only come after the gate.
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-migration-artifacts
+    type: tool_used
+    tool: Write
+    input_match: 'migration_plan|rollback\.md'
+    min: 0
+    max: 0
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: missing-tags-note-intact
+    type: regex
+    pattern: 'A cache entry is only as fresh as the event that last invalidated it'
+    target: { source: file, path: "04 - Permanent/Cache invalidation.md" }
+  - name: missing-tags-note-not-patched
+    type: regex
+    pattern: '^tags:'
+    flags: m
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Cache invalidation.md" }
+  - name: wrong-status-note-intact
+    type: regex
+    pattern: 'Merge sort splits the input in halves'
+    target: { source: file, path: "04 - Permanent/Merge sort.md" }
+  - name: wrong-status-note-not-patched
+    type: regex
+    pattern: '^status: (?:draft|evergreen)$'
+    flags: m
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Merge sort.md" }
+  - name: schema-intact
+    type: regex
+    pattern: 'allowed_values:\s+status: \[draft, evergreen\]'
+    target: { source: file, path: ".mz/vault-schema.yml" }

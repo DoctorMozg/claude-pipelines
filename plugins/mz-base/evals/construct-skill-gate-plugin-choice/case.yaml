@@ -1,0 +1,51 @@
+schema_version: "1.1"
+name: construct-skill-gate-plugin-choice
+description: 'With two equally fitting plugins and nobody to answer, construct-skill records the plugin question as blocked in state.md and writes no SKILL.md.'
+tags: [track-d, gate]
+plugins: ["../.."]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-base:construct-skill release-notes
+  allowed_tools: [Skill, Read, Write, Edit, Glob, Grep]
+  max_turns: 14
+  timeout_seconds: 300
+graders:
+  # Setup writes state.md before the plugin question, so the task folder shows the skill started.
+  - name: construct-skill-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_construct-skill_[^"]*/state\.md"'
+  # AskUserQuestion isn't available in eval sessions, so the skill's nobody-can-answer path ends the run in state.md.
+  - name: blocked-recorded
+    type: regex
+    pattern: '"name"\s*:\s*"(?:Write|Edit)"[^\n]*Status: blocked'
+    target: trace
+  - name: plugin-question-names-both-options
+    type: regex
+    pattern: '^(?=[\s\S]*team-core)(?=[\s\S]*team-extra)'
+  - name: no-file-written-under-plugins
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/plugins/'
+    min: 0
+    max: 0
+  - name: no-file-edited-under-plugins
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*/plugins/'
+    min: 0
+    max: 0
+  # The authoring phase's first write is red.md; reading the phase file early proves nothing.
+  - name: authoring-phase-not-entered
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/red\.md"'
+    min: 0
+    max: 0
+  - name: marketplace-intact
+    type: regex
+    pattern: '"name": "team-core"'
+    target: { source: file, path: plugins/team-core/.claude-plugin/plugin.json }

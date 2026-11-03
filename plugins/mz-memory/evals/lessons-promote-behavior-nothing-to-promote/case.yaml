@@ -1,0 +1,54 @@
+schema_version: "1.1"
+name: lessons-promote-behavior-nothing-to-promote
+description: 'With every lesson seen fewer than 3 times the skill lists candidates with its script, says there is nothing to promote, shows no gate and changes no rule file.'
+tags: [track-d, behavior, needs-bash]
+plugins: ["../.."]
+# Write, Edit and Bash are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit Bash --case 'lessons-promote-behavior-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-memory:lessons-promote
+  allowed_tools: [Skill, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 12
+  timeout_seconds: 300
+graders:
+  # A slash-command prompt makes no Skill call, so the skill's own list script shows it ran.
+  # State bookkeeping isn't graded: the skill creates its task folder with Bash mkdir, which the eval sandbox refuses.
+  - name: lessons-promote-started
+    type: tool_used
+    tool: Bash
+    input_match: 'lessons-promote\.sh\W{0,3}list'
+  - name: reports-nothing-to-promote
+    type: regex
+    pattern: 'no lessons?\b[^\n.]{0,60}(?:promot|seen|3\+|three)|nothing to promote|none[^\n.]{0,40}(?:seen|3\+|three|reached)|no promotion candidates'
+    flags: i
+  - name: no-gate-shown
+    type: regex
+    pattern: 'Lesson promotion ready for review'
+    match: not_contains
+  - name: claude-md-intact
+    type: regex
+    pattern: Keep handlers thin
+    target: { source: file, path: CLAUDE.md }
+  - name: claude-md-not-promoted-into
+    type: regex
+    pattern: 'MIG-|--shard'
+    match: not_contains
+    target: { source: file, path: CLAUDE.md }
+  - name: write-touched-no-promotion-target
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: edit-touched-no-promotion-target
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: lessons-kept
+    type: regex
+    pattern: '\[L-0001\] n=2[^\n]*\n- \[L-0002\] n=1'
+    target: { source: file, path: .mz/memory/lessons.md }

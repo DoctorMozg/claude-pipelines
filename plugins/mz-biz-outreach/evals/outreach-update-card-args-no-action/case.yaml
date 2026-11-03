@@ -1,0 +1,44 @@
+schema_version: "1.1"
+name: outreach-update-card-args-no-action
+description: 'Called with a card path and no action description, the skill asks what to log and writes nothing, rather than inventing an entry.'
+tags: [track-d, args]
+plugins: ["../..", "../../../mz-creative", "../../../mz-base"]
+# Write is a gated tool: make eval PLUGIN=mz-biz-outreach EVAL_ARGS="--allow-tools Write Edit --case outreach-update-card-args-*"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-biz-outreach:outreach-update-card .mz/outreach/active/2026-10-15_fjordline-shipping.md
+  allowed_tools: [Read, Write]
+  max_turns: 8
+  timeout_seconds: 240
+graders:
+  # AskUserQuestion isn't available in eval sessions, so the question can only be asked in chat.
+  - name: asks-what-action-to-log
+    type: regex
+    pattern: '^(?=[\s\S]*\baction\b)(?=[\s\S]*\b(?:log|logged|record|add)\b)'
+    flags: i
+  - name: names-the-card
+    type: regex
+    pattern: 'fjordline-shipping'
+    flags: i
+  - name: nothing-written
+    type: tool_used
+    tool: Write
+    min: 0
+    max: 0
+  - name: no-new-active-card
+    type: file_exists
+    path: '.mz/outreach/active/*.md'
+    exists: false
+  # The seed card still ends with its one real entry, and no second bullet appeared.
+  - name: card-keeps-its-last-entry
+    type: regex
+    pattern: 'Called Lars, he wants a demo in two weeks\n$'
+    target: { source: file, path: .mz/outreach/active/2026-10-15_fjordline-shipping.md }
+  - name: card-has-no-invented-entry
+    type: regex
+    pattern: '^- \*\*\d{4}-\d{2}-\d{2}\*\*'
+    flags: m
+    match: 'count:1'
+    target: { source: file, path: .mz/outreach/active/2026-10-15_fjordline-shipping.md }

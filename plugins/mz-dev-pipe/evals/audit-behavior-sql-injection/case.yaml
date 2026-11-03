@@ -1,0 +1,67 @@
+schema_version: "1.1"
+name: audit-behavior-sql-injection
+description: 'A security-lens audit of a small service reports the SQL injection with file:line in a report-only summary and leaves every source file as it was.'
+tags: [behavior, track-d]
+plugins: ["../..", "../../../mz-base"]
+runs: 1
+# Write and Edit are gated tools: make eval PLUGIN=mz-dev-pipe EVAL_ARGS="--allow-tools Write Edit --case audit-behavior-*"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:audit security vulnerabilities
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 30
+  timeout_seconds: 600
+graders:
+  # A slash prompt loads the skill without a Skill call, so the task state file that only the skill writes is the proof it ran.
+  - name: audit-ran
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_audit_[a-z0-9_]+/state\.md'
+    target: trace
+  # One lens keyword in the argument selects exactly that lens, so a single researcher goes out.
+  - name: one-lens-researcher-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-researcher"'
+    min: 1
+    max: 1
+  # The orchestrator persists the findings, so the Write input carries the finding text; one trace line holds the whole call.
+  - name: injection-reported-with-file-line
+    type: regex
+    pattern: '^(?=.*_audit_[a-z0-9_]+/(?:findings|findings_security|summary)\.md)(?=.*repo\.py:\d+)(?=.*(?:sql.{0,60}inject|inject.{0,60}sql))'
+    flags: im
+    target: trace
+  - name: summary-written
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_audit_[a-z0-9_]+/summary\.md'
+    target: trace
+  - name: summary-says-report-only
+    type: regex
+    pattern: '^(?=.*_audit_[a-z0-9_]+/summary\.md)(?=.*report-only)'
+    flags: m
+    target: trace
+  - name: state-marked-complete
+    type: regex
+    pattern: '_audit_[a-z0-9_]+/state\.md[^\n]*Status: complete'
+    target: trace
+  - name: vulnerable-query-still-there
+    type: regex
+    pattern: 'WHERE customer_id = ''\{customer_id\}'''
+    target: { source: file, path: services/billing/repo.py }
+  - name: handler-intact
+    type: regex
+    pattern: 'repo\.find_invoices\(conn, customer_id\)'
+    target: { source: file, path: services/billing/handlers.py }
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0

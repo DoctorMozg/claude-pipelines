@@ -1,0 +1,107 @@
+schema_version: "1.1"
+name: vault-connect-gate-kelly-links
+description: 'vault-connect has link-suggester propose typed links for Kelly criterion, skips a note that only shares the word criterion, and stops at the link gate with no wikilink written.'
+tags: [gate, track-d]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-connect-gate-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:vault-connect Kelly criterion
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: vault-connect-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_vault-connect_'
+    target: trace
+  - name: link-suggester-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?link-suggester"'
+    min: 1
+    max: 2
+  # The gate wait is written to state.md; a state.md call is the only tool call that can hold the text.
+  - name: state-awaits-link-gate
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*awaiting approval: link gate'
+    flags: m
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  # The proposals reach the trace through the agent's Write input and the orchestrator's pre-gate Read of the artifact.
+  - name: fractional-kelly-proposed
+    type: regex
+    pattern: 'target_title:\s*\\*"?Fractional Kelly reduces drawdowns'
+    target: trace
+  - name: relationship-label-typed
+    type: regex
+    pattern: 'relationship:\s*\\*"?(?:supports|contradicts|extends|example-of|prerequisite-for|see-also)\b'
+    target: trace
+  - name: relationship-label-in-closed-set
+    type: regex
+    pattern: 'relationship:\s*\\*"?(?!(?:supports|contradicts|extends|example-of|prerequisite-for|see-also)\b)[a-z]'
+    match: not_contains
+    target: trace
+  - name: coincidental-overlap-not-proposed
+    type: regex
+    pattern: 'target_title:\s*\\*"?Criterion validity'
+    match: not_contains
+    target: trace
+  # Links are written only after approval, by the orchestrator; the suggester has no such step.
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: kelly-note-intact
+    type: regex
+    pattern: 'Betting more than Kelly raises variance without raising growth'
+    target: { source: file, path: "04 - Permanent/Kelly criterion.md" }
+  - name: kelly-note-unlinked
+    type: regex
+    pattern: '\[\['
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Kelly criterion.md" }
+  - name: fractional-note-intact
+    type: regex
+    pattern: 'Betting half of the Kelly fraction keeps about three quarters'
+    target: { source: file, path: "04 - Permanent/Fractional Kelly reduces drawdowns.md" }
+  - name: fractional-note-unlinked
+    type: regex
+    pattern: '\[\['
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Fractional Kelly reduces drawdowns.md" }
+  - name: ergodicity-note-intact
+    type: regex
+    pattern: 'the time-average growth rate of a single bankroll is lower'
+    target: { source: file, path: "04 - Permanent/Ergodicity economics.md" }
+  - name: ergodicity-note-unlinked
+    type: regex
+    pattern: '\[\['
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Ergodicity economics.md" }

@@ -1,0 +1,50 @@
+schema_version: "1.1"
+name: deep-research-gate-rust-kernel
+description: 'deep-research writes a numbered decomposition of three to seven subtopics, shows its approval gate and dispatches no researcher and writes no report before approval.'
+tags: [track-d, gate]
+plugins: ["../..", "../../../mz-dev-pipe", "../../../mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-research-pipe:deep-research state of Rust in the Linux kernel
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 14
+  timeout_seconds: 300
+graders:
+  - name: deep-research-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_deep_research_[^"]*/state\.md"'
+  # In the JSON-encoded input a newline is the two characters \n, so list items are found after it.
+  - name: decomposition-has-three-or-more-items
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/decomposition\.md")(?=[\s\S]*\\n[#*\s-]*2[.)])(?=[\s\S]*\\n[#*\s-]*3[.)])'
+  - name: decomposition-stays-under-the-cap
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/decomposition\.md")(?=[\s\S]*\\n[#*\s-]*8[.)])'
+    min: 0
+    max: 0
+  # The gate message is a text block of its own, so the trace is searched for a text block and not for the skill text that quotes it.
+  - name: gate-message-emitted
+    type: regex
+    pattern: '"type"\s*:\s*"text"\s*,\s*"text"\s*:\s*"(?:[^"\\]|\\.)*?Research decomposition ready for review'
+    target: trace
+  - name: awaiting-approval-recorded
+    type: regex
+    pattern: '"name"\s*:\s*"(?:Write|Edit)"[^\n]*awaiting approval: decomposition gate'
+    target: trace
+  - name: no-researcher-dispatched
+    type: tool_used
+    tool: Agent
+    min: 0
+    max: 0
+  - name: no-report-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/research/'
+    min: 0
+    max: 0

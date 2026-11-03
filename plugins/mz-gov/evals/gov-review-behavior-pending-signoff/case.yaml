@@ -1,0 +1,63 @@
+schema_version: "1.1"
+name: gov-review-behavior-pending-signoff
+description: 'One ADR accepted with its human sign-off still pending is audited read-only: the report names the file and the sign-off gap, and no record or source file changes.'
+tags: [track-d, behavior]
+plugins: ["../.."]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+# Write is a gated tool: make eval PLUGIN=mz-gov EVAL_ARGS="--allow-tools Write Edit --case 'gov-review-behavior-*'"
+execution:
+  prompt: >-
+    /mz-gov:gov-review
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 25
+  timeout_seconds: 600
+graders:
+  # A slash prompt loads the skill without a Skill call, so look for the task folder only the skill writes.
+  - name: gov-review-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_gov[-_]review_[^"]*/state\.md"'
+  - name: reviewer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-audit-reviewer"'
+    min: 1
+    max: 2
+  # README.md and 0000-template.md share the folder but aren't records; a reviewer on either would show in the Agent input.
+  - name: scaffolding-not-reviewed
+    type: tool_used
+    tool: Agent
+    input_match: 'README|0000-template'
+    min: 0
+    max: 0
+  - name: report-names-the-failing-record
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/reviews/\d{4}_\d{2}_\d{2}_gov_review_[^"]*\.md")(?=[\s\S]*## Per-Artifact)(?=[\s\S]*0001-session-store\.md)(?=[\s\S]*FAIL)(?=[\s\S]*pending)'
+  - name: reply-points-at-report-and-gap
+    type: regex
+    pattern: '^(?=[\s\S]*\.mz/reviews/\d{4}_\d{2}_\d{2}_gov_review_)(?=[\s\S]*0001-session-store)(?=[\s\S]*(?:sign-?off|pending|Axis 6))'
+    flags: i
+  # The skill is read-only: only .mz/ may be written or edited.
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: nothing-edited-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: adr-still-pending
+    type: regex
+    pattern: 'human_signoff: pending'
+    target: { source: file, path: docs/decisions/0001-session-store.md }
+  - name: source-untouched
+    type: regex
+    pattern: 'SESSIONS\[token\] = user_id'
+    target: { source: file, path: src/session.py }

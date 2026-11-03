@@ -1,0 +1,93 @@
+schema_version: "1.1"
+name: vault-answer-behavior-no-answer
+description: 'When no note covers the question, vault-answer says the vault has nothing on it under Unknowns and cites no unrelated note, instead of answering from general knowledge.'
+tags: [behavior, track-d]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-answer-behavior-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:vault-answer what does my vault say about Raft leader election timeouts?
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: vault-answer-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_vault-answer_'
+    target: trace
+  # A zero-citation answer misses the density check, so one retry is expected and a third dispatch is a bug.
+  - name: answerer-dispatched-at-most-twice
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?vault-query-answerer"'
+    min: 1
+    max: 2
+  # The prompt's template bullet never mentions Raft, so a hit is the real Unknowns list naming the gap.
+  - name: gap-named-under-unknowns
+    type: regex
+    pattern: '## Unknowns[\s\S]{0,40}- [^\n]{0,300}?(?:Raft|election)'
+    flags: i
+    target: trace
+  # Raft's 150-300 ms election timeout is in no seed note, so it can only come from general knowledge.
+  # Words like heartbeat or randomized aren't graded: the answer may list them as search terms or Unknowns.
+  - name: no-general-knowledge-answer
+    type: regex
+    pattern: '\b150\s*(?:-|–|to)\s*300\b'
+    flags: i
+    match: not_contains
+    target: trace
+  - name: unrelated-notes-not-cited
+    type: regex
+    pattern: '\[\[(?:Kafka|Sourdough)'
+    match: not_contains
+    target: trace
+  - name: reply-says-vault-has-nothing
+    type: regex
+    pattern: '(?:\bno\b|\bnot\b|nothing|n.t\b|\bnone\b|without|lack)[^\n]{0,160}(?:Raft|leader|election|relevant)'
+    flags: i
+  - name: kafka-note-intact
+    type: regex
+    pattern: 'ordering is only guaranteed per key'
+    target: { source: file, path: "04 - Permanent/Kafka partition keys decide ordering.md" }
+  - name: kafka-note-untouched
+    type: regex
+    pattern: '\[\[|## (?:Sources|Unknowns)|^# Answer$'
+    flags: m
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Kafka partition keys decide ordering.md" }
+  - name: sourdough-note-intact
+    type: regex
+    pattern: 'At 75% hydration my sourdough crumb is open'
+    target: { source: file, path: "inbox/Sourdough hydration.md" }
+  - name: sourdough-note-untouched
+    type: regex
+    pattern: '\[\[|## (?:Sources|Unknowns)|^# Answer$'
+    flags: m
+    match: not_contains
+    target: { source: file, path: "inbox/Sourdough hydration.md" }
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0

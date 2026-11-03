@@ -1,0 +1,110 @@
+schema_version: "1.1"
+name: vault-triage-gate-ladder-decisions
+description: 'vault-triage has triage-scorer apply its rule ladder to four inbox notes, leaves every merge target null, and stops at the triage gate with no note deleted, moved or stamped.'
+tags: [gate, track-d]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-triage-gate-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:vault-triage .
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: vault-triage-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_vault-triage_'
+    target: trace
+  - name: triage-scorer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?triage-scorer"'
+    min: 1
+    max: 2
+  # The gate wait is written to state.md; a state.md call is the only tool call that can hold the text.
+  - name: state-awaits-triage-gate
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*awaiting approval: triage gate'
+    flags: m
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  # The ladder is deterministic and each note hits one rule; the tempered gap keeps a match inside one decision entry.
+  - name: stub-is-discarded
+    type: regex
+    pattern: 'Lunch idea\.md(?:(?!path:)[\s\S]){0,400}proposed_decision: discard'
+    target: trace
+  - name: structured-linked-note-is-promoted
+    type: regex
+    pattern: 'Postgres vacuum notes\.md(?:(?!path:)[\s\S]){0,400}proposed_decision: promote'
+    target: trace
+  - name: stale-unlinked-note-is-discarded
+    type: regex
+    pattern: 'Old reading list\.md(?:(?!path:)[\s\S]){0,400}proposed_decision: discard'
+    target: trace
+  - name: fresh-note-is-deferred
+    type: regex
+    pattern: 'Standup ideas\.md(?:(?!path:)[\s\S]){0,400}proposed_decision: defer'
+    target: trace
+  - name: merge-target-stays-null
+    type: regex
+    pattern: 'proposed_merge_target:\s*\\*"'
+    match: not_contains
+    target: trace
+  # Deletes, moves and the defer stamp all come after approval.
+  - name: no-shell-delete-or-move
+    type: tool_used
+    tool: Bash
+    input_match: '\b(?:rm|mv)\b'
+    min: 0
+    max: 0
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: stub-still-in-inbox
+    type: regex
+    pattern: 'Try the new noodle place on Friday'
+    target: { source: file, path: "inbox/Lunch idea.md" }
+  - name: linked-note-still-in-inbox
+    type: regex
+    pattern: 'Autovacuum keeps table bloat in check'
+    target: { source: file, path: "inbox/Postgres vacuum notes.md" }
+  - name: stale-note-still-in-inbox
+    type: regex
+    pattern: 'Books to look at when the project calms down'
+    target: { source: file, path: "inbox/Old reading list.md" }
+  - name: deferred-note-still-in-inbox
+    type: regex
+    pattern: 'Ideas for making the daily standup shorter'
+    target: { source: file, path: "inbox/Standup ideas.md" }
+  - name: deferred-note-not-stamped
+    type: regex
+    pattern: 'review_after'
+    match: not_contains
+    target: { source: file, path: "inbox/Standup ideas.md" }

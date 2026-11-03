@@ -1,0 +1,69 @@
+schema_version: "1.1"
+name: optimize-gate-contract
+description: 'Optimize drafts its contract and stops at the contract gate: with nobody to approve, no baseline, measurement or candidate agent runs and the code is untouched.'
+tags: [gate, track-d, needs-bash]
+plugins: ["../..", "../../../mz-base"]
+runs: 1
+# Write, Edit and Bash are gated tools; the detector and every check need Bash: make eval PLUGIN=mz-dev-pipe EVAL_ARGS="--allow-tools Write Edit Bash --case optimize-gate-*"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:optimize tokenize() in src/parser/tokenizer.py is too slow: get the
+    median time that python3 bench.py prints (ms, lower is better) down to 100.
+    Correctness check: python3 -m unittest discover -s tests -t .
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 25
+  timeout_seconds: 480
+graders:
+  # A slash prompt loads the skill without a Skill call, so the task state file that only the skill writes is the proof it ran.
+  - name: optimize-ran
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_optimize_[a-z0-9_]+/state\.md'
+    target: trace
+  # The detector isn't graded: the prompt names both commands, so there is nothing left for it to fill in.
+  - name: contract-written
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_optimize_[a-z0-9_]+/contract\.md'
+    target: trace
+  - name: contract-holds-the-measure-command
+    type: regex
+    pattern: '^(?=.*_optimize_[a-z0-9_]+/contract\.md)(?=.*measure_command)(?=.*bench\.py)(?=.*iteration_cap)'
+    flags: m
+    target: trace
+  # State is written before the gate is shown, so this holds whatever the missing answer does to Status afterwards.
+  - name: state-awaits-the-gate
+    type: regex
+    pattern: '_optimize_[a-z0-9_]+/state\.md[^\n]*awaiting approval: contract'
+    target: trace
+  - name: gate-message-emitted
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*Contract ready for review)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  # No measurement runs before the contract is approved, and the baseline wave and candidates come after that.
+  - name: no-post-gate-agent-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-(?:measure-runner|perf-candidate|test-runner|code-reviewer)"'
+    min: 0
+    max: 0
+  - name: slow-line-still-there
+    type: regex
+    pattern: 'tokens = tokens \+ \[match\.group\(\)\.strip\(\)\]'
+    target: { source: file, path: src/parser/tokenizer.py }
+  - name: bench-script-intact
+    type: regex
+    pattern: 'SAMPLE = '
+    target: { source: file, path: bench.py }
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0

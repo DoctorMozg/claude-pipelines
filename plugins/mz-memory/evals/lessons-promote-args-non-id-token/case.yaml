@@ -1,0 +1,49 @@
+schema_version: "1.1"
+name: lessons-promote-args-non-id-token
+description: 'A free-text argument that matches two lessons is asked about, never guessed into a lesson id, so no proposal is shown and nothing is written.'
+tags: [track-d, args]
+plugins: ["../.."]
+# Write and Edit are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit --case 'lessons-promote-args-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-memory:lessons-promote the migrations one
+  allowed_tools: [Skill, Read, Write, Edit, Glob, Grep, AskUserQuestion]
+  max_turns: 10
+  timeout_seconds: 300
+graders:
+  # AskUserQuestion isn't available in eval sessions, so the question can only be asked in chat.
+  - name: asks-which-lesson
+    type: regex
+    pattern: '^(?=[\s\S]*\?)(?=[\s\S]*(?:L-0001|L-0002|which (?:lesson|one)|lesson id))'
+    flags: i
+  - name: no-proposal-shown
+    type: regex
+    pattern: 'Lesson promotion ready for review|\bTarget:\s'
+    match: not_contains
+  - name: claude-md-intact
+    type: regex
+    pattern: Keep handlers thin
+    target: { source: file, path: CLAUDE.md }
+  - name: claude-md-not-promoted-into
+    type: regex
+    pattern: 'MIG-'
+    match: not_contains
+    target: { source: file, path: CLAUDE.md }
+  - name: write-touched-no-promotion-target
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: edit-touched-no-promotion-target
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: lessons-kept
+    type: regex
+    pattern: '\[L-0001\] n=4[^\n]*\n- \[L-0002\] n=3'
+    target: { source: file, path: .mz/memory/lessons.md }

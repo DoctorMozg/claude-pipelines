@@ -1,0 +1,49 @@
+schema_version: "1.1"
+name: freelance-pitch-args-rank-without-run
+description: 'A rank with no finished freelance-search run, only an unscored one, makes freelance-pitch ask for a gig URL and write no state, proposal or writer dispatch.'
+tags: [track-d, args]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-job-outreach EVAL_ARGS="--allow-tools Write Edit --case '*-args-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-job-outreach:freelance-pitch 3
+  allowed_tools: [Glob, Read, Write, Agent]
+  max_turns: 10
+  timeout_seconds: 240
+graders:
+  # The skill finds the newest run by globbing the freelance_search state folders.
+  - name: looked-for-a-prior-run
+    type: tool_used
+    tool: Glob
+    input_match: 'freelance_search'
+  # AskUserQuestion isn't available in eval sessions, so the question can only be asked in chat.
+  - name: asks-for-a-gig-url
+    type: regex
+    pattern: '\bURL\b'
+    flags: i
+  - name: says-there-is-no-finished-run
+    type: regex
+    pattern: 'no (?:prior|previous|finished|completed|scored|usable)|(?:not|never) (?:finished|completed|scored)|scored\.json'
+    flags: i
+  - name: no-proposal-writer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?freelance-proposal-writer"'
+    min: 0
+    max: 0
+  - name: nothing-written
+    type: tool_used
+    tool: Write
+    min: 0
+    max: 0
+  - name: no-pitch-state-created
+    type: file_exists
+    path: '.mz/task/*_freelance_pitch_*/state.md'
+    exists: false
+  # The unfinished search keeps its state untouched, so the negative graders above are not passing on a missing fixture.
+  - name: unfinished-search-state-untouched
+    type: regex
+    pattern: 'Status: running[\s\S]*RunName: 2026_10_30_freelance_search_go_backend\n$'
+    target: { source: file, path: .mz/task/2026_10_30_freelance_search_go_backend/state.md }

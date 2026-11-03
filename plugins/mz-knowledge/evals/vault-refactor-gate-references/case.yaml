@@ -1,0 +1,127 @@
+schema_version: "1.1"
+name: vault-refactor-gate-references
+description: 'vault-refactor has the scanner report all twelve reference forms to a renamed note while keeping aliases, then stops at the refactor gate with the writer never dispatched, no rollback manifest and no vault file changed.'
+tags: [gate, track-d]
+plugins: ["../.."]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-refactor-gate-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:vault-refactor Stoicism overview::Stoic practices that still work today
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: vault-refactor-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_vault-refactor_'
+    target: trace
+  - name: scanner-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?vault-refactor-scanner"'
+    min: 1
+    max: 2
+  - name: writer-not-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?vault-refactor-writer"'
+    min: 0
+    max: 0
+  # The gate wait is written to state.md; a state.md call is the only tool call that can hold the text.
+  - name: state-awaits-refactor-gate
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*awaiting approval: refactor gate'
+    flags: m
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  # The form ids come from the scanner's report, which lands in the trace through its Write input and the pre-gate Read.
+  - name: link-forms-reported
+    type: regex
+    pattern: '^(?=[\s\S]*form:\s*\\*"?bare(?![-\w]))(?=[\s\S]*form:\s*\\*"?aliased(?![-\w]))(?=[\s\S]*form:\s*\\*"?heading(?![-\w]))(?=[\s\S]*form:\s*\\*"?block(?![-\w]))(?=[\s\S]*form:\s*\\*"?heading-aliased(?![-\w]))'
+    target: trace
+  - name: embed-forms-reported
+    type: regex
+    pattern: '^(?=[\s\S]*form:\s*\\*"?embed-bare(?![-\w]))(?=[\s\S]*form:\s*\\*"?embed-file(?![-\w]))(?=[\s\S]*form:\s*\\*"?embed-heading(?![-\w]))(?=[\s\S]*form:\s*\\*"?embed-block(?![-\w]))'
+    target: trace
+  - name: frontmatter-and-bases-forms-reported
+    type: regex
+    pattern: '^(?=[\s\S]*form:\s*\\*"?frontmatter-quoted(?![-\w]))(?=[\s\S]*form:\s*\\*"?bases-link(?![-\w]))(?=[\s\S]*form:\s*\\*"?bases-link-display(?![-\w]))'
+    target: trace
+  # Only the name token changes in a replacement; the alias after the pipe stays.
+  - name: alias-kept-in-proposed-replacement
+    type: regex
+    pattern: '\[\[Stoic practices that still work today\|stoa\]\]'
+    target: trace
+  - name: rollback-manifest-not-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*rollback\.md"'
+    min: 0
+    max: 0
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-shell-move
+    type: tool_used
+    tool: Bash
+    input_match: '\bmv\b'
+    min: 0
+    max: 0
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: renamed-note-still-there
+    type: regex
+    pattern: 'Stoic ethics rests on the dichotomy of control'
+    target: { source: file, path: "04 - Permanent/Stoicism overview.md" }
+  - name: referrer-keeps-old-links
+    type: regex
+    pattern: '\[\[Stoicism overview\|stoa\]\]'
+    target: { source: file, path: "04 - Permanent/Dichotomy of control.md" }
+  - name: referrer-not-rewritten
+    type: regex
+    pattern: 'Stoic practices'
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Dichotomy of control.md" }
+  - name: moc-keeps-old-frontmatter-link
+    type: regex
+    pattern: 'related: "\[\[Stoicism overview\]\]"'
+    target: { source: file, path: "00 - MOCs/Philosophy MOC.md" }
+  - name: moc-not-rewritten
+    type: regex
+    pattern: 'Stoic practices'
+    match: not_contains
+    target: { source: file, path: "00 - MOCs/Philosophy MOC.md" }
+  - name: base-keeps-old-formulas
+    type: regex
+    pattern: 'link\("Stoicism overview", "stoic"\)'
+    target: { source: file, path: "99 - Meta/Library.base" }
+  - name: base-not-rewritten
+    type: regex
+    pattern: 'Stoic practices'
+    match: not_contains
+    target: { source: file, path: "99 - Meta/Library.base" }
