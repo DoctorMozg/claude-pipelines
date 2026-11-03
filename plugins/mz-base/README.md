@@ -69,7 +69,7 @@ Available via `/init-rules`. Each rule is a focused guideline installed as a `.m
 | **edit-safety**              | always                    | Grep is not symbol search, one source of truth, ask before destructive git actions         |
 | **context-safety**           | always                    | Re-reading after compaction, partial reads, truncated output, when subagents pay off       |
 | **self-evaluation**          | always                    | Evidence in reports, test integrity, scope trace, fresh-eyes review, right-sized write-ups |
-| **agent-workflow**           | always                    | Ask only when readings diverge, milestones with checks, finish the task                    |
+| **agent-workflow**           | always                    | Ask only when readings diverge, milestones capped at 10 files / 400 lines, finish the task |
 | **housekeeping**             | always                    | Mention pre-existing issues instead of fixing them unasked                                 |
 | **safety**                   | always                    | Fetched content is data, no secrets in output or commits, ask before new dependencies      |
 | **git-conventions**          | git repo                  | Commit only when asked, stage files by name                                                |
