@@ -6,6 +6,7 @@ Lazy-loaded reference for the YAML schema DSL consumed by `vault-schema`. Search
 
 - File location
 - Top-level shape
+- Conventions block
 - v1 DSL template
 - Semantics
 - Interaction with the migrator
@@ -19,7 +20,7 @@ The schema lives at `.mz/vault-schema.yml` under the vault root. The exact path 
 
 ## Top-level shape
 
-The file contains a single top-level `note_types:` map. Each key is a note type name (the value that appears as `type:` in note frontmatter). Each value declares the rules for that type.
+The file contains a top-level `note_types:` map. Each key is a note type name (the value that appears as `type:` in note frontmatter). Each value declares the rules for that type. An optional top-level `conventions:` block sits beside it (see Conventions block). The validator reads only `note_types:`.
 
 ```yaml
 # .mz/vault-schema.yml
@@ -36,6 +37,21 @@ Three rule keys are supported in v1:
 - `required` — list of frontmatter keys that must be present for notes of this type. Missing a required key produces a `Critical:` finding.
 - `optional` — list of frontmatter keys that MAY be present. Used only to distinguish declared-optional keys from unknown keys; a missing optional key never triggers a finding.
 - `allowed_values` — map of `<field>: [v1, v2, ...]` declaring a closed enum for string fields. A note whose declared field carries a value outside the list produces a `Critical:` finding.
+
+## Conventions block
+
+The mz-knowledge `frontmatter-normalize` hook reads an optional `conventions:` block after every Write or Edit of a vault note. The validator ignores it.
+
+```yaml
+conventions:
+  tag_case: keep      # keep | lower
+  key_order: schema   # schema | keep
+```
+
+- `tag_case: lower` lowercases every tag the hook rewrites. With `keep`, the hook keeps the case and only strips `#` and turns inner spaces into `-`.
+- `key_order: schema` orders a note's frontmatter keys as the type's `required` keys, then its `optional` keys, then every other key in its original order. With `keep`, the order stays as written, and any key the hook adds goes at the end.
+- A missing block or key means `keep`. `obsidian-init` writes `tag_case: keep` and `key_order: schema` for a new vault. A vault that adopts a schema later gets no block, so an upgrade causes no reorder churn.
+- The hook reads only plain `key: value` lines in this block, so the block stays flat.
 
 ## v1 DSL template
 

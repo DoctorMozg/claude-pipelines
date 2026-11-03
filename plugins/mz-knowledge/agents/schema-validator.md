@@ -44,7 +44,7 @@ If the vault directory is not accessible, emit `STATUS: BLOCKED` with the offend
 
 ### Step 2 — Read and parse the schema
 
-Read `schema_path` using the Read tool. Parse the YAML body and extract the `note_types:` map. For each note_type key, capture:
+Read `schema_path` using the Read tool. Parse the YAML body and extract the `note_types:` map. Ignore every other top-level key. `conventions:` belongs to the frontmatter-normalize hook and is never a rule or a finding. For each note_type key, capture:
 
 - `required`: list of frontmatter keys that must be present.
 - `optional`: list of frontmatter keys that MAY be present.

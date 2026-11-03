@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 from collections.abc import Callable, Iterable
@@ -8,10 +9,16 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+import yaml
 
 PLUGIN = Path(__file__).resolve().parents[2] / "plugins/mz-knowledge"
 SCRIPT = PLUGIN / "scripts/frontmatter-normalize.sh"
 HOOKS = PLUGIN / "hooks/hooks.json"
+SCAFFOLD = PLUGIN / "skills/obsidian-init/phases/scaffold_vault.md"
+DSL_REFERENCE = PLUGIN / "skills/vault-schema/references/schema-dsl-syntax.md"
+YAML_FENCE = re.compile(r"```yaml\n(.*?)```", re.S)
+# A documented convention line, such as `  tag_case: keep      # keep | lower`.
+CONVENTION_LINE = re.compile(r"^  (?P<key>\w+): \w+ +# (?P<choices>\w+(?: \| \w+)+)$", re.M)
 BASH = shutil.which("bash") or "/bin/bash"
 # Everything the script runs except jq, so a PATH built from these hides jq only.
 TOOLS_WITHOUT_JQ = ("awk", "cp", "date", "dirname", "mktemp", "mv", "rm", "tail")
@@ -61,6 +68,21 @@ def _frontmatter(path: Path) -> str:
     assert text.startswith("---\n"), text
     end = text.index("\n---\n", 3)
     return text[4 : end + 1]
+
+
+def _yaml_block(path: Path, heading: str) -> str:
+    text = path.read_text(encoding="utf-8")
+    assert heading in text, f"{path.name} has no {heading!r} section"
+    match = YAML_FENCE.search(text, text.index(heading))
+    assert match is not None, f"{path.name} has no yaml block after {heading!r}"
+    return match.group(1)
+
+
+def _documented_conventions() -> dict[str, set[str]]:
+    block = _yaml_block(DSL_REFERENCE, "## Conventions block")
+    documented = {m["key"]: set(m["choices"].split(" | ")) for m in CONVENTION_LINE.finditer(block)}
+    assert documented, f"{DSL_REFERENCE.name} documents no conventions"
+    return documented
 
 
 def _context(stdout: str) -> str:
@@ -507,3 +529,39 @@ class TestRegistration:
 
     def test_scripts_are_executable(self) -> None:
         assert os.access(SCRIPT, os.X_OK)
+
+
+class TestSchemaConventions:
+    PROBE = "title: T\ntags: [AI]\ntype: permanent\ncreated: 2024-01-01\n"
+    TYPES = "note_types:\n  permanent:\n    required: [created, type, tags]\n"
+
+    def test_obsidian_init_writes_a_documented_value_for_every_convention(self) -> None:
+        schema = yaml.safe_load(_yaml_block(SCAFFOLD, "## Step 3"))
+        documented = _documented_conventions()
+        assert set(schema["conventions"]) == set(documented)
+        for key, value in schema["conventions"].items():
+            assert value in documented[key], f"{key}: {value} is not one of {documented[key]}"
+
+    def test_every_documented_choice_changes_what_the_hook_writes(
+        self, run_hook: RunHook, write_note: WriteNote, write_schema: WriteSchema
+    ) -> None:
+        write_schema(self.TYPES)
+        kept = write_note(self.PROBE, rel="kept.md")
+        run_hook(kept)
+        for key, choices in _documented_conventions().items():
+            # keep is what an absent key means, so every other choice must change the output.
+            for choice in sorted(choices - {"keep"}):
+                write_schema(f"conventions:\n  {key}: {choice}\n{self.TYPES}")
+                note = write_note(self.PROBE, rel=f"{key}-{choice}.md")
+                run_hook(note)
+                assert _frontmatter(note) != _frontmatter(kept), f"{key}: {choice} had no effect"
+
+    def test_obsidian_init_schema_orders_a_new_note(
+        self, run_hook: RunHook, write_note: WriteNote, write_schema: WriteSchema
+    ) -> None:
+        write_schema(_yaml_block(SCAFFOLD, "## Step 3"))
+        note = write_note("title: T\ntags: x\ntype: permanent\ncreated: 2024-01-01\n")
+        run_hook(note)
+        assert (
+            _frontmatter(note) == "created: 2024-01-01\ntype: permanent\ntags:\n  - x\ntitle: T\n"
+        )

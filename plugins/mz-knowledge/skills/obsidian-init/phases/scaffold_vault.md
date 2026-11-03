@@ -65,9 +65,13 @@ Write to `<vault>/CLAUDE.md` using the Write tool. Record `CLAUDEAction: written
 
 If `ExistingSchema` is true, skip and record `SchemaAction: skipped_existing`.
 
-If false, build the schema from enabled note types and frontmatter style:
+If false, build the schema from enabled note types and frontmatter style. Start the file with the `conventions:` block exactly as shown. The `frontmatter-normalize` hook reads it, and a new vault has no notes whose key order it could churn:
 
 ```yaml
+conventions:
+  tag_case: keep
+  key_order: schema
+
 note_types:
   permanent:
     required: [created, type, tags]
