@@ -425,6 +425,7 @@ Test every new or changed agent in proportion to the change.
 - The run's workspace isn't a git repository, but its HOME is. Anything that finds the project root with `git rev-parse --show-toplevel` or a walk up to `.git` lands on HOME, including mz-memory's hooks and every skill's `state.md` path. A case that reads or writes under the project root runs `git init` in its `scaffold_script`.
 - `allowed_tools: []` doesn't remove every tool: Read and Glob still work inside the workspace, and Task and ToolSearch stay available. To show an answer came from injected context alone, grade the trace for no `"type":"tool_use"`, or pass `--disallow-tools`.
 - A `not_contains` grader on a file that doesn't exist passes. Pair every negative file grader with a positive one on the same file.
+- `make test` checks the suites for free: each mutant in `tests/eval_tools/mutants.py` still finds its anchor, cases and graders, and the mz-memory and tooling prechecks run a case's fixture and the real hooks, then apply its file and trace graders. `make eval-mutants MUTANTS=<id ...>` is the paid check: it breaks plugin code in a HEAD snapshot and confirms the cases fail.
 
 For a pipeline-only agent, check that the dispatching skill uses the right agent name and passes the expected artifact paths.
 
