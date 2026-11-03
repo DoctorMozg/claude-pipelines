@@ -4,7 +4,10 @@
     "url": "https://github.com/drmozg"
   },
   "description": "Personal Obsidian knowledge base skills and agents \u2014 vault bootstrap (init), vault maintenance, note processing, multimodal capture (voice/image/PDF/YouTube), vault triage, research ingestion, schema validation, safe refactoring, epistemic provenance, grounded Q&A, review, link suggestions, and Obsidian syntax reference",
+  "displayName": "Mozg Obsidian Vault",
+  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-knowledge",
   "license": "MIT",
   "name": "mz-knowledge",
+  "repository": "https://github.com/DoctorMozg/claude-pipelines",
   "version": "0.53.0"
 }

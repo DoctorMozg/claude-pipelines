@@ -4,7 +4,10 @@
     "url": "https://github.com/drmozg"
   },
   "description": "UI/UX design document generation with multi-critic refinement loop and WCAG enforcement",
+  "displayName": "Mozg Design Docs",
+  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-design",
   "license": "MIT",
   "name": "mz-design",
+  "repository": "https://github.com/DoctorMozg/claude-pipelines",
   "version": "0.53.0"
 }

@@ -7,7 +7,10 @@
     "mz-base"
   ],
   "description": "Multi-perspective AI panels and creative writing tools \u2014 brainstorming, Delphi-style expert consultation, technical documentation, AI-text naturalization, and copywriting",
+  "displayName": "Mozg Creative Panels",
+  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-creative",
   "license": "MIT",
   "name": "mz-creative",
+  "repository": "https://github.com/DoctorMozg/claude-pipelines",
   "version": "0.53.0"
 }

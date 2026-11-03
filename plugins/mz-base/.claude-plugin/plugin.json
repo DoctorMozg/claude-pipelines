@@ -4,7 +4,10 @@
     "url": "https://github.com/drmozg"
   },
   "description": "Essential development agents and skills for coding workflows: code review, web research, technical writing and skill routing",
+  "displayName": "Mozg Base",
+  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-base",
   "license": "MIT",
   "name": "mz-base",
+  "repository": "https://github.com/DoctorMozg/claude-pipelines",
   "version": "0.53.0"
 }

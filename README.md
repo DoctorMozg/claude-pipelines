@@ -497,6 +497,10 @@ See [CLAUDE.md](CLAUDE.md) for repository structure and conventions.
 
 Shared reference files are edited in one place, `plugins/mz-base/shared/`. Each plugin that reads them carries a generated copy in its own `shared/` folder: `make vendor-shared` refreshes the copies, and `make test` fails when one drifts.
 
+## Support and Privacy
+
+Report bugs and ask questions in [GitHub Issues](https://github.com/DoctorMozg/claude-pipelines/issues), or email drmozg@gmail.com. [PRIVACY.md](PRIVACY.md) lists what stays on your machine and what each plugin sends out.
+
 ## Credits
 
 Some rules in `mz-rules` were inspired by [iamfakeguru/claude-md](https://github.com/iamfakeguru/claude-md).
