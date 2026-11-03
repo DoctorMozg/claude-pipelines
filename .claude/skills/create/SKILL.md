@@ -2,122 +2,128 @@
 name: create
 description: 'Scaffolds a new plugin, skill or agent in this repo, following its authoring guidelines. Use when the user wants to "create a skill", "add a new agent", start a "new plugin" or "scaffold" a component. Not for changing an existing one.'
 argument-hint: <plugin|skill|agent> <name> [description]
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Read, Write, Edit, Glob, Grep, AskUserQuestion, Bash(ln -s *), Bash(pre-commit run *), Bash(make test *), Bash(make validate *)
 ---
 
 # Component Creator
 
-You create new plugins, skills, and agents in this plugin repository. You MUST read the guidelines and research before writing anything.
+## Overview
+
+Scaffolds a new plugin, skill or agent under `plugins/`. It reads the guideline for the component type and a few current examples, shows a plan for approval, writes the files along with every registry entry they need, and runs the repo's checks. It never commits.
+
+## When to Use
+
+Creates a component that doesn't exist yet.
+
+### When NOT to use
+
+- Changing an existing skill or agent: edit it, then walk the guideline's pre-publish checklist.
+- One fix across many files: use `batch-fix`.
+- Drafting a plugin skill through pressure scenarios and a RED/GREEN/REFACTOR loop: use `/mz-base:construct-skill`.
 
 ## Input
 
-`$ARGUMENTS` — what to create. Expected formats:
+`$ARGUMENTS` — what to create:
 
-- `skill <name> <description>` — create a new skill in an existing plugin
-- `agent <name> <description>` — create a new agent in an existing plugin
-- `plugin <name> <description>` — scaffold a new plugin with manifest
+- `skill <name> <description>` — a new skill in an existing plugin
+- `agent <name> <description>` — a new agent in an existing plugin
+- `plugin <name> <description>` — a new plugin with its manifest and registry entries
 
-If the component type, target plugin, or purpose is unclear, ask via AskUserQuestion. Never guess.
+If the type, the target plugin or the purpose is unclear, ask with AskUserQuestion. Never guess.
 
-## Process
+## Core Process
 
-### 1. Read guidelines and research
+### Phase Overview
 
-Before creating anything, read these files in order:
+| #   | Step                   | Gate             |
+| --- | ---------------------- | ---------------- |
+| 1   | Read the guideline     | —                |
+| 2   | Study current examples | —                |
+| 3   | Plan                   | Approve / Reject |
+| 4   | Write the files        | —                |
+| 5   | Verify                 | —                |
 
-1. `SKILL_GUIDELINES.md` — the 16 rules all skills must follow
-1. `researches/claude-plugin-authoring-guide.md` — detailed reference on plugin structure, frontmatter fields, anti-patterns, and review criteria
-1. `.mz/research/2026_04_07_research_claude_plugin_best_practices.md` — latest research on description quality, activation patterns, token efficiency, and testing
+State lives at `.mz/task/<task_name>/state.md` under the repo root, where `task_name` is `<YYYY_MM_DD>_create_<name>` (`_v2`, `_v3` on a same-day collision). Use schema v2 from `guidelines/STATE_SCHEMA.md`, plus `Component: <type> <plugin>/<name>` and `FilesWritten`. Write it after each step and before the gate.
 
-Extract the relevant rules for the component type being created. For skills: Rules 1-16. For agents: frontmatter conventions, model selection, tools allowlist, maxTurns. For plugins: manifest format, directory layout.
+### 1. Read the guideline
 
-### 2. Examine existing patterns
+Read the guideline for the component type in full. It is the authority, and its closing pre-publish checklist is what step 5 walks.
 
-Read 2-3 existing examples of the same component type in the target plugin to learn the local conventions:
+- **Skill**: `guidelines/SKILL_GUIDELINES.md`, plus `guidelines/STATE_SCHEMA.md` if the skill writes state and `guidelines/JOURNAL_GUIDELINES.md` if it has a gate.
+- **Agent**: `guidelines/AGENTS_GUIDELINES.md`.
+- **Plugin**: "Adding a New Plugin" in `CLAUDE.md`, the guideline for each skill and agent it will ship, and `guidelines/HOOKS_GUIDELINES.md` if it ships hooks.
 
-- **Skills**: read SKILL.md + one phase file from the target plugin
-- **Agents**: read 2-3 agent files from the target plugin, noting frontmatter pattern
-- **Plugins**: read `.claude-plugin/plugin.json` + directory layout from an existing plugin
+### 2. Study current examples
 
-### 3. Plan the component
+Read the reference implementations the guideline names, then two or three components of the same type in the target plugin: SKILL.md plus one phase file, an agent's frontmatter and body, or a `.claude-plugin/plugin.json` and its directory layout. An example that contradicts the guideline predates it, so follow the guideline.
 
-Present the plan to the user via AskUserQuestion before writing any files:
+### 3. Plan
 
-**This orchestrator** (not a subagent) must present to the user via AskUserQuestion. This step is interactive and must not be delegated.
+The plan covers:
 
-For skills, present:
+- **Skill**: the file tree (SKILL.md, phase and reference files, eval cases); the description draft with its character count; the phase table with each gate; the agents it dispatches, the tier each one pins, and any plugin this adds to `dependencies`; each Bash command `allowed-tools` grants; the routing-table row, or the `user-invocable: false` or `disable-model-invocation: true` flag that exempts it.
+- **Agent**: the full frontmatter (`name`, `description`, `tools`, `model`, `effort`, `maxTurns`, `color`); the archetype; standalone or pipeline-only, and who dispatches it; the body outline.
+- **Plugin**: the directory tree; `.claude-plugin/plugin.json`; the marketplace entry; the `data/codex_migration.toml` package; whether it needs the `shared` link; its planned skills and agents.
 
-- Proposed file structure (SKILL.md + phase files if multi-phase)
-- Draft description (following Rule 3: directive, third person, WHAT+WHEN, triggers)
-- Phase overview (if multi-phase)
-- Which agents it will dispatch and their models
-- Estimated SKILL.md line count (target 100-150)
+Write the plan to `.mz/task/<task_name>/plan.md`, then present the gate.
 
-For agents, present:
+**This orchestrator** (not a subagent) presents this gate. This step is interactive and must not be delegated.
 
-- Proposed frontmatter (name, description, model, effort, maxTurns, tools)
-- Role summary and when it would be dispatched
-
-For plugins, present:
-
-- Directory structure
-- `.claude-plugin/plugin.json` manifest
-- Planned skills and agents
-
-Use AskUserQuestion with:
-
-```
-Component plan ready. Please review:
-
-<plan details>
-
-Reply 'approve' to proceed, 'reject' to abort, or provide feedback for changes.
-```
+1. Write `state.md` with the plan path and `awaiting approval: plan` in `what_remains`.
+1. Read `plan.md` and emit it verbatim as a chat message under `## Plan for review: create`, ending with `**Approve** → write the files · **Reject** → stop, nothing written · reply with feedback to revise`. Never replace the body with a path or a summary.
+1. Call AskUserQuestion with the question `The plan above is ready for review.`, the header `Plan`, and the options **Approve** and **Reject**.
 
 **Response handling**:
 
-- **"approve"** — proceed to creation.
-- **"reject"** — stop. Do not proceed.
-- **Feedback** — revise the plan, then return to this gate and re-present **via AskUserQuestion** using the same format. This is a loop — repeat until the user explicitly approves. Never create files without explicit approval.
+- **Approve** → record the plan path under `## Decisions` in `state.md`, clear the `awaiting approval` entry, go to step 4.
+- **Reject** → set `Status: aborted_by_user` and stop.
+- **Any other answer** is feedback: revise `plan.md`, re-emit the whole plan message and ask again. Loop until Approve.
+- **No answer** (AskUserQuestion denied or unavailable) → set `Status: blocked` and stop. A missing answer is never approval.
 
-### 4. Create the component
+### 4. Write the files
 
-Write all files following the guidelines. Key rules to enforce:
+Write what the plan lists. The guideline's checklist holds every rule; these are the ones most often missed here.
 
-**For skills:**
+**Skill**
 
-- Description: directive phrasing ("ALWAYS invoke when..."), third person, WHAT+WHEN, 2-3 trigger phrases, front-load within 250 chars
-- SKILL.md: 100-150 lines max. Frontmatter + input + constants + phase table + inline setup/gates + error handling + state mgmt
-- Phase files: under 400 lines each. Read on-demand, never pre-loaded
-- Approval gates: delegation guard, approve/reject/feedback, loop language (Rule 1)
-- Positive framing over negative. Critical rules at top and bottom (Rule 4)
-- Named constants for all bounds. State persisted to disk, not conversation (Rules 7, 8)
-- Model selection: opus for accuracy-critical, sonnet for breadth (Rule 12)
+- The description opens with a capability clause, then "Use when the user wants …", keeps phrases users type, and names the nearest sibling as a counter-trigger. It is one line of at most 250 characters with any `when_to_use`, has no `<` or `>` and no all caps, and is quoted if it contains `: `.
+- SKILL.md sets no `model:`; the agents it dispatches pin their tiers. `allowed-tools` grants Bash one command at a time, as `Bash(<command> *)`.
+- SKILL.md aims for about 150 lines and stays under about 20,000 characters. Phase files stay under about 400 lines and are read at the start of their phase. Sections follow "Skill Anatomy".
+- Gates copy the canonical skeleton from "Approval Gates". State Management copies the compact contract block from `guidelines/STATE_SCHEMA.md` verbatim.
+- Add its row to the routing table in `plugins/mz-base/skills/using-mozg-pipelines/SKILL.md`, with its plugin in the last column, unless it is exempt.
+- A skill Claude can invoke gets at least three `claude plugin eval` cases under `plugins/<plugin>/evals/`, two that should fire and one near miss, shaped like the plugin's existing cases.
 
-**For agents:**
+**Agent**
 
-- Description: clear, concise, what it does + when to use it. No plugin-scope noise
-- Model: opus for code writing/review/planning, sonnet for research/analysis
-- Effort: high for complex tasks, medium for review/scanning
-- maxTurns: 25 (reviewers), 40 (researchers), 60 (coders/writers), 80 (orchestrators)
-- Tools: explicit allowlist. Read-only agents get Read, Grep, Glob, Bash only. Never omit tools field
+- `name` is kebab-case, two to four words, unique across the marketplace, and matches the filename.
+- The description opens with a capability clause, then "Use when …". A standalone agent gives two to four prose trigger scenarios and no `<example>` blocks. A pipeline-only agent states its purpose, who dispatches it and when not to use it.
+- `tools` follows the table in "Archetype Templates" with least privilege: an analysis agent omits `Edit` and holds `Write` only for its named output file, and only orchestrators list `Agent`.
+- `model` is an explicit tier, never `inherit`. `effort` stays `medium` unless a higher level measurably helps, and then the agent gets a `HIGH_EFFORT_AGENTS` entry in `tests/plugin_lint/test_agents.py`. `maxTurns` is set.
+- The body has Role, Core Principles, Process, Output Format and Red Flags, in the second person, and ends with one `STATUS:` line when an orchestrator consumes its output.
+- When a skill in another plugin dispatches it, that plugin's manifest lists this one in `dependencies`.
 
-**For plugins:**
+**Plugin**: follow "Adding a New Plugin" in `CLAUDE.md`. Easy to miss:
 
-- Flat `.claude-plugin/plugin.json`: name, description, version, license and author. No `contents` wrapper. Claude Code reads the manifest only from `.claude-plugin/`
-- The marketplace.json entry carries name, source, category and keywords; version and description live in the manifest only
-- Auto-discovery: agents/, skills/, commands/, hooks/ at plugin root
-- Version must match other plugins (use `set_versions.sh`)
+- `version` in `plugin.json` is the marketplace's current `metadata.version`. Read it; never invent one.
+- When its skills or agents read shared rule files, link `shared` at the plugin root with `ln -s ../mz-base/shared plugins/<name>/shared`.
+- A plugin with `dependencies` also goes into `_EXPECTED_DEPENDENCIES` in `tests/codex_migration/test_inventory.py`, next to the pinned plugin list.
+- Give it a `README.md`, and add it to the install list and the plugin sections of the root `README.md`.
+
+**Every new skill or agent** in a marketplace plugin changes the skill or agent count that `tests/codex_migration/test_inventory.py` pins. Update the count in the same change.
 
 ### 5. Verify
 
-After creating all files:
+1. Run `pre-commit run --files <every file written or edited>` and fix what it reports.
+1. Run `make test`. Its `tests/plugin_lint/` suite covers frontmatter, the description budget, Bash grants, sizes, paths, dispatched agents and `dependencies`, the routing-table row and all-caps emphasis.
+1. Run `make validate`, which runs `claude plugin validate --strict` on the repo and every plugin.
+1. Walk the guideline's "Review checks" list by hand.
+1. For a skill or a standalone agent, offer `make eval PLUGIN=<plugin>`. It spends money, so run it only on a yes.
 
-- Check SKILL.md line count (must be ≤ 150)
-- Check phase file line counts (must be ≤ 400)
-- Verify all phase references in SKILL.md resolve to existing files
-- Verify agent names in dispatch prompts match actual agent definitions
-- Verify description length and 250-char truncation point
-- Verify YAML frontmatter parses (proper `---` delimiters)
+Set `Status: complete` and report the files written, each command with its result, and every checklist item left unchecked. Don't commit.
 
-Report results to the user.
+## Red Flags
+
+- You wrote a file before the plan was approved.
+- You copied frontmatter or a description from an older component without checking it against the guideline.
+- A new skill has no routing-table row, or the inventory count wasn't updated.
+- You reported success without the output of `make test` and `make validate`.
