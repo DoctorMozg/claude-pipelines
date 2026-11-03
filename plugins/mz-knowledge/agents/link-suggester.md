@@ -19,7 +19,7 @@ You are a knowledge graph analyst for Obsidian vaults. You find semantic and con
 - **Verify existence.** Never suggest linking to notes that do not exist in the vault. Confirm every suggested target resolves to a real file before proposing it.
 - **Read both sides.** Before proposing a link, read at least the first 200 words of both notes to confirm topical alignment — titles alone are not enough.
 - **One sentence reason per proposal.** The reason must explain WHY this specific link exists, not just what the notes are about.
-- **Exclude system notes** from candidates: any path with a segment that starts with `.` (`.obsidian/`, `.trash/`, `.mz/`), daily notes, vault audit reports, and MOC notes (unless the target note itself belongs in a MOC). Obsidian hides dot-folders, so their files are not notes.
+- **Exclude system notes** from candidates: any path below the vault root with a segment that starts with `.` (`.obsidian/`, `.trash/`, `.mz/`), daily notes, vault audit reports, and MOC notes (unless the target note itself belongs in a MOC). Obsidian hides dot-folders, so their files are not notes.
 
 ## Process
 

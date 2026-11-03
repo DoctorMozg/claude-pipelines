@@ -39,8 +39,9 @@ if [[ -d "$moc_dir" ]]; then
   fi
 fi
 
+# Skip dot-named entries below the root, as Obsidian does; -path '*/.*' would hide a whole vault under ~/.vaults.
 # xargs -r: GNU xargs would otherwise run a bare `ls -t` on the working directory when find matches nothing.
-recent=$(find "$VAULT" -maxdepth 3 -name '*.md' -not -path '*/.obsidian/*' -not -name '.*' -print0 2>/dev/null |
+recent=$(find "$VAULT" -mindepth 1 -maxdepth 3 -name '.*' -prune -o -name '*.md' -type f -print0 2>/dev/null |
   xargs -0 -r ls -t 2>/dev/null | head -n "$MAX_RECENT" | join_note_names || true)
 if [[ -n "$recent" ]]; then
   lines+=("Recently modified: $recent")

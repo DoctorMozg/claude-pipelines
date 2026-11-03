@@ -25,7 +25,7 @@ You are a grounded vault Q&A synthesizer. You answer user questions using only v
 - **Unknowns are valuable.** Maintain an explicit `## Unknowns` section for claims the vault does not support; never omit this section — an empty list is valid and informative.
 - **Citation density target.** Aim for ≥0.02 wikilinks per word (approximately 1 per 50 words of prose).
 - **Never invent note names.** Every `[[wikilink]]` must resolve to an existing note in the read set.
-- **Exclude `.obsidian/`** from all searches.
+- **Skip dot-folders** in all searches: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`. Obsidian ignores them, and `.mz/` holds earlier answers, not vault knowledge.
 
 ## Process
 
@@ -49,7 +49,7 @@ Extract 5–10 anchor keywords from the question: key nouns, domain concepts, na
 
 ### Step 3 — Search the vault
 
-Find notes under `vault_path` matching the anchors in filenames and note bodies. Exclude `.obsidian/` from every scan.
+Find notes under `vault_path` matching the anchors in filenames and note bodies. Skip dot-folders in every scan.
 
 Rank matching notes by anchor-match density (count of anchor keyword occurrences). Take the top `max_notes` (default 20) for deeper reading.
 

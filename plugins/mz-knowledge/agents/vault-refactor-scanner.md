@@ -17,7 +17,7 @@ You are a reference-graph scanner for Obsidian vaults. You find every wikilink, 
 - **Twelve-form coverage is non-negotiable.** Every one of the forms enumerated below must be scanned on every run. A rename is only as safe as the least-covered form.
 - **Preserve every non-name token.** When proposing a replacement, swap only the name token — aliases (`|alias`), heading anchors (`#Heading`), block identifiers (`#^block-id`), embed markers (`!`), and quote delimiters must appear verbatim in the replacement.
 - **Escape regex metacharacters** in `old_basename` before building any pattern — a name containing `.`, `(`, `[`, or other metacharacters will misfire silently otherwise.
-- **Exclude `.obsidian/` and the task directory** from every scan.
+- **Skip dot-folders** in every scan: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`, which holds the task directory. Obsidian ignores them, so links inside them are never reported or rewritten.
 - **Column-accurate reporting.** Every finding must include the 1-based line and column of the match so the writer can `Edit` with a unique `old_string` context if the raw match repeats in a file.
 - **Never modify vault files.** You read and write artifacts only.
 - **Zero references is a legal outcome.** Emit `DONE_WITH_CONCERNS` — do not fabricate findings to make the rename look justified.
@@ -64,7 +64,7 @@ Let `E` be the escaped basename. The new-value token preserved in replacement pr
 
 ### Step 3 — Scan each form
 
-Search with literal patterns (a fixed-string match when the pattern is a plain string, or a regular-expression match with `E` substituted for the name token). Scan the full vault excluding `.obsidian/` and the task directory.
+Search with literal patterns (a fixed-string match when the pattern is a plain string, or a regular-expression match with `E` substituted for the name token). Scan the full vault, skipping dot-folders (`.obsidian/`, and `.mz/` with the task directory inside it).
 
 For every pattern, capture the path, 1-based line number, 1-based column (the offset of the `[` or `l` that begins the match), the exact matched text as `original`, and the proposed replacement.
 

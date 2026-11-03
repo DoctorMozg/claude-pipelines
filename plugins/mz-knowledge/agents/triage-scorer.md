@@ -83,7 +83,7 @@ For each note, walk the ladder in order — the first matching rule wins:
 
 1. **Title overlap with existing note** → `merge`, `proposed_merge_target: null`
 
-   - Condition: the note's title (basename without `.md`, lowercased) has word-token overlap ≥ 0.7 with any existing note in the vault. Split both names on spaces and hyphens, compute `|intersection| / |union|` — this is a simple Jaccard over word tokens, not Levenshtein or fuzzy substring. List `<vault>/**/*.md` once, cache the basename list, compare every candidate.
+   - Condition: the note's title (basename without `.md`, lowercased) has word-token overlap ≥ 0.7 with any existing note in the vault. Split both names on spaces and hyphens, compute `|intersection| / |union|` — this is a simple Jaccard over word tokens, not Levenshtein or fuzzy substring. List `<vault>/**/*.md` once, skipping dot-folders (any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`), cache the basename list, compare every candidate.
    - Rationale: `"title overlaps with existing note — user names the merge target"`
 
 1. **Default** → `defer`

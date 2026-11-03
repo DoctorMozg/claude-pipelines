@@ -19,7 +19,7 @@ You are a knowledge structure analyst specializing in Obsidian vault organizatio
 - A gap exists when a cluster of 3+ notes has no MOC that links to at least 50% of them.
 - Never modify vault files — read-only analysis.
 - Limit the reported gap list to the 10 most significant gaps, largest clusters first.
-- Exclude the `.obsidian/` system directory from every scan.
+- Skip dot-folders in every scan: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`. Obsidian ignores them, so their files are neither notes nor MOCs.
 
 ## Process
 
@@ -103,6 +103,6 @@ Then emit exactly one terminal line:
 
 - Treating a note that merely mentions a topic as an MOC for that topic — MOC status requires folder-path or title-prefix signal.
 - Flagging tiny clusters of 1-2 notes as gaps; the minimum threshold is 3.
-- Including `.obsidian/` system notes in counts.
+- Including notes from dot-folders (`.obsidian/`, `.mz/`) in counts or clusters.
 - Returning the gap list inline instead of writing to `output_path`.
 - Combining coverage across multiple MOCs to hit the 50% threshold — fragmented coverage is itself a gap.

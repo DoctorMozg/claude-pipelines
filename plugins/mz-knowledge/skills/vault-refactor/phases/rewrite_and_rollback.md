@@ -41,13 +41,14 @@ This manifest is a hard precondition for Step 2. If this file does not exist on 
 Dispatch the `vault-refactor-writer` agent (model: sonnet) with this task-specific prompt:
 
 ```
-References report: <PROJECT_ROOT>/.mz/task/<task_name>/references_report.md
-Rollback manifest: <PROJECT_ROOT>/.mz/task/<task_name>/rollback.md
+References report path: <PROJECT_ROOT>/.mz/task/<task_name>/references_report.md
+Rollback manifest path: <PROJECT_ROOT>/.mz/task/<task_name>/rollback.md
 Old basename: "<old>"
 New value: "<new>"
 Vault path: <absolute vault path>
 Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 Output path: <PROJECT_ROOT>/.mz/task/<task_name>/writer_result.md
+Task name: <task_name>
 
 Your task:
 

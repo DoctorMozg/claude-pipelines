@@ -13,8 +13,10 @@ Dispatch the `vault-audit-collector` agent with this task-specific prompt:
 ```
 Vault path: <vault_path>
 Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
+Output path: <PROJECT_ROOT>/.mz/task/<task_name>/audit_data.md
+Task name: <task_name>
 
-Run all vault health checks and write findings to <PROJECT_ROOT>/.mz/task/<task_name>/audit_data.md.
+Run all vault health checks and write findings to the output path. Skip dot-folders in every check: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`. Obsidian ignores them, so their files are not notes.
 
 Checks to run:
 

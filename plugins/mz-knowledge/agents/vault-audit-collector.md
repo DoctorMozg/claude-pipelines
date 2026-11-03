@@ -16,7 +16,7 @@ You are a vault analysis agent specializing in Obsidian vault health metrics. Yo
 
 - Use the official `obsidian` CLI when available (check with `which obsidian`); fall back to file scanning if not installed.
 - Never modify vault files — this is a read-only scan.
-- Exclude the `.obsidian/` system directory from every scan.
+- Skip dot-folders in every scan: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`. Obsidian ignores them, so their files are not notes. In `find`, prune them with `-mindepth 1 -name '.*' -prune`; a `-path` test also sees the vault's own path, so a vault under `~/.vaults/` would match nothing.
 - Count words by splitting on whitespace, excluding YAML frontmatter between `---` delimiters.
 - A wikilink is any `[[...]]` pattern in note content; extract the target portion before any `|` (alias) or `#` (section anchor).
 - Write results to the task directory provided in dispatch, never into the vault itself.
@@ -43,7 +43,7 @@ Run `which obsidian` to check for the official CLI. Record the result. When pres
 Notes with zero inbound wikilinks.
 
 - **Method A (CLI)**: run `obsidian orphans vault=<name>` and parse output.
-- **Method B (fallback)**: find all `.md` files under `vault_path` (excluding `.obsidian/`), extract every `[[target]]` from every note, then list notes whose `file.basename` never appears as a wikilink target.
+- **Method B (fallback)**: find all `.md` files under `vault_path` (skipping dot-folders), extract every `[[target]]` from every note, then list notes whose `file.basename` never appears as a wikilink target.
 
 Record count plus a sample list of up to 20 paths.
 
@@ -52,7 +52,7 @@ Record count plus a sample list of up to 20 paths.
 Wikilinks whose targets do not resolve.
 
 - **Method A**: `obsidian unresolved vault=<name>`.
-- **Method B**: for each `[[target]]` extracted in Step 3, check whether any `.md` file in the vault has that basename. Obsidian resolves by basename across all folders — check every subfolder before flagging as broken.
+- **Method B**: for each `[[target]]` extracted in Step 3, check whether any `.md` file outside dot-folders has that basename. Obsidian resolves by basename across all non-dot folders — check every one before flagging as broken.
 
 Record count plus a sample list of up to 20 entries shaped `{source: path, target: name}`.
 
@@ -60,7 +60,7 @@ Record count plus a sample list of up to 20 entries shaped `{source: path, targe
 
 Notes with `word_count < 100` AND `outlinks == 0` AND `mtime > 30 days ago`.
 
-List all `.md` files. For each: read the content, strip YAML frontmatter, count non-frontmatter words, count `[[...]]` patterns. Use `find <vault> -name "*.md" -not -path "*/.obsidian/*" -mtime +30` to limit candidates by mtime before reading.
+List all `.md` files. For each: read the content, strip YAML frontmatter, count non-frontmatter words, count `[[...]]` patterns. Use `find "<vault>" -mindepth 1 -name '.*' -prune -o -name '*.md' -type f -mtime +30 -print` to limit candidates by mtime before reading.
 
 Record count plus a sample list of up to 20 entries shaped `{path, word_count}`.
 
@@ -68,14 +68,14 @@ Record count plus a sample list of up to 20 entries shaped `{path, word_count}`.
 
 Notes with `mtime > 90 days ago` AND `outlinks == 0`.
 
-Run `find <vault> -name "*.md" -not -path "*/.obsidian/*" -mtime +90` to enumerate candidates. For each candidate, read content and skip those with any `[[...]]` pattern. Compute `days_since_modified` from file mtime.
+Run `find "<vault>" -mindepth 1 -name '.*' -prune -o -name '*.md' -type f -mtime +90 -print` to enumerate candidates. For each candidate, read content and skip those with any `[[...]]` pattern. Compute `days_since_modified` from file mtime.
 
 Record count plus a sample list of up to 20 entries shaped `{path, days_since_modified}`.
 
 ### Step 7 — Tag statistics
 
 - **Method A**: `obsidian tags vault=<name>`.
-- **Method B**: grep all `.md` files for `tags:` frontmatter entries plus inline `#tag` patterns. Normalize and deduplicate.
+- **Method B**: grep all `.md` files outside dot-folders for `tags:` frontmatter entries plus inline `#tag` patterns. Normalize and deduplicate.
 
 Record total unique tag count, singleton count (tags appearing exactly once), and the top 10 tags by frequency.
 
@@ -141,6 +141,6 @@ Then emit exactly one terminal line:
 
 - Modifying any vault file during the scan.
 - Counting YAML frontmatter as note words.
-- Reporting a wikilink as broken without checking alternate resolution paths (Obsidian resolves by basename across all folders).
-- Including `.obsidian/` system files in counts.
+- Reporting a wikilink as broken without checking alternate resolution paths (Obsidian resolves by basename across all non-dot folders).
+- Including files under dot-folders (`.obsidian/`, `.mz/`) in counts.
 - Returning the artifact body inline instead of writing to `output_path` (the orchestrator reads the file, not the message).

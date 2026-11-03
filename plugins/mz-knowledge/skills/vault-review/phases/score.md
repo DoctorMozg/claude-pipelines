@@ -12,7 +12,9 @@ List all `.md` files in the vault's permanent notes folder. Typical layouts:
 - `<vault>/permanent/**/*.md`
 - `<vault>/notes/permanent/**/*.md`
 
-If the vault has no explicit permanent-notes folder, glob `<vault>/**/*.md` excluding `daily/`, `templates/`, `attachments/`, `.obsidian/`, and any `archive/`-prefixed folders. Record the resolved glob in `state.md` under `ScannedGlob`.
+If the vault has no explicit permanent-notes folder, glob `<vault>/**/*.md` excluding `daily/`, `templates/`, `attachments/`, and any `archive/`-prefixed folders. Record the resolved glob in `state.md` under `ScannedGlob`.
+
+Every scan in this step, the inlink count included, skips any path below the vault root with a segment starting with `.`, such as `.obsidian/`, `.mz/` and `.trash/`. Obsidian hides them, and the wikilinks in `.mz/` task artifacts are not inlinks.
 
 For each note, collect:
 

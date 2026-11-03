@@ -165,6 +165,29 @@ class TestContext:
         assert context == "Recently modified: primary"
 
 
+class TestDotFolders:
+    def test_notes_inside_dot_folders_are_not_recent(self, run_hook: RunHook, vault: Path) -> None:
+        _note(vault / "notes" / "real.md", mtime=1_000)
+        _note(vault / ".mz" / "journal.md", mtime=9_000)
+        _note(vault / ".mz" / "memory" / "MEMORY.md", mtime=9_500)
+        _note(vault / "projects" / ".trash" / "deleted.md", mtime=9_800)
+
+        assert _context(run_hook()) == "Recently modified: real"
+
+    def test_vault_under_a_dot_folder_still_lists_its_notes(
+        self, run_hook: RunHook, tmp_path: Path
+    ) -> None:
+        vault = tmp_path / ".vaults" / "main"
+        _note(vault / "notes" / "older.md", mtime=1_000)
+        _note(vault / "newer.md", mtime=2_000)
+        _note(vault / ".mz" / "journal.md", mtime=9_000)
+
+        stdout = run_hook(env={"OBSIDIAN_VAULT_PATH": str(vault)})
+
+        assert stdout, "a vault under a dot-named parent should still report its notes"
+        assert _context(stdout) == "Recently modified: newer, older"
+
+
 class TestLimits:
     @pytest.fixture
     def full_context(self, vault: Path) -> str:

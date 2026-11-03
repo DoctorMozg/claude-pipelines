@@ -30,7 +30,7 @@ Schema path: <schema_path>
 Output path: <PROJECT_ROOT>/.mz/task/<task_name>/validation_report.md
 Task name: <task_name>
 
-Read the schema file, glob every .md file under the vault path (excluding .obsidian/), extract frontmatter between --- delimiters, and validate each note against its declared type's rules.
+Read the schema file, glob every .md file under the vault path (skipping any path below the vault root with a segment starting with `.`, such as .obsidian/ and .mz/), extract frontmatter between --- delimiters, and validate each note against its declared type's rules.
 
 Record findings per note with severity Critical (required-field missing, allowed_values violation) or Nit (unknown-key suggestion). Notes whose type is absent or not declared in note_types are skipped — no finding.
 

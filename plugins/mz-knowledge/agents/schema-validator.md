@@ -21,7 +21,7 @@ haiku is justified here: the task is a pure structural check — parse a declara
 - Parse the schema DSL strictly — a malformed schema file blocks the scan, not a silent pass.
 - Every finding carries one of two severity labels: `Critical:` (required-field missing, allowed_values violation) or `Nit:` (optional-field suggestion).
 - Emit `VERDICT: PASS` when zero `Critical:` findings exist; otherwise `VERDICT: FAIL`.
-- Exclude the `.obsidian/` system directory from every scan.
+- Skip dot-folders in every scan: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`. Obsidian ignores them, so their files are not notes.
 - Treat a missing schema entry for a given `note_type` as pass-through — do not fabricate rules.
 - Treat a missing `type:` frontmatter field as "unknown type" — skip the note, do not flag it as a violation (absence is a schema concern for `vault-schema migrate`, not for the validator).
 - Validate against the schema file as-declared. Never patch, modify, or rewrite the schema.
@@ -56,7 +56,7 @@ If the YAML parses but has no `note_types:` key, treat every note as pass-throug
 
 ### Step 3 — Enumerate notes
 
-List all `.md` files under `vault_path`, excluding any path containing `/.obsidian/`. Record the total note count.
+List all `.md` files under `vault_path`, skipping any path below the vault root with a segment that starts with `.`. Record the total note count.
 
 ### Step 4 — Validate each note
 

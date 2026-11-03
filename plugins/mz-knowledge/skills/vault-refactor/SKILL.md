@@ -88,7 +88,7 @@ Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/referenc
 
 ### Phase 2.5: Post-write verification
 
-After `phases/rewrite_and_rollback.md` returns, search for the old basename (and, for full-path moves, the old path) across the entire vault, excluding `.obsidian/` and the task directory. Output the search result block before concluding — silent verification gets skipped.
+After `phases/rewrite_and_rollback.md` returns, search for the old basename (and, for full-path moves, the old path) across the entire vault, skipping dot-folders as the scanner does: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`, which holds the task directory. Output the search result block before concluding — silent verification gets skipped.
 
 - **Zero remaining occurrences** → update state `Status: complete`, `Completed: <ISO timestamp>`, print the verification block, emit `STATUS: DONE`.
 - **Any remaining occurrence** → set `Status: failed` with the failing paths in `what_remains`, print the failing paths and line numbers verbatim, print the rollback manifest path from state, emit `STATUS: BLOCKED` with rollback instructions. Never silently ignore a residual reference.
@@ -119,7 +119,7 @@ vault-refactor verification:
   [ ] rollback.md written BEFORE first vault edit
   [ ] Every per-reference replacement applied via `Edit` (not `Write`)
   [ ] Original file renamed/moved only after all referrer rewrites succeeded
-  [ ] Post-write search for old name returned zero occurrences (excluding task dir + .obsidian/)
+  [ ] Post-write search for old name returned zero occurrences (skipping dot-folders: .obsidian/, .mz/)
   [ ] state.md Status is `complete` with Completed timestamp
 ```
 

@@ -9,20 +9,17 @@ Dispatch `vault-refactor-scanner` to enumerate every reference to the old note a
 Dispatch the `vault-refactor-scanner` agent (model: sonnet) with this task-specific prompt:
 
 ```
-Old note:
-  basename: "<old basename, no extension>"
-  full_path: "<absolute path to old note>"
-
-New name/path:
-  value: "<new basename or relative path>"
-
+Old basename: "<old basename, no extension>"
+Full path: "<absolute path to old note>"
+New value: "<new basename or relative path>"
 Vault path: <absolute vault path>
 Task dir: <PROJECT_ROOT>/.mz/task/<task_name>/
 Output path: <PROJECT_ROOT>/.mz/task/<task_name>/references_report.md
+Task name: <task_name>
 
 Your task:
 
-Scan the entire vault (excluding `.obsidian/` and the task directory) for every reference to the old note. Every reference must be captured with path, line number, column, the exact matched text, and the proposed replacement. The replacement must swap only the name token — any alias, heading, or block identifier must be preserved verbatim.
+Scan the entire vault for every reference to the old note, skipping dot-folders: any path below the vault root with a segment that starts with `.`, such as `.obsidian/` and `.mz/`, which holds the task directory. Links inside them are never reported or rewritten. Every reference must be captured with path, line number, column, the exact matched text, and the proposed replacement. The replacement must swap only the name token — any alias, heading, or block identifier must be preserved verbatim.
 
 You must cover all twelve reference forms enumerated in your agent system prompt. Do not skip form families because you assume they are rare — Bases formulas and quoted frontmatter wikilinks are both silent-failure surfaces if missed.
 
