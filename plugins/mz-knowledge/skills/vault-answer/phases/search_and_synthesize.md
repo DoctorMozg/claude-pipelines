@@ -22,7 +22,7 @@ Parameters:
 
 Your task:
 
-Answer the question using only vault content. Every factual claim must cite a vault note via inline [[wikilink]]. Maintain an explicit ## Unknowns section listing aspects of the question the vault does not support — an empty list is valid and informative.
+Answer the question using only vault content. Every factual claim must cite a vault note via inline [[wikilink]]. Maintain an explicit ## Unknowns section listing aspects of the question the vault does not support — an empty list is valid and informative. If no read note bears on the question, say so with no citations and leave ## Sources empty; don't cite unrelated notes to reach the density ratio.
 
 Steps:
 
@@ -72,6 +72,8 @@ After the agent returns:
 
 ## Step 3: Citation density check
 
+Skip this step when `## Sources` is empty. The answerer found no note that bears on the question, so the gap is the answer, and a retry would only push it to cite notes that support nothing. Record the density as `n/a` in Step 5.
+
 Count occurrences of `[[...]]` in the `# Answer` prose section only (exclude `## Sources` and `## Unknowns` — those aren't inline citations). Divide by the word count of the prose in that section.
 
 If the resulting ratio is below `CITATION_DENSITY_MIN_RATIO` (0.02):
@@ -96,7 +98,7 @@ Update `<PROJECT_ROOT>/.mz/task/<task_name>/state.md` with:
 - `Phase: 1`
 - `Completed: <ISO timestamp>`
 - `CitationCount: <N>` — number of `[[wikilink]]` occurrences in the `# Answer` prose.
-- `CitationDensity: <0.NN>` — ratio of citations to prose words.
+- `CitationDensity: <0.NN>` — ratio of citations to prose words, or `n/a` when `## Sources` is empty.
 - `SourcesCount: <N>` — entries under `## Sources`.
 - `UnknownsCount: <N>` — entries under `## Unknowns`.
 
@@ -117,7 +119,7 @@ Print this block before concluding — silent checks get skipped:
 ```
 vault-answer verification:
   [ ] answer.md contains # Answer, ## Sources, ## Unknowns sections
-  [ ] Citation density measured and logged in state.md
+  [ ] Citation density measured and logged in state.md (n/a when ## Sources is empty)
   [ ] Full answer body presented verbatim to the user (not a path, not a summary)
   [ ] state.md Status is `complete` with Completed timestamp
   [ ] No vault files were modified by this skill

@@ -13,6 +13,9 @@ PROCESS_NOTES = SKILLS / "process-notes/SKILL.md"
 ATOMIZE_PHASE = SKILLS / "process-notes/phases/atomize_and_draft.md"
 SCAFFOLD_PHASE = SKILLS / "obsidian-init/phases/scaffold_vault.md"
 VAULT_RESEARCH = SKILLS / "vault-research"
+ANSWER_PHASE = SKILLS / "vault-answer/phases/search_and_synthesize.md"
+ANSWERER = PLUGIN / "agents/vault-query-answerer.md"
+EMPTY_SOURCES_RULE = re.compile(r"no read note bears on the question", re.I)
 
 MAX_INPUT_WORDS = re.compile(r"\*\*MAX_INPUT_WORDS_PER_PASS\*\*: (\d+)")
 PHASE_CAP = re.compile(r"`MAX_INPUT_WORDS_PER_PASS` \((\d+)\)")
@@ -217,4 +220,28 @@ class TestVaultFolders:
         assert folders <= scaffolded_folders, (
             f"{name} reads {sorted(folders - scaffolded_folders)}, "
             f"which obsidian-init does not scaffold: {sorted(scaffolded_folders)}"
+        )
+
+
+class TestVaultAnswerNoAnswer:
+    # A no-answer has nothing to cite; enforcing density made the answerer cite unrelated notes.
+    def test_density_check_is_skipped_for_empty_sources(self) -> None:
+        step = _h2_section(ANSWER_PHASE, "Step 3: Citation density check")
+        skip = step.find("Skip this step when `## Sources` is empty")
+        retry = step.find("Re-dispatch")
+
+        assert skip != -1, "Step 3 should skip the density check when ## Sources is empty"
+        assert skip < retry, "the empty-Sources skip must come before the density retry"
+
+    @pytest.mark.parametrize(
+        "source",
+        [
+            pytest.param(ANSWERER, id="agent"),
+            pytest.param(ANSWER_PHASE, id="dispatch-prompt"),
+        ],
+    )
+    def test_answerer_leaves_sources_empty_when_nothing_bears(self, source: Path) -> None:
+        assert EMPTY_SOURCES_RULE.search(_read(source)), (
+            f"{source.relative_to(PLUGIN).as_posix()} should tell the answerer to leave "
+            "## Sources empty when no read note bears on the question"
         )
