@@ -10,8 +10,14 @@ repos:
       - id: mdformat
         additional_dependencies:
           - mdformat-gfm
-          - mdformat-frontmatter
+          # 2.1+ keeps the quotes around frontmatter values; 2.2 needs mdformat 1.0.
+          - mdformat-frontmatter==2.1.2
           - mdformat-tables
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.13.3
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
@@ -24,6 +30,18 @@ repos:
         args: [-i, "2", -ci]
   - repo: local
     hooks:
+      - id: mypy
+        name: mypy (strict, files from pyproject)
+        language: python
+        entry: mypy
+        pass_filenames: false
+        types: [python]
+        additional_dependencies:
+          - mypy==1.20.2
+          - pydantic>=2.11,<3
+          - pyyaml>=6.0,<7
+          - types-pyyaml>=6.0.12,<7
+          - pytest>=8.4,<9
       - id: hook-script-head-guard
         name: hook scripts end `| head` pipelines with `|| true`
         language: pygrep

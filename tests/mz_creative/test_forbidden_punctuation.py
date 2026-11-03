@@ -163,7 +163,9 @@ class TestPreservedTerms:
             pytest.param(("--preserve", "x"), id="no-file"),
         ],
     )
-    def test_malformed_preserve_is_a_usage_error(self, run: Run, write: Write, args: tuple[str, ...]) -> None:
+    def test_malformed_preserve_is_a_usage_error(
+        self, run: Run, write: Write, args: tuple[str, ...]
+    ) -> None:
         write("Clean.\n")
         result = run(*args)
         assert result.returncode == 2
