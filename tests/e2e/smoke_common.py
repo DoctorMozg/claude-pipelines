@@ -3,7 +3,7 @@
 import json
 import logging
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -28,7 +28,13 @@ class Check:
         return self.expected == self.actual
 
 
-def run_claude(command: Sequence[str], cwd: Path, transcript: Path, timeout_s: int) -> bool:
+def run_claude(
+    command: Sequence[str],
+    cwd: Path,
+    transcript: Path,
+    timeout_s: int,
+    env: Mapping[str, str] | None = None,
+) -> bool:
     """Run a headless claude command into `transcript`; False when it timed out."""
     with transcript.open("w", encoding="utf-8") as out:
         try:
@@ -40,6 +46,7 @@ def run_claude(command: Sequence[str], cwd: Path, transcript: Path, timeout_s: i
                 stdout=out,
                 stderr=subprocess.STDOUT,
                 timeout=timeout_s,
+                env=env,
                 check=False,
             )
         except subprocess.TimeoutExpired:
