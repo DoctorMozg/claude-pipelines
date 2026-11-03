@@ -28,11 +28,13 @@ These tables catch hand-written copies in CLAUDE.md, outside sentinel blocks. No
 | Forced Verification                     |                         |                        | `code-quality`           |
 | Don't Over-Engineer                     | Do Not Over-Engineer    |                        | `code-quality`           |
 | Tooling                                 |                         | linters and formatters | `code-quality`           |
+| Write Human Code                        |                         |                        | `code-quality`           |
 | Context Decay Awareness                 | Context Decay Awarness  |                        | `context-safety`         |
 | File Read Budget                        |                         |                        | `context-safety`         |
 | Tool Result Blindness                   |                         |                        | `context-safety`         |
 | No Semantic Search                      |                         |                        | `edit-safety`            |
 | Destructive Action Safety               |                         |                        | `edit-safety`            |
+| One Source of Truth                     |                         | display problem        | `edit-safety`            |
 | File Hygiene                            |                         |                        | `housekeeping`           |
 | Pre-Implementation Clarity              |                         |                        | `agent-workflow`         |
 | Planning                                |                         | questions              | `agent-workflow`         |
@@ -41,6 +43,7 @@ These tables catch hand-written copies in CLAUDE.md, outside sentinel blocks. No
 | Information Verification                |                         |                        | `agent-workflow`         |
 | Verify Before Reporting                 |                         |                        | `self-evaluation`        |
 | Fresh Eyes Pass                         |                         |                        | `self-evaluation`        |
+| Failure Recovery                        |                         | two attempts           | `self-evaluation`        |
 | Error Handling                          |                         | try-catch              | `coding-standards`       |
 | Comments                                |                         | why, not what          | `coding-standards`       |
 | Testing                                 |                         | focus on behavior      | `coding-standards`       |
