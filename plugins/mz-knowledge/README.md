@@ -101,6 +101,15 @@ Every skill reads the vault's `CLAUDE.md` for conventions (folder layout, frontm
 | `vault-audit-collector`  | haiku  | Collects orphans, dead links, missing frontmatter   |
 | `moc-gap-detector`       | haiku  | Finds permanent notes missing from their topic MOC  |
 
+## Hooks
+
+| Event                                  | Script                     | What it does                                                                                                                                                                                                                                     |
+| -------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SessionStart` (startup/clear/compact) | `vault-context.sh`         | Injects the vault's MOC list and recently edited notes when `OBSIDIAN_VAULT_PATH` or `MZ_VAULT_PATH` is set                                                                                                                                      |
+| `PostToolUse` (Write/Edit of `*.md`)   | `frontmatter-normalize.sh` | Fixes the frontmatter of a vault note in place: `tag`/`alias`/`cssclass` become list-valued `tags`/`aliases`/`cssclasses`, tags lose `#` and spaces, a missing `created` gets today, and required keys of the note's schema type get empty stubs |
+
+A note counts as a vault note when it sits under `OBSIDIAN_VAULT_PATH` (or `MZ_VAULT_PATH`) or below a folder that has `.obsidian/`. Dot-folders, templates folders and notes with template placeholders are skipped. A note whose frontmatter uses YAML beyond plain keys, scalars and lists is left as it is. When the hook changes a note, it tells Claude to re-read the note before editing it again. Set `MZ_FRONTMATTER_NORMALIZE=0` to turn it off.
+
 ## Output location
 
 Skills write state and intermediate artifacts to `.mz/task/<YYYY_MM_DD>_<skill>_<slug>/`. Vault notes are written to the vault's folder structure as defined in CLAUDE.md.

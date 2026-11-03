@@ -5,10 +5,21 @@
         "hooks": [
           {
             "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/frontmatter-normalize.sh",
+            "if": "Write(//**/*.md)",
             "type": "command"
           }
         ],
-        "matcher": "Write|Edit"
+        "matcher": "Write"
+      },
+      {
+        "hooks": [
+          {
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/frontmatter-normalize.sh",
+            "if": "Edit(//**/*.md)",
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit"
       }
     ],
     "SessionStart": [

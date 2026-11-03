@@ -405,14 +405,20 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
             "SessionEnd": ('"${PLUGIN_ROOT}"/scripts/memory-capture.sh',),
         },
         "mz-knowledge": {
-            "PostToolUse": ('"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',),
+            "PostToolUse": (
+                '"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',
+                '"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',
+            ),
             "SessionStart": ('"${PLUGIN_ROOT}"/scripts/vault-context.sh',),
         },
     }
     assert rendered_hooks["mz-memory"]["SessionStart"][0]["matcher"] == "startup|clear|compact"
-    assert rendered_hooks["mz-knowledge"]["PostToolUse"][0]["matcher"] == "Write|Edit"
+    assert [group["matcher"] for group in rendered_hooks["mz-knowledge"]["PostToolUse"]] == [
+        "Write",
+        "Edit",
+    ]
     assert all(
-        "once" not in handler
+        "once" not in handler and "if" not in handler
         for hooks in rendered_hooks.values()
         for groups in hooks.values()
         for group in groups
