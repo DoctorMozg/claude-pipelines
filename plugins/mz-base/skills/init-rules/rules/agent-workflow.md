@@ -8,7 +8,7 @@ When a feature spec is unclear, interview the user until it is clear before plan
 
 ## Milestones
 
-Break large changes into milestones, each with a check that proves it works. Run through agreed milestones without stopping; pause only before steps that are hard to reverse, change the agreed scope, or affect things other people will see. Ask for approval at every milestone only when the user wants that.
+Break large changes into milestones, each with a check that proves it works, and run that check before starting the next milestone. Once the user approves the plan, run through its milestones without stopping for approval. Ask only for the plan itself, or when something leaves it: a problem that invalidates the plan, a change of scope, or a step the plan doesn't cover. Also pause before steps that are hard to reverse or affect things other people will see. Ask at every milestone only when the user wants that.
 
 ## Finish the Task
 
