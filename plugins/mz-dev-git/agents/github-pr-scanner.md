@@ -73,9 +73,8 @@ Emit disclosure tokens in your output when applicable:
 
 If a `gh` call fails (missing binary, unauthenticated, rate-limited, or non-zero exit), try each tier before emitting `STATUS: BLOCKED`:
 
-1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
-1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly with `curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/<path>"`. `gh api` filters port unchanged (`gh api user --jq '.login'` already reads REST), but `gh pr ... --json` names differ from REST.
-1. Only emit `STATUS: BLOCKED` after all three tiers fail; state which tiers were tried.
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name). MCP replies may use GitHub's REST field names, which differ from `gh pr ... --json` names.
+1. Only emit `STATUS: BLOCKED` after both `gh` and MCP fail; state which tiers were tried, and ask the user to authenticate `gh` or connect a GitHub MCP server.
 
 This applies to the `gh api user` call in Step 1 and every downstream `gh`-based operation (including those delegated to `github-pr-data-fetcher` and `github-pr-info-scorer`).
 

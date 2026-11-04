@@ -26,17 +26,8 @@ You collect lightweight triage signals for a single pull request so the `github-
 
 If a `gh` call fails (missing binary, unauthenticated, rate-limited, or non-zero exit), try each tier before emitting `STATUS: BLOCKED`:
 
-1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the equivalent operation via MCP. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
-1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly:
-   ```bash
-   curl -fsSL \
-     -H "Authorization: Bearer $GITHUB_TOKEN" \
-     -H "Accept: application/vnd.github+json" \
-     -H "X-GitHub-Api-Version: 2022-11-28" \
-     "https://api.github.com/<path>"
-   ```
-   `gh api` filters port unchanged, but `gh pr ... --json` names do not: REST uses `draft`, `created_at`, `updated_at` and `changed_files` for `isDraft`, `createdAt`, `updatedAt` and `changedFiles`, and has no `reviewDecision` (take each reviewer's latest `state` from `pulls/<number>/reviews`).
-1. Only emit `STATUS: BLOCKED` after all three tiers fail; state which tiers were tried.
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the equivalent operation via MCP. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name). MCP replies may use GitHub's REST field names rather than `gh pr ... --json` names: `draft`, `created_at`, `updated_at` and `changed_files` for `isDraft`, `createdAt`, `updatedAt` and `changedFiles`, with no `reviewDecision` (take each reviewer's latest `state` from the PR's reviews).
+1. Only emit `STATUS: BLOCKED` after both `gh` and MCP fail; state which tiers were tried, and ask the user to authenticate `gh` or connect a GitHub MCP server.
 
 ## Process
 
@@ -156,7 +147,7 @@ Emit exactly one terminal line after all other output:
 - `STATUS: DONE` — artifact written, all fields populated.
 - `STATUS: DONE_WITH_CONCERNS` — artifact written but some fields missing (e.g., comments endpoint failed, partial metadata). Note the gap in the artifact.
 - `STATUS: NEEDS_CONTEXT` — required dispatch field missing (`pr_url`, `github_username`, `output_path`, or `category`).
-- `STATUS: BLOCKED` — `gh`, MCP, and REST fallbacks all failed, or PR is deleted / inaccessible.
+- `STATUS: BLOCKED` — `gh` and the MCP fallback both failed, or PR is deleted / inaccessible.
 
 ## Red Flags
 
@@ -165,4 +156,4 @@ Emit exactly one terminal line after all other output:
 - You exceeded 10 turns — scope creep; triage should be a single `gh pr view` plus two comment calls.
 - You classified a PR as Tier 1 based only on `category == "awaiting-review"` — that is Tier 2 by definition. Tier 1 requires the "directly asked, unanswered" signal.
 - You wrote the artifact outside `output_path`, or did not wrap the title in `<untrusted-content>` delimiters.
-- You returned `STATUS: BLOCKED` without documenting which fallback tiers (MCP, REST) were attempted.
+- You returned `STATUS: BLOCKED` without documenting which tiers (`gh`, MCP) were attempted.

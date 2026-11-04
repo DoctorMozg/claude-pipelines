@@ -18,7 +18,7 @@ Installing `mz-dev-git` also installs [mz-base](https://github.com/DoctorMozg/cl
 ## Requirements
 
 - `git` for the two review skills.
-- For the GitHub skills, one of: the `gh` CLI authenticated, a GitHub MCP server in the session, or `$GITHUB_TOKEN` set. The agents try them in that order.
+- For the GitHub skills, either the `gh` CLI signed in or a GitHub MCP server in the session. The agents try them in that order.
 - `/github-review-pr` must run inside a clone of the PR's repository, meaning one with a remote that names `owner/repo`. Otherwise the agent stops and asks you to run it from one.
 
 ## Skills
@@ -100,10 +100,10 @@ The plugin runs inside your Claude session and has no server of its own. As in a
 
 - **`/review-branch` works on local git only.** It reads branch metadata, the diff against the base and the changed files. It makes no GitHub calls and never fetches or pushes. Its only outside access is the web research below.
 - **`/github-review-pr` fetches the PR head and the base branch from your git remote** and checks the PR out into a temporary worktree at `<project>/.claude/worktrees/pr-<number>-<random>`, inside your project. The checkout is detached, so no local branch is created or moved. `github-pr-reviewer` removes the worktree (`git worktree remove --force`, then `git worktree prune`) before it returns, including when it stops with an error. After the agent returns, the skill removes any `pr-<number>-*` worktree left behind by a crash or turn limit. Reports are never written into the worktree.
-- **GitHub access.** `/github-scan-prs`, `/github-review-pr` and their agents query GitHub with `gh`. If a `gh` call fails, they try a GitHub MCP server in your session, then the REST API with `$GITHUB_TOKEN` from your environment. The token goes only to `https://api.github.com`.
+- **GitHub access.** `/github-scan-prs`, `/github-review-pr` and their agents query GitHub with `gh`. If a `gh` call fails, they try a GitHub MCP server in your session. No skill or agent reads a token itself.
   - The scan reads your login, the PRs in the repos you name that match review-requested, assigned, mentioned or authored by you, and per PR the title, author, labels, dates, draft flag, review decision, file paths, line counts, reviews and comment text. It does not read diff content.
   - The review reads your login, the PR title, description, labels and state, the full diff, reviews, inline and issue comments, review-thread resolution state, and the title and state of issues the PR links with `Fixes #N` or `Closes #N`.
-- **No agent writes to GitHub.** Nothing in the agent or skill files posts a comment, submits a review, applies a label or changes a PR. The `curl` fallback sends plain GET requests, the one GraphQL call is a read query, and results go only to local reports. The agents' MCP access is a `mcp__github__*` wildcard, so the allowlist doesn't itself block a write tool. No prompt calls one.
+- **No agent writes to GitHub.** Nothing in the agent or skill files posts a comment, submits a review, applies a label or changes a PR. The one GraphQL call is a read query, and results go only to local reports. The agents' MCP access is a `mcp__github__*` wildcard, so the allowlist doesn't itself block a write tool. No prompt calls one.
 - **Web research uses Claude Code's WebSearch and WebFetch.** `branch-reviewer` and `github-pr-reviewer` have both tools. They use them, directly or through mz-base's `pipeline-web-researcher`, when the change touches an unfamiliar domain. The three blinded researchers (mz-base's `pipeline-researcher`, dispatched on every review) have the same tools. Claude picks the queries and pages. The prompts steer agents toward official docs and away from Stack Overflow, forums and undated blogs, which is guidance rather than a network filter. The scan agents, the collector and the five code-lens agents have no web tools.
 - **Reports and state stay in your project.** Reports go to `.mz/reviews/`, task state and working files to `.mz/task/<task_name>/`. The working files include a copy of the branch diff. The plugin ships no hooks and no telemetry, and nothing is sent to the author.
 

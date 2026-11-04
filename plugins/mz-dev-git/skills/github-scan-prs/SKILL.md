@@ -2,7 +2,7 @@
 name: github-scan-prs
 description: 'Triages open GitHub PRs across repos into a ranked report of what needs attention. Use when the user says "scan PRs", "check PRs", "what PRs need attention", "PR inbox" or "daily PR report". Not for reviewing one specific PR (use github-review-pr).'
 argument-hint: '[owner/repo1, owner/repo2, ...]'
-allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh repo view *), Bash(gh auth status *), Bash(curl *), Read, Write, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh repo view *), Bash(gh auth status *), Read, Write, AskUserQuestion
 ---
 
 # Scan PRs
@@ -66,8 +66,8 @@ Output the triage report path (`.mz/reviews/<YYYY_MM_DD>_github_scan_prs_<repo_n
 
 ## Error Handling
 
-- **Empty args** with no detectable current repo → before escalating, try the fallback chain for `gh repo view`: (1) `mcp__*github*` MCP tools if exposed, (2) direct REST API (`curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}"`). Only escalate via AskUserQuestion after all three tiers fail; never guess.
-- **`gh` unavailable** (not installed, not authenticated, rate-limited) → delegate to the fallback chain before blocking. The `github-pr-scanner` agent has its own `GitHub Access Fallback` section that governs downstream calls. Only escalate via AskUserQuestion if MCP and REST tiers also fail.
+- **Empty args** with no detectable current repo → before escalating, try the fallback for `gh repo view`: `mcp__*github*` MCP tools if exposed. Only escalate via AskUserQuestion after both `gh` and MCP fail; never guess.
+- **`gh` unavailable** (not installed, not authenticated, rate-limited) → delegate to the fallback chain before blocking. The `github-pr-scanner` agent has its own `GitHub Access Fallback` section that governs downstream calls. Only escalate via AskUserQuestion if the MCP tier also fails.
 - **Missing tooling** (`Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
 - **Empty scanner result** (zero PRs returned or no priority-ranked list) → check the scanner's `pr_data.md` / report for `ZERO RESULTS` disclosure tokens before trusting:
   - `ZERO RESULTS VERIFIED` (per-repo smoke test passed) → report "no PRs need attention" and exit cleanly.

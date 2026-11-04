@@ -221,7 +221,7 @@ This section is the one escalation rule. Approval gates (§1), tooling detection
 
 Check for the failures the skill can predict during input parsing, before the first dispatch. List each one with its response under `## Error Handling` in SKILL.md.
 
-- **Recover on your own** where the skill documents a way. That can be a default, a fallback chain such as `gh` → GitHub MCP → REST (CLAUDE.md, "Plugin Authoring Conventions"), or a degraded mode that the final report discloses.
+- **Recover on your own** where the skill documents a way. That can be a default, a fallback chain such as `gh` → GitHub MCP (CLAUDE.md, "Plugin Authoring Conventions"), or a degraded mode that the final report discloses.
 - **Escalate** when the remaining choices would lead to materially different work, or when continuing on a wrong guess would be unsafe. For a routine judgment call, state the assumption and continue.
 - **Never fill a blocker with an invented value.**
 

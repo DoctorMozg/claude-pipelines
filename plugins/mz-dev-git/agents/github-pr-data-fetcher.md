@@ -25,17 +25,8 @@ You are a GitHub PR data collector for the mz-dev-git pipeline. You run all `gh`
 
 If a `gh` call fails (missing binary, unauthenticated, rate-limited, or non-zero exit), try each tier before emitting `STATUS: BLOCKED`:
 
-1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name).
-1. **GitHub REST API** — if `$GITHUB_TOKEN` is set, call the API directly:
-   ```bash
-   curl -fsSL \
-     -H "Authorization: Bearer $GITHUB_TOKEN" \
-     -H "Accept: application/vnd.github+json" \
-     -H "X-GitHub-Api-Version: 2022-11-28" \
-     "https://api.github.com/<path>"
-   ```
-   `gh api` filters port unchanged, but `gh pr ... --json` names do not: REST uses `draft`, `created_at`, `updated_at` and `head.sha` for `isDraft`, `createdAt`, `updatedAt` and `headRefOid`, and has no `reviewDecision` (take each reviewer's latest `state` from `pulls/<number>/reviews`).
-1. Only emit `STATUS: BLOCKED` after all three tiers fail; include which tiers were tried in the status message.
+1. **GitHub MCP** — if the session exposes `mcp__*github*` tools, retry the same operation via the equivalent MCP tool. Your `tools` cover a server named `github` and the official GitHub plugin's server; for another server name, copy this file to `.claude/agents/` and add `mcp__<server>__*` to its `tools` (a project agent takes precedence over a plugin agent of the same name). MCP replies may use GitHub's REST field names rather than `gh pr ... --json` names: `draft`, `created_at`, `updated_at` and `head.sha` for `isDraft`, `createdAt`, `updatedAt` and `headRefOid`, with no `reviewDecision` (take each reviewer's latest `state` from the PR's reviews).
+1. Only emit `STATUS: BLOCKED` after both `gh` and MCP fail; include which tiers were tried in the status message, and ask the user to authenticate `gh` or connect a GitHub MCP server.
 
 ## Zero-Result Handling
 
@@ -73,7 +64,7 @@ Check authentication first:
 gh auth status 2>&1
 ```
 
-If not authenticated, follow the **GitHub Access Fallback** chain (MCP → REST). Only emit `STATUS: BLOCKED` when all tiers fail.
+If not authenticated, follow the **GitHub Access Fallback** chain (GitHub MCP). Only emit `STATUS: BLOCKED` when both tiers fail.
 
 ### Step 2 — Query PRs per repo
 
@@ -201,7 +192,7 @@ Emit exactly one terminal line after all other output:
 ## Red Flags
 
 - Any required dispatch field missing (repos, github_username, output_path) — emit `STATUS: NEEDS_CONTEXT`.
-- `gh` not found or not authenticated AND all fallback tiers (MCP, REST API) also fail — emit `STATUS: BLOCKED`.
+- `gh` not found or not authenticated AND the GitHub MCP tier also fails — emit `STATUS: BLOCKED`.
 - All repos fail to query across every tier — emit `STATUS: BLOCKED` with the error and which tiers were tried.
 - A single repo fails while others succeed — note in the artifact, continue, emit `STATUS: DONE_WITH_CONCERNS`.
 - A query returns exactly 50 PRs, its `--limit` — that query was probably truncated; note it in the artifact and emit `STATUS: DONE_WITH_CONCERNS`.

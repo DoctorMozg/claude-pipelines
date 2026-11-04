@@ -2,7 +2,7 @@
 name: github-review-pr
 description: 'Reviews a GitHub pull request by URL or owner/repo#number and writes a findings report with a verdict. Use when the user says "review this PR", pastes a PR link or asks if a change is safe to merge. Not for local branches (use review-branch).'
 argument-hint: <PR URL or owner/repo#number>
-allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh pr view *), Bash(gh auth status *), Bash(git worktree list *), Bash(git worktree remove *), Bash(curl *), Read, Write, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(gh pr view *), Bash(gh auth status *), Bash(git worktree list *), Bash(git worktree remove *), Read, Write, AskUserQuestion
 ---
 
 # Review PR
@@ -79,7 +79,7 @@ Output the report path (`.mz/reviews/<YYYY_MM_DD>_github_review_pr_<owner>_<repo
 ## Error Handling
 
 - **Empty / malformed PR argument** → escalate via AskUserQuestion; never guess, never fabricate a PR URL.
-- **`gh` unavailable for Phase 0 validation** → before escalating, try `mcp__*github*` MCP tools if exposed, then direct GitHub REST API (`curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}/pulls/{number}"`). Only escalate via AskUserQuestion after all three tiers fail.
+- **`gh` unavailable for Phase 0 validation** → before escalating, try `mcp__*github*` MCP tools if exposed. Only escalate via AskUserQuestion after both `gh` and MCP fail, and ask the user to authenticate `gh` or connect a GitHub MCP server.
 - **Missing tooling** (`git worktree` unavailable, `Agent` tool absent) → escalate via AskUserQuestion with the exact missing command.
 - An agent returns nothing usable (report file missing, empty, or no `VERDICT:` line) → `<PLUGIN_ROOT>/shared/retry-policy.md`: re-dispatch once with a clarified prompt, and don't retry API errors or usage limits.
 - Never guess — on any ambiguity (inaccessible PR, 404, merge conflict in worktree, missing base ref) escalate via AskUserQuestion rather than proceed silently.

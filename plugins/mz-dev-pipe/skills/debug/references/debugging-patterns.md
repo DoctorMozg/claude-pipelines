@@ -133,7 +133,7 @@ Classify first, fix second. A flaky test falls into exactly one bucket — namin
 **Environment-dependent**:
 
 - Smell: passes on macOS fails on Linux, passes with Python 3.11 fails on 3.12, depends on `TZ=`, depends on locale.
-- Detect: diff env between pass and fail runs (`env > pass.env` vs `env > fail.env`).
+- Detect: compare the suspect variables (`TZ`, `LANG`, `LC_ALL`, the interpreter version) between pass and fail runs, one by name. Don't dump the whole environment: it holds secrets.
 - Fix: pin env in test setup (`os.environ["TZ"] = "UTC"`, fixture that sets `LANG=C.UTF-8`).
 
 **Async/concurrency-dependent**:

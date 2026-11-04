@@ -25,9 +25,8 @@ Look for an open PR on the current branch, read-only. Use the fallback chain —
 
 1. `gh pr view --json number,url,title 2>/dev/null` — the GitHub CLI.
 1. If `gh` is unavailable (not installed, not authenticated, rate-limited) and the session exposes GitHub MCP tools (`mcp__*github*`), use those to look up the PR for the branch.
-1. If neither is available, try REST: `curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/{owner}/{repo}/pulls?head={owner}:{branch}&state=open"`.
 
-If all three tiers fail, there is simply no PR link to add — that is not an error. Record "no open PR found" and continue. This step is strictly read-only — never open, edit, or comment on a PR.
+If both tiers fail, there is simply no PR link to add — that is not an error. Record "no open PR found" and continue. This step is strictly read-only — never open, edit, or comment on a PR.
 
 ## Step 5.3 — Append the Provenance / Links section
 

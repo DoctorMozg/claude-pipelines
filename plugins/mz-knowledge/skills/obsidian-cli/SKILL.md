@@ -16,7 +16,7 @@ Running `obsidian` shell commands against a vault in the live Obsidian app: read
 ### When NOT to use
 
 - Obsidian is not running — the CLI requires the live Obsidian app to be open.
-- Programmatic vault reading without Obsidian running — use direct file reads instead.
+- Obsidian is closed and a script needs the notes — read the Markdown files directly instead.
 - OFM syntax questions with no shell interaction — use `obsidian-markdown`.
 
 ## Core Process
