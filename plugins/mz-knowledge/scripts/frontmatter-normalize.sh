@@ -50,7 +50,7 @@ schema="$vault/.mz/vault-schema.yml"
 
 status=0
 out=$(awk -v schema_file="$schema" -v today="$(date +%F)" -v max_lines=200 \
-  -f "$(dirname "$0")/lib/frontmatter-normalize.awk" "$schema" "$file") || status=$?
+  -f "${CLAUDE_PLUGIN_ROOT}/scripts/lib/frontmatter-normalize.awk" "$schema" "$file") || status=$?
 if ((status == 2)); then
   echo "frontmatter-normalize: left $rel untouched: $out" >&2
 fi

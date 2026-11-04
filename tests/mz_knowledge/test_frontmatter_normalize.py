@@ -124,6 +124,7 @@ def write_schema(vault: Path) -> WriteSchema:
 def run_hook(tmp_path: Path) -> RunHook:
     stripped = {"OBSIDIAN_VAULT_PATH", "MZ_VAULT_PATH", "MZ_FRONTMATTER_NORMALIZE"}
     base_env = {key: value for key, value in os.environ.items() if key not in stripped}
+    base_env["CLAUDE_PLUGIN_ROOT"] = str(PLUGIN)
     workdir = tmp_path / "cwd"
     workdir.mkdir()
 
