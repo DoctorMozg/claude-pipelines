@@ -21,6 +21,10 @@ DIRECTORY_PLUGINS = (
     "mz-knowledge",
     "mz-research-pipe",
 )
+# Every plugin ships an icon, marketplace-only ones included, so all of them face the asset checks.
+ALL_PLUGINS = tuple(
+    sorted(path.parent.parent.name for path in PLUGINS_DIR.glob("*/.claude-plugin/plugin.json"))
+)
 # The directory blocks a README with fewer than 40 words outside code.
 MIN_README_WORDS = 40
 _FENCED_CODE = re.compile(r"^```.*?^```", re.DOTALL | re.MULTILINE)
@@ -130,8 +134,8 @@ class TestDirectoryReadmes:
         assert links_leaving_folder(markdown, PLUGINS_DIR / "mz-funny") == leaving
 
 
-class TestDirectoryAssets:
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+class TestPluginAssets:
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_images_and_fonts_stay_under_the_text_screen(self, plugin: str) -> None:
         over = [
             f"{path.relative_to(PLUGINS_DIR)}: {printable_bytes(path.read_bytes()) // 1024} KiB"
@@ -141,7 +145,7 @@ class TestDirectoryAssets:
         ]
         assert over == [], "downscale or recompress each file so the directory doesn't hold it"
 
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_icon_meets_listing_rules(self, plugin: str) -> None:
         icon = PLUGINS_DIR / plugin / ".claude-plugin" / "icon.png"
         assert icon.is_file(), f"{plugin} has no listing icon"
