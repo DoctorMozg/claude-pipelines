@@ -4,6 +4,7 @@
     "url": "https://github.com/drmozg"
   },
   "description": "Installs curated coding rules per project or globally, as rule files or CLAUDE.md blocks, with enforced settings entries",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-rules",
   "version": "0.54.8"

@@ -9,7 +9,7 @@
   ],
   "description": "Research and content pipelines \u2014 multi-source web research, file translation with structural fidelity, prior-output synthesis, and codebase explanation with diagrams",
   "displayName": "Mozg Research Pipelines",
-  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-research-pipe",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-research-pipe",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",

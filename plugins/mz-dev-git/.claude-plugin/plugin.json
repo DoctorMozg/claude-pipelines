@@ -8,7 +8,7 @@
   ],
   "description": "Git workflow review pipelines \u2014 branch-level deep review with multi-lens fan-out (bugs, security, architecture, performance, maintainability, over-engineering), GitHub PR review, and daily PR triage",
   "displayName": "Mozg Git Review",
-  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-dev-git",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-dev-git",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",

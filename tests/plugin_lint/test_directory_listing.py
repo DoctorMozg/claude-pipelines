@@ -8,6 +8,7 @@ import pytest
 from .conftest import PLUGINS_DIR, REPO_ROOT
 
 REPOSITORY_URL = "https://github.com/DoctorMozg/claude-pipelines"
+HOMEPAGE_URL = "https://www.sgon.ai/open-source/claude-pipelines"
 # The plugins submitted to Anthropic's directory; the rest stay marketplace-only.
 DIRECTORY_PLUGINS = (
     "mz-base",
@@ -85,7 +86,7 @@ class TestDirectoryManifests:
         display_name = manifest.get("displayName")
         assert isinstance(display_name, str)
         assert display_name.strip()
-        assert manifest.get("homepage") == f"{REPOSITORY_URL}/tree/master/plugins/{plugin}"
+        assert manifest.get("homepage") == HOMEPAGE_URL
         assert manifest.get("repository") == REPOSITORY_URL
 
     @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)

@@ -5,7 +5,7 @@
   },
   "description": "Essential development agents and skills for coding workflows: code review, web research, technical writing and skill routing",
   "displayName": "Mozg Base",
-  "homepage": "https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-base",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-base",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",

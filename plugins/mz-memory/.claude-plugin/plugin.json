@@ -4,6 +4,7 @@
     "url": "https://github.com/drmozg"
   },
   "description": "Cross-session project memory \u2014 automatic knowledge persistence, injection, and compaction recovery",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-memory",
   "version": "0.54.8"
