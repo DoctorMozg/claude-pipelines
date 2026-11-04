@@ -6,5 +6,5 @@
   "description": "Installs curated coding rules per project or globally, as rule files or CLAUDE.md blocks, with enforced settings entries",
   "license": "MIT",
   "name": "mz-rules",
-  "version": "0.54.3"
+  "version": "0.54.4"
 }
