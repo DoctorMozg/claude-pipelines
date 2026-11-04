@@ -396,7 +396,7 @@ Evidence-anchored code roasting in 7 character voices. Each persona is a first-c
 | ------------ | ------------------------------ | --------------------------------------------------------------------------------------- |
 | **do-roast** | `/do-roast <persona> <target>` | Resolve target → analyze → dossier → persona dispatch → roast report with inline teaser |
 
-7 persona agents (roast-caveman, roast-goblin, roast-pirate, roast-viking, roast-dwarf, roast-drill-sergeant, roast-oracle) — each standalone-invocable as a creative consultant.
+7 persona agents (roast-caveman, roast-wh40k-ork, roast-pirate, roast-viking, roast-dwarf, roast-drill-sergeant, roast-yoda) — each standalone-invocable as a creative consultant.
 
 **[Full documentation →](plugins/mz-funny/)**
 

@@ -61,7 +61,7 @@ Be concise. Aim for 3-6 sentences per finding. Output tokens are expensive.
 End with a terminal STATUS line: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED.
 ```
 
-**Critical substitution rule**: `<dossier_body>` must be replaced with the **complete verbatim contents** of `dossier.md`. This is not a path. This is not a summary. It is the full file body inlined as a context packet. Inlining is what prevents the "forgot to read" fabrication mode.
+**Critical substitution rule**: `<dossier_body>` must be replaced with the **complete verbatim contents** of `dossier.md`. This is not a path. This is not a summary. It is the full file body inlined as a context packet, per research.md §Evidence enforcement layer 3 and the brainstorm `ideation.md:9-25` context-packet pattern. Inlining is what prevents the "forgot to read" fabrication mode.
 
 ### 5.4 Dispatch the persona agent
 
@@ -150,7 +150,7 @@ Record the final chosen path as `report_path` (absolute form preferred in state)
 
 ### 6.3 Assemble the report body
 
-Re-read `dossier.md` and `roast_raw.md` at assembly time — do not trust any earlier in-memory snapshot (context compaction can silently corrupt it). From the dossier, extract `**Stack detected**:` from the frontmatter, and grep finding bodies for any `UNVERIFIED: <claim>` tokens emitted by Phase 3 (these live inside findings as per-claim downgrades, not in the frontmatter).
+Re-read `dossier.md` and `roast_raw.md` at assembly time — do not trust any earlier in-memory snapshot (context compaction can silently corrupt it). From the dossier, extract `**Stack detected**:` from the frontmatter, and grep finding bodies for any `UNVERIFIED: <claim>` tokens emitted by Phase 4 (these live inside findings as per-claim downgrades, not in the frontmatter).
 
 Build the report exactly in this shape (substitute bracketed fields):
 
@@ -182,7 +182,7 @@ Build the report exactly in this shape (substitute bracketed fields):
 
 `<target_summary>` is a short human-readable form of the resolved target for the H1 heading only (e.g. `src/auth/`, `branch:feature-x`, or `raw text (1000 chars)`). Do not use the full resolved list in the H1 — it is for the `**Target**:` metadata line.
 
-Finding counts come from state `finding_counts` recorded in Phase 4. If any severity is missing from state, read it back from the dossier by counting `## Finding N — <severity> —` headings per severity.
+Finding counts come from state `finding_counts` recorded in Phase 4b. If any severity is missing from state, read it back from the dossier by counting `## Finding N — <severity> —` headings per severity.
 
 ### 6.4 Write the report file
 
@@ -190,7 +190,7 @@ Use the `Write` tool with `file_path = report_path` and `content = <assembled bo
 
 If the post-write read does not match the assembled body, halt with `STATUS: BLOCKED` and the message "Report write verification failed at `<report_path>`. Investigate Write tool state before retrying."
 
-### 6.5 Layer-4 soft citation-density check
+### 6.5 Layer-4 soft citation-density check (Nit #8, plan-review)
 
 **Purpose**: early warning against fabrication drift. The persona agent contract requires every line to cite a `(Finding N)`. A roast that barely cites the dossier is a signal that the persona improvised. This check is **non-blocking** — it does not fail the skill, it flags the state file so downstream audit tooling can spot drift.
 
@@ -214,6 +214,8 @@ Procedure:
    - Leave `concerns_flag` at its default `false`.
 
 This check runs **before** the final state update and terminal STATUS line so its verdict can influence whether the skill terminates with `DONE` or `DONE_WITH_CONCERNS`. It never blocks — `BLOCKED` is reserved for structural failures, not citation density.
+
+Reference: research.md §Evidence enforcement layer 4. The plan originally deferred this to v1.1, but plan-review Issue 8 upgraded it to v1.
 
 ### 6.6 Build the inline teaser
 

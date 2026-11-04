@@ -16,7 +16,7 @@ graders:
   # Only the skill's allowlist names all seven personas, so listing them proves setup ran and stopped there.
   - name: reply-lists-all-personas
     type: regex
-    pattern: '^(?=[\s\S]*caveman)(?=[\s\S]*goblin)(?=[\s\S]*pirate)(?=[\s\S]*viking)(?=[\s\S]*dwarf)(?=[\s\S]*drill-sergeant)(?=[\s\S]*oracle)'
+    pattern: '^(?=[\s\S]*caveman)(?=[\s\S]*wh40k-ork)(?=[\s\S]*pirate)(?=[\s\S]*viking)(?=[\s\S]*dwarf)(?=[\s\S]*drill-sergeant)(?=[\s\S]*yoda)'
     flags: i
   - name: reply-names-the-rejected-persona
     type: regex

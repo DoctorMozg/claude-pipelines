@@ -1,6 +1,6 @@
 ---
 name: do-roast
-description: 'Roasts code in a character voice, each joke tied to a real finding. Use when the user wants a funny review of code ("roast this code", "do-roast", "make fun of", "character roast of"). Not for a serious code review (use review-branch).'
+description: 'Roasts code in a character voice, each joke tied to a real finding. Use when the user wants a funny review of code or a PR ("roast this code", "do-roast", "make fun of", "character roast of"). Not for a serious code review (use review-branch).'
 argument-hint: <persona> <freeform target — path, branch, text, or natural-language scope>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git diff *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(sha256sum *), Bash(shasum *), Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
@@ -28,7 +28,7 @@ A funny roast, in a chosen persona's voice, of code, a branch, a PR or text, whe
 
 ## Constants
 
-- **PERSONA_ALLOWLIST**: `["caveman", "goblin", "pirate", "viking", "dwarf", "drill-sergeant", "oracle"]` (lowercase canonical)
+- **PERSONA_ALLOWLIST**: `["caveman", "wh40k-ork", "pirate", "viking", "dwarf", "drill-sergeant", "yoda"]` (lowercase canonical)
 - **MAX_PERSONAS**: 7 (allowlist bound; single-persona dispatch per invocation)
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
@@ -42,15 +42,15 @@ A funny roast, in a chosen persona's voice, of code, a branch, a PR or text, whe
 
 <!-- verify: every value in PERSONA_ALLOWLIST must appear in this table -->
 
-| Persona        | Voice                          | Best for roasting                                           |
-| -------------- | ------------------------------ | ----------------------------------------------------------- |
-| caveman        | Hulk-speak, pre-linguistic     | Over-engineered abstractions — "me no understand, me smash" |
-| goblin         | Scrapyard brute-force bolter   | Dainty/overclever code ("dat code's dainty")                |
-| pirate         | Robert-Newton West-Country     | Ships that won't sail — bloated files, leaks, "Davy Jones"  |
-| viking         | Skald with kennings            | Forgettable code, no sagas, "argr" / ignoble logic          |
-| dwarf          | Scottish brogue + grudge book  | Shoddy craftsmanship — "wazzock", grudge book additions     |
-| drill-sergeant | Gunnery-Sergeant drill cadence | Discipline failures, fitness metaphors, profanity allowed   |
-| oracle         | OSV-inverted disappointment    | Clouded logic, "much to learn" disappointment register      |
+| Persona        | Voice                         | Best for roasting                                           |
+| -------------- | ----------------------------- | ----------------------------------------------------------- |
+| caveman        | Hulk-speak, pre-linguistic    | Over-engineered abstractions — "me no understand, me smash" |
+| wh40k-ork      | Greenskin dakka warrior       | Weedy/overclever code ("dat code iz weedy")                 |
+| pirate         | Robert-Newton West-Country    | Ships that won't sail — bloated files, leaks, "Davy Jones"  |
+| viking         | Skald with kennings           | Forgettable code, no sagas, "argr" / ignoble logic          |
+| dwarf          | Scottish brogue + Dammaz Kron | Shoddy craftsmanship — "umgak", grudge book additions       |
+| drill-sergeant | FMJ Gunnery-Sergeant cadence  | Discipline failures, fitness metaphors, profanity allowed   |
+| yoda           | OSV-inverted disappointment   | Clouded logic, "much to learn" disappointment register      |
 
 ## Core Process
 
@@ -93,7 +93,7 @@ Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktre
 
 ## Phase 0.5: Target Resolution
 
-Read `phases/analyze.md` ("Phase 0.5: Target resolution detail"), run its ladder on `Target_raw`, and record the result in `state.md` as that section describes. Explicit paths, a branch diff and raw text name their target directly, so the roast goes on to Phase 1 without asking.
+Read `phases/analyze.md` ("Phase 1 preamble — target resolution detail"), run its ladder on `Target_raw`, and record the result in `state.md` as that section describes. Explicit paths, a branch diff and raw text name their target directly, so the roast goes on to Phase 1 without asking.
 
 Only a natural-language target (rung 4) that leaves more than one candidate needs the user. Ask with an input collector, not an approval gate: no plan message and no Approve/Reject.
 

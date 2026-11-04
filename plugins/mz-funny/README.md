@@ -1,6 +1,6 @@
 # mz-funny
 
-mz-funny roasts your code in a character voice (a pirate, a drill sergeant, a hilltop oracle and four others) and ties every joke to a real finding. `/do-roast` first reads the target, measures its structure, checks the docs against the code and compares it with current best practice for your stack. Only then does a persona write the roast, and it may embellish tone but not invent a bug. It is for developers who want a funny read of their code, with receipts.
+mz-funny roasts your code in a character voice (a pirate, a drill sergeant, Yoda and four others) and ties every joke to a real finding. `/do-roast` first reads the target, measures its structure, checks the docs against the code and compares it with current best practice for your stack. Only then does a persona write the roast, and it may embellish tone but not invent a bug. It is for developers who want a funny read of their code, with receipts.
 
 **Works in:** Claude Code and Cowork. `do-roast` hands the writing to a `roast-<persona>` agent, and claude.ai chat loads skills but ignores agents, so nobody is there to deliver the roast.
 
@@ -29,7 +29,7 @@ There is no PR fetching. To roast a PR, check out its branch and diff it against
 ```text
 /do-roast pirate src/billing/invoice.py
 /do-roast drill-sergeant branch:main
-/do-roast oracle the session manager
+/do-roast yoda the session manager
 /do-roast caveman "if x == True: return True else: return False"
 ```
 
@@ -37,15 +37,15 @@ You get a short teaser in the chat and a full report at `.mz/reports/<date>_roas
 
 ## Characters
 
-| Persona          | Voice                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| `caveman`        | Pre-linguistic Hulk-speak that smashes anything abstract.                                              |
-| `goblin`         | Cockney scrapyard goblin who bolts more on everything, shouts MORE BOLTS and calls clever code dainty. |
-| `pirate`         | West Country sea-dog in the Robert Newton tradition, judging whether the code sails or sinks.          |
-| `viking`         | Skald who speaks in kennings and asks whether the code will be sung in any hall or forgotten.          |
-| `dwarf`          | Scottish-brogue master craftsman who enters every flaw in the clan's grudge book.                      |
-| `drill-sergeant` | Gunnery Sergeant drill instructor who barks insults in CAPS. Profanity allowed.                        |
-| `oracle`         | Disappointed hilltop seer in inverted syntax, reading every bug as an ill omen.                        |
+| Persona          | Voice                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| `caveman`        | Pre-linguistic Hulk-speak that smashes anything abstract.                                        |
+| `wh40k-ork`      | Cockney Warhammer 40k greenskin who shouts WAAAGH, wants more dakka and calls clever code weedy. |
+| `pirate`         | West Country sea-dog in the Robert Newton tradition, judging whether the code sails or sinks.    |
+| `viking`         | Skald who speaks in kennings and asks whether the code will be sung in any hall or forgotten.    |
+| `dwarf`          | Scottish-brogue master craftsman who enters every flaw in the Dammaz Kron grudge book.           |
+| `drill-sergeant` | Full Metal Jacket-style Gunnery Sergeant who barks insults in CAPS. Profanity allowed.           |
+| `yoda`           | Disappointed Jedi Master in inverted syntax, reading every bug as a disturbance in the Force.    |
 
 All seven roast code, never people: no author names, no git blame, no slurs.
 
