@@ -1,6 +1,6 @@
-# mz-dev-pipe — Tests
+# mz-dev-pipe contract tests
 
-Lightweight static verification for the plugin. These tests do not invoke real agents — they validate the **contract** between every orchestrator skill and the agents it dispatches: terminal-state tokens, status-protocol references, and structural well-formedness.
+Lightweight static verification for mz-dev-pipe. They live at the repo root, not in the plugin, so an install doesn't ship them. These tests do not invoke real agents — they validate the **contract** between every orchestrator skill and the agents it dispatches: terminal-state tokens, status-protocol references, and structural well-formedness.
 
 The tests are designed to run in CI and locally before any version bump. `set_versions.sh` invokes `run_contract_matrix.sh` as a precondition; a single failed cell blocks the bump.
 

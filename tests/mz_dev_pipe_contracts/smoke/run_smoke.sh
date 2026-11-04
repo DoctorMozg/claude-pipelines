@@ -16,13 +16,13 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 BUILD_SKILL="$REPO_ROOT/plugins/mz-dev-pipe/skills/build"
 # Agents resolve by name across plugins, so look in every plugin, as the contract matrix does.
 AGENTS_DIRS=("$REPO_ROOT"/plugins/*/agents)
 # Read through the plugin-root link so a broken link fails the smoke test.
 SHARED_DIR="$REPO_ROOT/plugins/mz-dev-pipe/shared"
-FIXTURE_DIR="$REPO_ROOT/plugins/mz-dev-pipe/tests/smoke/fixture"
+FIXTURE_DIR="$REPO_ROOT/tests/mz_dev_pipe_contracts/smoke/fixture"
 METRICS_DIR="$REPO_ROOT/.mz/metrics/smoke"
 TODAY="$(date +%Y_%m_%d)"
 REPORT="$METRICS_DIR/${TODAY}.json"
@@ -72,7 +72,7 @@ done
 
 # --- Check 3: contract matrix still passes ----------------------------------
 matrix_out=$(mktemp)
-if "$REPO_ROOT/plugins/mz-dev-pipe/tests/run_contract_matrix.sh" >"$matrix_out" 2>&1; then
+if "$REPO_ROOT/tests/mz_dev_pipe_contracts/run_contract_matrix.sh" >"$matrix_out" 2>&1; then
   record_pass
 else
   record_fail "contract matrix failed"

@@ -19,15 +19,17 @@ REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 # Precondition — agent contract matrix must pass before any version bump.
 # A drifted terminal-state token in any agent file would silently break an
 # orchestrator branch; we'd rather fail the bump than ship the drift.
-CONTRACT_MATRIX="$REPO_ROOT/plugins/mz-dev-pipe/tests/run_contract_matrix.sh"
-if [ -x "$CONTRACT_MATRIX" ]; then
-  MATRIX_OUT=$(mktemp)
-  trap 'rm -f "$MATRIX_OUT"' EXIT
-  if ! "$CONTRACT_MATRIX" >"$MATRIX_OUT" 2>&1; then
-    echo "Error: contract matrix failed — version bump blocked." >&2
-    cat "$MATRIX_OUT" >&2
-    exit 1
-  fi
+CONTRACT_MATRIX="$REPO_ROOT/tests/mz_dev_pipe_contracts/run_contract_matrix.sh"
+if [ ! -x "$CONTRACT_MATRIX" ]; then
+  echo "Error: contract matrix not found or not executable at $CONTRACT_MATRIX — version bump blocked." >&2
+  exit 1
+fi
+MATRIX_OUT=$(mktemp)
+trap 'rm -f "$MATRIX_OUT"' EXIT
+if ! "$CONTRACT_MATRIX" >"$MATRIX_OUT" 2>&1; then
+  echo "Error: contract matrix failed — version bump blocked." >&2
+  cat "$MATRIX_OUT" >&2
+  exit 1
 fi
 
 # sed -i is incompatible between GNU and BSD: GNU takes no argument, BSD

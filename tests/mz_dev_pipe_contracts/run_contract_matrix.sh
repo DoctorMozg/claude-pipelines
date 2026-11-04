@@ -3,8 +3,8 @@
 # for it in contract_matrix.md. Exits non-zero on any failed cell.
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-MATRIX="$REPO_ROOT/plugins/mz-dev-pipe/tests/contract_matrix.md"
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+MATRIX="$REPO_ROOT/tests/mz_dev_pipe_contracts/contract_matrix.md"
 
 if [ ! -f "$MATRIX" ]; then
   echo "Error: matrix file not found at $MATRIX" >&2

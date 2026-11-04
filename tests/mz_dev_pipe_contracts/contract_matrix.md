@@ -43,7 +43,7 @@ When adding a new agent that participates in a pipeline:
 
 1. Document its terminal-state tokens in the agent file (literal mentions are fine).
 1. Add a row to the matrix above.
-1. Run `./plugins/mz-dev-pipe/tests/run_contract_matrix.sh` and confirm the row passes.
+1. Run `./tests/mz_dev_pipe_contracts/run_contract_matrix.sh` and confirm the row passes.
 
 When deprecating an agent:
 

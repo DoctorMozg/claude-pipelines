@@ -31,10 +31,10 @@ help:
 	@echo "                    (MUTANTS=<id ...>, all by default; EVAL_MODEL, EVAL_JUDGE, EVAL_JOBS; spends tokens)"
 
 contract-matrix:
-	@./plugins/mz-dev-pipe/tests/run_contract_matrix.sh
+	@./tests/mz_dev_pipe_contracts/run_contract_matrix.sh
 
 smoke:
-	@./plugins/mz-dev-pipe/tests/smoke/run_smoke.sh
+	@./tests/mz_dev_pipe_contracts/smoke/run_smoke.sh
 
 pytest:
 	@$(PYTHON) -m pytest -q
