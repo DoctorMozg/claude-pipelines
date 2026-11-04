@@ -1,6 +1,6 @@
 ---
 name: do-roast
-description: 'Roasts code in a character voice, each joke tied to a real finding. Use when the user wants a funny review of code or a PR ("roast this code", "do-roast", "make fun of", "character roast of"). Not for a serious code review (use review-branch).'
+description: 'Roasts code in a character voice, each joke tied to a real finding. Use when the user wants a funny review of code ("roast this code", "do-roast", "make fun of", "character roast of"). Not for a serious code review (use review-branch).'
 argument-hint: <persona> <freeform target — path, branch, text, or natural-language scope>
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git diff *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(sha256sum *), Bash(shasum *), Read, Write, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
@@ -93,7 +93,7 @@ Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktre
 
 ## Phase 0.5: Target Resolution
 
-Read `phases/analyze.md` ("Phase 1 preamble — target resolution detail"), run its ladder on `Target_raw`, and record the result in `state.md` as that section describes. Explicit paths, a branch diff and raw text name their target directly, so the roast goes on to Phase 1 without asking.
+Read `phases/analyze.md` ("Phase 0.5: Target resolution detail"), run its ladder on `Target_raw`, and record the result in `state.md` as that section describes. Explicit paths, a branch diff and raw text name their target directly, so the roast goes on to Phase 1 without asking.
 
 Only a natural-language target (rung 4) that leaves more than one candidate needs the user. Ask with an input collector, not an approval gate: no plan message and no Approve/Reject.
 
