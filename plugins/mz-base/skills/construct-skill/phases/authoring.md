@@ -94,13 +94,7 @@ Run each check and keep its output for the checklist:
 
 - `pre-commit run --files <every file in TARGET_DIR>` from `<REPO_ROOT>`, which runs the repo's `skill-description-shape`, `skill-reference-path` and `no-rule-citations` hooks along with mdformat.
 
-- `make test` from `<REPO_ROOT>`. Its `tests/plugin_lint/` suite checks every skill's frontmatter, structure, sizes, paths, dispatched agents and routing-table row, the draft included.
-
-- A strict YAML parse of the frontmatter, which also prints the `description` plus `when_to_use` character count. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this check:
-
-  ```bash
-  python3 -c 'import sys,yaml; fm=yaml.safe_load(open(sys.argv[1]).read().split("---")[1]); print(len(fm["description"])+len(fm.get("when_to_use","")))' "<TARGET_DIR>/SKILL.md"
-  ```
+- `make test` from `<REPO_ROOT>`. Its `tests/plugin_lint/` suite checks every skill's frontmatter, structure, sizes, paths, dispatched agents and routing-table row, the draft included. It also parses the frontmatter with a strict YAML loader that rejects duplicate keys, and fails a `description` plus `when_to_use` over 250 characters. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this run.
 
 - Line and character counts of every markdown file in the skill: `find "<TARGET_DIR>" -name '*.md' -exec wc -lm {} +`.
 
