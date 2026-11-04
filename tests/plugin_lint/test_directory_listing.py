@@ -26,6 +26,13 @@ _LINK_TARGET = re.compile(
     r"\]\(<?([^)\s>]+)|\bsrc=\"([^\"]+)\"|^\[[^\]]+\]:\s*<?([^\s>]+)", re.MULTILINE
 )
 _EXTERNAL_TARGET = re.compile(r"[a-z][a-z0-9+.-]*:|#", re.IGNORECASE)
+# The directory screens 256 KiB of printable text per image or font and holds the file past that.
+# Compressed pixels run about 37% printable, so a 1024 px PNG icon goes over.
+MAX_ASSET_PRINTABLE_BYTES = 256 * 1024
+ASSET_SUFFIXES = frozenset(
+    {".png", ".jpg", ".jpeg", ".gif", ".webp", ".ttf", ".otf", ".woff", ".woff2"}
+)
+_PRINTABLE = bytes([9, 10, 13, *range(0x20, 0x7F)])
 
 
 def _manifest(plugin: str) -> dict[str, object]:
@@ -36,6 +43,11 @@ def _manifest(plugin: str) -> dict[str, object]:
 
 def _readme(plugin: str) -> str:
     return (PLUGINS_DIR / plugin / "README.md").read_text(encoding="utf-8")
+
+
+def printable_bytes(data: bytes) -> int:
+    """Every printable byte in `data`, an upper bound on any run-based count the portal may use."""
+    return len(data) - len(data.translate(None, _PRINTABLE))
 
 
 def links_leaving_folder(markdown: str, folder: Path) -> list[str]:
@@ -109,3 +121,18 @@ class TestDirectoryReadmes:
         self, markdown: str, leaving: list[str]
     ) -> None:
         assert links_leaving_folder(markdown, PLUGINS_DIR / "mz-funny") == leaving
+
+
+class TestDirectoryAssets:
+    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    def test_images_and_fonts_stay_under_the_text_screen(self, plugin: str) -> None:
+        over = [
+            f"{path.relative_to(PLUGINS_DIR)}: {printable_bytes(path.read_bytes()) // 1024} KiB"
+            for path in sorted((PLUGINS_DIR / plugin).rglob("*"))
+            if path.suffix.lower() in ASSET_SUFFIXES
+            and printable_bytes(path.read_bytes()) > MAX_ASSET_PRINTABLE_BYTES
+        ]
+        assert over == [], "downscale or recompress each file so the directory doesn't hold it"
+
+    def test_printable_count_ignores_control_and_high_bytes(self) -> None:
+        assert printable_bytes(b"ab\tc\n\x00\x1f\x7f\x80\xff") == 5
