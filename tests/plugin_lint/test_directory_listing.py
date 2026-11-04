@@ -1,5 +1,6 @@
 import json
 import re
+import struct
 from pathlib import Path
 
 import pytest
@@ -33,6 +34,11 @@ ASSET_SUFFIXES = frozenset(
     {".png", ".jpg", ".jpeg", ".gif", ".webp", ".ttf", ".otf", ".woff", ".woff2"}
 )
 _PRINTABLE = bytes([9, 10, 13, *range(0x20, 0x7F)])
+# The listing icon: a square PNG at .claude-plugin/icon.png, 512 to 2048 px a side, under 2 MB.
+# 512 px is also what keeps an icon under the text screen above, so the floor is tight.
+ICON_MIN_PX, ICON_MAX_PX = 512, 2048
+ICON_MAX_BYTES = 2_000_000
+_PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
 def _manifest(plugin: str) -> dict[str, object]:
@@ -133,6 +139,17 @@ class TestDirectoryAssets:
             and printable_bytes(path.read_bytes()) > MAX_ASSET_PRINTABLE_BYTES
         ]
         assert over == [], "downscale or recompress each file so the directory doesn't hold it"
+
+    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    def test_icon_meets_listing_rules(self, plugin: str) -> None:
+        icon = PLUGINS_DIR / plugin / ".claude-plugin" / "icon.png"
+        assert icon.is_file(), f"{plugin} has no listing icon"
+        data = icon.read_bytes()
+        assert data.startswith(_PNG_SIGNATURE), f"{plugin} icon is not a PNG"
+        width, height = struct.unpack(">II", data[16:24])
+        assert width == height, f"{plugin} icon is {width}x{height}, not square"
+        assert ICON_MIN_PX <= width <= ICON_MAX_PX, f"{plugin} icon is {width} px a side"
+        assert len(data) < ICON_MAX_BYTES, f"{plugin} icon is {len(data)} bytes"
 
     def test_printable_count_ignores_control_and_high_bytes(self) -> None:
         assert printable_bytes(b"ab\tc\n\x00\x1f\x7f\x80\xff") == 5
