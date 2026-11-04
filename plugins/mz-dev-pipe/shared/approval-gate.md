@@ -77,7 +77,7 @@ The resume gate, a cap-reached menu and any other gate that asks for a choice ra
 
 A user opts in to unattended runs, for CI or scheduled jobs, by setting `MZ_DEV_PIPE_AUTO_APPROVE=1`. Skills don't turn it on themselves.
 
-- During setup, check the variable once with a Bash call, such as `printenv MZ_DEV_PIPE_AUTO_APPROVE`, and record the result in `state.md` as `unattended: true` or `unattended: false`.
+- During setup, check the variable once with a Bash call that prints only that variable's value, and record the result in `state.md` as `unattended: true` or `unattended: false`.
 - At an Approve/Reject gate, still write state first and emit Surface 1. Then skip Surface 2 and continue as on Approve.
 - Log every skipped gate in four places:
   - a chat line, `auto-approved (unattended): <gate>`;

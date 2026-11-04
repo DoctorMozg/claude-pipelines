@@ -25,7 +25,7 @@ A second empty or malformed result after the one re-dispatch is `BLOCKED`.
 
 ## Zero results
 
-An empty result is ambiguous: nothing exists, the query is wrong, or the agent has no access. Before trusting an empty result for a whole source, run one smoke test that should return something if the query path works. For GitHub that is `gh pr list --repo <owner/repo> --state all --limit 1`; for a web source it is a widened bare-keyword query. Each agent names its smoke test and what each outcome means. Then emit one disclosure token per empty source:
+An empty result is ambiguous: nothing exists, the query is wrong, or the agent has no access. Before trusting an empty result for a whole source, run one smoke test that should return something if the query path works. For GitHub that is a one-row listing of the repository's PRs in any state; for a web source it is a widened bare-keyword query. Each agent names its smoke test and what each outcome means. Then emit one disclosure token per empty source:
 
 - `ZERO RESULTS VERIFIED`: the smoke test shows the empty result is real.
 - `ZERO RESULTS UNVERIFIED`: the smoke test failed, was blocked, or left access in doubt. Say which.

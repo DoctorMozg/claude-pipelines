@@ -50,7 +50,7 @@ When given a documentation task:
 1. **Survey existing docs** — Find what already exists (README, docstrings, previous guides). Reuse terminology and structure for consistency. Do not silently duplicate or contradict existing material.
 1. **Check external references** — For protocol/spec/standard references, use `WebFetch` or `WebSearch` to verify version-specific details. APIs and standards drift; don't rely on memory.
 1. **Draft with examples first** — Build the example set before writing prose. Every concept should have at least one runnable example pulled from or verified against the real code.
-1. **Verify examples.** Where feasible, use `Bash` to compile, type-check, or run snippets. A broken example in docs is worse than no example.
+1. **Verify examples.** Where feasible, use `Bash` to compile, type-check, or run snippets. A broken example in docs is worse than no example. Run only snippets that work offline without credentials. A snippet that signs in or calls a remote service is checked against the source and reported as not run. Never read API keys, tokens, `.env` files or credential stores to make one work.
 1. **Edit for density** — On a second pass, delete anything that doesn't earn its place. Cut adjectives, hedging, and restatements.
 
 ## Document Types
