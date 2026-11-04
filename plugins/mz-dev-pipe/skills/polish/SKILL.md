@@ -2,7 +2,7 @@
 name: polish
 description: 'Brings existing code up to stated criteria such as passing tests. Use when the user says "polish X", "make tests pass" or "fix failing tests", or has code that must clear its quality gates. Not for one bug (use debug) or a new feature (use build).'
 argument-hint: '[scope:branch|global|working] <completion criteria — what must pass, what must be fixed, what must work>'
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Code Polishing Pipeline

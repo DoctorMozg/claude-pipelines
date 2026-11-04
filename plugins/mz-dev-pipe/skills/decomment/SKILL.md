@@ -2,7 +2,7 @@
 name: decomment
 description: 'Strips AI-flavored comments and docstrings from code, editing comment text only. Use when the user says "decomment", "strip AI comments" or "remove robotic comments". Not for code-level AI residue (use clean-leftovers) or markdown (use naturalize).'
 argument-hint: '[scope:branch|global|working] [path/glob override]'
-allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git status *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(perl -0777 -pe *), Bash(awk *), Bash(sed *), Bash(mv *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Read, Write, Edit, Glob, Grep, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git status *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Bash(awk *), Bash(sed *), Bash(mv *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Read, Write, Edit, Glob, Grep, AskUserQuestion
 ---
 
 ## Overview

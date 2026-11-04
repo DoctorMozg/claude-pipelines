@@ -2,7 +2,7 @@
 name: debug
 description: 'Fixes a bug test-first, or tests a hypothesis without fixing. Use when the user reports a bug, error, failing test or stack trace, or says "debug X" or "is X actually doing Y". Not for new features (use build) or getting a suite green (use polish).'
 argument-hint: '[scope:branch|global|working] [certainty:low|high] <bug report or hypothesis — error message, stack trace, failing test, description, GitHub issue URL, or behavioral question>'
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git log *), Bash(gh issue view *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Bug Investigation Pipeline

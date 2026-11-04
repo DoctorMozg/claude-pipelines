@@ -2,7 +2,7 @@
 name: verify
 description: 'Runs tests, linters and type checks and reports findings without editing code. Use when the user says "verify", "run tests", "lint the code" or "validate", or wants a quality gate. Not for fixing failures it finds (use polish, or debug for one bug).'
 argument-hint: '[scope:branch|global|working] [optional focus — e.g. "src/auth/", "test_payments.py", "check examples work"]'
-allowed-tools: Agent, Bash, Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Code Verification Pipeline

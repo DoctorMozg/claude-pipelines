@@ -127,22 +127,22 @@ mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · <skill> · <task_name> · gat
   "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"<PROJECT_ROOT>/.mz/journal.md"
 ```
 
-A gate entry that copies the artifact streams the file through perl, which replaces each `<private>` span with `[redacted]`, including spans that cross lines, and indents the text under its bullet. The artifact never passes through `printf`, so `%` and `\` in it are safe:
+A gate entry that copies the artifact writes the header with `printf`, then appends the file with the plugin's `shared/journal-artifact.sh`, which replaces each `<private>` span with `[redacted]`, including spans that cross lines, and indents the text under its bullet. The artifact never passes through `printf`, so `%` and `\` in it are safe. The script runs as its own Bash call, because a skill grants it as `Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *)` and a grant must match every subcommand of a chained command:
 
 ```bash
-mkdir -p "<PROJECT_ROOT>/.mz" && {
-  printf '### %s · <skill> · <task_name> · gate\n\n- phase: <n> (<name>)\n- gate: <label>\n- outcome: <outcome>\n- artifact: <relative path>, verbatim:\n\n' \
-    "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  perl -0777 -pe 's|<private>.*?</private>|[redacted]|gs; s/^(?=.)/  /gm' "<PROJECT_ROOT>/<relative path>"
-  printf '\n'
-} >>"<PROJECT_ROOT>/.mz/journal.md"
+mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · <skill> · <task_name> · gate\n\n- phase: <n> (<name>)\n- gate: <label>\n- outcome: <outcome>\n- artifact: <relative path>, verbatim:\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"<PROJECT_ROOT>/.mz/journal.md"
+```
+
+```bash
+<PLUGIN_ROOT>/shared/journal-artifact.sh "<PROJECT_ROOT>/<relative path>" "<PROJECT_ROOT>/.mz/journal.md"
 ```
 
 The placeholders are written into the `printf` format, where `printf` silently turns `%` and `\` sequences into other text. A free-text value that may contain them, such as an `input` entry's value, goes in a `%s` argument instead.
 
 When a skill's append creates the journal, the file has no `# Interaction Journal` header, because mz-memory writes that header only into a journal it creates itself (`ensure_journal_file` in `plugins/mz-memory/scripts/lib/common.sh`). Nothing reads the header, so it is optional.
 
-Apart from that perl step, a direct append isn't redacted; §8 says what to do about other sensitive values. Don't call mz-memory's scripts (§7).
+Apart from that script, a direct append isn't redacted; §8 says what to do about other sensitive values. Don't call mz-memory's scripts (§7).
 
 ## 5. What to Record
 
@@ -198,7 +198,7 @@ A skill that records a substantial decision should write it under `## Decisions`
 The journal stores interactions verbatim, including artifacts that can hold sensitive content such as outreach drafts, tokens or customer data.
 
 - **mz-memory redacts what it writes.** `journal_append` replaces every `<private>…</private>` span with `[redacted]` and keeps the surrounding whitespace, so code indentation survives (`redact_private` in `plugins/mz-memory/scripts/lib/common.sh`). The hook goes through it. Without perl, the `sed` fallback misses a span that contains `<` or crosses a line.
-- **A skill's own append isn't redacted.** A direct `>>` bypasses `journal_append`, so a `<private>` tag would be stored as is, with the secret inside it (observed). A skill writes `[redacted]` in place of each sensitive value itself, and replaces each `<private>…</private>` span with `[redacted]` before appending, for example when it copies an artifact verbatim. The second recipe in §4 does this with the perl expression mz-memory uses, which also handles spans that cross lines.
+- **A skill's own append isn't redacted.** A direct `>>` bypasses `journal_append`, so a `<private>` tag would be stored as is, with the secret inside it (observed). A skill writes `[redacted]` in place of each sensitive value itself, and replaces each `<private>…</private>` span with `[redacted]` before appending, for example when it copies an artifact verbatim. The second recipe in §4 does this through `shared/journal-artifact.sh`, which runs the perl expression mz-memory uses and so also handles spans that cross lines.
 - **Codex.** The remapped hook journals every user prompt, and only `<private>` spans are redacted.
 - **Git.** The journal stays out of git only when the project ignores `.mz/` (§2).
 

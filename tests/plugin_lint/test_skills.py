@@ -67,21 +67,14 @@ SKILL_MAX_LINES = 500
 PHASE_MAX_LINES = 400
 # Every installed skill's description shares one listing budget; past it, whole descriptions drop.
 DESCRIPTION_MAX_CHARS = 250
-# Interpreters and exec wrappers run whatever follows them: a bare-program grant is bare Bash.
+# Shells, interpreters, runners and curl run whatever follows them, flags included, so the
+# directory holds `Bash(perl -0777 -pe *)` like a bare Bash; a plugin script's path is fine.
 BASH_EQUIVALENT_GRANT = re.compile(
-    r"^Bash\((?:\*|(?:bash|sh|zsh|python3?|node|perl|env|eval|exec|xargs|sudo|npx|uv run)"
-    r"(?: \*|:\*)?)\)$"
+    r"^Bash\((?:\*|(?:bash|sh|zsh|python3?|node|perl|ruby|env|eval|exec|xargs|sudo"
+    r"|npx|npm|pnpm|yarn|pip3?|uvx|uv run|curl|wget)(?: -\S+)*(?: \*|:\*)?)\)$"
 )
 # `Bash(ls*)` also matches `lsof`; ` *` and `:*` are the word-boundary forms.
 UNBOUNDED_TRAILING_STAR = re.compile(r"[^ :]\*\)$")
-# Orchestrators running commands nobody can list in advance keep bare Bash (user, 2026-11-02).
-OPEN_ENDED_BASH_SKILLS = {
-    "debug": "reproduces failures with the project's test command, trigger scripts and git bisect",
-    "polish": "runs the user's criterion checks and the project's formatters itself",
-    "optimize": "runs the user's measure command and a profiler it picks",
-    "verify": "runs the type checker, example scripts and README code blocks",
-    "clean-leftovers": "runs the detected linter, often through npx or uv run",
-}
 # A dispatch note that overrides the agent's pin must say why inline, or it reads as drift.
 MODEL_NOTE = re.compile(r"\bmodel:\s*(?:\*\*)?(?P<model>haiku|sonnet|opus)\b(?:\*\*)?(?P<next>.?)")
 BACKTICKED_NAME = re.compile(r"`(?P<name>[a-z0-9]+(?:-[a-z0-9]+)+)`")
@@ -187,24 +180,12 @@ class TestFrontmatter:
     def test_bash_grants_are_scoped(self, skills: DocSet) -> None:
         violations: list[str] = []
         for parsed in skills.parsed:
-            skill = parsed.doc.path.parent.name
             for entry in split_tool_list(parsed.frontmatter.get("allowed-tools")):
-                if entry == "Bash" and skill in OPEN_ENDED_BASH_SKILLS:
-                    continue
                 if entry == "Bash" or BASH_EQUIVALENT_GRANT.match(entry):
                     violations.append(f"{parsed.doc.relative}: {entry!r} grants any command")
                 elif entry.startswith("Bash(") and UNBOUNDED_TRAILING_STAR.search(entry):
                     violations.append(f"{parsed.doc.relative}: {entry!r} needs a space before *")
         assert_no_violations(violations)
-
-    def test_open_ended_bash_exemptions_are_current(self, skills: DocSet) -> None:
-        bare_bash = {
-            parsed.doc.path.parent.name
-            for parsed in skills.parsed
-            if "Bash" in split_tool_list(parsed.frontmatter.get("allowed-tools"))
-        }
-        stale = sorted(set(OPEN_ENDED_BASH_SKILLS) - bare_bash)
-        assert not stale, f"exempt skills that no longer grant bare Bash: {stale}"
 
 
 class TestStructure:

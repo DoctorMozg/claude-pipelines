@@ -1,7 +1,7 @@
 ---
 name: design-document
 description: 'Writes a UI/UX design document with wireframes and a WCAG contrast report. Use when the user wants an interface designed as a spec ("design a UI for X", "create a design document", "design spec", "UX spec"). Not for building it in code (use build).'
-allowed-tools: Agent(design-researcher), Agent(design-document-writer), Agent(ui-designer), Agent(ux-designer), Agent(art-designer), Agent(accessibility-specialist), Agent(design-critique-synthesizer), Agent(design-revision-writer), AskUserQuestion, Read, Write, Grep, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(test *), Bash(perl -0777 -pe *), WebSearch
+allowed-tools: Agent(design-researcher), Agent(design-document-writer), Agent(ui-designer), Agent(ux-designer), Agent(art-designer), Agent(accessibility-specialist), Agent(design-critique-synthesizer), Agent(design-revision-writer), AskUserQuestion, Read, Write, Grep, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(test *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), WebSearch
 ---
 
 # Design Document Pipeline

@@ -96,17 +96,19 @@ The entry is a header line, a blank line, then `- key: value` bullets, one key p
 - `phase`, `gate` (the label) and `outcome`. The outcome is `approve`, `reject`, `feedback`, `no answer` or `auto-approved (unattended)`.
 - `artifact`: the path relative to the project root, followed by the artifact verbatim. In unattended mode the entry carries the path only and adds `authority: MZ_DEV_PIPE_AUTO_APPROVE=1`.
 
-A direct `>>` append bypasses the journal's redactor. The first recipe streams the artifact through perl, which replaces each `<private>…</private>` span with `[redacted]`. Anywhere else, write a sensitive value as `[redacted]` yourself. Placeholders go into the `printf` format, which turns `%` and `\` sequences into other text, so pass a free-text value as a `%s` argument instead.
+A direct `>>` append bypasses the journal's redactor. In the first recipe, `<PLUGIN_ROOT>/shared/journal-artifact.sh` appends the artifact: it replaces each `<private>…</private>` span with `[redacted]`, spans across lines included, and indents the text under its bullet. Run it as a command of its own, not chained with `&&` or `;`, so the skill's grant `Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *)` matches it. Anywhere else, write a sensitive value as `[redacted]` yourself. Placeholders go into the `printf` format, which turns `%` and `\` sequences into other text, so pass a free-text value as a `%s` argument instead.
 
 Gate with the artifact:
 
 ```bash
-mkdir -p "<PROJECT_ROOT>/.mz" && {
-  printf '### %s · <skill> · <task_name> · gate\n\n- phase: <n> (<name>)\n- gate: <label>\n- outcome: <outcome>\n- artifact: <relative path>, verbatim:\n\n' \
-    "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  perl -0777 -pe 's|<private>.*?</private>|[redacted]|gs; s/^(?=.)/  /gm' "<PROJECT_ROOT>/<relative path>"
-  printf '\n'
-} >>"<PROJECT_ROOT>/.mz/journal.md"
+mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · <skill> · <task_name> · gate\n\n- phase: <n> (<name>)\n- gate: <label>\n- outcome: <outcome>\n- artifact: <relative path>, verbatim:\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"<PROJECT_ROOT>/.mz/journal.md"
+```
+
+Then, as its own Bash call:
+
+```bash
+<PLUGIN_ROOT>/shared/journal-artifact.sh "<PROJECT_ROOT>/<relative path>" "<PROJECT_ROOT>/.mz/journal.md"
 ```
 
 Gate skipped in unattended mode:

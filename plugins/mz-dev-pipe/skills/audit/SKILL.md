@@ -2,7 +2,7 @@
 name: audit
 description: 'Audits code for bugs, security and quality issues, writing a report-only findings file. Use when the user wants code checked for problems and reported without changes ("audit", "find bugs", "security review"). Not for one known bug (use debug).'
 argument-hint: '[depth:standard|deep] [scope:branch|global|working] [optional focus]'
-allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git log *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(sort *), Bash(uniq *), Bash(mv *), Bash(printf *), Bash(perl -0777 -pe *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git log *), Bash(git check-ignore *), Bash(mkdir *), Bash(date *), Bash(sort *), Bash(uniq *), Bash(mv *), Bash(printf *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Autonomous Problem-Locator Pipeline (report-only)

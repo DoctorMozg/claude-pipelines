@@ -2,7 +2,7 @@
 name: optimize
 description: 'Makes code, containers, builds or LLM hyperparameters faster, smaller or cheaper, keeping only changes a benchmark proves. Use when the user says "optimize", "make it faster" or "speed up the build". Not for tidying code (use cleanup).'
 argument-hint: '[scope:branch|global|working] [type:code|container|llm_hyperparams|build_pipeline|system] <target + metric + goal>'
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git worktree *), Bash(git apply *), Bash(git branch *), Bash(git for-each-ref *), Bash(git update-ref *), Bash(git gc *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Performance Optimization Pipeline

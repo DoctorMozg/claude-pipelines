@@ -27,7 +27,7 @@ packages = ["src/mozg_pipelines"]
 addopts = "-ra --strict-config --strict-markers"
 # The repo root is on the path because the e2e harness modules import each other as tests.e2e.
 pythonpath = ["src", "."]
-testpaths = ["tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_creative", "tests/mz_dev_git", "tests/mz_research_pipe", "tests/mz_biz_outreach", "tests/mz_job_outreach", "tests/plugin_lint", "tests/e2e", "tests/eval_tools"]
+testpaths = ["tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_creative", "tests/mz_base", "tests/mz_dev_git", "tests/mz_research_pipe", "tests/mz_biz_outreach", "tests/mz_job_outreach", "tests/plugin_lint", "tests/e2e", "tests/eval_tools"]
 
 [tool.ruff]
 line-length = 100
@@ -42,4 +42,4 @@ python_version = "3.12"
 strict = true
 explicit_package_bases = true
 mypy_path = "src"
-files = ["src", "tests/conftest.py", "tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_dev_git", "tests/mz_research_pipe", "tests/mz_biz_outreach", "tests/mz_job_outreach", "tests/plugin_lint", "tests/e2e", "tests/eval_tools"]
+files = ["src", "tests/conftest.py", "tests/codex_migration", "tests/mz_memory", "tests/mz_knowledge", "tests/mz_dev_pipe", "tests/mz_base", "tests/mz_dev_git", "tests/mz_research_pipe", "tests/mz_biz_outreach", "tests/mz_job_outreach", "tests/plugin_lint", "tests/e2e", "tests/eval_tools"]

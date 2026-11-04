@@ -2,7 +2,7 @@
 name: clean-leftovers
 description: 'Removes AI-run residue, code included: signatures, phase markers, stubs. Use when the user says "clean leftovers", "remove AI markers" or "clean up after the pipeline". Not for comment-only tidying (use decomment) or refactors (use cleanup).'
 argument-hint: '[scope:branch|global|working] [path or glob]'
-allowed-tools: Agent, Bash, Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(grep *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Pipeline Leftover Cleanup

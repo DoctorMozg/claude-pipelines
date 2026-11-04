@@ -177,16 +177,15 @@ options: **Approve** — <next phase> · **Reject** — <abort outcome>.
 - `Status` stays `running` while the gate waits. "No answer" covers a denied or unavailable AskUserQuestion and a result that carries the away signal, whatever option it names.
 - `header` is at most 12 characters, and a plain gate offers exactly Approve and Reject, with no Feedback option.
 - A variant gate presents each extra action as `**<Name>** — <one-sentence summary>`, with 2-4 options per question. Beyond four actions, keep the four most common as options and list the rest in the Surface 1 footer as typed replies, or ask in two calls: first the category, then the action.
-- After the gate resolves, the skill should append a `gate` entry to `<PROJECT_ROOT>/.mz/journal.md`: skill, task, phase, gate label, outcome and the artifact. A direct append isn't redacted, so the artifact goes through perl, which replaces each `<private>` span with `[redacted]` and indents the text under its bullet. `<path>` is relative to `PROJECT_ROOT`, or absolute outside it. For several artifacts, repeat the three artifact lines once per file.
+- After the gate resolves, the skill should append a `gate` entry to `<PROJECT_ROOT>/.mz/journal.md`: skill, task, phase, gate label, outcome and the artifact. A direct append isn't redacted, so the artifact goes through the plugin's `shared/journal-artifact.sh`, which replaces each `<private>` span with `[redacted]` and indents the text under its bullet. The skill grants it as `Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *)` and runs it as its own Bash call, since a grant must match every part of a chained command. `<path>` is relative to `PROJECT_ROOT`, or absolute outside it. For several artifacts, repeat the artifact line and the script call once per file.
 
 ```bash
-mkdir -p "<PROJECT_ROOT>/.mz" && {
-  printf '### %s · <skill> · <task_name> · gate\n\n- phase: <phase>\n- gate: <label>\n- outcome: <approve | reject | no answer>\n' \
-    "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  printf '%s\n\n' "- artifact: <path>, verbatim:"
-  perl -0777 -pe 's|<private>.*?</private>|[redacted]|gs; s/^(?=.)/  /gm' "<absolute path>"
-  printf '\n'
-} >>"<PROJECT_ROOT>/.mz/journal.md"
+mkdir -p "<PROJECT_ROOT>/.mz" && printf '### %s · <skill> · <task_name> · gate\n\n- phase: <phase>\n- gate: <label>\n- outcome: <approve | reject | no answer>\n- artifact: %s, verbatim:\n\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "<path>" >>"<PROJECT_ROOT>/.mz/journal.md"
+```
+
+```bash
+<PLUGIN_ROOT>/shared/journal-artifact.sh "<absolute path>" "<PROJECT_ROOT>/.mz/journal.md"
 ```
 
 ## Supporting rules
