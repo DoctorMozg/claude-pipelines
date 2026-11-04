@@ -94,9 +94,7 @@ Run each check and keep its output for the checklist:
 
 - `pre-commit run --files <every file in TARGET_DIR>` from `<REPO_ROOT>`, which runs the repo's `skill-description-shape`, `skill-reference-path` and `no-rule-citations` hooks along with mdformat.
 
-- `make test` from `<REPO_ROOT>`. Its `tests/plugin_lint/` suite checks every skill's frontmatter, structure, sizes, paths, dispatched agents and routing-table row, the draft included. It also parses the frontmatter with a strict YAML loader that rejects duplicate keys, and fails a `description` plus `when_to_use` over 250 characters. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this run.
-
-- Line and character counts of every markdown file in the skill: `find "<TARGET_DIR>" -name '*.md' -exec wc -lm {} +`.
+- `make test` from `<REPO_ROOT>`. Its `tests/plugin_lint/` suite checks every skill's frontmatter, structure, sizes, paths, dispatched agents and routing-table row, the draft included. The size checks fail SKILL.md at 20,000 characters or 500 lines, a phase file at 400 lines, and a reference file over 100 lines that doesn't open with a table of contents. It also parses the frontmatter with a strict YAML loader that rejects duplicate keys, and fails a `description` plus `when_to_use` over 250 characters. Claude Code accepts some YAML that the repo's Codex renderer rejects, so validate doesn't replace this run.
 
 - Every path in SKILL.md and the phase files resolves inside the plugin, including through its `shared` link.
 
