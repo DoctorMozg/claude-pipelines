@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.54.0"
+    "version": "0.54.1"
   },
   "name": "mozg-pipelines",
   "owner": {
