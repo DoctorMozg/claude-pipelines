@@ -53,8 +53,8 @@ _emit_lessons_file() {
   printf '%s\n' "$MZ_INBOX_END"
 }
 
-# next_lesson_number <prefix> <file>... — one past the highest <prefix>-NNNN id in the files
-# that exist. The archive is passed too, so an id is never reused after its line moves there.
+# next_lesson_number <prefix> <files> — one past the highest <prefix>-NNNN id in those files, missing
+# ones skipped; the archive is passed too, so an id is never reused after its line moves there.
 next_lesson_number() {
   local prefix="$1"
   shift
