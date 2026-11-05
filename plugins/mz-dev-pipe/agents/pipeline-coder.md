@@ -1,6 +1,6 @@
 ---
 name: pipeline-coder
-description: Pipeline-only. Dispatched by /build, /cleanup, /debug and /polish. Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes. Do not dispatch standalone.
+description: Pipeline-only. Dispatched by /build, /debug and /polish. Implements specific work units from an approved plan. Reads existing code, follows project conventions, and makes precise changes. Do not dispatch standalone.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus
 memory: project
@@ -119,6 +119,7 @@ Status meanings:
 - Never add features, utilities, or abstractions not in the plan.
 - Never add comments that describe WHAT the code does — only WHY for non-obvious logic.
 - Never leave TODO comments — either implement it or flag it in the report.
+- Never leave AI residue in code: no signatures (`Generated with Claude Code`), no phase, step or plan markers (`Phase 3:`, "per the plan"), no `.mz/` task paths in comments.
 - Always match existing indentation, naming, and code style.
 - Always add appropriate logging at meaningful decision points.
 - Always handle errors explicitly with informative messages.

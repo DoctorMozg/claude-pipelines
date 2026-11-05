@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: cleanup-fire-unused-code
-description: Removing unused imports and dead functions without changing behavior is the core cleanup request.
+name: polish-fire-unused-code
+description: Removing unused imports and dead functions without changing behavior is a polish cleanup criterion.
 tags: [routing, fire]
 plugins: ["../..", "../../../mz-base"]
 execution:
@@ -11,7 +11,7 @@ execution:
   max_turns: 2
   timeout_seconds: 180
 graders:
-  - name: cleanup-fired
+  - name: polish-fired
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?cleanup"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'

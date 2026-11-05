@@ -1,6 +1,5 @@
 import re
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -10,17 +9,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PLUGINS_DIR = REPO_ROOT / "plugins"
 DEV_PIPE = PLUGINS_DIR / "mz-dev-pipe"
 SKILLS_DIR = DEV_PIPE / "skills"
-DECOMMENT_PHASES = SKILLS_DIR / "decomment" / "phases"
 TOOLING_DETECTOR = "pipeline-tooling-detector"
 
 AGENT_NAME = r"[a-z0-9]+(?:-[a-z0-9]+)+"
 _FRONTMATTER = re.compile(r"\A---\n(?P<yaml>.*?)\n---\n", re.DOTALL)
-_YAML_FENCE = re.compile(r"^```yaml\n(?P<body>.*?)^```$", re.DOTALL | re.MULTILINE)
-_TOP_KEY = re.compile(r"^(?P<key>[a-z_]+):")
-_NESTED_KEY = re.compile(r"^\s+(?:-\s+)?(?P<key>[a-z_]+):")
 _BACKTICKED_AGENT = re.compile(rf"`(?P<name>{AGENT_NAME})`")
-# Prose where consolidate names a proposal key: "from proposal `file_path`", "a relative `x` field".
-_PROSE_KEY = re.compile(r"proposal `(?P<after>[a-z_]+):?`|`(?P<before>[a-z_]+):?` fields?\b")
 # An agent, by backticked name or as "the <role>", as the subject of "writes".
 _WRITE_CLAIM = re.compile(
     rf"(?:`(?P<name>{AGENT_NAME})`"
@@ -29,34 +22,6 @@ _WRITE_CLAIM = re.compile(
 )
 _MISSING_INPUT = re.compile(r"missing `(?P<key>[a-z_]+)`")
 _FENCE_OPEN = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})")
-
-
-@dataclass(frozen=True)
-class ProposalSchema:
-    keys: frozenset[str]
-    edit_keys: frozenset[str]
-
-
-def proposal_schema(path: Path) -> ProposalSchema:
-    """Top-level and per-edit keys of the one yaml block in `path` that carries `schema_version`."""
-    text = path.read_text(encoding="utf-8")
-    blocks = [m["body"] for m in _YAML_FENCE.finditer(text) if "schema_version:" in m["body"]]
-    assert len(blocks) == 1, f"{path.name}: expected one proposal schema block, found {len(blocks)}"
-    lines = blocks[0].splitlines()
-    # Producers wrap the mapping in --- fences, and the blocked stub puts a STATUS line after them.
-    if lines[0] == "---":
-        lines = lines[1 : lines.index("---", 1)]
-    # Read keys line by line: template placeholders such as "## Blocker" are not valid YAML.
-    keys: set[str] = set()
-    edit_keys: set[str] = set()
-    section = ""
-    for line in lines:
-        if top := _TOP_KEY.match(line):
-            section = top["key"]
-            keys.add(section)
-        elif section == "edits" and (nested := _NESTED_KEY.match(line)):
-            edit_keys.add(nested["key"])
-    return ProposalSchema(keys=frozenset(keys), edit_keys=frozenset(edit_keys))
 
 
 def _can_write(frontmatter: Mapping[str, object]) -> bool:
@@ -122,53 +87,10 @@ def _relative(path: Path) -> str:
 
 
 @pytest.fixture(scope="module")
-def consolidate_schema() -> ProposalSchema:
-    return proposal_schema(DECOMMENT_PHASES / "consolidate.md")
-
-
-@pytest.fixture(scope="module")
-def proposer_schema() -> ProposalSchema:
-    return proposal_schema(DEV_PIPE / "agents" / "pipeline-decomment-proposer.md")
-
-
-@pytest.fixture(scope="module")
 def can_write() -> dict[str, bool]:
     access = load_write_access()
     assert not all(access.values()), "no Write-less agent found; the frontmatter parse is broken"
     return access
-
-
-class TestDecommentProposalSchema:
-    @pytest.mark.parametrize(
-        "producer",
-        [DEV_PIPE / "agents" / "pipeline-decomment-proposer.md", DECOMMENT_PHASES / "dispatch.md"],
-        ids=["proposer-output", "dispatch-blocked-stub"],
-    )
-    def test_every_proposal_producer_writes_the_keys_consolidate_requires(
-        self, consolidate_schema: ProposalSchema, producer: Path
-    ) -> None:
-        missing = consolidate_schema.keys - proposal_schema(producer).keys
-
-        assert not missing, f"{_relative(producer)} never writes {sorted(missing)}"
-
-    def test_proposer_edits_carry_every_edit_key_consolidate_requires(
-        self, consolidate_schema: ProposalSchema, proposer_schema: ProposalSchema
-    ) -> None:
-        assert consolidate_schema.edit_keys, "consolidate's schema block lists no edit keys"
-
-        missing = consolidate_schema.edit_keys - proposer_schema.edit_keys
-
-        assert not missing, f"proposer edits lack {sorted(missing)}"
-
-    def test_consolidate_prose_names_only_keys_the_proposer_writes(
-        self, proposer_schema: ProposalSchema
-    ) -> None:
-        text = (DECOMMENT_PHASES / "consolidate.md").read_text(encoding="utf-8")
-        named = {m["after"] or m["before"] for m in _PROSE_KEY.finditer(text)}
-
-        unknown = named - proposer_schema.keys - proposer_schema.edit_keys
-
-        assert not unknown, f"consolidate.md reads proposal keys nobody writes: {sorted(unknown)}"
 
 
 class TestWriteClaimDetector:

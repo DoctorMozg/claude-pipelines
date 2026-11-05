@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: clean-leftovers-fire-branch-markers
-description: Phase markers, generation signatures and half-built stubs left by an AI run across a branch are exactly what clean-leftovers removes.
+name: polish-fire-branch-markers
+description: Phase markers, generation signatures and half-built stubs left by an AI run across a branch are a polish residue criterion.
 tags: [routing, fire]
 plugins: ["../..", "../../../mz-base", "../../../mz-creative"]
 execution:
@@ -13,7 +13,7 @@ execution:
   max_turns: 2
   timeout_seconds: 180
 graders:
-  - name: clean-leftovers-fired
+  - name: polish-fired
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?clean-leftovers"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'

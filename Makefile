@@ -24,7 +24,7 @@ help:
 	@echo "  vendor-shared     Copy plugins/mz-base/shared into every other plugin that has a shared/ folder"
 	@echo "  gh-smoke          Run the mz-dev-git GitHub collectors live (needs gh auth, spends tokens)"
 	@echo "  hooks-smoke       Run the memory, tooling and vault hooks in live headless sessions (spends tokens)"
-	@echo "  gate-smoke        Answer memory-note and decomment gates headlessly, check the journal (spends tokens)"
+	@echo "  gate-smoke        Answer memory-note and polish gates headlessly, check the journal (spends tokens)"
 	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
 	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads plugins/<n>/evals/flags; spends tokens)"
 	@echo "  eval-mutants      Break plugin code in a HEAD snapshot and check the evals catch it"

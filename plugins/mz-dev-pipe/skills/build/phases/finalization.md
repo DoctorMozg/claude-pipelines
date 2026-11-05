@@ -112,6 +112,7 @@ Work through your full refactor checklist:
 4. Code duplication (within the modified files only)
 5. Unnecessary complexity
 6. Consistency
+7. AI residue (signatures, phase and plan markers, comments and docstrings that restate the code, banners, uncalled stubs), keeping license headers, tool directives and WHY comments
 
 Also read <PROJECT_ROOT>/.mz/task/<task_name>/over_engineering_findings.md if it exists (from the Phase 9 over-engineering lens). Apply the behavior-preserving simplifications it lists — replacing hand-rolled logic with a stdlib/native primitive, inlining a one-implementation abstraction — but only where the full suite stays GREEN and the change is not part of the plan's required scope. Skip any finding you cannot apply without changing behavior; leave it for the summary. Take findings from its table only: its `## Low confidence` lines go to the summary as written and are never applied.
 

@@ -1,6 +1,6 @@
 ---
 name: optimize
-description: 'Makes code, containers, builds or LLM hyperparameters faster, smaller or cheaper, keeping only changes a benchmark proves. Use when the user says "optimize", "make it faster" or "speed up the build". Not for tidying code (use cleanup).'
+description: 'Makes code, containers, builds or LLM hyperparameters faster, smaller or cheaper, keeping only changes a benchmark proves. Use when the user says "optimize", "make it faster" or "speed up the build". Not for tidying code (use polish).'
 argument-hint: '[scope:branch|global|working] [type:code|container|llm_hyperparams|build_pipeline|system] <target + metric + goal>'
 allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git worktree *), Bash(git apply *), Bash(git branch *), Bash(git for-each-ref *), Bash(git update-ref *), Bash(git gc *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
@@ -24,7 +24,7 @@ Making source code, container images and services, LLM hyperparameters, build pi
 
 ### When NOT to use
 
-- Removing dead code, unused imports, or reducing cyclomatic complexity — use `cleanup`. Cleanup makes code tidier; it does not measure speed.
+- Removing dead code, unused imports, or reducing cyclomatic complexity — use `polish` with a cleanup criterion. It makes code tidier; it does not measure speed.
 - A correctness bug or a failing test — use `debug`.
 - Making existing code meet quality criteria or pass tests — use `polish`.
 - There is no measurable metric and none can be supplied — the skill hard-gates on a measurable goal and cannot run without one.
@@ -103,7 +103,7 @@ The loop is Phase 2 → 3 → 3.5 → 4 → (4.5 / 4.7 as triggered) → 5 → 6
 1. **Resolve scope** — per `<PLUGIN_ROOT>/shared/scope-parameter.md`; keep the resolved file list for the state step below. No `scope:` → all project files / artifacts eligible.
 1. **Task name** — `<YYYY_MM_DD>_optimize_<slug>`, where `<slug>` is a snake_case summary of the target (max 20 chars); on same-day collision append `_v2`, `_v3`.
 1. **Unattended check** — run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once. The resume check below uses the result, and the state write records it as `unattended: true` or `unattended: false`.
-1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. A pre-existing `state.md` **without** a `skill_variant: methodology` key belongs to the renamed `cleanup` skill's task history, not this skill — do not resume into it; pick a fresh `_vN` name.
+1. **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. A pre-existing `state.md` **without** a `skill_variant: methodology` key belongs to the task history of the old code-cleanup skill that once had this name, not this skill — do not resume into it; pick a fresh `_vN` name.
 1. **Task dir & state** — create `<PROJECT_ROOT>/.mz/task/<task_name>/`, save the resolved file list to `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`, and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md`: first line must be `schema_version: 2`, then `Status`, `Phase`, `PhaseName`, `Started`, `Iteration` (0), `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []`, plus skill-specific keys `skill_variant: methodology`, `unattended`, `Target`, `Metric`, `Goal`, `TargetType`, and an empty `## History` section (the persistent record of every hypothesis tried and its measured outcome — it survives context compaction and stops a failed transform from being retried).
 1. **Task tracking** — TaskCreate per pipeline phase.
 

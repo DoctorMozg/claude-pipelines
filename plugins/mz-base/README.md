@@ -34,13 +34,13 @@ The `/init-rules` skill moved to the separate mz-rules plugin.
 
 You can invoke `code-reviewer`, `technical-writer` and `pipeline-web-researcher` directly. `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering` live here because skills in several plugins dispatch them.
 
-| Agent                          | Purpose                                                                                                                                                                                                                 |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **code-reviewer**              | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability                                                                                                                        |
-| **technical-writer**           | Creates and improves technical documentation grounded in actual code                                                                                                                                                    |
-| **pipeline-researcher**        | Pipeline-only. Codebase exploration and domain research for planning and review pipelines such as `/build`, `/debug`, `/audit` and the `branch-reviewer` agent                                                          |
-| **pipeline-web-researcher**    | Sourced web research on a technical question, such as a version change or a tool comparison. Also dispatched by `/deep-research`, `/combine`, `/ask`, `/clean-leftovers`, `/naturalize` and the branch and PR reviewers |
-| **code-lens-over-engineering** | Pipeline-only. Flags code that should not exist or should be smaller. Dispatched by branch-reviewer and the build, polish, cleanup and optimize skills                                                                  |
+| Agent                          | Purpose                                                                                                                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **code-reviewer**              | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability                                                                                                    |
+| **technical-writer**           | Creates and improves technical documentation grounded in actual code                                                                                                                                |
+| **pipeline-researcher**        | Pipeline-only. Codebase exploration and domain research for planning and review pipelines such as `/build`, `/debug`, `/audit` and the `branch-reviewer` agent                                      |
+| **pipeline-web-researcher**    | Sourced web research on a technical question, such as a version change or a tool comparison. Also dispatched by `/deep-research`, `/combine`, `/ask`, `/naturalize` and the branch and PR reviewers |
+| **code-lens-over-engineering** | Pipeline-only. Flags code that should not exist or should be smaller. Dispatched by branch-reviewer and the build, polish, cleanup and optimize skills                                              |
 
 For local branch review (`/review-branch`) and GitHub PR workflows (`/github-review-pr`, `/github-scan-prs`) plus their lens agents and PR collectors, see [`mz-dev-git`](https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-dev-git).
 

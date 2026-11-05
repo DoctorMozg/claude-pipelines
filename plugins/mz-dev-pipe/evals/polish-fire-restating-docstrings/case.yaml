@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: decomment-fire-restating-docstrings
-description: Removing AI-sounding docstrings and banner comments from a branch while leaving the code alone is the comment-only job decomment does.
+name: polish-fire-restating-docstrings
+description: Removing AI-sounding docstrings and banner comments from a branch is a polish residue criterion.
 tags: [routing, fire]
 plugins: ["../..", "../../../mz-base", "../../../mz-creative"]
 execution:
@@ -12,7 +12,7 @@ execution:
   max_turns: 2
   timeout_seconds: 180
 graders:
-  - name: decomment-fired
+  - name: polish-fired
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?decomment"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'

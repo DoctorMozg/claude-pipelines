@@ -24,8 +24,8 @@ A report-only hunt for problems across multiple files and concern categories, as
 
 - A single known bug — use `debug`.
 - Building new functionality — use `build`.
-- Map-reduce cleanup with no bug hunt — use `cleanup`.
-- Only running the existing tests, lint and type checks — use `verify`.
+- Behavior-preserving cleanup with no bug hunt — use `polish` with a cleanup criterion.
+- Only running the existing tests, lint and type checks — run them directly; no pipeline is needed.
 - You want the findings fixed automatically — this skill does not edit code; pass the summary to `build`, `debug`, or `polish` afterwards.
 
 ## Input

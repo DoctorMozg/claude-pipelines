@@ -1,5 +1,5 @@
 """Live smoke test for approval gates: a scripted MCP permission host answers AskUserQuestion.
-Runs Approve, Reject, feedback and no answer through memory-note and decomment; stays out of CI.
+Runs Approve, Reject, feedback and no answer through memory-note and polish; stays out of CI.
 The host approves every other permission prompt, as the attending user would, and lists them."""
 
 import argparse
@@ -39,7 +39,7 @@ FIXTURE_LIB = Path("mz-memory/evals/_lib/fixture.sh")
 MEMORY = Path(".mz/memory/MEMORY.md")
 JOURNAL = Path(".mz/journal.md")
 MEMORY_NOTE_SKILL = Path("mz-memory/skills/memory-note/SKILL.md")
-DECOMMENT_SKILL = Path("mz-dev-pipe/skills/decomment/SKILL.md")
+POLISH_SKILL = Path("mz-dev-pipe/skills/polish/SKILL.md")
 MEMORY_PLUGINS = ("mz-memory",)
 # mz-dev-pipe depends on mz-base, and mz-memory brings the journal hook along.
 DEV_PIPE_PLUGINS = ("mz-memory", "mz-dev-pipe", "mz-base")
@@ -53,8 +53,9 @@ init_project
 write_memory "" ""
 """
 
-# Each removable comment meets one of the proposer's delete rules exactly: a robotic section label,
-# or a comment whose every content word is in the next code line. The WHY comment is a control.
+# Each removable comment meets one of the optimizer's AI-residue rules exactly: a robotic
+# section label, or a comment whose every content word is in the next code line. The WHY comment
+# is a control.
 WHY_COMMENT = "# Totals stay ints because the billing API rejects floats."
 LABEL_COMMENT = "# Helpers"
 FOR_COMMENT = "# For each item in items"
@@ -70,14 +71,27 @@ def total(items: list[int]) -> int:
     {RETURN_COMMENT}
     return result
 """
-# decomment scans the branch diff by default, so calc.py lands on a feature branch.
-DECOMMENT_SEED = f"""set -euo pipefail
+# polish runs the project's tests before its gate, so the project names a test command that
+# needs nothing installed; without one, polish would ask for it, a question the script can't answer.
+TEST_CALC = """import unittest
+
+from calc import total
+
+
+class TotalTest(unittest.TestCase):
+    def test_sums_items(self) -> None:
+        self.assertEqual(total([1, 2, 3]), 6)
+"""
+POLISH_SEED = f"""set -euo pipefail
 git init -q -b main
 git -c user.name=smoke -c user.email=smoke@example.invalid commit -q --allow-empty -m init
 git checkout -q -b feature
 cat > calc.py <<'PY'
 {CALC}PY
-git add calc.py
+cat > test_calc.py <<'PY'
+{TEST_CALC}PY
+printf '# calc\\n\\nTest command: `python3 -m unittest`. There is no linter.\\n' > CLAUDE.md
+git add calc.py test_calc.py CLAUDE.md
 git -c user.name=smoke -c user.email=smoke@example.invalid commit -q -m calc
 """
 
@@ -107,8 +121,8 @@ class GateRun:
         file = self.project / path
         return file.read_text(encoding="utf-8") if file.is_file() else ""
 
-    def decomment_state(self) -> str:
-        states = sorted(self.project.glob(".mz/task/*_decomment_*/state.md"))
+    def polish_state(self) -> str:
+        states = sorted(self.project.glob(".mz/task/*_polish_*/state.md"))
         return states[-1].read_text(encoding="utf-8") if states else ""
 
     def journal_answers(self) -> list[object]:
@@ -154,7 +168,7 @@ def code_kept(calc: str) -> Check:
     return Check("calc.py kept every code line", True, all(line in calc for line in CODE_LINES))
 
 
-def decomment_approve_checks(run: GateRun) -> list[Check]:
+def polish_approve_checks(run: GateRun) -> list[Check]:
     calc = run.read(Path("calc.py"))
     return [
         Check(
@@ -164,18 +178,18 @@ def decomment_approve_checks(run: GateRun) -> list[Check]:
         ),
         Check("the WHY comment stayed", True, WHY_COMMENT in calc),
         code_kept(calc),
-        Check("state.md records the approval", True, "diff approved" in run.decomment_state()),
+        Check("state.md records the approval", True, "assessment approved" in run.polish_state()),
     ]
 
 
-def decomment_reject_checks(run: GateRun) -> list[Check]:
+def polish_reject_checks(run: GateRun) -> list[Check]:
     return [
         Check("calc.py is untouched", CALC, run.read(Path("calc.py"))),
-        Check("state.md says aborted_by_user", True, "aborted_by_user" in run.decomment_state()),
+        Check("state.md says aborted_by_user", True, "aborted_by_user" in run.polish_state()),
     ]
 
 
-def decomment_feedback_checks(run: GateRun) -> list[Check]:
+def polish_feedback_checks(run: GateRun) -> list[Check]:
     calc = run.read(Path("calc.py"))
     return [
         Check(
@@ -187,6 +201,9 @@ def decomment_feedback_checks(run: GateRun) -> list[Check]:
         Check("the WHY comment stayed", True, WHY_COMMENT in calc),
         code_kept(calc),
     ]
+
+
+POLISH_PROMPT = "/mz-dev-pipe:polish No AI leftovers in calc.py"
 
 
 def note(body: str) -> str:
@@ -231,31 +248,31 @@ SCENARIOS = (
         memory_has("plover-2", present=False),
     ),
     Scenario(
-        "decomment-approve",
-        "/mz-dev-pipe:decomment",
+        "polish-approve",
+        POLISH_PROMPT,
         ("Approve",),
         DEV_PIPE_PLUGINS,
-        DECOMMENT_SEED,
-        DECOMMENT_SKILL,
-        decomment_approve_checks,
+        POLISH_SEED,
+        POLISH_SKILL,
+        polish_approve_checks,
     ),
     Scenario(
-        "decomment-reject",
-        "/mz-dev-pipe:decomment",
+        "polish-reject",
+        POLISH_PROMPT,
         ("Reject",),
         DEV_PIPE_PLUGINS,
-        DECOMMENT_SEED,
-        DECOMMENT_SKILL,
-        decomment_reject_checks,
+        POLISH_SEED,
+        POLISH_SKILL,
+        polish_reject_checks,
     ),
     Scenario(
-        "decomment-feedback",
-        "/mz-dev-pipe:decomment",
+        "polish-feedback",
+        POLISH_PROMPT,
         (f"Keep the comment '{RETURN_COMMENT}' and apply the other edits.", "Approve"),
         DEV_PIPE_PLUGINS,
-        DECOMMENT_SEED,
-        DECOMMENT_SKILL,
-        decomment_feedback_checks,
+        POLISH_SEED,
+        POLISH_SKILL,
+        polish_feedback_checks,
     ),
 )
 

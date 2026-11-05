@@ -12,7 +12,28 @@ Execute each criterion's verification command in parallel where possible:
 - **Linters**: run pre-commit or project linters
 - **Custom checks**: grep, file existence, behavioral checks
 
-Record results for each criterion: PASS or FAIL with details.
+Record results for each criterion: PASS or FAIL with details. Cleanup and residue criteria have no check of their own; they stay `pending` until Phase 5.
+
+### 1.1.5 Cleanup and residue scope
+
+Skip this step when no criterion is `cleanup` or `residue`. Otherwise, for those criteria:
+
+1. **Resolve the scope to files.** A `scope:` parameter's list is used as is, intersected with any explicit scope in the criterion. Otherwise:
+
+   | Form        | Detection                           | Resolution                                                   |
+   | ----------- | ----------------------------------- | ------------------------------------------------------------ |
+   | Glob        | Contains `*`, `?`, `[...]`, `{...}` | The files matching the pattern                               |
+   | Directory   | Exists on disk                      | Source files below it, honoring `.gitignore`                 |
+   | Git range   | `refA..refB` or a valid ref         | `git diff --name-only <range>`, existing files               |
+   | Description | None of the above                   | A `pipeline-researcher` (model: **sonnet**) maps it to files |
+
+   When the researcher's confidence is low or it offers several readings, ask the user which one; never guess. Keep source files only: drop generated, vendored and lock files, test files unless the criterion targets tests, and files over 5000 lines (list those for the gate). Save the result to `<PROJECT_ROOT>/.mz/task/<task_name>/cleanup_files.txt`. An empty list goes to the gate as is.
+
+1. **Baseline.** The test and lint runs in 1.1 are the baseline, and Phase 5 needs them green before it touches the scope. A red baseline is written into the assessment, and the gate decides: fix it first as ordinary criteria, or abort.
+
+1. **Blast radius, for cleanup criteria only.** Run `<PLUGIN_ROOT>/shared/blast-radius.md` inline with `cleanup_files.txt` as `input_files` and save its YAML to `<PROJECT_ROOT>/.mz/task/<task_name>/blast_radius.yml`. The assessment carries its verdict and every file with `risk_level >= high`, with its downstream callers. On RISKY or DANGEROUS, say at the gate: "Cleaning up this scope affects N downstream files (verdict: <verdict>). Consider a narrower scope, or `/audit depth:deep` first."
+
+1. **Chunks.** With more than `CHUNK_THRESHOLD` files, group them by directory into at most `MAX_OPTIMIZERS` chunks of similar size. A high-risk file gets a chunk of its own while the cap allows, and files that plainly import each other stay together. With `CHUNK_THRESHOLD` files or fewer there is one chunk.
 
 ### 1.2 Triage
 
@@ -48,6 +69,8 @@ Do not proceed with unclear criteria. Get clarity first.
 
 Write `<PROJECT_ROOT>/.mz/task/<task_name>/assessment.md` with the triage table, all test/lint output, the verification commands for each criterion, and an explicit **TDD lane** section listing every behavioral criterion marked `uncovered`. The Phase 1.5 user approval gate must surface this section so the user knows which fixes will be preceded by a new test.
 
+When 1.1.5 ran, add a **Cleanup** section: the file count and the files left out, the chunk table (chunk, files, why grouped), the baseline status, and for cleanup criteria the blast-radius verdict with each high-risk file. A red baseline goes at the top of this section.
+
 Update state phase to `assessed`.
 
 ______________________________________________________________________
@@ -70,7 +93,7 @@ For each **simple** failure, fix it directly (no agent needed):
 After quick fixes, re-run all failing criteria checks.
 Update the criteria checklist in state.md.
 
-If all criteria now pass → skip to Phase 5 (Optimization). Read `phases/fix_review_and_finalize.md` and jump to Phase 5.
+If all criteria now pass, counting cleanup and residue criteria as handled by Phase 5, skip to Phase 5 (Optimization & cleanup). Read `phases/fix_review_and_finalize.md` and jump to Phase 5.
 
 ______________________________________________________________________
 

@@ -1,6 +1,6 @@
 ---
 name: pipeline-code-reviewer
-description: Pipeline-only. Dispatched by /build, /cleanup, /debug, /optimize, /polish and /translate. Reviews implementation code for bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly. Do not dispatch standalone.
+description: Pipeline-only. Dispatched by /build, /debug, /optimize, /polish and /translate. Reviews implementation code for bugs, security issues, missed requirements, and convention violations by reading every modified file thoroughly. Do not dispatch standalone.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high
@@ -77,6 +77,7 @@ For each function/block that was added or modified:
 1. Naming is clear and consistent with the codebase
 1. Functions are focused (single responsibility)
 1. No dead code, unused imports, or debug artifacts
+1. No AI residue in lines this change added: signatures (`Generated with Claude Code`), pipeline or plan markers (`Phase 3:`, "per the plan") and comments that restate the code. A signature or marker is `Critical:`, since the run left it; a restating comment is `Nit:`
 1. DRY — no duplicated logic
 1. Appropriate logging at decision points
 
@@ -193,6 +194,7 @@ Nits, Optionals, and FYIs are advisory and never block PASS.
 - Work units from the plan not implemented
 - Integration points missing (registrations, exports, etc.)
 - Resource leaks or error handling gaps in critical paths
+- AI signatures or pipeline and plan markers added by this change
 
 ## Common False Positives
 

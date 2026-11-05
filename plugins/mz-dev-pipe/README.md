@@ -2,7 +2,7 @@
 
 # mz-dev-pipe
 
-Ten skills that run multi-agent development workflows in your repository. They build a feature test-first, fix a bug, bring code up to stated criteria, refactor, optimize against a benchmark, audit, verify, clear out AI-generated leftovers, or answer a question about the code. Each skill splits the work across specialist agents (researchers, planners, coders, reviewers, test writers) and stops at approval gates for your sign-off. It's for developers who want an agent team to carry a well-defined task through research, implementation, review and testing, with the plan or diff in front of them before any edit starts.
+Six skills that run multi-agent development workflows in your repository. They build a feature test-first, fix a bug, bring code up to stated criteria (passing tests, a refactor, or a sweep for AI-generated leftovers), optimize against a benchmark, audit, or answer a question about the code. Each skill splits the work across specialist agents (researchers, planners, coders, reviewers, test writers) and stops at approval gates for your sign-off. It's for developers who want an agent team to carry a well-defined task through research, implementation, review and testing, with the plan or diff in front of them before any edit starts.
 
 **Works in:** Claude Code and Cowork. claude.ai chat loads the skills but not the agents and hooks they rely on.
 
@@ -24,11 +24,9 @@ The install also pulls in [`mz-base`](https://github.com/DoctorMozg/claude-pipel
 | Build a new feature end-to-end                    | `/build`                                                     |
 | Sweep code for problems before a PR (report only) | `/audit` (or `/audit depth:deep` for ship)                   |
 | Iterate fix-test-review until clean               | `/polish`                                                    |
-| Clean up / refactor existing code                 | `/cleanup`                                                   |
-| Strip AI-flavored comments and docstrings         | `/decomment`                                                 |
-| Remove AI signatures, phase markers and stubs     | `/clean-leftovers`                                           |
+| Clean up / refactor existing code                 | `/polish clean up <scope>, behavior unchanged`               |
+| Strip AI comments, signatures and phase markers   | `/polish no AI leftovers in <scope>`                         |
 | Make something measurably faster or smaller       | `/optimize`                                                  |
-| Verify the project (tests, lint, types)           | `/verify`                                                    |
 | Get a researched answer to a question             | `/ask`                                                       |
 | See what breaks if you change X                   | `/audit depth:deep scope:branch` (auto-invokes blast-radius) |
 | Understand existing code                          | `/explain` (now in `mz-research-pipe`)                       |
@@ -96,19 +94,6 @@ Two modes, selected by the `certainty:` parameter.
 
 **Accepts**: free text, hypotheses, failing test names, stack traces, error messages, GitHub issue URLs.
 
-### `/verify`: Deep Verification
-
-Runs the project's test suite, linters, formatters (in check mode) and type checkers, checks examples and samples, reviews test coverage and quality, and diagnoses any failures. Produces a pass/fail report and never edits code.
-
-```
-/verify                                # full project
-/verify scope:branch                   # branch changes only
-/verify src/auth/                      # specific directory
-/verify test_payments.py               # specific test file
-```
-
-**Pipeline**: Tooling Detection, Tests, Lint, Type Check, Coverage Review, Quality Review, Failure Diagnosis, Report
-
 ### `/ask`: Researched Question Answering
 
 Answers a question by researching the codebase and, when the question involves an external library, API, or concept, the web. Classifies the question, dispatches researcher agents in parallel, and synthesizes a direct, sourced answer. Read-only, so it never modifies code.
@@ -127,52 +112,22 @@ Answers a question by researching the codebase and, when the question involves a
 
 Takes existing code and iterates fix-test-review cycles until specific completion criteria are met. Unlike `/build`, which builds from scratch, `/polish` works with what's already there. When a behavioral criterion has no test, it writes the test first and confirms it fails before fixing.
 
+Two kinds of criteria need no failing check:
+
+- **Cleanup** ("clean up src/auth/, behavior unchanged"): removes dead code, unused imports, duplication and needless complexity from a scope.
+- **Residue** ("no AI leftovers in this branch"): removes AI signatures, pipeline phase markers, planning comments, comments and docstrings that restate the code, and uncalled stubs. It keeps license headers, tool directives and comments that explain why.
+
+A scope over 12 files is split by directory into up to 6 chunks, each with its own optimizer and reviewer. Tests must stay green throughout, and a cleanup criterion also gets a blast-radius check at the approval gate.
+
 ```
 /polish all tests pass and pre-commit is clean
 /polish scope:branch fix all failing tests and clean up the implementation
 /polish the WebSocket reconnection must handle timeout correctly
+/polish clean up src/auth/, behavior unchanged
+/polish scope:branch no AI leftovers
 ```
 
-**Pipeline**: Assessment, Approval Gate, Quick Fixes, Research (if needed), Fix-Test-Review Loop (max 5 iterations), Optimization, Final Verification
-
-### `/cleanup`: Code Cleanup
-
-Scans a scope, builds an import graph, groups files into parallel-safe chunks, dispatches optimizer agents (up to 6), then runs mirrored code reviewers. Iterates on rejections. Tests enforce behavior preservation between every pass.
-
-```
-/cleanup src/auth/
-/cleanup scope:branch
-/cleanup "src/**/*.py"
-/cleanup origin/main..HEAD
-```
-
-**Pipeline**: Scan & Chunk, Baseline Snapshot, Approval Gate, Parallel Optimization, Verify, Parallel Review, Handle Verdicts, Summary
-
-### `/decomment`: AI Comment Stripper
-
-Strips AI-flavored comments and docstrings, such as section banners, phase headers and docstrings that restate the signature. It edits comment text only, never executable code or string literals, and it keeps comments that explain why (workarounds, tooling directives, license headers). Parallel `pipeline-decomment-proposer` agents propose the edits, and you approve one merged diff.
-
-```
-/decomment                     # files changed on this branch (default)
-/decomment scope:working
-/decomment src/api/
-```
-
-**Pipeline**: Scan, Propose, Consolidate, Diff Approval Gate, Apply
-
-**Not for** code-level AI residue (use `/clean-leftovers`) or markdown (use `/naturalize`).
-
-### `/clean-leftovers`: AI Residue Cleanup
-
-Removes the residue of an AI run from code: AI signatures and tool watermarks, pipeline phase markers, planning comments, comments that restate the code, and dead code or half-built stubs. Unlike `/decomment`, it edits code as well as comments. Unlike `/cleanup`, it targets only AI leftovers. Default scope is `working`.
-
-```
-/clean-leftovers
-/clean-leftovers scope:branch
-/clean-leftovers "src/**/*.py"
-```
-
-**Pipeline**: Research, Detection, Approval Gate, Cleanup, Verification (linter pass and report)
+**Pipeline**: Assessment, Approval Gate, Quick Fixes, Research (if needed), Fix-Test-Review Loop (max 5 iterations), Optimization & Cleanup (chunked for large scopes), Final Verification
 
 ### `/optimize`: Measure-First Performance Optimization
 
@@ -188,11 +143,22 @@ The same loop works on source code, container images, LLM hyperparameters, build
 
 **Pipeline**: Goal Declaration, Contract Approval, Baseline, Profile & Classify, Hypothesize, Strategy Approval, Candidate Generation & Verification, Validation (sign-off gate), Terminate (re-profile loop or stop)
 
-**Not for** removing dead code or reducing complexity (use `/cleanup`).
+**Not for** removing dead code or reducing complexity (use `/polish` with a cleanup criterion).
 
 ### `/combine`, `/deep-research`, `/explain`, `/translate`: moved to `mz-research-pipe`
 
 These research and content skills now live in the [`mz-research-pipe`](https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-research-pipe) plugin, which declares `mz-dev-pipe` as a dependency.
+
+### `/verify`, `/cleanup`, `/decomment`, `/clean-leftovers`: removed in 0.55.0
+
+These four skills are gone, with no aliases. What to use instead:
+
+| Removed            | Use instead                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| `/cleanup <scope>` | `/polish clean up <scope>, behavior unchanged`                                                  |
+| `/decomment`       | `/polish no AI leftovers in <scope>`                                                            |
+| `/clean-leftovers` | `/polish no AI leftovers in <scope>`; `/build` and `/polish` also clean the files they change   |
+| `/verify`          | Run your test, lint and type-check commands directly, or `/polish` when you want failures fixed |
 
 ## Scope parameter
 
@@ -204,7 +170,7 @@ Every skill except `/ask` accepts an optional `scope:` parameter:
 | `scope:global`  | Every file git doesn't ignore, minus vendored and generated files, lock files and files over 5,000 lines |
 | `scope:working` | Uncommitted changes (staged + unstaged + untracked)                                                      |
 
-For skills that edit, scope limits which files can change. Researchers, tests and linters still read the whole project. `/audit` and `/verify` use it to choose which files to analyze. Each skill has its own default: `/decomment` uses `branch`, `/clean-leftovers` uses `working`, `/build` uses `global`.
+For skills that edit, scope limits which files can change. Researchers, tests and linters still read the whole project. `/audit` uses it to choose which files to analyze. Each skill has its own default; `/build` uses `global`.
 
 ## Agents
 
@@ -218,15 +184,13 @@ Specialized worker agents used by the pipeline skills. You don't invoke these di
 | **pipeline-code-reviewer**        | Reviews code for bugs, security, conventions                                                                |
 | **pipeline-test-writer**          | Writes unit, edge case, and integration tests                                                               |
 | **pipeline-test-reviewer**        | Unified test review: coverage gaps and test quality (assertions, independence, fragility)                   |
-| **pipeline-optimizer**            | Removes dead code, simplifies logic, cleans artifacts                                                       |
+| **pipeline-optimizer**            | Removes dead code and AI residue, simplifies logic, cleans artifacts                                        |
 | **pipeline-completeness-checker** | Final quality gate: verifies 100% task completion                                                           |
 | **pipeline-measure-runner**       | Runs a benchmark with warmup and N reps and computes mean/median/CV, the only source of measurement numbers |
 | **pipeline-perf-candidate**       | Implements one optimization hypothesis as a diversified candidate change in an isolated worktree            |
 | **pipeline-tooling-detector**     | Finds the test, lint, format and type-check commands from project instructions, the cache, or manifests     |
 | **pipeline-test-runner**          | Runs the test suite or a subset and writes parsed per-test results                                          |
 | **pipeline-lint-runner**          | Runs lint and format commands and writes per-file issues                                                    |
-| **pipeline-decomment-proposer**   | Proposes before/after comment edits for one file and never writes the file itself                           |
-| **expert-leftover-cleaner**       | Removes AI signatures, phase markers, planning comments and dead code for `/clean-leftovers`                |
 
 The pipeline skills also dispatch three agents from [`mz-base`](https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-base): `pipeline-researcher`, `pipeline-web-researcher` and `code-lens-over-engineering`. They live there because skills in other plugins dispatch them too.
 
@@ -246,20 +210,20 @@ Everything runs inside your Claude Code or Cowork session. The plugin has no ser
 
 **SessionStart hook.** `scripts/detect-tooling.sh` runs on session startup, `/clear` and compaction. It reads manifests and lockfiles in the project root (for example `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`), infers test, lint, format, type-check and install commands, and writes them to `.mz/tooling.json`, which the pipelines use as a cache of your project's commands. It runs none of those commands and makes no network calls. It then adds one line to the session context: `Project tooling detected: <ecosystems>. Full details in <path>`. Without `jq`, the hook skips JavaScript tool detection and the context line. If `.mz/` isn't writable, it logs to stderr and exits cleanly.
 
-**Edits to your code.** `/build`, `/debug`, `/polish`, `/cleanup`, `/decomment`, `/clean-leftovers` and `/optimize` change files in your project. Each stops at an approval gate before its first edit: the plan (`/build`, `/cleanup`), the diagnosis (`/debug`), the assessment (`/polish`), the detection report (`/clean-leftovers`), the full diff (`/decomment`), and the contract and strategy (`/optimize`). Two exceptions:
+**Edits to your code.** `/build`, `/debug`, `/polish` and `/optimize` change files in your project. Each stops at an approval gate before its first edit: the plan (`/build`), the diagnosis (`/debug`), the assessment (`/polish`, which lists every file a cleanup or residue criterion covers), and the contract and strategy (`/optimize`). Two exceptions:
 
 - `/debug certainty:low` has no gate and adds exploratory tests to your test files.
 - `/optimize` applies each winning change to your working tree, uncommitted, before the final sign-off gate. Rejecting reverts it.
 
-`/audit`, `/verify` and `/ask` don't edit your code. A missing answer at a gate is never approval, so the run stops. Setting `MZ_DEV_PIPE_AUTO_APPROVE=1` in the environment (meant for CI) skips the approve/reject prompt: the plan is still printed, and each skipped gate is logged as auto-approved. Gates that ask you to choose between more options still stop the run.
+`/audit` and `/ask` don't edit your code. A missing answer at a gate is never approval, so the run stops. Setting `MZ_DEV_PIPE_AUTO_APPROVE=1` in the environment (meant for CI) skips the approve/reject prompt: the plan is still printed, and each skipped gate is logged as auto-approved. Gates that ask you to choose between more options still stop the run.
 
-**Your project's commands.** The pipelines run your own test, lint, format and type-check commands through Bash. The commands come from your project instructions, the `.mz/tooling.json` cache, or your manifests. `/verify` also runs example scripts, and `/debug` runs your tests to reproduce a bug. `/optimize` runs the measurement and correctness commands from its contract, which you see at the contract gate before any of them runs. For container and build-pipeline targets, that can include your build. The skills pre-approve only fixed commands such as `git diff`, `mkdir` and the plugin's own journal script, so Claude Code asks before running each of your commands unless your permission settings allow it. A `claude -p` run has nobody to answer, so pass them in `--allowedTools`, for example `--allowedTools "Bash(npm test *)"`.
+**Your project's commands.** The pipelines run your own test, lint, format and type-check commands through Bash. The commands come from your project instructions, the `.mz/tooling.json` cache, or your manifests. `/debug` runs your tests to reproduce a bug. `/optimize` runs the measurement and correctness commands from its contract, which you see at the contract gate before any of them runs. For container and build-pipeline targets, that can include your build. The skills pre-approve only fixed commands such as `git diff`, `mkdir` and the plugin's own journal script, so Claude Code asks before running each of your commands unless your permission settings allow it. A `claude -p` run has nobody to answer, so pass them in `--allowedTools`, for example `--allowedTools "Bash(npm test *)"`.
 
 **Git worktrees.** `/optimize` builds each candidate in a temporary git worktree, so your branch, HEAD and index stay untouched. Candidates start from a snapshot commit of your working tree, held by a ref under `refs/mz/optimize/<task_name>/`. Worktrees, their branches and that ref are deleted after each round and on every exit. Winning patches stay in `.mz/task/<task_name>/patches/`.
 
 **GitHub, read only.** `/debug` fetches an issue and `/ask` an issue or pull request when you pass a URL. Both try `gh` first (`gh issue view`, or `gh pr view` for a pull request), then a GitHub MCP server. If both fail, the skill asks you to paste the content. No skill reads a token itself. Nothing in the plugin writes to GitHub: no comments, pull requests or pushes. Fetched text reaches agents wrapped in `<untrusted-content>` markers, so instructions inside it are treated as data.
 
-**Web research.** Research uses Claude Code's WebSearch and WebFetch tools. The agents that hold them are `pipeline-researcher` and `pipeline-web-researcher` from `mz-base`. None of this plugin's own agents has web tools. Web research happens in `/ask` (external questions), `/build` (feasibility and domain research), `/debug` (domain research), `/polish` (to check non-trivial fixes), `/optimize` (unfamiliar domains) and `/clean-leftovers` (always, to refresh its list of AI-tool signatures). The agents choose the queries and pages from your task, question or bug report. Every skill except `/decomment` also lists WebSearch and WebFetch among its allowed tools.
+**Web research.** Research uses Claude Code's WebSearch and WebFetch tools. The agents that hold them are `pipeline-researcher` and `pipeline-web-researcher` from `mz-base`. None of this plugin's own agents has web tools. Web research happens in `/ask` (external questions), `/build` (feasibility and domain research), `/debug` (domain research), `/polish` (to check non-trivial fixes) and `/optimize` (unfamiliar domains). The agents choose the queries and pages from your task, question or bug report. Every skill also lists WebSearch and WebFetch among its allowed tools.
 
 **Local files.** Task state, working artifacts and reports are plain files under `.mz/` in your project root (the git root, or `MZ_MEMORY_ROOT` when set): `.mz/task/<task_name>/` for each run, `.mz/reports/` for reports and the audit ledger, and `.mz/journal.md`, where gate decisions may be appended. Nothing uploads them.
 

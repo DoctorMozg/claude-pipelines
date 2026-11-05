@@ -24,8 +24,7 @@ A bug, error or failing test with an observable symptom and a reproducer (or one
 
 - Building a new feature from scratch — use `build`.
 - Polishing already-working code to criteria, or getting a whole suite or quality bar green with no single bug in view — use `polish`.
-- General code quality improvement with no specific bug — use `polish` or `cleanup`.
-- Map-reduce cleanup across a module — use `cleanup`.
+- General code quality improvement or a module cleanup with no specific bug — use `polish`.
 - Impact analysis before a refactor — use `audit depth:deep scope:branch` (auto-invokes `<PLUGIN_ROOT>/shared/blast-radius.md`).
 - Pure code explanation with no testable claim — use `explain`.
 

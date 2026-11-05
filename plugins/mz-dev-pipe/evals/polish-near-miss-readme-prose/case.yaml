@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: decomment-near-miss-readme-prose
-description: AI-sounding prose in README and docs markdown, with no code comments involved, belongs to naturalize.
+name: polish-near-miss-readme-prose
+description: AI-sounding prose in README and docs markdown, with no code comments involved, belongs to naturalize, not polish.
 tags: [routing, near-miss]
 plugins: ["../..", "../../../mz-base", "../../../mz-creative"]
 execution:
@@ -13,10 +13,10 @@ execution:
   max_turns: 2
   timeout_seconds: 180
 graders:
-  - name: decomment-not-fired
+  - name: polish-not-fired
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?decomment"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'
     min: 0
     max: 0
     arm: both

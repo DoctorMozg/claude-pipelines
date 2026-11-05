@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: optimize-near-miss-split-function
-description: Breaking up a deeply nested function for readability is a refactor and complexity reduction, so it belongs to cleanup.
+description: Breaking up a deeply nested function for readability is a refactor and complexity reduction, so it belongs to polish as a cleanup criterion.
 tags: [routing, near-miss]
 plugins: ["../..", "../../../mz-base"]
 execution:
@@ -18,7 +18,7 @@ graders:
     min: 0
     max: 0
     arm: both
-  - name: cleanup-fired
+  - name: polish-fired
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?cleanup"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'

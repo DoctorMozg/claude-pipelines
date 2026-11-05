@@ -1,6 +1,6 @@
 schema_version: "1.1"
-name: cleanup-near-miss-slow-script
-description: Getting a slow, memory-hungry script under a time and RAM target is a measured performance goal, so it belongs to optimize.
+name: polish-near-miss-slow-script
+description: Getting a slow, memory-hungry script under a time and RAM target is a measured performance goal, so it belongs to optimize, not polish.
 tags: [routing, near-miss]
 plugins: ["../..", "../../../mz-base"]
 execution:
@@ -11,10 +11,10 @@ execution:
   max_turns: 2
   timeout_seconds: 180
 graders:
-  - name: cleanup-not-fired
+  - name: polish-not-fired
     type: tool_used
     tool: Skill
-    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?cleanup"'
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'
     min: 0
     max: 0
     arm: both
