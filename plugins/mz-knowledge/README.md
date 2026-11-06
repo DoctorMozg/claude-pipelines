@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-knowledge.webp" alt="mz-knowledge: Obsidian knowledge vault" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-knowledge.webp" alt="Mozg Obsidian Vault: Obsidian knowledge vault" width="100%"></p>
 
-# mz-knowledge
+# Mozg Obsidian Vault (`mz-knowledge`)
 
 mz-knowledge manages a personal Obsidian vault from Claude Code. It scaffolds a PARA + Zettelkasten structure, captures voice memos, screenshots, PDFs and YouTube videos as fleeting notes, splits captures into atomic permanent notes, triages the inbox, suggests wikilinks, audits the vault and answers questions from your notes with citations. It's for Zettelkasten-style vault owners who want Claude to do the routine upkeep. The vault workflows wait for your approval before they change notes, but two small hooks run on their own (see Data and network).
 

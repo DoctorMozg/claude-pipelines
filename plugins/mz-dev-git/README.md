@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-dev-git.webp" alt="mz-dev-git: multi-lens code review" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-dev-git.webp" alt="Mozg Git Review: multi-lens code review" width="100%"></p>
 
-# mz-dev-git
+# Mozg Git Review (`mz-dev-git`)
 
 mz-dev-git adds three skills to Claude Code: a deep review of your local branch, a deep review of a GitHub pull request, and a ranked triage of the PRs that need your attention. Each review fans out to six parallel lenses (bugs, security, architecture, performance, maintainability, over-engineering) plus a blind adversarial pass, and ends in a severity-labeled report with a pass/fail verdict. It's for developers who want a thorough read before they push, and for reviewers who juggle PRs across several repositories.
 

@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-design.webp" alt="mz-design: UI/UX design documents" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-design.webp" alt="Mozg Design Docs: UI/UX design documents" width="100%"></p>
 
-# mz-design
+# Mozg Design Docs (`mz-design`)
 
 mz-design turns a UI/UX brief into a design document: ASCII wireframes, Mermaid flow diagrams and a computed WCAG contrast report. It scans your codebase for existing components and design tokens, researches the problem domain, drafts the document, then runs it past four specialist critics in parallel until all of them pass with zero WCAG AA contrast violations, for up to five rounds. It's for developers and designers who want a reviewed design document for a page, screen or flow before anyone builds it.
 

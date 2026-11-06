@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-base.webp" alt="mz-base: everyday dev foundations" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-base.webp" alt="Mozg Base: everyday dev foundations" width="100%"></p>
 
-# mz-base
+# Mozg Base (`mz-base`)
 
 mz-base is the foundation plugin of the mozg-pipelines marketplace. It ships five agents (a code reviewer, a technical writer, two researchers and an over-engineering lens used by review and cleanup pipelines) and two skills. One drafts new skills for a plugin. The other routes a task to the right skill across the `mz-*` plugins. It's for developers who want a reviewer, a researcher or a doc writer on call, and for users of other mozg plugins, whose skills dispatch these agents.
 

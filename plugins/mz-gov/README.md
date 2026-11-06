@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-gov.webp" alt="mz-gov: AI-era dev governance" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-gov.webp" alt="Mozg Governance: AI-era dev governance" width="100%"></p>
 
-# mz-gov
+# Mozg Governance (`mz-gov`)
 
 mz-gov turns a substantial design decision into a reviewed, durable record: an ADR, RFD or design doc in `docs/`, with an AI-provenance block and a human's recorded sign-off. It's for solo developers and small teams building with AI coding agents who want the reasoning behind agent-proposed changes written down and approved by a person. `/govern` routes the decision to the right artifact and pressure-tests it with a critic panel before asking for sign-off. `/gov-init` installs a CLAUDE.md policy that tells Claude to run `/govern` on its own, and `/gov-review` audits the records you already have.
 

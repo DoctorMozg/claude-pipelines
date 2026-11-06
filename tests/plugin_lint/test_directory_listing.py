@@ -82,6 +82,14 @@ class TestDirectoryManifests:
         assert display_name.strip()
 
     @pytest.mark.parametrize("plugin", ALL_PLUGINS)
+    def test_readme_title_is_the_display_name(self, plugin: str) -> None:
+        readme = (REPO_ROOT / "plugins" / plugin / "README.md").read_text(encoding="utf-8")
+        title = next(line for line in readme.splitlines() if line.startswith("# "))
+        display_name = str(_manifest(plugin)["displayName"])
+        assert display_name.startswith("Mozg ")
+        assert title == f"# {display_name} (`{plugin}`)"
+
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_manifest_links_the_listing_pages(self, plugin: str) -> None:
         manifest = _manifest(plugin)
         assert manifest.get("homepage") == HOMEPAGE_URL

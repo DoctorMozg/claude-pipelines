@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-research-pipe.webp" alt="mz-research-pipe: deep research &amp; synthesis" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-research-pipe.webp" alt="Mozg Research Pipelines: deep research &amp; synthesis" width="100%"></p>
 
-# mz-research-pipe
+# Mozg Research Pipelines (`mz-research-pipe`)
 
 mz-research-pipe turns research and content work into files you can review: a sourced web research report, one synthesis of the reports and notes you already have, translated docs and i18n resources, or a diagram-rich explanation of existing code. It's for developers who want a briefing, a consolidated write-up, localized docs or a code walkthrough without leaving Claude Code. `/deep-research`, `/combine` and `/translate` show you a plan first and wait for your approval before the main work starts. `/explain` only reads code and writes a report.
 

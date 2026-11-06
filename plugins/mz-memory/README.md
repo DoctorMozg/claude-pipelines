@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-memory.webp" alt="mz-memory: cross-session project memory" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-memory.webp" alt="Mozg Project Memory: cross-session project memory" width="100%"></p>
 
-# mz-memory
+# Mozg Project Memory (`mz-memory`)
 
 Cross-session project memory for [Claude Code](https://claude.com/claude-code). It persists knowledge across sessions, re-injects it after `/clear` and compaction, and injects the memory relevant to each prompt. It also keeps a store of lessons learned from review findings, failures and your corrections, which you can promote into project rules. Two skills ship with it: `/memory-note` for manual notes and lessons, and `/lessons-promote` for turning recurring lessons into rules.
 

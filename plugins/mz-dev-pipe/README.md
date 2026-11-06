@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-dev-pipe.webp" alt="mz-dev-pipe: autonomous dev pipelines" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-dev-pipe.webp" alt="Mozg Dev Pipelines: autonomous dev pipelines" width="100%"></p>
 
-# mz-dev-pipe
+# Mozg Dev Pipelines (`mz-dev-pipe`)
 
 Six skills that run multi-agent development workflows in your repository. They build a feature test-first, fix a bug, bring code up to stated criteria (passing tests, a refactor, or a sweep for AI-generated leftovers), optimize against a benchmark, audit, or answer a question about the code. Each skill splits the work across specialist agents (researchers, planners, coders, reviewers, test writers) and stops at approval gates for your sign-off. It's for developers who want an agent team to carry a well-defined task through research, implementation, review and testing, with the plan or diff in front of them before any edit starts.
 

@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-creative.webp" alt="mz-creative: expert panels &amp; writing" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-creative.webp" alt="Mozg Creative Panels: expert panels &amp; writing" width="100%"></p>
 
-# mz-creative
+# Mozg Creative Panels (`mz-creative`)
 
 mz-creative adds five skills and 22 agents to Claude Code. Two run a panel of thinkers over your idea: `/brainstorm` generates options and `/expert` critiques a proposal. Three write: `/document` for technical docs, `/copywrite` for promotional copy, and `/naturalize` for text that reads like AI wrote it. It's for developers, founders and writers who want an idea pressure-tested from several angles, or docs and copy grounded in their own repo.
 

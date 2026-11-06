@@ -230,7 +230,7 @@ After installation, skills are available as slash commands:
 
 ## Plugins
 
-### [`mz-base`](plugins/mz-base/) — Foundation
+### [Mozg Base](plugins/mz-base/) (`mz-base`)
 
 Standalone agents and skills for everyday development. No pipeline orchestration — each tool works independently.
 
@@ -244,7 +244,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 
 ______________________________________________________________________
 
-### [`mz-rules`](plugins/mz-rules/) — Coding Rules
+### [Mozg Coding Rules](plugins/mz-rules/) (`mz-rules`)
 
 One skill that installs curated coding rules for the languages and tooling it detects, as rule files or CLAUDE.md sentinel blocks, plus a few settings entries Claude Code enforces itself. One approval gate covers every write.
 
@@ -258,7 +258,7 @@ Ships 19 rules, with the personal and delegation groups opt-in. Until 0.54.0 thi
 
 ______________________________________________________________________
 
-### [`mz-dev-git`](plugins/mz-dev-git/) — Git & GitHub Review Workflows
+### [Mozg Git Review](plugins/mz-dev-git/) (`mz-dev-git`)
 
 Multi-lens deep review for local branches and GitHub pull requests. Runs six parallel code-review specialists (bugs, security, architecture, performance, maintainability, over-engineering) per change, plus a daily GitHub PR triage and per-PR deep-review pipeline.
 
@@ -274,7 +274,7 @@ Multi-lens deep review for local branches and GitHub pull requests. Runs six par
 
 ______________________________________________________________________
 
-### [`mz-dev-pipe`](plugins/mz-dev-pipe/) — Autonomous Dev Pipelines
+### [Mozg Dev Pipelines](plugins/mz-dev-pipe/) (`mz-dev-pipe`)
 
 Multi-agent orchestration skills that run full development workflows. Each skill coordinates specialized agents through phased pipelines with user approval gates.
 
@@ -294,7 +294,7 @@ All pipeline skills support `scope:branch|global|working` to constrain which fil
 
 ______________________________________________________________________
 
-### [`mz-gov`](plugins/mz-gov/) — Development Governance
+### [Mozg Governance](plugins/mz-gov/) (`mz-gov`)
 
 Lightweight governance for AI-assisted development: turn a substantial design decision into a durable, reviewed artifact (ADR, RFC/RFD, or design doc) carrying an AI-provenance block and an explicit human sign-off. An agent proposes the decision, a critic panel pressure-tests it, and a human approves it before anything lands in `docs/`.
 
@@ -310,7 +310,7 @@ Lightweight governance for AI-assisted development: turn a substantial design de
 
 ______________________________________________________________________
 
-### [`mz-research-pipe`](plugins/mz-research-pipe/) — Research & Content Pipelines
+### [Mozg Research Pipelines](plugins/mz-research-pipe/) (`mz-research-pipe`)
 
 Research and content skills spun off from `mz-dev-pipe` — they produce reports and rewritten artifacts instead of mutating application code.
 
@@ -327,7 +327,7 @@ Research and content skills spun off from `mz-dev-pipe` — they produce reports
 
 ______________________________________________________________________
 
-### [`mz-biz-outreach`](plugins/mz-biz-outreach/) — Business Intelligence
+### [Mozg Business Outreach](plugins/mz-biz-outreach/) (`mz-biz-outreach`)
 
 Autonomous lead-generation pipeline plus a dossier-card lifecycle: discover companies, deepen their cards, and log every interaction.
 
@@ -343,7 +343,7 @@ Autonomous lead-generation pipeline plus a dossier-card lifecycle: discover comp
 
 ______________________________________________________________________
 
-### [`mz-job-outreach`](plugins/mz-job-outreach/) — Job & Freelance Hunting
+### [Mozg Job Hunt](plugins/mz-job-outreach/) (`mz-job-outreach`)
 
 Autonomous job-hunt and freelance-hunt pipelines — full CV-to-listings discovery plus targeted one-shot output for salaried roles and freelance gigs.
 
@@ -360,7 +360,7 @@ Autonomous job-hunt and freelance-hunt pipelines — full CV-to-listings discove
 
 ______________________________________________________________________
 
-### [`mz-creative`](plugins/mz-creative/) — Multi-Perspective Panels & Creative Writing
+### [Mozg Creative Panels](plugins/mz-creative/) (`mz-creative`)
 
 Two flavors of skill share this plugin. **Panels** — `/brainstorm` and `/expert` — drive a unified roster of **16 lens agents** (engineer, artist, philosopher, mathematician, scientist, economist, storyteller, futurist, psychologist, historian, cto, data, devops, product, security, seo) through ideation or Delphi-style critique. **Writing pipelines** — `/document`, `/naturalize`, `/copywrite` — produce technical documentation, naturalize AI-generated prose, and write promotional copy, with the `document` and `copywrite` skills running an automatic naturalize pass on every output.
 
@@ -378,7 +378,7 @@ Two flavors of skill share this plugin. **Panels** — `/brainstorm` and `/exper
 
 ______________________________________________________________________
 
-### [`mz-funny`](plugins/mz-funny/) — Character-Voice Code Roasting
+### [Mozg Code Roast](plugins/mz-funny/) (`mz-funny`)
 
 Evidence-anchored code roasting in 7 character voices. Each persona is a first-class agent that can only embellish real findings from a static-analysis-plus-docs-plus-web-research dossier — no fabrication. Pick a voice, point at a file or a branch, get roasted.
 
@@ -392,7 +392,7 @@ Evidence-anchored code roasting in 7 character voices. Each persona is a first-c
 
 ______________________________________________________________________
 
-### [`mz-design`](plugins/mz-design/) — UI/UX Design Documents
+### [Mozg Design Docs](plugins/mz-design/) (`mz-design`)
 
 Iterative design-specification skill that drafts a UI/UX document then refines it through four parallel specialist critics (visual layout, UX flows, color/typography, accessibility) with a WCAG 2.2 AA hard gate. Up to 5 critique iterations until all critics approve and zero contrast violations remain.
 
@@ -406,7 +406,7 @@ Iterative design-specification skill that drafts a UI/UX document then refines i
 
 ______________________________________________________________________
 
-### [`mz-memory`](plugins/mz-memory/) — Project Memory
+### [Mozg Project Memory](plugins/mz-memory/) (`mz-memory`)
 
 Cross-session project memory that persists knowledge automatically — injects on session start and again after `/clear` or compaction, captures completed tasks on session end, and selectively injects relevant memory per prompt. It also collects lessons from review findings, failures and your corrections, curates them in the background, and lets you promote the recurring ones into project rules.
 
@@ -429,7 +429,7 @@ Pairs with `mz-dev-pipe` agents that have native `memory: project` for per-agent
 
 ______________________________________________________________________
 
-### [`mz-knowledge`](plugins/mz-knowledge/) — Obsidian Knowledge Base
+### [Mozg Obsidian Vault](plugins/mz-knowledge/) (`mz-knowledge`)
 
 Full lifecycle for a personal Obsidian vault — bootstrap, capture, atomize, triage, link, review, and query. Every skill reads the vault's CLAUDE.md for conventions and writes state to `.mz/task/`.
 
