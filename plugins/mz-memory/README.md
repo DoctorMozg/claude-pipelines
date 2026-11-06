@@ -1,4 +1,4 @@
-<p align="center"><img src="../../assets/hero/mz-memory.webp" alt="mz-memory: cross-session project memory" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-memory.webp" alt="mz-memory: cross-session project memory" width="100%"></p>
 
 # mz-memory
 
@@ -148,7 +148,7 @@ A `PostToolUse` hook matched to `AskUserQuestion` captures each completed AskUse
 
 Decisions reach memory from `state.md`, not from the journal: write a `## Decisions` section into the task's `state.md` and, once its `Status` is `complete`, the SessionEnd capture lifts it into the Activity Log and thus into the next session's injected context. The journal itself is disposable scratch; the memory store is what persists.
 
-The entry format, the two-layer (hook + skill) capture model, and the redaction convention are specified in [`guidelines/JOURNAL_GUIDELINES.md`](../../guidelines/JOURNAL_GUIDELINES.md).
+The entry format, the two-layer (hook + skill) capture model, and the redaction convention are specified in [`guidelines/JOURNAL_GUIDELINES.md`](https://github.com/DoctorMozg/claude-pipelines/blob/master/guidelines/JOURNAL_GUIDELINES.md).
 
 ## Manual Notes and Lessons: `/memory-note`
 
@@ -199,6 +199,17 @@ This is **complementary** to the global memory system this plugin provides:
 - **Global memory** (`mz-memory`) lives at `.mz/memory/MEMORY.md` and is shared across every session and every agent. It is the place for project-wide facts, decisions, and completed task summaries.
 - **Per-agent memory** (`memory: project` frontmatter) lives at `.claude/agent-memory/<agent-name>/MEMORY.md` and is scoped to a single persona.
 - **Bridged**: when a task's `state.md` contains `[agent-name]` for any agent under `.claude/agent-memory/`, the SessionEnd capture writes the entry to both the global log AND that agent's file, closing the loop between the two layers.
+
+## Data and network
+
+Nothing is sent to the author. The scripts make no network calls and report no telemetry. The only thing that leaves your machine is the background `claude -p` curation, which goes to Anthropic under your own account ([PRIVACY.md](https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md)).
+
+- **Reads:** `.mz/memory/MEMORY.md` and `lessons.md` at session start and on each prompt, your prompt text to pick keywords, the `state.md` files under `.mz/task/` that changed since the last capture, and each completed AskUserQuestion call.
+- **Writes:** `.mz/memory/` (the files in the File Reference below), `.mz/journal.md`, and `.claude/agent-memory/<agent>/MEMORY.md` for agents a state file names. `/lessons-promote` also edits `CLAUDE.md` or `.claude/rules/` after you approve. The journal stores questions and answers verbatim.
+- **Sent to Anthropic:** at SessionEnd, a detached `claude -p` run gets the older Activity Log entries and the Digest once the log passes 300 lines. A second run gets `lessons.md` once 5 new Inbox items arrive, or one new item when the file passes 450 lines. `MZ_MEMORY_COMPRESS=0` turns off both.
+- **Redaction:** `<private>...</private>` text is stripped from log entries, lessons and notes before they are written, so the curator never sees it. The journal writes it as `[redacted]`. Your `state.md` is left as is. Without `perl`, a `sed` fallback handles single-line regions only.
+
+To remove the data, delete `.mz/memory/` and `.mz/journal.md`, plus any `.claude/agent-memory/<agent>/MEMORY.md` entries you don't want. Uninstalling the plugin stops all hooks.
 
 ## File Reference
 

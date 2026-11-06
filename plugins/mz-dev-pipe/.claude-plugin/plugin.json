@@ -8,9 +8,13 @@
   ],
   "description": "Full development pipeline \u2014 autonomous coding, reviewing, testing, and research agents with orchestrating skills",
   "displayName": "Mozg Dev Pipelines",
+  "documentationUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/plugins/mz-dev-pipe/README.md",
   "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-dev-pipe",
+  "privacyPolicyUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",
+  "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
+  "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
   "version": "0.56.1"
 }

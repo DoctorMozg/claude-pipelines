@@ -5,9 +5,13 @@
   },
   "description": "Evidence-anchored character-voice code roasting \u2014 7 personas (caveman, wh40k-ork, pirate, viking, dwarf, drill-sergeant, yoda) deliver roasts that can only embellish real findings, not invent them",
   "displayName": "Mozg Code Roast",
+  "documentationUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/plugins/mz-funny/README.md",
   "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-funny",
+  "privacyPolicyUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",
+  "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
+  "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
   "version": "0.56.1"
 }

@@ -8,9 +8,13 @@
   ],
   "description": "Multi-perspective AI panels and creative writing tools \u2014 brainstorming, Delphi-style expert consultation, technical documentation, AI-text naturalization, and copywriting",
   "displayName": "Mozg Creative Panels",
+  "documentationUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/plugins/mz-creative/README.md",
   "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-creative",
+  "privacyPolicyUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",
+  "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
+  "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
   "version": "0.56.1"
 }

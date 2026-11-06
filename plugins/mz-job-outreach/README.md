@@ -1,4 +1,4 @@
-<p align="center"><img src="../../assets/hero/mz-job-outreach.webp" alt="mz-job-outreach: job &amp; freelance hunting" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-job-outreach.webp" alt="mz-job-outreach: job &amp; freelance hunting" width="100%"></p>
 
 # mz-job-outreach
 
@@ -272,6 +272,24 @@ Specialized workers coordinated by the skills. You don't invoke these directly.
 | **freelance-proposal-writer** | Drafts a ≤350-word proposal grounded verbatim in gig scope and budget; bans AI clichés                 |
 
 `job-contact-finder` is shared between `/job-search` Phase 6 and `/job-recruiter-info`. `job-source-researcher` is shared between `/job-search` and `/freelance-search` via the `mode` dispatch arg. `job-prescorer` is shared between `/job-search` and `/freelance-search` (format-agnostic skill matching).
+
+## Data and network
+
+Nothing is sent to the author, and the plugin has no telemetry, hooks, MCP servers or scripts. What agents read goes to the model you've configured, under your own account ([PRIVACY.md](https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md)).
+
+**Your CV.** You give a `.md` or `.txt` path and the strategist agents read it from disk. They extract titles, skills, languages, location and work authorization into `search_strategy.json`. Scouts build web queries from that file: titles, skills, region and native-language variants. No instruction puts your name, contact details or CV text into a query. The letter and proposal writers have no web tools.
+
+**Web research.** Agents use WebSearch and WebFetch on job boards (LinkedIn Jobs, Indeed, Wellfound, RemoteOK, Lever, Greenhouse and others) and freelance networks (Toptal, Arc.dev, Malt and others). Recruiter lookup uses listing pages, careers pages and search-result snippets, never private profiles. `/freelance-pitch` also searches a named client's public posts unless you pass `personality:off`.
+
+**What it saves.** Plain files in your project, never uploaded:
+
+- `.mz/outreach/<run>/` holds the strategy, listings, recruiter names, emails and LinkedIn URLs, client names, scores, the report, and letters or proposals. Letters carry your name, and your email if the CV has one.
+- `.mz/outreach/_history/source_quality.json` holds per-source hit counts keyed by a hash of your CV.
+- `.mz/task/<task_name>/` holds run state, including your preferences and CV path.
+
+**Sending.** The plugin drafts letters and proposals and submits or sends nothing. No agent has an email or application tool.
+
+**Deleting.** Remove the run folders under `.mz/outreach/`, the matching `.mz/task/` folders and `source_quality.json`.
 
 ## License
 

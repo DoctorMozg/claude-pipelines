@@ -16,7 +16,7 @@ This repository is a public plugin registry for Claude Code. It provides agents 
 ## Adding a New Plugin
 
 1. Create a new directory under `plugins/`
-1. Add `.claude-plugin/plugin.json` with `name`, `version` (the marketplace's current `metadata.version`), `description`, `license` and `author`, plus `dependencies` if it dispatches another plugin's agents
+1. Add `.claude-plugin/plugin.json` with `name`, `version` (the marketplace's current `metadata.version`), `description`, `license` and `author`, plus `dependencies` if it dispatches another plugin's agents. Also add a `displayName` ("Mozg …") and the directory listing links, which `tests/plugin_lint/test_directory_listing.py` checks: `homepage`, `repository`, `supportUrl` (the repo's issues), `documentationUrl` (the plugin's README on GitHub), `privacyPolicyUrl` (`PRIVACY.md`) and `termsOfServiceUrl` (`LICENSE`)
 1. Add agent/skill files in their respective subdirectories
 1. Add `.claude-plugin/icon.png`: a square PNG of 512 px, under 256 KiB of printable bytes, in the clay style of the existing icons. `tests/plugin_lint/test_directory_listing.py` fails without one
 1. Register the plugin in `.claude-plugin/marketplace.json` with `name`, `source`, `category` and `keywords`

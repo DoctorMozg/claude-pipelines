@@ -5,9 +5,13 @@
   },
   "description": "Development governance pipeline \u2014 generates, discusses, enforces, and reviews ADRs, RFCs/RFDs, design docs, and AI-decision provenance, gated by a human sign-off",
   "displayName": "Mozg Governance",
+  "documentationUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/plugins/mz-gov/README.md",
   "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-gov",
+  "privacyPolicyUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md",
   "repository": "https://github.com/DoctorMozg/claude-pipelines",
+  "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
+  "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
   "version": "0.56.1"
 }

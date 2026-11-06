@@ -1,6 +1,6 @@
 # mz-rules
 
-Curated coding rules for Claude Code, installed per project or for every session by one skill, `/init-rules`. It detects the project's languages and tooling, shows one plan, and writes nothing until you approve it.
+Curated coding rules for Claude Code, installed per project or for every session by one skill, `/init-rules`. It detects the project's languages and tooling, shows one plan, and writes no rules or settings until you approve it.
 
 ## Installation
 
@@ -61,6 +61,21 @@ Each rule is a focused guideline installed as a `.md` file in your rules directo
 | **personal-review**          | opt-in                    | Two-perspective review of real tradeoffs, short bug autopsy                                |
 | **delegation**               | opt-in, mz-base           | Which specialised agent gets web research, wide searches and docs writing                  |
 | **delegation-naturalize**    | opt-in, mz-creative       | `/naturalize` on prose docs after `technical-writer` changes them                          |
+
+## Data and network
+
+Nothing is sent to the author. The plugin has no telemetry, hooks, MCP servers or network calls. `/init-rules` runs inside your Claude Code session, so files it reads go to the model under your own account ([PRIVACY.md](https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md)).
+
+**Reads.** Project manifests and file extensions, the target `CLAUDE.md`, your settings files (for `enabledPlugins`) and the rules bundled in the plugin.
+
+**Writes.** The only write before you approve is run state under `.mz/task/<task_name>/`. The rest waits for one Approve gate, and Reject writes nothing more:
+
+- Rule files in `.claude/rules/` (project) or `~/.claude/rules/` (global), or marked blocks in `./CLAUDE.md` or `~/.claude/CLAUDE.md`.
+- Settings entries in `.claude/settings.local.json` (project) or `~/.claude/settings.json` (global), merged with your existing ones. One is a Stop hook that runs your own `pre-commit`. It lives in your settings, not in the plugin.
+- `.mz/` and `.claude/settings.local.json` appended to `.git/info/exclude` in a git project.
+- Hand-written `CLAUDE.md` sections that duplicate retired rules, deleted after you see each one verbatim.
+
+**Undo.** `/init-rules --uninstall` with the same scope and target removes the marked rules and the exact settings entries it added. It leaves `CLAUDE.md`, the settings file, the exclude lines and `.mz/` in place. It makes no backups, so use git to revert `--force` overwrites or removed sections.
 
 ## License
 

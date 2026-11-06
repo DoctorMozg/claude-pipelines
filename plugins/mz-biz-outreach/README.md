@@ -1,4 +1,4 @@
-<p align="center"><img src="../../assets/hero/mz-biz-outreach.webp" alt="mz-biz-outreach: business outreach intelligence" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-biz-outreach.webp" alt="mz-biz-outreach: business outreach intelligence" width="100%"></p>
 
 # mz-biz-outreach
 
@@ -176,6 +176,23 @@ The executive report ranks companies by composite score with individual dimensio
 ```
 
 The prefix date on the active-folder filename reflects the most recent interaction, so a directory listing sorts cards by recency naturally.
+
+## Data and network
+
+Nothing is sent to the author, and the plugin has no telemetry, hooks, MCP servers or scripts. What agents read and write goes to the model you've configured, under your own account ([PRIVACY.md](https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md)).
+
+**Web research.** Agents use Claude Code's WebSearch and WebFetch, choosing queries and pages from your brief. They look up companies and the people at them: directories, review sites (Glassdoor, Trustpilot, Indeed, Google Business), company sites, news, job postings, GitHub orgs and public LinkedIn pages. The profiler also searches a contact's public posts, talks and articles to infer a communication style. `personality:off` disables that. The copywriter and naturalizer agents that write the letters come from `mz-creative`.
+
+**What it saves.** Plain files in your project, never uploaded: company names, contact names, roles, emails, phone numbers, LinkedIn URLs, reputation and news notes, a style read per contact, and the letter drafts.
+
+- `.mz/outreach/<run>/` holds the brief, climate dossier, strategy, per-company JSON and cards, and the report.
+- `.mz/outreach/active/` holds enriched cards with their letters and your interaction log.
+- `.mz/task/<task_name>/` holds run state, parsed cards, enrichment, profiles and drafts.
+- `/outreach-brief` also appends your answers to `.mz/journal.md`.
+
+**Sending.** The plugin drafts letters and sends nothing. No skill or agent has an email or LinkedIn tool, so you copy and send them yourself.
+
+**Deleting.** Remove `.mz/outreach/` and the `.mz/task/` folders with `_outreach_` in their names. Delete matching lines from `.mz/journal.md` too.
 
 ## License
 

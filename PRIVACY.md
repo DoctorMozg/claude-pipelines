@@ -5,8 +5,9 @@ The mozg-pipelines plugins run inside Claude Code on your machine. The author ru
 ## What stays on your machine
 
 - Task state, reports, research and memory are plain files under `.mz/` in your project. Nothing uploads them.
-- The hooks in mz-dev-pipe, mz-knowledge and mz-memory are shell scripts that read and write local files. The one exception is mz-memory's background curation, described below.
-- mz-biz-outreach and mz-job-outreach save the companies, people and contact details they find as local cards under `.mz/outreach/`. Delete that folder to remove them.
+- The hooks in mz-dev-pipe, mz-handoff, mz-knowledge and mz-memory are shell scripts that read and write local files. The one exception is mz-memory's background curation, described below.
+- mz-biz-outreach and mz-job-outreach save the companies, people and contact details they find as local files under `.mz/outreach/`, with run state under `.mz/task/`. mz-job-outreach also keeps per-source hit counts keyed by a hash of your CV. Each plugin's README lists the folders to delete.
+- mz-rules writes rule files, `CLAUDE.md` blocks and entries in your Claude Code settings only after you approve. One entry is a Stop hook that runs your own `pre-commit`. `/init-rules --uninstall` removes what it added.
 
 ## What leaves your machine
 

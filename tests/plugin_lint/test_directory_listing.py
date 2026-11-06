@@ -9,19 +9,9 @@ from .conftest import PLUGINS_DIR, REPO_ROOT
 
 REPOSITORY_URL = "https://github.com/DoctorMozg/claude-pipelines"
 HOMEPAGE_URL = "https://www.sgon.ai/open-source/claude-pipelines"
-# The plugins submitted to Anthropic's directory; the rest stay marketplace-only.
-DIRECTORY_PLUGINS = (
-    "mz-base",
-    "mz-creative",
-    "mz-design",
-    "mz-dev-git",
-    "mz-dev-pipe",
-    "mz-funny",
-    "mz-gov",
-    "mz-knowledge",
-    "mz-research-pipe",
-)
-# Every plugin ships an icon, marketplace-only ones included, so all of them face the asset checks.
+# The listing shows these links; a missing one reads "Not set" on the plugin's page.
+FILE_URL = f"{REPOSITORY_URL}/blob/master/"
+# Every plugin is listed in Anthropic's directory, so each one faces every check below.
 ALL_PLUGINS = tuple(
     sorted(path.parent.parent.name for path in PLUGINS_DIR.glob("*/.claude-plugin/plugin.json"))
 )
@@ -82,37 +72,54 @@ class TestDirectoryManifests:
             (REPO_ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
         )
         listed = {entry["name"] for entry in marketplace["plugins"]}
-        assert set(DIRECTORY_PLUGINS) <= listed
+        assert set(ALL_PLUGINS) <= listed
 
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_manifest_carries_listing_fields(self, plugin: str) -> None:
         manifest = _manifest(plugin)
         display_name = manifest.get("displayName")
         assert isinstance(display_name, str)
         assert display_name.strip()
+
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
+    def test_manifest_links_the_listing_pages(self, plugin: str) -> None:
+        manifest = _manifest(plugin)
         assert manifest.get("homepage") == HOMEPAGE_URL
         assert manifest.get("repository") == REPOSITORY_URL
+        assert manifest.get("supportUrl") == f"{REPOSITORY_URL}/issues"
+        assert manifest.get("documentationUrl") == f"{FILE_URL}plugins/{plugin}/README.md"
+        assert manifest.get("privacyPolicyUrl") == f"{FILE_URL}PRIVACY.md"
+        assert manifest.get("termsOfServiceUrl") == f"{FILE_URL}LICENSE"
 
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    @pytest.mark.parametrize("field", ["documentationUrl", "privacyPolicyUrl", "termsOfServiceUrl"])
+    def test_linked_repo_files_exist(self, field: str) -> None:
+        missing = [
+            plugin
+            for plugin in ALL_PLUGINS
+            if not (REPO_ROOT / str(_manifest(plugin)[field]).removeprefix(FILE_URL)).is_file()
+        ]
+        assert missing == []
+
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_dependencies_are_directory_plugins(self, plugin: str) -> None:
         # A dependency that is only in the marketplace can't be installed from the directory.
         dependencies = _manifest(plugin).get("dependencies", [])
         assert isinstance(dependencies, list)
-        missing = sorted(set(dependencies) - set(DIRECTORY_PLUGINS))
-        assert missing == [], f"{plugin} depends on plugins outside the directory set"
+        missing = sorted(set(dependencies) - set(ALL_PLUGINS))
+        assert missing == [], f"{plugin} depends on plugins this repo does not ship"
 
 
 class TestDirectoryReadmes:
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_readme_has_enough_prose(self, plugin: str) -> None:
         words = len(_FENCED_CODE.sub("", _readme(plugin)).split())
         assert words >= MIN_README_WORDS, f"{plugin}/README.md has {words} words outside code"
 
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_readme_discloses_data_handling(self, plugin: str) -> None:
         assert re.search(r"^## Data and network$", _readme(plugin), re.MULTILINE)
 
-    @pytest.mark.parametrize("plugin", DIRECTORY_PLUGINS)
+    @pytest.mark.parametrize("plugin", ALL_PLUGINS)
     def test_readme_links_stay_inside_the_plugin(self, plugin: str) -> None:
         # The listing shows the README outside the repo, so a link out of the folder breaks.
         assert links_leaving_folder(_readme(plugin), PLUGINS_DIR / plugin) == []

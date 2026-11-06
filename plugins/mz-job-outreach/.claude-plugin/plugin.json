@@ -4,8 +4,14 @@
     "url": "https://github.com/drmozg"
   },
   "description": "Job and freelance hunt intelligence \u2014 /job-search and /freelance-search run full CV-to-listings pipelines for salaried roles and freelance gigs; /job-recruiter-info does one-shot recruiter discovery; /freelance-pitch drafts a grounded proposal for one gig (\u2264350 words, milestones/pricing cited verbatim from the gig)",
+  "displayName": "Mozg Job Hunt",
+  "documentationUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/plugins/mz-job-outreach/README.md",
   "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
   "license": "MIT",
   "name": "mz-job-outreach",
+  "privacyPolicyUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md",
+  "repository": "https://github.com/DoctorMozg/claude-pipelines",
+  "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
+  "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
   "version": "0.56.1"
 }
