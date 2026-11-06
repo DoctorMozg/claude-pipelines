@@ -253,11 +253,11 @@ Command hooks run with the user's full permissions (hooks.md). Treat every input
 - **Stop flag injection** with `grep -F -- "$VAR"` or `printf '%s' "$VAR" | grep …`.
 - **Check paths** from input before `cd` or any file operation: no `..` segment (hooks.md), and absolute (repo convention).
 - **Skip sensitive files** such as `.env`, `.git/` and keys (hooks.md).
-- **Validate values from project files** before writing them where a later step may run them. `detect-tooling.sh` replaces manifest commands that fail an allowlist with a placeholder. A `-p` or SDK session never shows the workspace trust dialog (hooks.md), so hooks can run over a repository nobody has reviewed.
+- **Validate values from project files** before writing them where a later step may run them. A `-p` or SDK session never shows the workspace trust dialog (hooks.md), so hooks can run over a repository nobody has reviewed.
 
 ## 13. Testing
 
-**Automated tests.** Repo convention: a new or changed hook script with real logic gets pytest coverage that runs the script through `subprocess` with a synthetic event on stdin and a temporary root, then asserts the exit code and the output shape. The suites in `tests/mz_memory/`, `tests/mz_knowledge/test_vault_context.py` and `tests/mz_dev_pipe/test_detect_tooling.py` are the models, and the `path_without_jq` fixture in `tests/conftest.py` builds a PATH without `jq` for the missing-`jq` case. A new test folder goes into `testpaths` in `pyproject.toml`, since pytest collects nothing outside it. `make test` runs the suite, and so does the CI `tests` job.
+**Automated tests.** Repo convention: a new or changed hook script with real logic gets pytest coverage that runs the script through `subprocess` with a synthetic event on stdin and a temporary root, then asserts the exit code and the output shape. The suites in `tests/mz_memory/` and `tests/mz_knowledge/test_vault_context.py` are the models, and the `path_without_jq` fixture in `tests/conftest.py` builds a PATH without `jq` for the missing-`jq` case. A new test folder goes into `testpaths` in `pyproject.toml`, since pytest collects nothing outside it. `make test` runs the suite, and so does the CI `tests` job.
 
 **Smoke runs.** Every hook script runs without the harness. Feed a full event, with `hook_event_name`, `session_id`, `cwd` and the event's own fields, and point the script at a temporary root:
 

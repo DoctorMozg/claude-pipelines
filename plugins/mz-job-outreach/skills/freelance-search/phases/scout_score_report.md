@@ -292,8 +292,8 @@ for source in $(jq -r '[.[].source] | unique[]' "<RUN_DIR>/scored.json"); do
     .[$cv][$src].runs = (
       [{run_date: $date, top_n_hits: $tn, primary_hits: $ph, alias_hits: $ah}] +
       (.[$cv][$src].runs // []) | .[:3]
-    )' "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json" > /tmp/sq.json
-  mv /tmp/sq.json "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json"
+    )' "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json" > "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json.tmp" \
+    && mv "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json.tmp" "<PROJECT_ROOT>/.mz/outreach/_history/source_quality.json"
 done
 ```
 

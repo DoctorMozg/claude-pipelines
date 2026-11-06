@@ -4,10 +4,10 @@ Detailed implementation for install, update, and uninstall flows. Entered from S
 
 ## Step 1: Resolve target path
 
-| Scope   | Target=rules       | Target=claudemd       |
-| ------- | ------------------ | --------------------- |
-| project | `.claude/rules/`   | `./CLAUDE.md`         |
-| global  | `~/.claude/rules/` | `~/.claude/CLAUDE.md` |
+| Scope   | Target=rules          | Target=claudemd          |
+| ------- | --------------------- | ------------------------ |
+| project | `.claude/rules/`      | `./CLAUDE.md`            |
+| global  | `<CONFIG_DIR>/rules/` | `<CONFIG_DIR>/CLAUDE.md` |
 
 - `target=rules`: create the target directory at apply time if missing.
 - `target=claudemd`: if the file is missing and not `--uninstall`, flag `will_create=true` for the approval gate.
@@ -83,7 +83,7 @@ These files carry one person's taste rather than broadly evidenced defaults, so 
 | ---------- | ---------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Delegation | `delegation.md`, plus `delegation-naturalize.md` when mz-creative is enabled | mz-base enabled | Sends sourced web research to `pipeline-web-researcher`, wide read-only searches to `Explore` and docs writing to `technical-writer`; with mz-creative, docs then go through `/naturalize` |
 
-`delegation.md` names agents that mz-base ships, so the group is offered only when mz-base is enabled; otherwise skip its question in Step 4 and record `Delegation: skip`. `delegation-naturalize.md` names a mz-creative skill, so it joins only when mz-creative is enabled. A plugin counts as enabled when `enabledPlugins` holds a `<plugin>@<marketplace>` key set to `true`. Check the settings files in precedence order, skipping any that don't exist: in project scope `.claude/settings.local.json`, then `.claude/settings.json` (both at the repository root), then `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`; in global scope only the last one. For each file and plugin (`mz-base`, `mz-creative`) run:
+`delegation.md` names agents that mz-base ships, so the group is offered only when mz-base is enabled; otherwise skip its question in Step 4 and record `Delegation: skip`. `delegation-naturalize.md` names a mz-creative skill, so it joins only when mz-creative is enabled. A plugin counts as enabled when `enabledPlugins` holds a `<plugin>@<marketplace>` key set to `true`. Check the settings files in precedence order, skipping any that don't exist: in project scope `.claude/settings.local.json`, then `.claude/settings.json` (both at the repository root), then `<CONFIG_DIR>/settings.json`; in global scope only the last one. For each file and plugin (`mz-base`, `mz-creative`) run:
 
 ```bash
 jq -r --arg p "<plugin>@" '[(.enabledPlugins // {}) | to_entries[] | select(.key | startswith($p)) | .value] | if length == 0 then "unset" elif any(. == true) then "true" else "false" end' "<settings file>"
@@ -128,7 +128,7 @@ In rules mode "present" means `<target>/<filename>` exists and its version is th
 **Stale content (install only).** Read `<SKILL_DIR>/references/retired.md`.
 
 1. Retired ids: a claudemd start sentinel for a retired id → `retire` (block). In rules mode, `<target>/<id>.md` with a marker line → `retire` (file). Without a marker, report it as legacy, or `retire` it with `--force`.
-1. Hand-written copies, in both modes: read the scope's CLAUDE.md (`./CLAUDE.md` for project, `~/.claude/CLAUDE.md` for global). Outside sentinel blocks, find each heading that matches a Sections row as `retired.md` describes. A section runs from its heading to the next heading of the same or higher level. Propose it as `hand-remove` when its Now in is `retired`, or when the rule named there is selected in this run. A parent heading left with no content once its subsections go is proposed too.
+1. Hand-written copies, in both modes: read the scope's CLAUDE.md (`./CLAUDE.md` for project, `<CONFIG_DIR>/CLAUDE.md` for global). Outside sentinel blocks, find each heading that matches a Sections row as `retired.md` describes. A section runs from its heading to the next heading of the same or higher level. Propose it as `hand-remove` when its Now in is `retired`, or when the rule named there is selected in this run. A parent heading left with no content once its subsections go is proposed too.
 1. Never propose text inside sentinel blocks, and leave everything outside the proposed sections as it is.
 
 **Uninstall.** Rules mode lists every bundled or retired rule filename that exists at the target, personal and delegation files included. Claudemd mode lists every `<!-- mz-rule:<id>` sentinel pair in CLAUDE.md.

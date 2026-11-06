@@ -4,7 +4,7 @@
 
 Six skills that run multi-agent development workflows in your repository. They build a feature test-first, fix a bug, bring code up to stated criteria (passing tests, a refactor, or a sweep for AI-generated leftovers), optimize against a benchmark, audit, or answer a question about the code. Each skill splits the work across specialist agents (researchers, planners, coders, reviewers, test writers) and stops at approval gates for your sign-off. It's for developers who want an agent team to carry a well-defined task through research, implementation, review and testing, with the plan or diff in front of them before any edit starts.
 
-**Works in:** Claude Code and Cowork. claude.ai chat loads the skills but not the agents and hooks they rely on.
+**Works in:** Claude Code and Cowork. claude.ai chat loads the skills but not the agents they rely on.
 
 ## Installation
 
@@ -208,8 +208,6 @@ State is persisted to `.mz/task/<task_name>/` so pipelines can be inspected or r
 
 Everything runs inside your Claude Code or Cowork session. The plugin has no server and no telemetry, and nothing is sent to the author. As with any Claude Code work, the files agents read go to the model you've configured, under your own account.
 
-**SessionStart hook.** `scripts/detect-tooling.sh` runs on session startup, `/clear` and compaction. It reads manifests and lockfiles in the project root (for example `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`), infers test, lint, format, type-check and install commands, and writes them to `.mz/tooling.json`, which the pipelines use as a cache of your project's commands. It runs none of those commands and makes no network calls. It then adds one line to the session context: `Project tooling detected: <ecosystems>. Full details in <path>`. Without `jq`, the hook skips JavaScript tool detection and the context line. If `.mz/` isn't writable, it logs to stderr and exits cleanly.
-
 **Edits to your code.** `/build`, `/debug`, `/polish` and `/optimize` change files in your project. Each stops at an approval gate before its first edit: the plan (`/build`), the diagnosis (`/debug`), the assessment (`/polish`, which lists every file a cleanup or residue criterion covers), and the contract and strategy (`/optimize`). Two exceptions:
 
 - `/debug certainty:low` has no gate and adds exploratory tests to your test files.
@@ -217,7 +215,7 @@ Everything runs inside your Claude Code or Cowork session. The plugin has no ser
 
 `/audit` and `/ask` don't edit your code. A missing answer at a gate is never approval, so the run stops. Setting `MZ_DEV_PIPE_AUTO_APPROVE=1` in the environment (meant for CI) skips the approve/reject prompt: the plan is still printed, and each skipped gate is logged as auto-approved. Gates that ask you to choose between more options still stop the run.
 
-**Your project's commands.** The pipelines run your own test, lint, format and type-check commands through Bash. The commands come from your project instructions, the `.mz/tooling.json` cache, or your manifests. `/debug` runs your tests to reproduce a bug. `/optimize` runs the measurement and correctness commands from its contract, which you see at the contract gate before any of them runs. For container and build-pipeline targets, that can include your build. The skills pre-approve only fixed commands such as `git diff`, `mkdir` and the plugin's own journal script, so Claude Code asks before running each of your commands unless your permission settings allow it. A `claude -p` run has nobody to answer, so pass them in `--allowedTools`, for example `--allowedTools "Bash(npm test *)"`.
+**Your project's commands.** The pipelines run your own test, lint, format and type-check commands through Bash. The commands come from your project instructions or your manifests. `/debug` runs your tests to reproduce a bug. `/optimize` runs the measurement and correctness commands from its contract, which you see at the contract gate before any of them runs. For container and build-pipeline targets, that can include your build. The skills pre-approve only fixed commands such as `git diff`, `mkdir` and the plugin's own journal script, so Claude Code asks before running each of your commands unless your permission settings allow it. A `claude -p` run has nobody to answer, so pass them in `--allowedTools`, for example `--allowedTools "Bash(npm test *)"`.
 
 **Git worktrees.** `/optimize` builds each candidate in a temporary git worktree, so your branch, HEAD and index stay untouched. Candidates start from a snapshot commit of your working tree, held by a ref under `refs/mz/optimize/<task_name>/`. Worktrees, their branches and that ref are deleted after each round and on every exit. Winning patches stay in `.mz/task/<task_name>/patches/`.
 

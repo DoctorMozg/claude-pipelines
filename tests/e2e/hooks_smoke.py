@@ -27,8 +27,7 @@ log = logging.getLogger("hooks_smoke")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RECORDER = Path(__file__).resolve().parent / "fixtures" / "hook-recorder"
-# mz-dev-pipe depends on mz-base, and a plugin whose dependency isn't loaded is skipped.
-PLUGINS = ("mz-memory", "mz-dev-pipe", "mz-base")
+PLUGINS = ("mz-memory",)
 KNOWLEDGE_PLUGINS = ("mz-knowledge",)
 HANDOFF_PLUGINS = ("mz-handoff",)
 FIXTURE_LIB = Path(__file__).resolve().parents[2] / "evals/mz-memory/_lib/fixture.sh"
@@ -38,7 +37,6 @@ RUN_TIMEOUT_S = 300
 PINNED = "QUILLFEATHER"
 TASK = "2026_11_02_build_smoke_capture"
 MEMORY = Path(".mz/memory/MEMORY.md")
-TOOLING = Path(".mz/tooling.json")
 RECORDS = Path(".hook-recorder/sessionstart.log")
 # Plugin eval traces omit UserPromptSubmit output, so the correction nudge is only observable here.
 NUDGE = "If this corrects something you did"
@@ -82,7 +80,6 @@ source "$1"
 init_project
 write_memory "- [2026-10-12] The deploy codename for this service is {PINNED}." ""
 printf '## Decisions\\n- Keep hook smoke runs on haiku\\n' | write_task {TASK} complete
-printf '[project]\\nname = "smoke"\\n\\n[tool.ruff]\\nline-length = 100\\n' > pyproject.toml
 """
 
 
@@ -108,10 +105,6 @@ class Harness:
         path = self.repo / RECORDS
         lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
         return lines[-1].removeprefix("source=") if lines else "none"
-
-    def tooling_mtime(self) -> int:
-        path = self.repo / TOOLING
-        return path.stat().st_mtime_ns if path.exists() else 0
 
 
 def check_preconditions(plugins_root: Path) -> None:
@@ -139,12 +132,6 @@ def startup_checks(session: Session, harness: Harness) -> list[Check]:
         Check("recorder saw source=startup", "startup", harness.last_source()),
         Check("SessionStart injected the pinned memory", True, any(PINNED in out for out in start)),
         Check(
-            "SessionStart announced the python tooling",
-            True,
-            any("Project tooling detected: python" in out for out in start),
-        ),
-        Check("detect-tooling wrote tooling.json", True, (harness.repo / TOOLING).is_file()),
-        Check(
             "UserPromptSubmit injected the pinned memory",
             True,
             any(PINNED in out for out in prompt),
@@ -162,7 +149,7 @@ def startup_checks(session: Session, harness: Harness) -> list[Check]:
     ]
 
 
-def resume_checks(session: Session, harness: Harness, tooling_mtime: int) -> list[Check]:
+def resume_checks(session: Session, harness: Harness) -> list[Check]:
     start = session.hook_outputs("SessionStart:resume")
     prompt = session.hook_outputs("UserPromptSubmit")
     return [
@@ -171,7 +158,6 @@ def resume_checks(session: Session, harness: Harness, tooling_mtime: int) -> lis
         Check(
             "memory not re-injected on resume", False, any("Project memory" in out for out in start)
         ),
-        Check("detect-tooling skipped on resume", tooling_mtime, harness.tooling_mtime()),
     ]
 
 
@@ -292,9 +278,8 @@ def run_all(harness: Harness) -> list[tuple[Session, list[Check]]]:
             "startup", STARTUP_PROMPT, plugins, ["--session-id", session_id]
         )
         results = [(startup, startup_checks(startup, harness))]
-        tooling_mtime = harness.tooling_mtime()
         resume = harness.claude.run("resume", RESUME_PROMPT, plugins, ["--resume", session_id])
-        results.append((resume, resume_checks(resume, harness, tooling_mtime)))
+        results.append((resume, resume_checks(resume, harness)))
         compact = harness.claude.run("compact", "/compact", plugins, ["--resume", session_id])
         results.append((compact, compact_checks(compact, harness)))
         return results

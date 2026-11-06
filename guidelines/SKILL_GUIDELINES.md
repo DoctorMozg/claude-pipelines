@@ -289,7 +289,6 @@ Wave complete (<wave label>) — <returned>/<dispatched> agents returned
 Resolve the test, lint, format and type-check commands before the first phase that runs one. Use these sources in order:
 
 1. the project instructions Claude Code loaded: CLAUDE.md, or AGENTS.md when there is no CLAUDE.md (best-practices.md; memory.md);
-1. `.mz/tooling.json`, when mz-dev-pipe is enabled;
 1. the manifests.
 
 Record the result and its source in `.mz/task/<task_name>/tooling.md`.

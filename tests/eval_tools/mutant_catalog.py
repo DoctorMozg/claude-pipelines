@@ -24,7 +24,6 @@ class Mutant:
 
 MEM = "plugins/mz-memory"
 NOTE = f"{MEM}/skills/memory-note/SKILL.md"
-DTS = "plugins/mz-dev-pipe/scripts/detect-tooling.sh"
 INJECT = f"{MEM}/scripts/memory-inject.sh"
 MEM_EVALS = "evals/mz-memory"
 INJECT_CASES = f"{MEM_EVALS}/{{inject-*,prompt-deep-entry}}/case.yaml"
@@ -54,10 +53,6 @@ ANSWERS = (
     ("inject-recent-decision", "answer-has-duration"),
     ("inject-instruction-in-log", "answer-has-cluster"),
     ("prompt-deep-entry", "answer-has-port"),
-)
-JS_ANCHOR = '    echo "$DEPS" | grep -qx \'vitest\' && JS_TEST="vitest"\n'
-JS_READS_SCRIPT = (
-    JS_ANCHOR + "    JS_TEST=$(jq -r '.scripts.test // empty' \"$PROJECT_DIR/package.json\")\n"
 )
 NOTE_DESCRIPTION = (
     "description: 'Saves a note or decision to project memory; --lesson saves what a correction "
@@ -514,83 +509,5 @@ MUTANTS = [
                 "lessons-promote-near-miss-delete-lesson",
             )
         ),
-    ),
-    Mutant(
-        "tooling-never-starts",
-        (Edit("plugins/mz-dev-pipe/hooks/hooks.json", '"startup|clear|compact"', '"resume"'),),
-        "mz-dev-pipe",
-        case("tooling-*"),
-        tuple(
-            ("tooling-python", g)
-            for g in (
-                "test-command",
-                "lint-command",
-                "format-command",
-                "typecheck-command",
-                "install-command",
-                "pre-commit-tool",
-                "hook-announced-python",
-            )
-        )
-        + tuple(
-            ("tooling-node-pnpm", g)
-            for g in (
-                "test-command",
-                "lint-command",
-                "format-command",
-                "typecheck-command",
-                "install-command",
-                "hook-announced-javascript",
-            )
-        )
-        + tuple(
-            ("tooling-polyglot", g)
-            for g in ("go-detected", "rust-detected", "javascript-detected", "hook-announced-all")
-        )
-        + (
-            ("tooling-hostile-manifest", "javascript-detected"),
-            ("tooling-hostile-manifest", "hook-announced-javascript"),
-            ("tooling-none", "tooling-json-written"),
-            ("tooling-context-guides-model", "read-tooling-json"),
-            ("tooling-context-guides-model", "hook-announced-python"),
-        ),
-    ),
-    # A wrong tooling.json doesn't move this answer, since pyproject's [tool.poetry] gives it away;
-    # a question whose answer can't contain "poetry" shows the grader isn't vacuous.
-    Mutant(
-        "tooling-asks-python-version",
-        (
-            Edit(
-                "evals/mz-dev-pipe/tooling-context-guides-model/case.yaml",
-                "What is the exact command to install this project's dependencies?",
-                "Which Python version does this project require?",
-            ),
-        ),
-        "mz-dev-pipe",
-        case("tooling-context-guides-model"),
-        (("tooling-context-guides-model", "answer-is-poetry"),),
-    ),
-    Mutant(
-        "tooling-announces-empty",
-        (Edit(DTS, '  if [[ -n "$ECOSYSTEMS" ]]; then', "  if true; then"),),
-        "mz-dev-pipe",
-        case("tooling-none"),
-        (("tooling-none", "no-tooling-announced"),),
-    ),
-    Mutant(
-        "tooling-reads-scripts-unvalidated",
-        (Edit(DTS, JS_ANCHOR, JS_READS_SCRIPT + "    validate_command() { return 0; }\n"),),
-        "mz-dev-pipe",
-        case("tooling-hostile-manifest"),
-        (("tooling-hostile-manifest", "no-manifest-text"),),
-    ),
-    # The sanitizer alone must still hold the line when a future change reads manifest scripts.
-    Mutant(
-        "tooling-reads-scripts-validated",
-        (Edit(DTS, JS_ANCHOR, JS_READS_SCRIPT),),
-        "mz-dev-pipe",
-        case("tooling-hostile-manifest"),
-        (),
-        must_pass=("tooling-hostile-manifest",),
     ),
 ]

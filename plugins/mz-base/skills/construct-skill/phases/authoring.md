@@ -132,7 +132,7 @@ Print every item as a visible list marked PASS, FAIL or n/a (with the reason), w
 - [ ] Predictable failures are listed under `## Error Handling` with their responses. Escalation follows "Error Handling and Escalation", including the case where nobody can answer.
 - [ ] Reports use `.mz/<root>/<task_name>.md`, and the skill passes report paths to agents ("Report Naming").
 - [ ] Every wave of two or more agents has a manifest and a rollup, and stays within the wave cap ("Wave Observability"; AGENTS_GUIDELINES.md, "Parallel Waves").
-- [ ] Tooling is resolved in order (project instructions, then `.mz/tooling.json`, then the manifests) and recorded in `tooling.md`, with the no-tests behavior stated ("Tooling Detection").
+- [ ] Tooling is resolved in order (project instructions, then the manifests) and recorded in `tooling.md`, with the no-tests behavior stated ("Tooling Detection").
 - [ ] Input formats are documented. Missing, ambiguous and omitted arguments follow "Input Parsing". Input collectors are kept apart from gates, and open values are recorded in `state.md`.
 - [ ] Overview, When to Use and Core Process are present, and what must survive compaction sits in the first 5,000 tokens ("Skill Anatomy").
 - [ ] Dispatch prompts follow AGENTS_GUIDELINES.md, "Dispatch Prompts". A dispatch that overrides `model` or `effort` gives a one-line reason, inside its `(model: **X**)` note when it has one (AGENTS_GUIDELINES.md, "Model and Effort").

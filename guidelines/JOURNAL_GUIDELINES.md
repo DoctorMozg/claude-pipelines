@@ -14,7 +14,7 @@ Claims about Claude Code behavior carry the short source tags described at the t
 
 ## 1. Project Root
 
-Everything under `.mz/` lives under one project root: the journal, the task folders under `.mz/task/`, reports, the tooling cache `.mz/tooling.json`, mz-memory's `.mz/memory/` and mz-handoff's `.mz/handoff/`. A skill resolves the root once, at the start of the run and before any `cd` or worktree switch:
+Everything under `.mz/` lives under one project root: the journal, the task folders under `.mz/task/`, reports, mz-memory's `.mz/memory/` and mz-handoff's `.mz/handoff/`. A skill resolves the root once, at the start of the run and before any `cd` or worktree switch:
 
 ```bash
 echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"

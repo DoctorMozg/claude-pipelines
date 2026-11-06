@@ -68,7 +68,7 @@ Nothing is sent to the author. The plugin has no telemetry, hooks, MCP servers o
 
 **Reads.** Project manifests and file extensions, the target `CLAUDE.md`, your settings files (for `enabledPlugins`) and the rules bundled in the plugin.
 
-**Writes.** The only write before you approve is run state under `.mz/task/<task_name>/`. The rest waits for one Approve gate, and Reject writes nothing more:
+**Writes.** The only write before you approve is run state under `.mz/task/<task_name>/`. The rest waits for one Approve gate, and Reject writes nothing more. Global paths sit under `CLAUDE_CONFIG_DIR` instead of `~/.claude/` when that variable is set:
 
 - Rule files in `.claude/rules/` (project) or `~/.claude/rules/` (global), or marked blocks in `./CLAUDE.md` or `~/.claude/CLAUDE.md`.
 - Settings entries in `.claude/settings.local.json` (project) or `~/.claude/settings.json` (global), merged with your existing ones. One is a Stop hook that runs your own `pre-commit`. It lives in your settings, not in the plugin.

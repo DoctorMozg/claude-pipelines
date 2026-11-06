@@ -155,7 +155,7 @@ So an agent that produces a rich artifact (a plan, report or large code generati
 - Treat the returned text as a pointer, not as the result. The orchestrator reads the artifact before acting on it.
 - Write artifacts and progress as you go, not at the end. Auto-compaction fires near the end of the context window by default. The threshold is configurable through `autoCompactWindow`, which agent frontmatter also accepts (changelog 2.1.296). In an interactive session on the one-hour cache TTL, a main conversation over 200K tokens also compacts after sitting idle for about an hour (changelog 2.1.299, 2.1.314); this doesn't apply to subagents. A compaction summary can drop specific paths and decisions.
 
-Cross-phase state lives in `.mz/task/<task_name>/state.md`, with the keys defined in `guidelines/STATE_SCHEMA.md`; see SKILL_GUIDELINES.md, "State Management". An agent resolves test, lint and type-check commands in the order given in SKILL_GUIDELINES.md, "Tooling Detection": the project instructions first, then `.mz/tooling.json` when mz-dev-pipe is enabled, then the manifests.
+Cross-phase state lives in `.mz/task/<task_name>/state.md`, with the keys defined in `guidelines/STATE_SCHEMA.md`; see SKILL_GUIDELINES.md, "State Management". An agent resolves test, lint and type-check commands in the order given in SKILL_GUIDELINES.md, "Tooling Detection": the project instructions first, then the manifests.
 
 ## 8. Structural Constraints
 

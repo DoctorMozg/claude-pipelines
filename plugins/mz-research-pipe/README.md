@@ -145,7 +145,7 @@ Per skill:
 - `/translate`: language detection uses no third-party service. It tries a Unicode-script check, then a Claude agent, then asks you. After approval, flagged chunks are spot-checked against Wiktionary (single words, up to 10 lookups per run) and MyMemory (sentences from your files, up to 9 queries per run). The plan shows this budget before you approve it.
 - As in any Claude Code session, your prompts and the files Claude reads go to the model you use, under your own account.
 
-**Hooks and the author.** mz-research-pipe has no hooks of its own, and its `shared/` folder holds markdown rule files the skills read. Its dependency mz-dev-pipe registers one SessionStart hook (startup, clear and compact) that detects the project's test, lint, format and type-check commands and writes `.mz/tooling.json` locally, with no network calls. mz-base has no hooks. Nothing is sent to the author: no telemetry, analytics or crash reports.
+**Hooks and the author.** mz-research-pipe has no hooks of its own, and its `shared/` folder holds markdown rule files the skills read. Its dependencies mz-dev-pipe and mz-base have no hooks either. Nothing is sent to the author: no telemetry, analytics or crash reports.
 
 ## Support
 

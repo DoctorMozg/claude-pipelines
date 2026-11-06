@@ -11,8 +11,8 @@ allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(git check-ignore *
 
 Install curated development rules based on detected project context. Two delivery modes:
 
-- `--target=rules` (default) — write rule files into `.claude/rules/` (project) or `~/.claude/rules/` (global). Files with `paths:` frontmatter stay path-scoped.
-- `--target=claudemd` — inject rule content directly into `./CLAUDE.md` (project) or `~/.claude/CLAUDE.md` (global), wrapped in sentinel blocks for idempotent re-runs and clean uninstall.
+- `--target=rules` (default) — write rule files into `.claude/rules/` (project) or `<CONFIG_DIR>/rules/` (global). Files with `paths:` frontmatter stay path-scoped.
+- `--target=claudemd` — inject rule content directly into `./CLAUDE.md` (project) or `<CONFIG_DIR>/CLAUDE.md` (global), wrapped in sentinel blocks for idempotent re-runs and clean uninstall.
 
 Personal preference groups install only when the user picks them, and so does the Delegation group, which routes web research, wide searches and docs writing to specialised agents. Every install also proposes a few settings entries that Claude Code enforces on its own (ask before `git push`, deny `.env` reads, a pre-commit Stop hook, attribution off). Re-runs also clean up stale content: rules this skill has retired, installs from older versions, and hand-written CLAUDE.md copies of retired or rewritten sections. One approval gate covers all of it together with the settings.
 
@@ -30,7 +30,7 @@ Installing, refreshing or uninstalling curated development rules for one project
 ## Arguments
 
 - `project` (default) → scope to working directory
-- `global` → scope to `~/.claude/`
+- `global` → scope to `<CONFIG_DIR>` (`~/.claude/` unless `CLAUDE_CONFIG_DIR` is set)
 - `--target=rules` (default) → write as individual rule files
 - `--target=claudemd` → inject into CLAUDE.md with sentinel blocks
 - `--force` → overwrite existing rule files / replace existing sentinel blocks, including unmarked legacy files from older installs
@@ -44,8 +44,9 @@ Parse from `$ARGUMENTS`. Unknown or conflicting tokens → AskUserQuestion; neve
 - **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
+- **CONFIG_DIR**: resolved once in setup with `printf '%s\n' "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"`. Claude Code reads user rules, the user CLAUDE.md and user settings from there, so global scope writes all three under it.
 
-Phase files write `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` because they get no variable substitution when read. Replace each with the absolute path above before reading a file or running a Bash command.
+Phase files write `<SKILL_DIR>`, `<PLUGIN_ROOT>`, `<PROJECT_ROOT>` and `<CONFIG_DIR>` because they get no variable substitution when read. Replace each with the absolute path above before reading a file or running a Bash command.
 
 ## Core Process
 
@@ -59,7 +60,7 @@ Phase files write `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<PROJECT_ROOT>` because th
 
 ### Phase 0: Setup
 
-1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
+1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below. Resolve `CONFIG_DIR` the same way.
 1. Parse `$ARGUMENTS`: scope (`project`/`global`), target (`rules`/`claudemd`), `--force`, `--uninstall`. Unknown token → AskUserQuestion.
 1. `task_name` = `<YYYY_MM_DD>_init_rules_<scope>_<target>` where `<YYYY_MM_DD>` is today's date (underscores); on same-day collision append `_v2`, `_v3`.
 1. Create `<TASK_DIR><task_name>/`.

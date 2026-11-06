@@ -30,7 +30,7 @@ Do not dispatch for source augmentation — that is `job-source-researcher` with
 
 You receive:
 
-1. **CV path** — local path to the candidate's CV (PDF, txt, md, docx).
+1. **CV path** — local path to the candidate's CV, a `.md` or `.txt` file. The skill rejects PDF and DOCX before dispatch.
 1. **Free-text preferences** — verbatim string from the user; may include region, rate floor, engagement types, exclusions.
 1. **Region scope** — selected by the user at runtime (`Global`, `EU`, `US`, `DACH`, `UK`, `France`, `CV-driven`).
 1. **Recency window (days)** — freshness cutoff for listings.

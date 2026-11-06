@@ -44,7 +44,7 @@ State these limits in the gate's settings section:
 
 ## Step 1: Plan the settings changes
 
-1. Settings file: project scope → `.claude/settings.local.json` at the repository root (`git rev-parse --show-toplevel`), or in the working directory outside git. Global scope → `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/settings.json`.
+1. Settings file: project scope → `.claude/settings.local.json` at the repository root (`git rev-parse --show-toplevel`), or in the working directory outside git. Global scope → `<CONFIG_DIR>/settings.json`.
 1. If `command -v jq` fails, mark the settings section `skipped: jq not installed`, and print the fragment in the final report so the user can paste it. Stop here.
 1. If the file exists, run `jq empty "<file>"`. On a parse error, stop and AskUserQuestion with the path and jq's message. Never overwrite a file jq can't parse.
 1. Install: mark each entry `add` or `already present`. `attribution` counts as present when the key exists with any value, since that value is the user's choice. The Stop hook counts as present when an existing Stop hook has the identical command string.

@@ -11,6 +11,9 @@ import pytest
 
 from .handoff_helpers import BASH, SCRIPTS, clean_env
 
+MEMORY_COMMON_LIB = SCRIPTS.parents[1] / "mz-memory" / "scripts" / "lib" / "common.sh"
+FIND_ROOT_BODY = re.compile(r"^find_project_root\(\) \{\n.*?^\}$", re.S | re.M)
+
 STOP_SCRIPT = SCRIPTS / "handoff-stop.sh"
 SESSION_SCRIPT = SCRIPTS / "handoff-session.sh"
 FACTS_SCRIPT = SCRIPTS / "handoff-facts.sh"
@@ -553,3 +556,16 @@ class TestFacts:
 
         assert result.returncode == 1
         assert "gone.jsonl not found" in result.stderr
+
+
+class TestProjectRootCopy:
+    # mz-memory's copy is the original; mz-handoff must resolve the same .mz/ root.
+    def test_find_project_root_matches_mz_memory_copy(self) -> None:
+        handoff_copy = FIND_ROOT_BODY.search(
+            (SCRIPTS / "lib" / "handoff.sh").read_text(encoding="utf-8")
+        )
+        memory_copy = FIND_ROOT_BODY.search(MEMORY_COMMON_LIB.read_text(encoding="utf-8"))
+
+        assert handoff_copy is not None
+        assert memory_copy is not None
+        assert handoff_copy.group(0) == memory_copy.group(0)
