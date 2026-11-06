@@ -10,11 +10,13 @@ shopt -s inherit_errexit 2>/dev/null || true
 #        memory-note.sh --log "background activity entry"
 #        memory-note.sh --lesson "WHEN … → … — WHY …"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Hooks get CLAUDE_PLUGIN_ROOT (PLUGIN_ROOT under Codex); a skill's Bash call gets neither, so set both.
+PLUGIN_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+CLAUDE_PLUGIN_ROOT=$PLUGIN_ROOT
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 # shellcheck source=lib/lessons.sh
-source "${SCRIPT_DIR}/lib/lessons.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/lessons.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_FILE="${PROJECT_DIR}/.mz/memory/MEMORY.md"

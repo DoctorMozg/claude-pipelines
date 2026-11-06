@@ -29,7 +29,7 @@ NEEDS_THE_MODEL = {
 }
 NUDGE = "/memory-note --lesson"
 # Off so capture never starts the curator, which would call the real claude CLI.
-NO_CURATOR = {"MZ_MEMORY_COMPRESS": "0"}
+NO_CURATOR = {"MZ_MEMORY_COMPRESS": "0", "CLAUDE_PLUGIN_ROOT": str(SCRIPTS.parent)}
 
 CORRECTION = "memory-note-lesson-correction"
 TYPO = "memory-note-lesson-typo"

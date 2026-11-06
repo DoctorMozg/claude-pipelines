@@ -4,13 +4,12 @@ set -euo pipefail
 # Background lessons curation, detached by memory-capture.sh at SessionEnd. The curator model
 # proposes operations by ID and lib/curator.sh applies them; any failure leaves only eviction.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 # shellcheck source=lib/lessons.sh
-source "${SCRIPT_DIR}/lib/lessons.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/lessons.sh"
 # shellcheck source=lib/curator.sh
-source "${SCRIPT_DIR}/lib/curator.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/curator.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"

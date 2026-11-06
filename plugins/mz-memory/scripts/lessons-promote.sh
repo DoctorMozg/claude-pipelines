@@ -8,13 +8,15 @@ set -euo pipefail
 #        lessons-promote.sh archive <id> <target>
 #        lessons-promote.sh decline <id>
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Hooks get CLAUDE_PLUGIN_ROOT (PLUGIN_ROOT under Codex); a skill's Bash call gets neither, so set both.
+PLUGIN_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+CLAUDE_PLUGIN_ROOT=$PLUGIN_ROOT
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 # shellcheck source=lib/lessons.sh
-source "${SCRIPT_DIR}/lib/lessons.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/lessons.sh"
 # shellcheck source=lib/curator.sh
-source "${SCRIPT_DIR}/lib/curator.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/curator.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"

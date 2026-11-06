@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Shared helpers for mz-memory hook scripts. Source from a parent script:
 #
-#   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-#   source "${SCRIPT_DIR}/lib/common.sh"
+#   source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 #
 # All functions here must remain exit-code-clean: callers `set -euo pipefail`
 # and depend on these returning 0 even when the underlying operation no-ops.
@@ -49,7 +48,7 @@ find_project_root() {
 # "is  ok". Multi-line aware via perl; falls back to single-line sed otherwise.
 strip_private() {
   if command -v perl >/dev/null 2>&1; then
-    perl -0777 -pe 's|<private>.*?</private>||gs; s|[ \t]+| |g; s|[ \t]+$||mg'
+    perl -0777 -p "${CLAUDE_PLUGIN_ROOT}/scripts/perl/strip-private.pl"
   else
     sed -E 's|<private>[^<]*</private>||g; s|[ \t]+| |g; s|[ \t]+$||'
   fi
@@ -95,14 +94,7 @@ ensure_memory_file() {
   # touching the body — the Pinned/Log markers are still anchoring inserts.
   if [[ "$has_log" == 1 && "$has_pin" == 1 ]]; then
     local body_no_header
-    body_no_header=$(awk '
-      /^# Project Memory[[:space:]]*$/ { skip = 1; next }
-      /^<!-- Auto-managed by mz-memory/ { next }
-      /^<!-- Entries below are auto-managed/ { next }
-      /^<!-- mz-memory:/ { next }
-      skip && /^[[:space:]]*$/ { skip = 0; next }
-      { skip = 0; print }
-    ' "$memory_file")
+    body_no_header=$(awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/body-without-header.awk" "$memory_file")
     {
       _emit_memory_header
       printf '%s\n' "$body_no_header"
@@ -114,14 +106,7 @@ ensure_memory_file() {
   # Log entries; everything non-bullet, non-header keeps its place under Pinned.
   local existing pinned_existing log_existing
   existing=$(cat "$memory_file")
-  pinned_existing=$(printf '%s\n' "$existing" | awk '
-    /^# / { next }
-    /^<!--/ { next }
-    /^## / { next }
-    /^- / { next }
-    /^[[:space:]]*$/ { next }
-    { print }
-  ')
+  pinned_existing=$(printf '%s\n' "$existing" | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/pinned-lines.awk")
   log_existing=$(printf '%s\n' "$existing" | grep -E '^- ' || true)
 
   {
@@ -157,11 +142,7 @@ _emit_memory_header() {
 }
 
 _memory_region() {
-  awk -v start="$2" -v end="$3" '
-    $0 == start { capture = 1; next }
-    $0 == end { capture = 0 }
-    capture { print }
-  ' "$1"
+  awk -v start="$2" -v end="$3" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/region.awk" "$1"
 }
 
 # Extract the Pinned region (between marker comments). Empty string if the
@@ -177,7 +158,7 @@ extract_log() {
 
 # Extract the Digest items, highest count first. Empty until a compression has produced one.
 extract_digest() {
-  _memory_region "$1" "$MZ_DIGEST_START" "$MZ_DIGEST_END" | awk 'NF' || true
+  _memory_region "$1" "$MZ_DIGEST_START" "$MZ_DIGEST_END" | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/non-blank.awk" || true
 }
 
 # Prepend entries from stdin to the Activity Log and prune it to $2 lines, new entries included.
@@ -192,21 +173,7 @@ prepend_to_log() {
   {
     flock 9 2>/dev/null || true
     # ENVIRON, unlike awk -v, keeps backslashes in entries literal.
-    MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" -v max="$max_lines" '
-      BEGIN { in_log = 0; new = ENVIRON["MZ_NEW_BLOCK"]; count = split(new, new_lines, "\n") }
-      $0 == start {
-        print
-        for (i = 1; i <= count && i <= max; i++) print new_lines[i]
-        in_log = 1
-        next
-      }
-      $0 == end { in_log = 0; print; next }
-      in_log {
-        count++
-        if (count > max) next
-      }
-      { print }
-    ' "$memory_file" | atomic_write "$memory_file"
+    MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_LOG_START" -v end="$MZ_LOG_END" -v max="$max_lines" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/insert-log.awk" "$memory_file" | atomic_write "$memory_file"
   } 9>>"${memory_file}.lock"
 }
 
@@ -221,10 +188,7 @@ prepend_to_pinned() {
 
   {
     flock 9 2>/dev/null || true
-    MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_PIN_START" '
-      $0 == start { print; print ENVIRON["MZ_NEW_BLOCK"]; next }
-      { print }
-    ' "$memory_file" | atomic_write "$memory_file"
+    MZ_NEW_BLOCK="$new_block" awk -v start="$MZ_PIN_START" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/insert-after-start.awk" "$memory_file" | atomic_write "$memory_file"
   } 9>>"${memory_file}.lock"
 }
 
@@ -237,23 +201,7 @@ swap_digest_and_log() {
   [[ -s "$digest_file" ]] && want_digest=1
   awk -v ds="$MZ_DIGEST_START" -v de="$MZ_DIGEST_END" -v ls="$MZ_LOG_START" -v le="$MZ_LOG_END" \
     -v digest_file="$digest_file" -v log_file="$log_file" \
-    -v has_digest="$has_digest" -v want_digest="$want_digest" '
-    function dump(path,   line) { while ((getline line < path) > 0) print line; close(path) }
-    $0 == ds { print; dump(digest_file); in_digest = 1; next }
-    in_digest && $0 == de { in_digest = 0; print; next }
-    in_digest { next }
-    # A file without a Digest gets one just above the Activity Log heading, or its marker.
-    !has_digest && want_digest && !inserted && ($0 == "## Activity Log" || $0 == ls) {
-      printf "## Digest\n\n%s\n", ds
-      dump(digest_file)
-      printf "%s\n\n", de
-      inserted = 1
-    }
-    $0 == ls { print; dump(log_file); in_log = 1; next }
-    in_log && $0 == le { in_log = 0; print; next }
-    in_log { next }
-    { print }
-  ' "$memory_file"
+    -v has_digest="$has_digest" -v want_digest="$want_digest" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/rewrite-sections.awk" "$memory_file"
 }
 
 # --- Interaction journal (.mz/journal.md) ------------------------------------
@@ -265,7 +213,7 @@ swap_digest_and_log() {
 # indentation and blank lines (unlike strip_private, which collapses spaces).
 redact_private() {
   if command -v perl >/dev/null 2>&1; then
-    perl -0777 -pe 's|<private>.*?</private>|[redacted]|gs'
+    perl -0777 -p "${CLAUDE_PLUGIN_ROOT}/scripts/perl/redact-private.pl"
   else
     sed -E 's|<private>[^<]*</private>|[redacted]|g'
   fi

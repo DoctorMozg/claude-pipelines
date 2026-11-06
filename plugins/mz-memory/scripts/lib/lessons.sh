@@ -58,18 +58,7 @@ _emit_lessons_file() {
 next_lesson_number() {
   local prefix="$1"
   shift
-  { cat -- "$@" 2>/dev/null || true; } | awk -v prefix="$prefix" '
-    BEGIN { pattern = "\\[" prefix "-[0-9]+\\]" }
-    {
-      line = $0
-      while (match(line, pattern)) {
-        number = substr(line, RSTART + length(prefix) + 2, RLENGTH - length(prefix) - 3) + 0
-        if (number > max) max = number
-        line = substr(line, RSTART + RLENGTH)
-      }
-    }
-    END { print max + 1 }
-  '
+  { cat -- "$@" 2>/dev/null || true; } | awk -v prefix="$prefix" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/next-lesson-number.awk"
 }
 
 # add_lessons_to_inbox <file> <date> <sha> [trig] — prepend stdin's records to the Inbox; print the lines written.
@@ -91,58 +80,14 @@ add_lessons_to_inbox() {
     keys_file=$(mktemp "${memory_dir}/.mz-lessons-keys.XXXXXX")
     local first_id block
     first_id=$(next_lesson_number I "$lessons_file" "${memory_dir}/lessons.archive.md")
-    # shellcheck disable=SC1112 # the curly quotes sit inside the awk program on purpose
     block=$(MZ_RECORDS="$records" awk \
       -v today="$today" -v sha="$sha" -v next_id="$first_id" -v fs="$MZ_LESSON_FS" \
-      -v max_chars="$MZ_LESSON_MAX_CHARS" -v keys_path="$keys_file" -v default_trig="$default_trig" '
-      { seen[$0] = 1 }
-      END {
-        total = split(ENVIRON["MZ_RECORDS"], records, "\n")
-        for (i = 1; i <= total; i++) {
-          if (split(records[i], field, fs) < 3) continue
-          task = field[1]; status = field[2]; text = field[3]
-          trig = default_trig
-          if (match(text, /^\([a-z]+\)/)) {
-            tag = substr(text, 2, RLENGTH - 2)
-            if (tag ~ /^(review|failure|correction|change)$/) {
-              trig = tag
-              text = substr(text, RLENGTH + 1)
-            }
-          }
-          gsub(/^[[:space:]]+|[[:space:]]+$/, "", text)
-          if (text == "") continue
-
-          # Case and punctuation edits are not a new lesson; non-ASCII letters stay in the key.
-          # [:punct:] is ASCII-only in mawk, so the arrows, dashes and quotes LLMs swap in are listed.
-          key = tolower(text)
-          gsub(/→|—|–|…|“|”|‘|’/, " ", key)
-          gsub(/[[:punct:][:space:]]+/, " ", key)
-          gsub(/^ +| +$/, "", key)
-          key = task "\t" key
-          if (key in seen) continue
-          seen[key] = 1
-          print key > keys_path
-
-          # Cut at a word boundary so a multi-byte character is never split.
-          if (length(text) > max_chars) {
-            text = substr(text, 1, max_chars)
-            sub(/[[:space:]]+[^[:space:]]*$/, "", text)
-            text = text "..."
-          }
-          src = (sha != "") ? task "@" sha : task
-          lines[++count] = sprintf("- [I-%04d] %s trig=%s src=%s status=%s :: %s", next_id++, today, trig, src, status, text)
-        }
-        for (i = count; i >= 1; i--) print lines[i]
-      }
-    ' "$seen_file")
+      -v max_chars="$MZ_LESSON_MAX_CHARS" -v keys_path="$keys_file" -v default_trig="$default_trig" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/inbox-block.awk" "$seen_file")
 
     # Lines are marked seen only after the Inbox write, so a failed write retries them next time.
     # The check is explicit: a caller's $(...) may run with errexit off.
     if [[ -n "$block" ]]; then
-      if ! MZ_NEW_BLOCK="$block" awk -v start="$MZ_INBOX_START" '
-        $0 == start { print; print ENVIRON["MZ_NEW_BLOCK"]; next }
-        { print }
-      ' "$lessons_file" | atomic_write "$lessons_file"; then
+      if ! MZ_NEW_BLOCK="$block" awk -v start="$MZ_INBOX_START" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/insert-after-start.awk" "$lessons_file" | atomic_write "$lessons_file"; then
         rm -f "$keys_file"
         return 1
       fi
@@ -171,15 +116,13 @@ compact_items() {
 # fit_chars <max_chars> — print stdin's lines in order until the next one would pass the budget.
 # It reads all of stdin, so the writer never gets SIGPIPE.
 fit_chars() {
-  awk -v max="$1" '!full { used += length($0) + 1; if (used > max) full = 1; else print }'
+  awk -v max="$1" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/fit-chars.awk"
 }
 
 # Curated lessons as "<n> TAB <last> TAB <line>", for ranking by count, then recency.
 _ranked_curated() {
   _memory_region "$1" "$MZ_LESSONS_START" "$MZ_LESSONS_END" 2>/dev/null \
-    | awk '$2 ~ /^\[L-[0-9]+\]$/ && $3 ~ /^n=[0-9]+$/ && $4 ~ /^last=/ {
-        printf "%d\t%s\t%s\n", substr($3, 3), substr($4, 6), $0
-      }' \
+    | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/ranked-curated.awk" \
     | sort -t "$(printf '\t')" -k1,1nr -k2,2r || true
 }
 
@@ -203,12 +146,7 @@ declined_file() {
 promotion_candidates() {
   local lessons_file="$1"
   [[ -f "$lessons_file" ]] || return 0
-  _ranked_curated "$lessons_file" | awk -v min="$MZ_LESSON_KEEP_N" -v declined="$(declined_file "$lessons_file")" '
-    BEGIN { while ((getline line < declined) > 0) { split(line, field, " "); held[field[1]] = field[2] + 0 } }
-    {
-      id = substr($4, 2, length($4) - 2)
-      if ($1 >= min && !(id in held && $1 <= held[id])) print id
-    }'
+  _ranked_curated "$lessons_file" | awk -v min="$MZ_LESSON_KEEP_N" -v declined="$(declined_file "$lessons_file")" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/promotion-candidates.awk"
 }
 
 # match_lessons <lessons_file> <keywords> <max> — the <max> lessons whose text or tags hold the
@@ -219,17 +157,6 @@ match_lessons() {
   {
     _memory_region "$lessons_file" "$MZ_LESSONS_START" "$MZ_LESSONS_END"
     _memory_region "$lessons_file" "$MZ_INBOX_START" "$MZ_INBOX_END"
-  } 2>/dev/null | MZ_KEYWORDS="$keywords" awk '
-    BEGIN { words = split(ENVIRON["MZ_KEYWORDS"], word, "\n") }
-    /^- \[[LI]-[0-9]+\] / && (cut = index($0, " :: ")) {
-      n = ($3 ~ /^n=[0-9]+$/) ? substr($3, 3) + 0 : 0
-      tags = ""
-      for (i = 3; i <= NF && $i != "::"; i++) if ($i ~ /^tags=/) tags = substr($i, 6)
-      # Metadata stays out of the match, so a task name in src= never pulls a lesson in.
-      text = tolower(substr($0, cut + 4) " " tags)
-      hits = 0
-      for (w = 1; w <= words; w++) if (word[w] != "" && index(text, word[w])) hits++
-      if (hits) printf "%d\t%d\t%d\t%s\n", hits, n, NR, $0
-    }' \
+  } 2>/dev/null | MZ_KEYWORDS="$keywords" awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/matching-lessons.awk" \
     | sort -t "$(printf '\t')" -k1,1nr -k2,2nr -k3,3n | cut -f4- | head -n "$max" || true
 }

@@ -9,6 +9,7 @@ BASH = shutil.which("bash") or "/bin/bash"
 CALLER_VARS = frozenset(
     {
         "CLAUDE_PROJECT_DIR",
+        "CLAUDE_PLUGIN_ROOT",
         "MZ_MEMORY_ROOT",
         "MZ_HANDOFF_AFTER",
         "CLAUDE_CODE_SESSION_ID",
@@ -18,5 +19,6 @@ CALLER_VARS = frozenset(
 
 
 def clean_env() -> dict[str, str]:
-    """os.environ without CALLER_VARS, so the developer's shell can't steer a script under test."""
-    return {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    """os.environ without CALLER_VARS, plus the CLAUDE_PLUGIN_ROOT Claude Code gives every hook."""
+    env = {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    return {**env, "CLAUDE_PLUGIN_ROOT": str(SCRIPTS.parent)}

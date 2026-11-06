@@ -57,11 +57,7 @@ claude_pid() {
 
 # handoff_field <file> <key>: a value from the file's leading --- frontmatter block.
 handoff_field() {
-  awk -v key="$2" '
-    NR == 1 { if ($0 != "---") exit; next }
-    $0 == "---" { exit }
-    index($0, key ": ") == 1 { print substr($0, length(key) + 3); exit }
-  ' "$1" 2>/dev/null || true
+  awk -v key="$2" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/frontmatter-field.awk" "$1" 2>/dev/null || true
 }
 
 # handoff_files <dir> [max_age_minutes]: handoff files, newest first.
@@ -96,9 +92,5 @@ handoff_for_session() {
 
 # The first line of text under a "## <heading>" in a handoff body.
 handoff_section_head() {
-  awk -v heading="## $2" '
-    $0 == heading { inside = 1; next }
-    inside && /^## / { exit }
-    inside && NF { print; exit }
-  ' "$1" 2>/dev/null || true
+  awk -v heading="## $2" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/section-head.awk" "$1" 2>/dev/null || true
 }

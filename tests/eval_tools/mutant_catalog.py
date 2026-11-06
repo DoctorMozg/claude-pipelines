@@ -104,6 +104,10 @@ def capture(old: str, new: str) -> tuple[Edit, ...]:
     return (Edit(f"{MEM}/scripts/memory-capture.sh", old, new),)
 
 
+def scan(old: str, new: str) -> tuple[Edit, ...]:
+    return (Edit(f"{MEM}/scripts/awk/scan-state-files.awk", old, new),)
+
+
 MUTANTS = [
     Mutant(
         "inject-silent",
@@ -260,7 +264,7 @@ MUTANTS = [
     ),
     Mutant(
         "capture-no-git-ref",
-        capture(
+        scan(
             'if (branch != "" && sha != "") entry = entry " [" branch "@" sha "]"', "entry = entry"
         ),
         "mz-memory",
@@ -269,10 +273,10 @@ MUTANTS = [
     ),
     Mutant(
         "capture-lessons-into-log",
-        capture(
-            '      for (i = 1; i <= extras; i++) print extra[i] > (out "/log")\n',
-            '      for (i = 1; i <= extras; i++) print extra[i] > (out "/log")\n'
-            '      for (i = 1; i <= harvested; i++) print "  " lesson[i] > (out "/log")\n',
+        scan(
+            '  for (i = 1; i <= extras; i++) print extra[i] > (out "/log")\n',
+            '  for (i = 1; i <= extras; i++) print extra[i] > (out "/log")\n'
+            '  for (i = 1; i <= harvested; i++) print "  " lesson[i] > (out "/log")\n',
         ),
         "mz-memory",
         case("capture-complete-task"),
@@ -289,7 +293,7 @@ MUTANTS = [
     ),
     Mutant(
         "capture-any-status",
-        capture('if (status != "complete" && status != "completed") return', ""),
+        scan('if (status != "complete" && status != "completed") return', ""),
         "mz-memory",
         case("capture-skips-incomplete"),
         (("capture-skips-incomplete", "incomplete-task-not-logged"),),

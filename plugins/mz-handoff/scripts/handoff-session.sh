@@ -4,9 +4,8 @@ set -euo pipefail
 # SessionStart (startup|clear|compact): flags a compaction for handoff-stop.sh, loads this
 # terminal's handoff after /clear, and lists open handoffs on startup. Advisory: exits 0.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/handoff.sh
-source "${SCRIPT_DIR}/lib/handoff.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/handoff.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 
 # A /clear picks up a handoff from the last day; the startup list shows the last three days.
@@ -46,7 +45,7 @@ open_handoffs() {
 
 load_handoff() {
   local file="$1" next
-  next=$(awk '$0 == "## Next" { inside = 1; next } inside && /^## / { exit } inside && NF { print }' "$file" | head -n 5 || true)
+  next=$(awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/next-steps.awk" "$file" | head -n 5 || true)
   emit_context "The previous session in this terminal wrote a handoff before /clear: $(relative "$file") (written $(handoff_field "$file" written_at), after $(handoff_field "$file" compactions) compactions, at commit $(handoff_field "$file" head)). Its old transcript is $(handoff_field "$file" transcript).
 Goal: $(handoff_section_head "$file" Goal)
 Next:

@@ -10,11 +10,10 @@ set -euo pipefail
 # Output: hookSpecificOutput with additionalContext when anything applies; the no-op path prints nothing.
 # Hard budget: <100ms typical, never blocks the prompt.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 # shellcheck source=lib/lessons.sh
-source "${SCRIPT_DIR}/lib/lessons.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/lessons.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 
 PROJECT_DIR=$(find_project_root)
@@ -65,12 +64,8 @@ if is_correction; then NUDGE_LINE="$NUDGE"; fi
 KEYWORDS=$(printf '%s' "$PROMPT" \
   | tr '[:upper:]' '[:lower:]' \
   | tr -c 'a-z0-9' '\n' \
-  | awk -v min="$MIN_KEYWORD_LEN" '
-      length($0) >= min &&
-      $0 !~ /^(this|that|with|from|have|will|been|were|what|when|where|which|would|could|should|about|into|then|than|some|just|like|make|made|much|more|most|other|over|such|them|they|their|there|these|those|your|yours|need|want|please|file|files|code|test|tests)$/ \
-      { print }
-    ' \
-  | awk '!seen[$0]++' \
+  | awk -v min="$MIN_KEYWORD_LEN" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/prompt-keywords.awk" \
+  | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/unique-lines.awk" \
   | head -n 12 || true)
 
 [[ -n "$KEYWORDS" || -n "$NUDGE_LINE" ]] || exit 0

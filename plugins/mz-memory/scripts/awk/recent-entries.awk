@@ -1,0 +1,1 @@
+NR > keep && /^- / { exit } { print }

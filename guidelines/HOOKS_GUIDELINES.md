@@ -209,7 +209,7 @@ Hook processes receive these variables (plugins-reference.md):
 - `CLAUDE_PROJECT_DIR`: the directory the session started in, which the docs call the project root (hooks.md). It can be a subdirectory of the repository (observed, 2.1.316), so it isn't this repo's project root (JOURNAL_GUIDELINES.md, "Project Root"). A hook that reads or writes under `.mz/` resolves the root the way mz-memory's `find_project_root` in `plugins/mz-memory/scripts/lib/common.sh` does: `MZ_MEMORY_ROOT` when set; otherwise the first directory with a `.git` entry, walking up from `${CLAUDE_PROJECT_DIR:-$PWD}`; and that starting directory when no `.git` turns up. Repo convention.
 - `CLAUDE_PLUGIN_OPTION_<KEY>`: the plugin's user options.
 
-Claude Code also sets `CLAUDE_CODE_SESSION_ID`, which matches `session_id`, and `CLAUDE_EFFORT` in hook processes (env-vars.md). Find sibling files through `${BASH_SOURCE[0]}` or `CLAUDE_PLUGIN_ROOT`. An installed plugin doesn't live at its repo path, so a hard-coded `~/.claude/...` or `plugins/<name>/...` path breaks.
+Claude Code also sets `CLAUDE_CODE_SESSION_ID`, which matches `session_id`, and `CLAUDE_EFFORT` in hook processes (env-vars.md). Spell every file a hook runs, sources or hands to an interpreter as `"${CLAUDE_PLUGIN_ROOT}/scripts/<file>"`, and keep awk and perl programs in files under `scripts/`. Anthropic's directory follows a hook command into its shell scripts and refuses a plugin that computes a path there (`SCRIPT_DIR` from `${BASH_SOURCE[0]}`) or runs an inline `awk '…'` or `perl -e`. It reported `COMMAND_PATH_COMPUTED` on mz-memory 0.56.0, while `jq` and `sed` programs passed. `tests/plugin_lint/test_hook_paths.py` checks every script a hook reaches. A script that only a skill runs gets no `CLAUDE_PLUGIN_ROOT` from the Bash tool, so it sets one from its own location. An installed plugin doesn't live at its repo path, so a hard-coded `~/.claude/...` or `plugins/<name>/...` path breaks.
 
 ## 10. Script Conventions
 
@@ -299,6 +299,7 @@ Hook scripts carry no version of their own. `./set_versions.sh` rewrites the `ve
 - A PreCompact or PostCompact hook meant to give Claude context. Move it to SessionStart with `compact` (§3, §5).
 - A context-injecting SessionStart hook without a matcher, or any `once` in hooks.json. Use `startup|clear|compact` (§5).
 - An unquoted `${CLAUDE_PLUGIN_ROOT}` in shell form, or exec form pointing at a `.sh` file where Windows matters (§1).
+- A script a hook reaches that builds a path from `BASH_SOURCE` or `$0`, or runs an inline awk or perl program (§9).
 - `if` on a non-tool event, where the handler never runs, or `if` used as a hard deny (§1).
 - A hooks.json entry whose script is missing or not executable, whose matcher isn't a valid JavaScript regex, or whose handler has a field §1 doesn't list. The validator doesn't catch these (§13).
 - A shell-command guard that matches only `Bash`. Match `Bash|PowerShell|mcp__workspace__bash` (§2).

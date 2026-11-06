@@ -4,9 +4,8 @@ set -euo pipefail
 # Stop: once the main conversation has been compacted MZ_HANDOFF_AFTER times, blocks the stop once
 # so Claude writes a handoff, then reminds the user after each later compaction. Advisory: exits 0.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/handoff.sh
-source "${SCRIPT_DIR}/lib/handoff.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/handoff.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 
 INPUT=$(cat)

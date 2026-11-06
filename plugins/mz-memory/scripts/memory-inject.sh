@@ -4,11 +4,10 @@ set -euo pipefail
 # SessionStart hook: injects project memory on startup, after /clear and after compaction.
 # hooks.json skips resume and fork because the reused transcript already holds the memory.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 # shellcheck source=lib/lessons.sh
-source "${SCRIPT_DIR}/lib/lessons.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/lessons.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 
 PROJECT_DIR=$(find_project_root)
@@ -34,10 +33,7 @@ promotion_hint() {
   local ids shown
   ids=$(promotion_candidates "$LESSONS_FILE")
   [[ -n "$ids" ]] || return 0
-  shown=$(awk -v max="$HINT_IDS" '
-    NR <= max { out = out (NR > 1 ? ", " : "") $0 }
-    END { if (NR > max) out = out " and " NR - max " more"; print out }
-  ' <<<"$ids")
+  shown=$(awk -v max="$HINT_IDS" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/join-ids.awk" <<<"$ids")
   printf 'Promotion candidates (seen %s+ times): %s. At a natural pause, offer /lessons-promote to turn them into project rules.\n' \
     "$MZ_LESSON_KEEP_N" "$shown"
 }

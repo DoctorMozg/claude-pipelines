@@ -67,6 +67,7 @@ The project root is the nearest `.git` above `CLAUDE_PROJECT_DIR`, the same `.mz
 | `scripts/handoff-stop.sh`       | Stop hook: counts compactions, blocks once, then reminds                                                |
 | `scripts/handoff-facts.sh`      | Prints the session ids, git state, written files and your messages the skill builds from                |
 | `scripts/lib/handoff.sh`        | Helpers: threshold, compaction count, `claude` process lookup, frontmatter, root                        |
+| `scripts/awk/*.awk`             | The awk programs the hooks run                                                                          |
 | `skills/handoff/SKILL.md`       | Write mode and resume mode                                                                              |
 
 ## Requirements

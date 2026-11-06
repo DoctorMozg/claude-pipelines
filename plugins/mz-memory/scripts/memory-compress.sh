@@ -5,13 +5,12 @@ set -euo pipefail
 # MZ_COMPRESS_THRESHOLD lines. The shared curator distills the older entries into the Digest by
 # operations, the raw entries go to activity.archive.md, and any failure leaves MEMORY.md as it was.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 # shellcheck source=lib/lessons.sh
-source "${SCRIPT_DIR}/lib/lessons.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/lessons.sh"
 # shellcheck source=lib/curator.sh
-source "${SCRIPT_DIR}/lib/curator.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/curator.sh"
 
 PROJECT_DIR=$(find_project_root)
 MEMORY_DIR="${PROJECT_DIR}/.mz/memory"
@@ -50,27 +49,13 @@ migrate_old_summary() {
     local log block items
     log=$(extract_log "$MEMORY_FILE" 9999)
     grep -qxF "$OLD_SUMMARY_MARK" <<<"$log" || return 0
-    block=$(awk -v mark="$OLD_SUMMARY_MARK" 'found { print } $0 == mark { found = 1 }' <<<"$log")
-    items=$(awk -v next_id="$(next_lesson_number D "$MEMORY_FILE" "$ARCHIVE")" -v today="$TODAY" '
-      function flush() {
-        if (text != "") printf "- [D-%04d] n=1 last=%s trig=migrated src=mz-compressed tags=%s :: %s\n", next_id++, today, tag, text
-        text = ""
-      }
-      /^#+[[:space:]]/ {
-        flush()
-        tag = tolower($0)
-        sub(/^#+[[:space:]]+/, "", tag); gsub(/[^a-z0-9]+/, "-", tag); sub(/^-+/, "", tag); sub(/-+$/, "", tag)
-        next
-      }
-      /^[[:space:]]*[-*][[:space:]]/ { flush(); text = $0; sub(/^[[:space:]]*[-*][[:space:]]+/, "", text); next }
-      NF { line = $0; sub(/^[[:space:]]+/, "", line); text = (text == "" ? line : text " " line) }
-      END { flush() }
-    ' <<<"$block")
+    block=$(awk -v mark="$OLD_SUMMARY_MARK" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/after-mark.awk" <<<"$log")
+    items=$(awk -v next_id="$(next_lesson_number D "$MEMORY_FILE" "$ARCHIVE")" -v today="$TODAY" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/summary-as-digest.awk" <<<"$block")
     cp -f "$MEMORY_FILE" "${MEMORY_FILE}.bak"
     write_memory "$(
       extract_digest "$MEMORY_FILE"
       printf '%s\n' "$items"
-    )" "$(awk -v mark="$OLD_SUMMARY_MARK" '$0 == mark { exit } { print }' <<<"$log")"
+    )" "$(awk -v mark="$OLD_SUMMARY_MARK" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/before-mark.awk" <<<"$log")"
     printf '## %s migrated summary\n\n%s\n\n' "$TODAY" "$block" >>"$ARCHIVE"
     curator_event "$OPS_LOG" migrated "moved the old summary block into the Digest"
   } 9>>"${MEMORY_FILE}.lock"
@@ -78,22 +63,7 @@ migrate_old_summary() {
 
 # Each old entry, with its indented lines, becomes one E- item the curator can cite by id.
 entries_as_inbox() {
-  awk -v today="$TODAY" '
-    function flush() {
-      if (body != "") printf "- [E-%04d] %s trig=log src=%s status=log :: %s\n", ++count, day, src, body
-      body = ""
-    }
-    BEGIN { day = today; src = "note" }
-    /^- / {
-      flush()
-      body = substr($0, 3); day = today; src = "note"
-      if (body ~ /^\[[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\] /) { day = substr(body, 2, 10); body = substr(body, 14) }
-      if (body ~ /^[0-9][0-9][0-9][0-9]_[0-9][0-9]_[0-9][0-9]_/) { src = body; sub(/[^A-Za-z0-9_.-].*$/, "", src) }
-      next
-    }
-    NF { line = $0; sub(/^[[:space:]]+/, "", line); body = (body == "" ? line : body " | " line) }
-    END { flush() }
-  '
+  awk -v today="$TODAY" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/entries-as-inbox.awk"
 }
 
 digest_system() {
@@ -127,11 +97,7 @@ apply_digest_ops() {
     flock 9 2>/dev/null || true
     local first kept config result
     first=$(head -n 1 <<<"$OLD" || true)
-    kept=$(extract_log "$MEMORY_FILE" 9999 | OLD_FIRST="$first" awk -v from="$((RECENT_LINES + 1))" '
-      NR >= from && $0 == ENVIRON["OLD_FIRST"] { found = 1; exit }
-      { print }
-      END { exit !found }
-    ') || {
+    kept=$(extract_log "$MEMORY_FILE" 9999 | OLD_FIRST="$first" awk -v from="$((RECENT_LINES + 1))" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/log-before-old.awk") || {
       curator_event "$OPS_LOG" aborted "the old entries are no longer at the end of the log"
       return 1
     }
@@ -161,16 +127,16 @@ apply_digest_ops() {
 migrate_old_summary
 
 LOG=$(extract_log "$MEMORY_FILE" 9999)
-[[ "$(awk 'END { print NR }' <<<"$LOG")" -gt "$MZ_COMPRESS_THRESHOLD" ]] || exit 0
+[[ "$(awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/count-lines.awk" <<<"$LOG")" -gt "$MZ_COMPRESS_THRESHOLD" ]] || exit 0
 curator_enabled || exit 0
 # A failed run is retried the next day, not at every SessionEnd, so a broken setup costs one call a day.
 [[ "$(cat "$FAILED_MARK" 2>/dev/null || true)" != "$TODAY" ]] || exit 0
 
 # Keep about KEEP_RECENT lines verbatim, extended to the end of the entry the cut lands in.
-RECENT=$(awk -v keep="$KEEP_RECENT" 'NR > keep && /^- / { exit } { print }' <<<"$LOG")
-OLD=$(awk -v keep="$KEEP_RECENT" 'NR > keep && /^- / { old = 1 } old { print }' <<<"$LOG")
+RECENT=$(awk -v keep="$KEEP_RECENT" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/recent-entries.awk" <<<"$LOG")
+OLD=$(awk -v keep="$KEEP_RECENT" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/old-entries.awk" <<<"$LOG")
 [[ -n "$OLD" ]] || exit 0
-RECENT_LINES=$(awk 'END { print NR }' <<<"$RECENT")
+RECENT_LINES=$(awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/count-lines.awk" <<<"$RECENT")
 ENTRIES=$(entries_as_inbox <<<"$OLD")
 
 if OPS=$(digest_prompt | curator_call "$(curator_schema)" "$(digest_system)"); then

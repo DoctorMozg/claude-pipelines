@@ -4,9 +4,8 @@ set -euo pipefail
 # PostToolUse(AskUserQuestion): appends the question and answer of each completed call to <root>/.mz/journal.md.
 # Logging only; no output, always exit 0.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
-source "${SCRIPT_DIR}/lib/common.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/common.sh"
 
 INPUT=$(cat)
 

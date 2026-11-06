@@ -5,9 +5,11 @@ set -euo pipefail
 # running tasks and the user's own messages, verbatim. Used by the handoff skill.
 # Usage: handoff-facts.sh [--since <ISO time>] [<transcript.jsonl>]
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Hooks get CLAUDE_PLUGIN_ROOT (PLUGIN_ROOT under Codex); a skill's Bash call gets neither, so set both.
+PLUGIN_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+CLAUDE_PLUGIN_ROOT=$PLUGIN_ROOT
 # shellcheck source=lib/handoff.sh
-source "${SCRIPT_DIR}/lib/handoff.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/handoff.sh"
 
 MAX_MESSAGES=40
 MAX_MESSAGE_CHARS=600

@@ -15,7 +15,7 @@ MZ_CURATOR_OPS_MAX=1000
 MZ_STALE_LOCK_MINUTES=10
 
 _lessons_region() {
-  _memory_region "$1" "$2" "$3" 2>/dev/null | awk 'NF' || true
+  _memory_region "$1" "$2" "$3" 2>/dev/null | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/non-blank.awk" || true
 }
 
 # curator_enabled — the LLM curator needs the CLI and jq, and MZ_MEMORY_COMPRESS=0 turns it off.
@@ -35,7 +35,7 @@ lessons_need_curation() {
   [[ "$last" =~ ^[0-9]+$ ]] || last=0
   total=$(wc -l <"$lessons_file")
   fresh=$(_lessons_region "$lessons_file" "$MZ_INBOX_START" "$MZ_INBOX_END" \
-    | awk -v last="$last" 'match($0, /^- \[I-[0-9]+\]/) { if (substr($0, 6, RLENGTH - 6) + 0 > last) n++ } END { print n + 0 }')
+    | awk -v last="$last" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/count-fresh-inbox.awk")
   [[ "$fresh" -ge "$MZ_CURATE_INBOX_MIN" ]] && return 0
   [[ "$total" -gt "$MZ_CURATE_NEAR_CAP" && "$fresh" -ge 1 ]]
 }
@@ -43,7 +43,7 @@ lessons_need_curation() {
 # inbox_high_id <lessons_file> — the highest inbox id number in the file, 0 when the inbox is empty.
 inbox_high_id() {
   _lessons_region "$1" "$MZ_INBOX_START" "$MZ_INBOX_END" \
-    | awk 'match($0, /^- \[I-[0-9]+\]/) { n = substr($0, 6, RLENGTH - 6) + 0; if (n > max) max = n } END { print max + 0 }'
+    | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/inbox-high-id.awk"
 }
 
 # mark_lessons_curated <lessons_file> <high> — the next run waits for inbox ids above <high>.
@@ -64,7 +64,7 @@ enforce_lessons_cap() {
 
 # _without_lines <lines> — print stdin minus every line that appears in <lines>.
 _without_lines() {
-  awk 'NR == FNR { gone[$0] = 1; next } !($0 in gone)' <(printf '%s\n' "$1") - || true
+  awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/without-lines.awk" <(printf '%s\n' "$1") - || true
 }
 
 # Caller holds the lock. Curated lessons with n below MZ_LESSON_KEEP_N go first, lowest n and
@@ -79,13 +79,9 @@ _evict_lessons() {
 
   victims=$(
     {
-      printf '%s\n' "$curated" | awk -v keep="$MZ_LESSON_KEEP_N" '
-        $2 ~ /^\[L-[0-9]+\]$/ && $3 ~ /^n=[0-9]+$/ && $4 ~ /^last=/ {
-          n = substr($3, 3) + 0
-          if (n < keep) printf "0\t%06d\t%s\t%s\t%s\n", n, substr($4, 6), $2, $0
-        }'
+      printf '%s\n' "$curated" | awk -v keep="$MZ_LESSON_KEEP_N" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/evictable-lessons.awk"
       # Inbox lines are newest first, so the bottom line is the oldest.
-      printf '%s\n' "$inbox" | awk '/^- \[I-[0-9]+\]/ { printf "1\t%06d\t\t\t%s\n", 999999 - NR, $0 }'
+      printf '%s\n' "$inbox" | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/evictable-inbox.awk"
     } | sort -t "$(printf '\t')" -k1,1n -k2,2n -k3,3 -k4,4 | head -n "$excess" | cut -f5- || true
   )
   [[ -n "$victims" ]] || return 0
@@ -93,7 +89,7 @@ _evict_lessons() {
   curated=$(printf '%s\n' "$curated" | _without_lines "$victims")
   inbox=$(printf '%s\n' "$inbox" | _without_lines "$victims")
   _emit_lessons_file "$curated" "$inbox" | atomic_write "$lessons_file"
-  printf '%s\n' "$victims" | awk -v today="$today" '{ print today " evicted: " $0 }' \
+  printf '%s\n' "$victims" | awk -v today="$today" -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/eviction-log.awk" \
     >>"${lessons_file%/*}/lessons.archive.md"
 }
 

@@ -58,6 +58,7 @@ OPTIONAL_TOOLS = ("flock", "timeout")
 CALLER_VARS = frozenset(
     {
         "CLAUDE_PROJECT_DIR",
+        "CLAUDE_PLUGIN_ROOT",
         "MZ_MEMORY_ROOT",
         "MZ_MEMORY_COMPRESS",
         "MZ_MEMORY_CURATOR",
@@ -135,8 +136,9 @@ class FakeCurator:
 
 
 def clean_env() -> dict[str, str]:
-    """os.environ without CALLER_VARS, so a developer's shell can't steer a script under test."""
-    return {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    """os.environ without CALLER_VARS, plus the CLAUDE_PLUGIN_ROOT Claude Code gives every hook."""
+    env = {key: value for key, value in os.environ.items() if key not in CALLER_VARS}
+    return {**env, "CLAUDE_PLUGIN_ROOT": str(SCRIPTS.parent)}
 
 
 def op(kind: str, **fields: object) -> dict[str, object]:

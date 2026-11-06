@@ -223,6 +223,7 @@ This is **complementary** to the global memory system this plugin provides:
 | `scripts/lib/common.sh`                  | Shared helpers: `find_project_root`, `strip_private`, `atomic_write`, the MEMORY.md regions, … |
 | `scripts/lib/lessons.sh`                 | The lessons store: Inbox writes, ranking, matching, promotion candidates                       |
 | `scripts/lib/curator.sh`                 | The shared curator: `claude -p` call, operations, guards, eviction                             |
+| `scripts/awk/*.awk`, `scripts/perl/*.pl` | The awk and perl programs the hooks run, kept as files the plugin directory's checks can read  |
 | `scripts/memory-{inject,capture}.sh`     | Core SessionStart / SessionEnd hooks                                                           |
 | `scripts/memory-prompt-inject.sh`        | UserPromptSubmit selective injection and correction reminder                                   |
 | `scripts/memory-compress.sh`             | Background Activity Log compression into the Digest                                            |
