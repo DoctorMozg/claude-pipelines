@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-funny.webp" alt="Mozg Code Roast: character-voice code roasting" width="100%"></p>
+
 # Mozg Code Roast (`mz-funny`)
 
 mz-funny roasts your code in a character voice (a pirate, a drill sergeant, Yoda and four others) and ties every joke to a real finding. `/do-roast` first reads the target, measures its structure, checks the docs against the code and compares it with current best practice for your stack. Only then does a persona write the roast, and it may embellish tone but not invent a bug. It is for developers who want a funny read of their code, with receipts.

@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-rules.webp" alt="Mozg Coding Rules: curated coding rules" width="100%"></p>
+
 # Mozg Coding Rules (`mz-rules`)
 
 Curated coding rules for Claude Code, installed per project or for every session by one skill, `/init-rules`. It detects the project's languages and tooling, shows one plan, and writes no rules or settings until you approve it.

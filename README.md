@@ -212,6 +212,7 @@ claude plugin install mz-creative       # Multi-perspective panels + writing
 claude plugin install mz-funny          # Character-voice code roasting
 claude plugin install mz-design         # UI/UX design documents
 claude plugin install mz-memory         # Cross-session project memory
+claude plugin install mz-handoff        # Session handoff after compaction
 claude plugin install mz-knowledge      # Obsidian knowledge base
 claude plugin install mz-gov            # Development governance
 ```
@@ -426,6 +427,25 @@ Background curation and compression run `claude -p` on your account; `MZ_MEMORY_
 Pairs with `mz-dev-pipe` agents that have native `memory: project` for per-agent persistent memory.
 
 **[Full documentation →](plugins/mz-memory/)**
+
+______________________________________________________________________
+
+### [Mozg Session Handoff](plugins/mz-handoff/) (`mz-handoff`)
+
+Each compaction summarizes the previous summary, so a long session drifts. After a few compactions, mz-handoff has Claude write down where the work stands, built from the transcript and git rather than from what the context still remembers. You type `/clear`, and the fresh session picks the file up.
+
+| Hook                | Event                                | What it does                                                                                            |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| **Handoff session** | SessionStart (startup/clear/compact) | Flags each compaction, loads this terminal's handoff after `/clear`, and lists open handoffs on startup |
+| **Handoff stop**    | Stop                                 | After `MZ_HANDOFF_AFTER` compactions (default 3), keeps Claude going once to write a handoff            |
+
+| Skill       | Command                        | What it does                                                                         |
+| ----------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| **handoff** | `/mz-handoff:handoff [resume]` | Writes `.mz/handoff/<stamp>.md` from transcript and git facts; `resume` picks one up |
+
+Handoffs share the `.mz/` project root with mz-memory, and parallel terminals each get their own.
+
+**[Full documentation →](plugins/mz-handoff/)**
 
 ______________________________________________________________________
 

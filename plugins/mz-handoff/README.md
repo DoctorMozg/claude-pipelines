@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/DoctorMozg/claude-pipelines/master/assets/hero/mz-handoff.webp" alt="Mozg Session Handoff: session handoff after compaction" width="100%"></p>
+
 # Mozg Session Handoff (`mz-handoff`)
 
 Session handoff for [Claude Code](https://claude.com/claude-code). Each compaction summarizes the previous summary, so a long session drifts. After a few compactions, mz-handoff has Claude write down where the work stands, built from the transcript and git rather than from what the context still remembers. Then you type `/clear`, and the fresh session picks the file up. One skill ships with it: `/mz-handoff:handoff`.
