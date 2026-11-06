@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: design-document-fire-account-recovery
+description: A request for a design document with screens, flows and a contrast check, spec only and no code, is the design-document job.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-design", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-creative", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Create a design document for the account recovery flow in our banking app. I
+    want the screens laid out, the flow between them, and a contrast check on the
+    colors since we have to meet WCAG AA. Spec only for now, nobody is coding yet.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: design-document-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?design-document"'

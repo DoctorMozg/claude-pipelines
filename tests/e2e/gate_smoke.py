@@ -35,7 +35,7 @@ HOST_SERVER = "gate"
 MODEL = "haiku"
 RUN_TIMEOUT_S = 600
 MAX_PARALLEL = 6
-FIXTURE_LIB = Path("mz-memory/evals/_lib/fixture.sh")
+FIXTURE_LIB = Path(__file__).resolve().parents[2] / "evals/mz-memory/_lib/fixture.sh"
 MEMORY = Path(".mz/memory/MEMORY.md")
 JOURNAL = Path(".mz/journal.md")
 MEMORY_NOTE_SKILL = Path("mz-memory/skills/memory-note/SKILL.md")
@@ -361,7 +361,7 @@ class Runner:
     def run_session(self, scenario: Scenario) -> tuple[GateRun, list[Check]]:
         project = self.workdir / scenario.label
         project.mkdir()
-        run_seed(project, scenario.seed, str(self.plugins_root / FIXTURE_LIB))
+        run_seed(project, scenario.seed, str(FIXTURE_LIB))
         host_log = self.workdir / f"{scenario.label}.host.jsonl"
         config = write_mcp_config(
             self.workdir / f"{scenario.label}.mcp.json", scenario.answers, host_log

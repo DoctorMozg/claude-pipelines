@@ -91,7 +91,7 @@ Write what the plan lists. The guideline's checklist holds every rule; these are
 - SKILL.md aims for about 150 lines and stays under about 20,000 characters. Phase files stay under about 400 lines and are read at the start of their phase. Sections follow "Skill Anatomy".
 - Gates copy the canonical skeleton from "Approval Gates". State Management copies the compact contract block from `guidelines/STATE_SCHEMA.md` verbatim.
 - Add its row to the routing table in `plugins/mz-base/skills/using-mozg-pipelines/SKILL.md`, with its plugin in the last column, unless it is exempt.
-- A skill Claude can invoke gets at least three `claude plugin eval` cases under `plugins/<plugin>/evals/`, two that should fire and one near miss, shaped like the plugin's existing cases.
+- A skill Claude can invoke gets at least three `claude plugin eval` cases under `evals/<plugin>/`, two that should fire and one near miss, shaped like the plugin's existing cases.
 
 **Agent**
 

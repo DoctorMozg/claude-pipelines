@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: vault-review-fire-reread-permanent-folder
+description: Picking a handful of long-neglected permanent notes to go back through one at a time is a review session even when nobody says review.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I haven't opened anything in ~/vault/Permanent/ since the spring and half of it
+    I've forgotten writing. Pick me about ten notes worth another look today, the
+    ones I've gone longest without touching plus the ones that are still half-baked,
+    and take me through them one at a time.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-review"'

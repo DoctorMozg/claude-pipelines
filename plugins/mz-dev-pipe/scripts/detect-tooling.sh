@@ -10,8 +10,8 @@ find_project_root() {
     printf '%s\n' "$MZ_MEMORY_ROOT"
     return 0
   fi
-  local dir="${CLAUDE_PROJECT_DIR:-$PWD}"
-  dir=$(cd "$dir" 2>/dev/null && pwd) || dir="$PWD"
+  local dir="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+  dir=$(cd "$dir" 2>/dev/null && pwd) || dir=$(pwd)
   while [[ "$dir" != "/" && -n "$dir" ]]; do
     if [[ -e "$dir/.git" ]]; then
       printf '%s\n' "$dir"
@@ -19,7 +19,7 @@ find_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  printf '%s\n' "${CLAUDE_PROJECT_DIR:-$PWD}"
+  printf '%s\n' "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 }
 
 PROJECT_DIR=$(find_project_root)

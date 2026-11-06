@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: inject-recent-decision
+description: 'SessionStart injects the newest Activity Log entries, including the decision lines captured under a task.'
+tags: [hooks, inject]
+plugins: ["../../../plugins/mz-memory"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    How long do access tokens live in this project? Reply with just the duration, or UNKNOWN if
+    you don't know.
+    Answer from what you already know about this project; don't search the files.
+  allowed_tools: []
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: answer-has-duration
+    type: regex
+    pattern: '\b15\s*(min|minutes)\b'
+    flags: i
+  - name: hook-injected-decision
+    type: regex
+    pattern: '"subtype":"hook_response"[^\n]*Access tokens expire after 15 minutes'
+    target: trace
+  - name: fact-not-read-from-disk
+    type: regex
+    pattern: '"type":"tool_result"[^\n]*15 minutes'
+    match: not_contains
+    target: trace

@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: vault-connect-near-miss-mileage-edit
+description: Changing a number and trimming a sentence in one note has nothing to do with links and needs a direct edit, not a skill.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    In Areas/Health/Running plan.md the second paragraph still says 25 km a week.
+    Change it to 30 and trim that wordy last sentence.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-connect-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-connect"'
+    min: 0
+    max: 0
+    arm: both

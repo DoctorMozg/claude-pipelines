@@ -1,0 +1,62 @@
+schema_version: "1.1"
+name: init-rules-gate-python-project
+description: 'init-rules on a Python repo with pre-commit shows an install plan of the detected rules and writes no rules file, settings entry or git exclude before approval.'
+tags: [track-d, gate]
+plugins: ["../../../plugins/mz-rules", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  # The choices for both optional groups are in the prompt, so the Step 4 question has nothing left to ask.
+  prompt: >-
+    Set up Claude's coding rules for this project. Standard rules only: no personal
+    preference groups and no delegation rules.
+  allowed_tools: [Skill, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 420
+graders:
+  - name: init-rules-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?init-rules"'
+  - name: init-rules-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_init_rules_project_rules[^"]*/state\.md"'
+  # The plan is a text block of its own, so the trace is searched for a text block and not for the phase file that quotes the template.
+  - name: plan-lists-the-detected-rules
+    type: regex
+    pattern: '"type"\s*:\s*"text"\s*,\s*"text"\s*:\s*"(?=(?:[^"\\]|\\.)*?Install plan ready for review)(?=(?:[^"\\]|\\.)*?python-conventions)(?=(?:[^"\\]|\\.)*?strict-typing-python)(?=(?:[^"\\]|\\.)*?git-conventions)(?=(?:[^"\\]|\\.)*?pre-commit-conventions)(?=(?:[^"\\]|\\.)*?Settings:)(?=(?:[^"\\]|\\.)*?Git exclude:)'
+    target: trace
+  - name: plan-skips-undetected-and-unchosen-rules
+    type: regex
+    pattern: '"type"\s*:\s*"text"\s*,\s*"text"\s*:\s*"(?:[^"\\]|\\.)*?(?:personal-(?:code-style|git|cpp|review)|delegation(?:-naturalize)?|strict-typing-typescript)(?:\.md)?\W+install\b'
+    flags: i
+    match: not_contains
+    target: trace
+  - name: awaiting-approval-recorded
+    type: regex
+    pattern: '"name"\s*:\s*"(?:Write|Edit)"[^\n]*awaiting approval: install plan gate'
+    target: trace
+  - name: no-rules-claudemd-settings-or-exclude-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*(?:/\.claude/rules/|/CLAUDE\.md"|/\.claude/settings(?:\.local)?\.json"|/info/exclude")'
+    min: 0
+    max: 0
+  - name: no-rules-claudemd-settings-or-exclude-edited
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*(?:/\.claude/rules/|/CLAUDE\.md"|/\.claude/settings(?:\.local)?\.json"|/info/exclude")'
+    min: 0
+    max: 0
+  - name: no-shell-write-to-install-targets
+    type: tool_used
+    tool: Bash
+    input_match: '(?:>>?|\btee\b|\bmv\b|\bcp\b|\brm\b|\bmkdir\b)[^|;&]*(?:\.claude|CLAUDE\.md|info/exclude)'
+    min: 0
+    max: 0
+  - name: seed-intact
+    type: regex
+    pattern: 'name = "invoice-tool"'
+    target: { source: file, path: pyproject.toml }

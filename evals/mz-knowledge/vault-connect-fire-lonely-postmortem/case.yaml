@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: vault-connect-fire-lonely-postmortem
+description: An existing note that nothing points to and that points to nothing, with a request to find where it belongs and propose hookups, is link discovery for vault-connect.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Projects/Atlas/Postmortem - cache stampede.md is sitting alone, nothing points at
+    it and it points at nothing. Go through the rest of my vault and show me which
+    notes it belongs next to and how they relate, and I'll tell you which ones to
+    hook up.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-connect-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-connect"'

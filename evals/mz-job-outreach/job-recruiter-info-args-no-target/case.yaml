@@ -1,0 +1,32 @@
+schema_version: "1.1"
+name: job-recruiter-info-args-no-target
+description: 'Called with no listing URL and no company name, job-recruiter-info asks for one and dispatches no contact finder and writes no target file.'
+tags: [track-d, args]
+plugins: ["../../../plugins/mz-job-outreach"]
+# Write is a gated tool: make eval PLUGIN=mz-job-outreach EVAL_ARGS="--allow-tools Write Edit --case '*-args-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-job-outreach:job-recruiter-info
+  allowed_tools: [Read, Write, Agent]
+  max_turns: 6
+  timeout_seconds: 240
+graders:
+  # AskUserQuestion isn't available in eval sessions, so the question can only be asked in chat.
+  - name: asks-for-url-or-company
+    type: regex
+    pattern: '^(?=[\s\S]*\b(?:URL|link|listing)\b)(?=[\s\S]*\bcompany\b)'
+    flags: i
+  - name: no-contact-finder-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?job-contact-finder"'
+    min: 0
+    max: 0
+  - name: no-target-or-report-written
+    type: tool_used
+    tool: Write
+    input_match: 'target\.json|recruiter_info|contacts\.json|scored_jobs'
+    min: 0
+    max: 0

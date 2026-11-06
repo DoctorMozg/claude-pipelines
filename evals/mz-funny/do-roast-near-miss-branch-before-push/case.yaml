@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: do-roast-near-miss-branch-before-push
+description: Honest feedback on everything changed on a local branch before a push is a serious branch review, so it belongs to review-branch, not a comedic roast.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-funny", "../../../plugins/mz-dev-git", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I'm about to push feature/retry-queue and open a PR. Go through everything I
+    changed against main and be brutally honest about what's wrong. I'd rather hear
+    it from you than from my teammates.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: do-roast-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?do-roast"'
+    min: 0
+    max: 0
+    arm: both
+  - name: review-branch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?review-branch"'

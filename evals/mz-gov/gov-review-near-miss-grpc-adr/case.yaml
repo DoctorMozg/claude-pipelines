@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: gov-review-near-miss-grpc-adr
+description: Drafting a new ADR for an undecided API boundary change is making and recording a decision, which belongs to govern.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    We're moving the internal services from REST to gRPC next quarter and nobody
+    agrees on how to handle the migration. Draft the ADR for it: the options we
+    looked at, what we picked and why, and a spot for the tech lead to sign off.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-review-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-review"'
+    min: 0
+    max: 0
+    arm: both
+  - name: govern-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?govern"'

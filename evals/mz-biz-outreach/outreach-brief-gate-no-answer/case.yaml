@@ -1,0 +1,57 @@
+schema_version: "1.1"
+name: outreach-brief-gate-no-answer
+description: 'A seed that answers all four brief dimensions writes brief.json and brief.md and stops at the brief gate in chat, with no climate research and no state advance.'
+tags: [track-d, gate]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+# Write is a gated tool: make eval PLUGIN=mz-biz-outreach EVAL_ARGS="--allow-tools Write Edit --case outreach-brief-gate-*"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-biz-outreach:outreach-brief offering: what is bookkeeping automation SaaS for small accountancies; value proposition is cutting month-end close from five days to two; differentiators are direct Xero and QuickBooks sync and flat per-client pricing; proof points: none yet. ICP: industries are accountancy and bookkeeping firms; company size 2 to 15 staff; stage established; buyer roles are managing partner and practice manager. Geography: target region is Leeds and West Yorkshire; no geo notes. Goal: booked 20-minute demo calls; channel is email only; voice is concise; exclusions: none. Those are my final answers for every field.
+  allowed_tools: [Read, Write, Edit, Glob, Agent]
+  max_turns: 20
+  timeout_seconds: 420
+graders:
+  - name: brief-json-has-the-four-dimensions
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"(?:[^"]*/)?\.mz/outreach/\d{4}_\d{2}_\d{2}_outreach_brief_[^"/]*/brief\.json")(?=[\s\S]*offering)(?=[\s\S]*\bicp\b)(?=[\s\S]*geography)(?=[\s\S]*goal_channels_voice)'
+  - name: brief-json-keeps-the-seed-values
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*brief\.json)(?=[\s\S]*Xero)(?=[\s\S]*QuickBooks)(?=[\s\S]*Leeds)'
+  - name: brief-md-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?:[^"]*/)?\.mz/outreach/\d{4}_\d{2}_\d{2}_outreach_brief_[^"/]*/brief\.md"'
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: gate-message-shows-the-brief
+    type: regex
+    pattern: '^(?=[\s\S]*Brief ready for review)(?=[\s\S]*Xero)(?=[\s\S]*QuickBooks)(?=[\s\S]*Leeds)'
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  - name: state-records-the-open-gate
+    type: tool_used
+    tool: Write
+    input_match: 'awaiting approval: brief gate'
+  - name: state-not-advanced-to-approved
+    type: tool_used
+    tool: Write
+    input_match: 'brief_approved'
+    min: 0
+    max: 0
+  - name: no-climate-agents
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?outreach-climate-(?:source-finder|researcher)"'
+    min: 0
+    max: 0
+  - name: no-climate-files-written
+    type: tool_used
+    tool: Write
+    input_match: 'climate\.(?:json|md)|_climate'
+    min: 0
+    max: 0

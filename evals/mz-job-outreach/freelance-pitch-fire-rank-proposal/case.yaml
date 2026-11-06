@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: freelance-pitch-fire-rank-proposal
+description: Asking for a proposal for one ranked gig from a finished freelance search is the core job of freelance-pitch.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-job-outreach", "../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Draft a proposal for gig 3 from the freelance search we just ran. The client
+    wants their ecommerce platform moved to Kubernetes, so lead with the cluster
+    migration I did for a logistics company last year.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-pitch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-pitch"'

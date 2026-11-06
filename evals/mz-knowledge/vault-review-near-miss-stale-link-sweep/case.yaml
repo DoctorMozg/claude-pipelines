@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: vault-review-near-miss-stale-link-sweep
+description: Sweeping a vault for broken wikilinks, unlinked notes and untouched content is maintenance, so it belongs to vault-health.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Before I share the vault with my team I want it tidy. Scan everything under
+    ~/Notes/team-vault for broken wikilinks, notes that nothing links to, and
+    notes that haven't been edited in over a year, and write me up a list.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-review-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-review"'
+    min: 0
+    max: 0
+    arm: both
+  - name: vault-health-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-health"'

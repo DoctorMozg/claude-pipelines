@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: process-notes-fire-half-formed-thoughts
+description: Turning loose half-formed thoughts into standalone one-idea notes is process-notes work, stated as a goal with no path and none of its vocabulary.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I've been jotting half-formed thoughts into my Obsidian vault for months
+    and never doing anything with them. I want them turned into proper
+    standalone notes, one idea each, that I could link to from other things I
+    write. Start with what I wrote this week about learning and memory.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: process-notes-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?process-notes"'

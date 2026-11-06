@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: obsidian-init-near-miss-repo-coding-rules
+description: Installing coding and development rules for a software repo belongs to init-rules, not to bootstrapping an Obsidian vault.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-rules", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I just cloned our team's payments-service repo (Go, mostly) and Claude keeps ignoring
+    our conventions. Set up the standard development rules for this project, project
+    scope only, not my global config. Put them in CLAUDE.md and let me pick which groups
+    get installed.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-init-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-init"'
+    min: 0
+    max: 0
+    arm: both
+  - name: init-rules-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?init-rules"'

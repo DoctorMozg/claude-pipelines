@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: init-rules-fire-machine-wide
+description: A one-time baseline of coding habits that applies to every session on the machine is a global rules install, so it belongs to init-rules.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-rules", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-knowledge"]
+execution:
+  prompt: >-
+    I'm sick of repeating myself to Claude in every repo: strict typing, small
+    functions, tests for the edge cases, ask before pushing anything. Make that
+    baseline apply to every session on this machine so I only say it once.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: init-rules-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?init-rules"'

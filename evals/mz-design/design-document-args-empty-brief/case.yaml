@@ -1,0 +1,32 @@
+schema_version: "1.1"
+name: design-document-args-empty-brief
+description: 'An empty design brief stops design-document in setup: it asks what to design and starts no researcher, critic or file.'
+tags: [track-d, args]
+plugins: ["../../../plugins/mz-design"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-design:design-document
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 6
+  timeout_seconds: 300
+graders:
+  - name: reply-asks-for-the-brief
+    type: regex
+    pattern: '^(?=[\s\S]*(?:brief|describe|what (?:do you want|would you like|should)|which (?:screen|page|interface|ui)))(?=[\s\S]*\?)'
+    flags: i
+  - name: no-design-agent-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"prompt"'
+    min: 0
+    max: 0
+  # state.md and the design folder are created only once a brief names the task.
+  - name: nothing-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"'
+    min: 0
+    max: 0

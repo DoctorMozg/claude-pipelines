@@ -31,7 +31,7 @@ def _selected(select: tuple[str, ...], suite: Suite) -> set[str]:
 @pytest.fixture(scope="module")
 def suites() -> dict[str, Suite]:
     plugins = sorted({mutant.plugin for mutant in MUTANTS})
-    return {plugin: load_cases(REPO_ROOT / "plugins" / plugin / "evals") for plugin in plugins}
+    return {plugin: load_cases(REPO_ROOT / "evals" / plugin) for plugin in plugins}
 
 
 @pytest.fixture
@@ -209,8 +209,9 @@ class TestJudge:
 class TestSnapshot:
     def test_committed_plugin_code_with_working_tree_evals(self, tmp_path: Path) -> None:
         repo = tmp_path / "repo"
-        evals = repo / "plugins/p/evals"
+        evals = repo / "evals/p"
         (evals / "old").mkdir(parents=True)
+        (repo / "plugins/p").mkdir(parents=True)
         (repo / "plugins/p/hook.sh").write_text("committed\n")
         (evals / "old/case.yaml").write_text("name: old\n")
         git = ["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@example.com"]
@@ -225,9 +226,9 @@ class TestSnapshot:
 
         build_snapshot(tmp_path / "snap", repo)
 
-        snap = tmp_path / "snap/plugins/p"
-        assert (snap / "hook.sh").read_text() == "committed\n"
-        assert sorted(p.name for p in (snap / "evals").iterdir()) == ["new", "old"]
+        snap = tmp_path / "snap"
+        assert (snap / "plugins/p/hook.sh").read_text() == "committed\n"
+        assert sorted(p.name for p in (snap / "evals/p").iterdir()) == ["new", "old"]
 
     def test_failed_archive_is_a_mutant_error(self, tmp_path: Path) -> None:
         with pytest.raises(MutantError, match="git archive HEAD plugins failed"):

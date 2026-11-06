@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: outreach-update-card-fire-follow-up-january
+description: Wanting the dossier already built for a prospect to reflect a conversation that just happened is a request to log an outreach action, stated with no path.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    Kestrel Marine is one of the prospects we researched last week. I spoke with their
+    ops director this morning and he asked me to circle back in January. Make sure the
+    file you built for them shows that, because by then I'll have forgotten the details.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-update-card-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-update-card"'

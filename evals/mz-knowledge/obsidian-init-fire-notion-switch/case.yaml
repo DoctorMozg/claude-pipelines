@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: obsidian-init-fire-notion-switch
+description: Wanting an empty second brain with folders, templates and written conventions ready before switching apps is a from-scratch bootstrap, stated as a goal.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I'm moving from Notion to Obsidian next week and I'd like a second brain waiting for
+    me when I switch. Nothing exists yet. I want the folders, note templates, and a short
+    guide to my conventions that you read before touching anything, so things get filed
+    the same way every time. Ask me whatever you need to know about how I work.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-init-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-init"'

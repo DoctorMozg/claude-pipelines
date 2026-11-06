@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: vault-triage-near-miss-monthly-note-review
+description: Surfacing the permanent notes that have gone longest without a review for a monthly ritual is a review session, so it belongs to vault-review.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    First of the month, so it's time for my review ritual. Which permanent notes
+    in ~/Documents/Zettelkasten haven't I looked at in the longest time? Seedlings
+    and notes with no outgoing links first. I'll tell you which ones I actually
+    read so you can mark them as reviewed.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-triage-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-triage"'
+    min: 0
+    max: 0
+    arm: both
+  - name: vault-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-review"'

@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: github-scan-prs-fire-maintainer-backlog
+description: A returning maintainer asking where they are tagged or awaited across two named repos wants a ranked multi-repo inbox, which github-scan-prs produces.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I was out for a week. I'm a maintainer on github.com/pallets/flask and
+    github.com/pallets/click, and I need to know where people are waiting on me:
+    review requests, @-mentions, changes requested on the stuff I opened. Just give
+    me a ranked list of what to deal with first, no need to dig into the diffs.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: github-scan-prs-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?github-scan-prs"'

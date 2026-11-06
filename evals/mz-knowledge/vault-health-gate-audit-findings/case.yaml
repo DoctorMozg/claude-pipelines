@@ -1,0 +1,104 @@
+schema_version: "1.1"
+name: vault-health-gate-audit-findings
+description: 'vault-health has vault-audit-collector find the orphan note and the one broken wikilink in a small vault, then stops at the audit gate with no _vault_audit note written and no vault note changed.'
+tags: [gate, track-d]
+plugins: ["../../../plugins/mz-knowledge"]
+# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-health-gate-*'"
+# The case grants no Bash, so the collector falls back to Glob and Grep; staleness needs mtimes and is not graded.
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-knowledge:vault-health .
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 600
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: vault-health-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_vault-health_'
+    target: trace
+  - name: audit-collector-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?vault-audit-collector"'
+    min: 1
+    max: 2
+  # The gate wait is written to state.md; a state.md call is the only tool call that can hold the text.
+  - name: state-awaits-audit-gate
+    type: regex
+    pattern: '^(?=[^\n]*"name":"(?:Write|Edit)")[^\n]*awaiting approval: audit gate'
+    flags: m
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  # The tempered gaps stop at the next report key, and the collector prompt's own template holds no note names.
+  - name: orphan-reported
+    type: regex
+    pattern: 'orphans:(?:(?!broken_links:)[\s\S]){0,600}Lonely orphan'
+    target: trace
+  - name: linked-notes-not-reported-as-orphans
+    type: regex
+    pattern: 'orphans:(?:(?!broken_links:|notes:)[\s\S]){0,600}Linked (?:hub|leaf)'
+    match: not_contains
+    target: trace
+  - name: broken-link-reported
+    type: regex
+    pattern: 'broken_links:(?:(?!stubs:)[\s\S]){0,300}Ghost note'
+    target: trace
+  - name: one-broken-link-counted
+    type: regex
+    pattern: 'broken_links:[\s\S]{0,30}count:\s*1\b'
+    target: trace
+  - name: audit-note-not-written
+    type: tool_used
+    tool: Write
+    input_match: '_vault_audit_'
+    min: 0
+    max: 0
+  - name: no-vault-write
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  - name: no-vault-edit
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)[^"]*\.(?:md|base|yml)"'
+    min: 0
+    max: 0
+  # Only files under .mz/ may be created. The created-files list left out .mz/ paths in some runs, so the state check is a Write call.
+  - name: task-state-created
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/state\.md"'
+  - name: nothing-created-outside-mz
+    type: regex
+    pattern: '^(?!(?:.*/)?\.mz/).+'
+    flags: m
+    match: not_contains
+    target: files
+  - name: hub-keeps-its-broken-link
+    type: regex
+    pattern: 'I still owe a note on \[\[Ghost note\]\]'
+    target: { source: file, path: "04 - Permanent/Linked hub.md" }
+  - name: hub-gains-no-section
+    type: regex
+    pattern: '^## '
+    flags: m
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Linked hub.md" }
+  - name: orphan-note-intact
+    type: regex
+    pattern: 'A note that nobody points to and that points nowhere'
+    target: { source: file, path: "04 - Permanent/Lonely orphan.md" }
+  - name: orphan-note-not-linked
+    type: regex
+    pattern: '\[\['
+    match: not_contains
+    target: { source: file, path: "04 - Permanent/Lonely orphan.md" }

@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: outreach-research-fire-devops-dach
+description: Asking for a list of potential clients for a consulting offer in a region is company discovery, which belongs to outreach-research.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    I need lead generation for our DevOps consulting. Find potential clients in
+    Germany, Austria and Switzerland, mid-size SaaS companies with 50 to 500
+    people. Around 25 companies is enough.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'

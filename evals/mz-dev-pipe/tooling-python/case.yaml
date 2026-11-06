@@ -1,0 +1,42 @@
+schema_version: "1.1"
+name: tooling-python
+description: 'SessionStart detects a uv-managed Python project with ruff, mypy, pytest and pre-commit and records each command.'
+tags: [hooks, tooling]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Reply with just OK.
+  allowed_tools: []
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: test-command
+    type: regex
+    pattern: '"test": "pytest"'
+    target: { source: file, path: .mz/tooling.json }
+  - name: lint-command
+    type: regex
+    pattern: '"lint": "ruff check"'
+    target: { source: file, path: .mz/tooling.json }
+  - name: format-command
+    type: regex
+    pattern: '"format": "ruff format"'
+    target: { source: file, path: .mz/tooling.json }
+  - name: typecheck-command
+    type: regex
+    pattern: '"typecheck": "mypy"'
+    target: { source: file, path: .mz/tooling.json }
+  - name: install-command
+    type: regex
+    pattern: '"install": "uv sync"'
+    target: { source: file, path: .mz/tooling.json }
+  - name: pre-commit-tool
+    type: regex
+    pattern: '"pre-commit": \{\s*"command": "pre-commit run --all-files"'
+    target: { source: file, path: .mz/tooling.json }
+  - name: hook-announced-python
+    type: regex
+    pattern: '"subtype":"hook_response"[^\n]*Project tooling detected: python'
+    target: trace

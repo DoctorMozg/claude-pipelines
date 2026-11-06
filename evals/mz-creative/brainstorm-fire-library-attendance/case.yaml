@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: brainstorm-fire-library-attendance
+description: The user has no plan and wants unusual new ideas drawn from several kinds of thinking, which is what brainstorm does.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Our neighborhood library has lost about half its weekend visitors in two years
+    and I'm the new coordinator with no plan at all. Give me a pile of unusual,
+    out-there ways to get people back through the door. I'd like it to draw on
+    different kinds of thinking, say an economist, a psychologist, a storyteller,
+    not just the librarian's view.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: brainstorm-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?brainstorm"'

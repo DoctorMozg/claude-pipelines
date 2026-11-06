@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: outreach-research-near-miss-cold-email-copy
+description: Writing the text of a cold email for an offer is promotional copy, which belongs to copywrite rather than to company discovery.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    write me a cold email to CTOs at mid-size fintechs. we do pen testing, fixed
+    price, two week turnaround. under 120 words, friendly but not salesy, and
+    give me a subject line too
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-research-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'
+    min: 0
+    max: 0
+    arm: both
+  - name: copywrite-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'

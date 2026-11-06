@@ -1,0 +1,35 @@
+schema_version: "1.1"
+name: job-search-args-no-cv
+description: 'Preferences without a CV make job-search ask for a .md or .txt CV path in chat and stop, with no strategist or scout dispatched and no strategy written.'
+tags: [track-d, args]
+plugins: ["../../../plugins/mz-job-outreach"]
+# Write is a gated tool: make eval PLUGIN=mz-job-outreach EVAL_ARGS="--allow-tools Write Edit --case '*-args-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-job-outreach:job-search "Senior backend, Go, remote EU, no on-call"
+  allowed_tools: [Read, Glob, Write, Agent]
+  max_turns: 8
+  timeout_seconds: 240
+graders:
+  # AskUserQuestion isn't available in eval sessions, and the skill asks for the CV in prose anyway.
+  - name: asks-for-the-cv-path
+    type: regex
+    pattern: '^(?=[\s\S]*\bCV\b)(?=[\s\S]*(?:\.md|\.txt|markdown|plain text))'
+    flags: i
+  - name: says-pdf-is-not-accepted
+    type: regex
+    pattern: '\bPDF\b'
+  - name: no-pipeline-agent-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?job-(?:strategist|source-researcher|scout|prescorer|scorer|contact-finder|letter-writer|reporter)"'
+    min: 0
+    max: 0
+  - name: no-strategy-or-listings-written
+    type: tool_used
+    tool: Write
+    input_match: 'search_strategy|sources\.json|raw_listings|scored_jobs'
+    min: 0
+    max: 0

@@ -50,6 +50,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "translate this", "localize", "translate to <lang>"                                                                                                  | translate                                                      | mz-research-pipe |
 | "bootstrap rules", "init project rules"                                                                                                              | init-rules                                                     | mz-rules         |
 | "promote lessons", "turn lessons into rules"                                                                                                         | lessons-promote                                                | mz-memory        |
+| "write a handoff", "hand off before /clear", "resume from the handoff"                                                                               | handoff                                                        | mz-handoff       |
 | "remember that", "note this", "pin this decision"                                                                                                    | memory-note                                                    | mz-memory        |
 | "review my branch", "what changed locally"                                                                                                           | review-branch                                                  | mz-dev-git       |
 | "review this PR", "what's wrong with this PR"                                                                                                        | github-review-pr                                               | mz-dev-git       |
@@ -91,6 +92,8 @@ Routing table. Phrases are indicative, not exact matches.
 | "obsidian CLI", "edit vault notes from the shell"                                                                                                    | obsidian-cli                                                   | mz-knowledge     |
 
 mz-memory contributes SessionStart, SessionEnd, UserPromptSubmit and PostToolUse (AskUserQuestion) hooks, the `/memory-note` skill (notes, and lessons after a correction) and the `/lessons-promote` skill (recurring lessons into project rules); it is referenced by agents that need persistent state.
+
+mz-handoff contributes SessionStart and Stop hooks and the `/handoff` skill, which writes a handoff file for a fresh session after repeated compactions and resumes from it after `/clear`.
 
 ## Red Flags
 

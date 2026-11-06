@@ -1,0 +1,28 @@
+schema_version: "1.1"
+name: vault-refactor-near-miss-new-permanent-note
+description: Turning a rough capture into a brand new permanent note with a claim-style title is process-notes work, since no existing note is renamed or moved.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Here's a rough capture from this morning's reading. Backpressure is what stops
+    a fast producer from drowning a slow consumer. Without it queues grow without
+    bound, latency climbs, and eventually the process runs out of memory. Bounded
+    queues and credit-based flow control both push the slowness back upstream to
+    the producer. Turn this into a proper permanent note for my Zettelkasten with
+    a title that states the claim.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-refactor-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-refactor"'
+    min: 0
+    max: 0
+    arm: both
+  - name: process-notes-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?process-notes"'

@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: outreach-brief-fire-consulting-notes
+description: Turning a rough offer write-up into a defined audience and region plus sector conditions, with no company list yet, is the pre-discovery scoping that outreach-brief covers.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    notes/consulting-offer.md is my messy write-up of what my freelance
+    data-engineering consulting does and who tends to hire me. Turn that into a
+    proper plan of who I'm going after and where, ask me about whatever is
+    missing, and then check what has been going on in Nordic fintech and
+    logistics lately: new regulation, big deals, what is hurting them. No
+    company list yet, I just want the groundwork done.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-brief-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-brief"'

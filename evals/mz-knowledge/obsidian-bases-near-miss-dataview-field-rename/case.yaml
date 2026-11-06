@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: obsidian-bases-near-miss-dataview-field-rename
+description: A one-line edit to a Dataview DQL query is a different query language than Bases and too small for any skill.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    The Dataview block in Dashboard.md broke after I renamed the due field to deadline.
+    The query is TABLE status, due FROM #project WHERE status != "done" SORT due ASC.
+    Update it to use the new field name.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-bases-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-bases"'
+    min: 0
+    max: 0
+    arm: both

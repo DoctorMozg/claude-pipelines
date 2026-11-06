@@ -26,7 +26,7 @@ help:
 	@echo "  hooks-smoke       Run the memory, tooling and vault hooks in live headless sessions (spends tokens)"
 	@echo "  gate-smoke        Answer memory-note and polish gates headlessly, check the journal (spends tokens)"
 	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
-	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads plugins/<n>/evals/flags; spends tokens)"
+	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads evals/<n>/flags; spends tokens)"
 	@echo "  eval-mutants      Break plugin code in a HEAD snapshot and check the evals catch it"
 	@echo "                    (MUTANTS=<id ...>, all by default; EVAL_MODEL, EVAL_JUDGE, EVAL_JOBS; spends tokens)"
 
@@ -76,17 +76,17 @@ gate-smoke:
 
 # Targets the repo root so a case's `plugins:` may also load sibling plugins: dependencies and
 # cross-plugin near misses. --trust-plugin and --scaffold are safe only because every suite and
-# scaffold script here is authored in this repo. A suite's own flags, such as tool grants, live in evals/flags.
+# scaffold script here is authored in this repo. A suite's own flags, such as tool grants, live in evals/<plugin>/flags.
 eval:
 	@test -n "$(PLUGIN)" || { echo "usage: make eval PLUGIN=<name> [EVAL_MODEL=opus] [EVAL_RUNS=1] [EVAL_ARGS=...]"; exit 2; }
-	@test -d "plugins/$(PLUGIN)/evals" || { echo "plugins/$(PLUGIN) has no evals/ directory"; exit 2; }
-	@mkdir -p "plugins/$(PLUGIN)/evals/results"
-	$(CLAUDE) plugin eval . --eval-dir "plugins/$(PLUGIN)/evals" --ablation "$(EVAL_ABLATION)" \
+	@test -d "evals/$(PLUGIN)" || { echo "evals/$(PLUGIN) does not exist"; exit 2; }
+	@mkdir -p "evals/$(PLUGIN)/results"
+	$(CLAUDE) plugin eval . --eval-dir "evals/$(PLUGIN)" --ablation "$(EVAL_ABLATION)" \
 		--trust-plugin --scaffold --no-publish \
 		--model "$(EVAL_MODEL)" --judge-model "$(EVAL_JUDGE)" --max-cost-usd "$(EVAL_MAX_USD)" -j "$(EVAL_JOBS)" \
 		$(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") \
-		$(shell cat "plugins/$(PLUGIN)/evals/flags" 2>/dev/null) $(EVAL_ARGS) \
-		--json "plugins/$(PLUGIN)/evals/results/last-$(EVAL_MODEL).json"
+		$(shell cat "evals/$(PLUGIN)/flags" 2>/dev/null) $(EVAL_ARGS) \
+		--json "evals/$(PLUGIN)/results/last-$(EVAL_MODEL).json"
 
 # Runs every mutant unless MUTANTS names some. The anchors are checked for free in `make test`.
 MUTANTS ?=

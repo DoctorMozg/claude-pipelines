@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: deep-research-near-miss-merge-reports
+description: The user wants existing research reports merged into one document with no new searching, which belongs to combine instead.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: merge the three research reports in .mz/research into one doc, no new searching
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: deep-research-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?deep-research"'
+    min: 0
+    max: 0
+    arm: both
+  - name: combine-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?combine"'

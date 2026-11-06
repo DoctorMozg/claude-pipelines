@@ -1,0 +1,11 @@
+{
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
+  "description": "Hands a long, repeatedly compacted session over to a fresh one: writes a handoff file from the transcript and git, and loads it after /clear",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
+  "license": "MIT",
+  "name": "mz-handoff",
+  "version": "0.55.0"
+}

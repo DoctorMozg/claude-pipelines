@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: using-mozg-pipelines-fire-forgotten-tooling
+description: Asking what tooling is set up, with no task and no names, is a request for the map of what the user has.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-knowledge"]
+execution:
+  prompt: >-
+    Remind me what I've got set up here. I know there's something for reviewing code
+    and something for outreach emails, but I forget the rest.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: using-mozg-pipelines-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?using-mozg-pipelines"'

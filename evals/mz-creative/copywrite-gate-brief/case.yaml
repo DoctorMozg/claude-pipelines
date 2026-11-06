@@ -1,0 +1,55 @@
+schema_version: "1.1"
+name: copywrite-gate-brief
+description: 'copywrite writes its brief from a source brief, shows it at the brief gate and stops, because nobody can answer: no copywriter or naturalizer runs and no copy is written.'
+tags: [track-d, gate]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+# Write is a gated tool: make eval PLUGIN=mz-creative EVAL_ARGS="--allow-tools Write Edit --case 'copywrite-gate-*'"
+execution:
+  prompt: >-
+    /mz-creative:copywrite launch email for the Ledgerline CSV export format:email @brief:brief.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 20
+  timeout_seconds: 400
+graders:
+  # A slash prompt loads the skill without a Skill call, so look for the task folder only the skill writes.
+  - name: copywrite-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_copywrite_[^"]*/state\.md"'
+  - name: brief-grounded-in-source
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/brief\.md")(?=[\s\S]*## Value claim)(?=[\s\S]*Bramble)'
+  # The state write names the gate; matching only tool_use lines keeps the skill text in Read results out.
+  - name: state-awaits-brief-gate
+    type: regex
+    pattern: '"name":"(?:Write|Edit)","input":\{[^\n]*awaiting approval: brief gate'
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate is asked in chat and the plan message carries the brief itself.
+  - name: plan-message-has-the-brief
+    type: regex
+    pattern: '"type":"text","text":"[^\n]*Brief ready for review[^\n]*## Value claim'
+    target: trace
+  - name: approval-asked-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  - name: writer-and-naturalizer-not-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?expert-(?:copywriter|naturalizer)"'
+    min: 0
+    max: 0
+  - name: no-copy-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/reports/'
+    min: 0
+    max: 0
+  - name: source-brief-untouched
+    type: regex
+    pattern: 'Bramble & Co cut their close from 3 days to 2'
+    target: { source: file, path: brief.md }

@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: debug-near-miss-repo-sweep
+description: A report-only sweep of the codebase for bugs and security problems, with no specific symptom, belongs to audit.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Before I open the PR I want someone to go through this repo and look for bugs
+    and security problems. I don't have a particular symptom in mind. Auth and the
+    file upload code worry me most. Just give me a ranked list of what you find and
+    don't change any code.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: debug-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?debug"'
+    min: 0
+    max: 0
+    arm: both
+  - name: audit-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?audit"'

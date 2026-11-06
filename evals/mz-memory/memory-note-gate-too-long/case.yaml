@@ -1,0 +1,43 @@
+schema_version: "1.1"
+name: memory-note-gate-too-long
+description: 'A note over the 500-character limit is neither truncated nor written while the user has not shortened it.'
+tags: [gate]
+plugins: ["../../../plugins/mz-memory"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Remember this: The ledger reconciliation job runs nightly at 02:00 UTC, reads settled
+    transfers from the warehouse, compares them with processor reports, and opens a ticket for
+    every mismatch above five cents. The ledger reconciliation job runs nightly at 02:00 UTC,
+    reads settled transfers from the warehouse, compares them with processor reports, and opens
+    a ticket for every mismatch above five cents. The ledger reconciliation job runs nightly at
+    02:00 UTC, reads settled transfers from the warehouse, compares them with processor reports,
+    and opens a ticket for every mismatch above five cents. Marker KESTREL-ROW.
+  allowed_tools: [Skill, AskUserQuestion]
+  max_turns: 8
+  timeout_seconds: 240
+graders:
+  - name: memory-note-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?memory-note"'
+  - name: asked-to-shorten
+    type: regex
+    pattern: '\b500\b|too long|shorten|split'
+    flags: i
+  - name: seed-intact
+    type: regex
+    pattern: Use UTC timestamps everywhere
+    target: { source: file, path: .mz/memory/MEMORY.md }
+  - name: note-not-written
+    type: regex
+    pattern: 'KESTREL-ROW|ledger reconciliation'
+    match: not_contains
+    target: { source: file, path: .mz/memory/MEMORY.md }
+  - name: write-script-not-run
+    type: tool_used
+    tool: Bash
+    input_match: memory-note\.sh
+    min: 0
+    max: 0

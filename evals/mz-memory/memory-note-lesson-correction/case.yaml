@@ -1,0 +1,59 @@
+schema_version: "1.1"
+name: memory-note-lesson-correction
+description: 'A plain-chat correction draws the correction nudge, so Claude fixes the mistake and saves the lesson to the lessons Inbox with --lesson, with no approval step.'
+tags: [lessons, nudge]
+plugins: ["../../../plugins/mz-memory"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    No, that's the wrong place. Migrations here live in db/migrations/ and the file name has to
+    start with MIG-, because the deploy runner only applies files whose names start with MIG-.
+    Move migrations/20261101_add_orders_index.sql where it belongs.
+  allowed_tools: [Skill, Bash, Read, Glob]
+  max_turns: 10
+  timeout_seconds: 300
+graders:
+  - name: memory-note-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?memory-note"'
+  - name: lesson-script-run
+    type: tool_used
+    tool: Bash
+    input_match: 'memory-note\.sh.{0,8}--lesson'
+  - name: lesson-in-inbox
+    type: regex
+    pattern: '- \[I-0001\] [0-9]{4}-[0-9]{2}-[0-9]{2} trig=correction src=[0-9]{4}_[0-9]{2}_[0-9]{2}_memory-note@[0-9a-f]+ status=noted :: [^\n]*MIG-'
+    target: { source: file, path: .mz/memory/lessons.md }
+  # A stated cause after " — " is the contract; the curator rewrites inbox lessons into the "— WHY" form later.
+  - name: lesson-has-when-and-cause
+    type: regex
+    pattern: 'trig=correction [^\n]* :: [^\n]*WHEN [^\n]*→[^\n]* — [^\n]*[A-Za-z]'
+    target: { source: file, path: .mz/memory/lessons.md }
+  - name: seed-intact
+    type: regex
+    pattern: Use UTC timestamps everywhere
+    target: { source: file, path: .mz/memory/MEMORY.md }
+  - name: lesson-not-pinned-as-note
+    type: regex
+    pattern: 'MIG-'
+    match: not_contains
+    target: { source: file, path: .mz/memory/MEMORY.md }
+  # AskUserQuestion isn't available in eval sessions, so a gate would show up as a request in chat.
+  - name: approval-not-requested
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+    match: not_contains
+  # A missing file passes not_contains, which is the point here: the old file has to be gone.
+  - name: old-file-moved
+    type: regex
+    pattern: CREATE INDEX
+    match: not_contains
+    target: { source: file, path: migrations/20261101_add_orders_index.sql }
+  # The new name isn't fixed, so the move command, which names both paths, shows where the file went.
+  - name: moved-under-mig-name
+    type: regex
+    pattern: '"type":"tool_use"[^\n]*migrations/20261101_add_orders_index\.sql[^\n]*db/migrations/MIG-'
+    target: trace

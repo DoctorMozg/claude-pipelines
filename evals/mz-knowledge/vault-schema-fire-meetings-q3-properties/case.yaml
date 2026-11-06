@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: vault-schema-fire-meetings-q3-properties
+description: Listing the notes in a folder that lack required properties or use a disallowed status value is a frontmatter check against a declared note shape.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Every note in Meetings/2026-Q3/ is supposed to have a date, attendees and a
+    status of either open or closed in the properties at the top. I know some are
+    missing bits and a few say status: wip. List the broken ones with what is wrong
+    in each, and don't change anything yet.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-schema-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-schema"'

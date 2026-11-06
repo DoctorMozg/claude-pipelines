@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: review-branch-fires
+description: A user asks for a review of their local branch before pushing, so review-branch should handle it.
+tags: [routing, fire]
+# Eval runs never install dependencies: a plugin whose dependency isn't listed here fails to load.
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I'm about to push my feature branch. Can you look over everything I changed on it
+    compared to main and flag anything that looks broken?
+  # The routing call is the first turn; later turns only explore an empty workspace.
+  # Skill only, because a granted Agent would start an opus review.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: review-branch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?review-branch"'

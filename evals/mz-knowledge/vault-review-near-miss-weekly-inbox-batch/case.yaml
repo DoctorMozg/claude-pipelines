@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: vault-review-near-miss-weekly-inbox-batch
+description: A quick promote, merge, discard or defer decision on each fleeting inbox note is a triage pass, so it belongs to vault-triage.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Weekly inbox review time. There are about nine fleeting notes in inbox/ from
+    the past two weeks. Go through them in one quick batch and propose promote,
+    merge, discard or defer for each, and I'll override whatever I disagree with.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-review-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-review"'
+    min: 0
+    max: 0
+    arm: both
+  - name: vault-triage-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-triage"'

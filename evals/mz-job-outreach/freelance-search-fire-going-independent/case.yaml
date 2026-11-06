@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: freelance-search-fire-going-independent
+description: Someone leaving employment who wants paid short projects matched to a resume is asking for freelance-search without using its words.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-job-outreach", "../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I'm leaving my agency job in December to work for myself. My resume is at
+    ~/Documents/resume_lena.md, I do mobile UX and design systems. Look for short
+    paid projects I could take on from January, ideally with European clients and
+    80 euros an hour or more. I'll pick the best few from your list.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: freelance-search-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?freelance-search"'

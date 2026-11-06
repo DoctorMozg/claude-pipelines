@@ -150,6 +150,18 @@
       "source": "./plugins/mz-memory"
     },
     {
+      "category": "development",
+      "keywords": [
+        "handoff",
+        "compaction",
+        "context",
+        "session",
+        "clear"
+      ],
+      "name": "mz-handoff",
+      "source": "./plugins/mz-handoff"
+    },
+    {
       "category": "design",
       "keywords": [
         "design",

@@ -49,7 +49,7 @@ class EvalSettings:
             "eval",
             str(root),
             "--eval-dir",
-            f"plugins/{mutant.plugin}/evals",
+            f"evals/{mutant.plugin}",
             *mutant.select,
             "--runs",
             "1",
@@ -100,7 +100,7 @@ def plan_edits(root: Path, mutant: Mutant) -> dict[Path, str]:
 
 
 def build_snapshot(dest: Path, repo: Path = REPO_ROOT) -> None:
-    """Export HEAD's plugins/ into `dest`, then overlay the working tree's evals/ minus results/."""
+    """Export HEAD's plugins/ into `dest`, then copy the working tree's evals/ minus results/."""
     # Runs see committed plugin code, not a peer's unfinished edits, plus cases not yet committed.
     try:
         archive = subprocess.run(
@@ -113,10 +113,10 @@ def build_snapshot(dest: Path, repo: Path = REPO_ROOT) -> None:
         raise MutantError(f"git archive HEAD plugins failed: {stderr}") from error
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         tar.extractall(dest, filter="data")
-    for evals in sorted(repo.glob("plugins/*/evals")):
-        target = dest / evals.relative_to(repo)
-        shutil.rmtree(target, ignore_errors=True)
-        shutil.copytree(evals, target, symlinks=True, ignore=shutil.ignore_patterns("results"))
+    if (repo / "evals").is_dir():
+        shutil.copytree(
+            repo / "evals", dest / "evals", symlinks=True, ignore=shutil.ignore_patterns("results")
+        )
     log.info("snapshot: HEAD plugins with working-tree evals in %s", dest)
 
 

@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: expert-fire-paid-tier
+description: The user has a concrete pricing plan and wants specialists from several fields to pick it apart, which is what expert does.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I want to start charging for my open-source markdown editor. Plan is 6 dollars
+    a month, with cloud sync as the only paid feature and everything else staying
+    free. Before I commit, I'd like specialists from a few different fields to pick
+    it apart. What's solid, what's shaky, what am I not seeing?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: expert-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?expert"'

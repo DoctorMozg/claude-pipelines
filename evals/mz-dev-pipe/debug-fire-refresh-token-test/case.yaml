@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: debug-fire-refresh-token-test
+description: One failing test with a stack trace and a request for the cause and a fix is a reactive bug fix, which belongs to debug.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    test_refresh_token_expiry in tests/test_auth.py started failing after I merged
+    master this morning. Here is the stack trace:
+
+    File "tests/test_auth.py", line 88, in test_refresh_token_expiry
+        assert session.expires_in == 3600
+    AssertionError: assert 0 == 3600
+
+    Why is it failing? Find the root cause and fix it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: debug-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?debug"'

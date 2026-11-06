@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: vault-answer-fire-spaced-repetition
+description: A question about what the user's own vault says on a topic, with the notes used named in the answer, belongs to vault-answer.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    what does my vault say about spaced repetition vs just rereading? answer from my
+    notes and tell me which ones you used
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-answer-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-answer"'

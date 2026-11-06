@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: vault-ingest-fire-youtube-talk
+description: Capturing a YouTube video into the vault as a fleeting note is the core vault-ingest job.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    capture this YouTube video into my vault as a fleeting note, use the
+    auto-subtitles for the text: https://www.youtube.com/watch?v=aircAruvnKk
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-ingest-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-ingest"'

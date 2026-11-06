@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: gov-init-fire-project-install
+description: A terse request to set up governance for the current repo is a plain policy install into the project CLAUDE.md.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Set up governance for this repo. Project scope is fine, nothing fancy. If the
+    policy is already in CLAUDE.md just tell me.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-init-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-init"'

@@ -1,0 +1,32 @@
+schema_version: "1.1"
+name: inject-pinned-convention
+description: 'A pinned convention changes what the model does: it picks pnpm, not npm, without being asked.'
+tags: [hooks, inject]
+plugins: ["../../../plugins/mz-memory"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Give me the single shell command to add lodash as a runtime dependency in this repo. Reply
+    with only the command.
+    Answer from what you already know about this project; don't search the files.
+  allowed_tools: []
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: uses-pnpm
+    type: regex
+    pattern: '\bpnpm\s+(add|install|i)\s+lodash\b'
+  - name: no-npm-or-yarn
+    type: regex
+    pattern: '(?<!p)\bnpm\s+(install|i|add)\b|\byarn\s+add\b'
+    match: not_contains
+  - name: hook-injected-convention
+    type: regex
+    pattern: '"subtype":"hook_response"[^\n]*pnpm exclusively'
+    target: trace
+  - name: fact-not-read-from-disk
+    type: regex
+    pattern: '"type":"tool_result"[^\n]*pnpm'
+    match: not_contains
+    target: trace

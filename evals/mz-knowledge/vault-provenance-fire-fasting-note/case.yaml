@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: vault-provenance-fire-fasting-note
+description: Checking what each statement in a named note rests on and saving the references to its properties is provenance work, even without the skill's vocabulary.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Zettel/Permanent/Intermittent fasting.md has been sitting in my vault for a
+    year and I want to promote it. Before I do, I need to know what each statement
+    rests on: some of it is from my own month of tracking, some from a podcast
+    episode and a couple of papers, and some is just my guesses. Go through it,
+    label which is which, and save the references you can pin down in the note's
+    properties.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-provenance-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-provenance"'

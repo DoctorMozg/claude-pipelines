@@ -1,0 +1,38 @@
+schema_version: "1.1"
+name: memory-note-gate-no-answer
+description: 'The approval question goes unanswered, so the note must not be written: a missing answer is never approval.'
+tags: [gate]
+plugins: ["../../../plugins/mz-memory"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Remember that the billing service must never call the payments API synchronously.
+  allowed_tools: [Skill, AskUserQuestion]
+  max_turns: 8
+  timeout_seconds: 240
+graders:
+  - name: memory-note-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?memory-note"'
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  - name: seed-intact
+    type: regex
+    pattern: Use UTC timestamps everywhere
+    target: { source: file, path: .mz/memory/MEMORY.md }
+  - name: note-not-written
+    type: regex
+    pattern: 'payments API'
+    match: not_contains
+    target: { source: file, path: .mz/memory/MEMORY.md }
+  - name: write-script-not-run
+    type: tool_used
+    tool: Bash
+    input_match: memory-note\.sh
+    min: 0
+    max: 0

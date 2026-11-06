@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: capture-first-run-cap
+description: 'With no capture marker, SessionEnd reads only the 50 newest task states and still finishes inside the SessionEnd time budget.'
+tags: [hooks, capture]
+plugins: ["../../../plugins/mz-memory"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Reply with just OK.
+  allowed_tools: []
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: exactly-fifty-logged
+    type: regex
+    pattern: '^- \[\d{4}-\d{2}-\d{2}\] 2026_10_01_build_item_\d{2} '
+    flags: m
+    match: "count:50"
+    target: { source: file, path: .mz/memory/MEMORY.md }

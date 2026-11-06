@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: job-recruiter-info-fire-skip-the-portal
+description: Wanting a named person and a direct email for one listing URL, instead of the application portal, is a contact lookup for job-recruiter-info even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-job-outreach", "../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I'm going for this one: https://boards.greenhouse.io/gitlab/jobs/6012345. The
+    application portal feels like shouting into a void. Dig up a real person at the
+    company who handles this opening, someone I can email my application to directly,
+    plus a fallback inbox in case there's no name.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-recruiter-info-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-recruiter-info"'

@@ -19,7 +19,7 @@ from tests.eval_tools.local_graders import (
 
 from .memory_helpers import SCRIPTS
 
-CASES = load_cases(SCRIPTS.parent / "evals")
+CASES = load_cases(SCRIPTS.parents[2] / "evals/mz-memory")
 # Nudge cases grade what the model does with the nudge, so TestNudgeScenarios acts those runs out.
 HOOK_CASES = sorted(n for n, c in CASES.items() if c.fixture is not None and "nudge" not in c.tags)
 NUDGE_CASES = sorted(name for name, case in CASES.items() if "nudge" in case.tags)

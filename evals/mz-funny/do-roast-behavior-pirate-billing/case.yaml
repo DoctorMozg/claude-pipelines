@@ -1,0 +1,96 @@
+schema_version: "1.1"
+name: do-roast-behavior-pirate-billing
+description: 'A pirate roast of a small billing module runs end to end: the dossier cites real symbols and lines, the persona gets it inlined, the report lands in .mz/reports, no author data leaks and no project file changes.'
+tags: [track-d, behavior]
+plugins: ["../../../plugins/mz-funny"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+# Write is a gated tool: make eval PLUGIN=mz-funny EVAL_ARGS="--allow-tools Write Edit --case 'do-roast-behavior-*'"
+execution:
+  prompt: >-
+    /mz-funny:do-roast pirate src/billing.py
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 30
+  timeout_seconds: 600
+graders:
+  # A slash prompt loads the skill without a Skill call, so look for the task folder only the skill writes.
+  - name: do-roast-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_do[-_]roast_[^"]*/state\.md"'
+  # The fixture has a 7-parameter function and a README claim for a function that doesn't exist.
+  - name: dossier-cites-real-code
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/dossier\.md")(?=[\s\S]*## Finding \d+ .{1,12}(?:Critical|Nit|Optional|FYI).{1,12}[\w/.-]*billing\.py:\d+)(?=[\s\S]*create_invoice)'
+  # The file has 23 lines, so a coordinate past 23 is invented.
+  - name: no-invented-line-numbers
+    type: tool_used
+    tool: Write
+    input_match: 'billing\.py:(?:2[4-9]|[3-9]\d|\d{3,})\b'
+    min: 0
+    max: 0
+  - name: dossier-catches-readme-lie
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/dossier\.md")(?=[\s\S]*refund_invoice)'
+  - name: pirate-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?roast-pirate"'
+    min: 1
+    max: 2
+  - name: other-personas-not-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?roast-(?!pirate")'
+    min: 0
+    max: 0
+  - name: dossier-inlined-in-dispatch
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?roast-pirate")(?=[\s\S]*## Finding 1 )(?=[\s\S]*create_invoice)'
+    min: 1
+  - name: report-cites-findings
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/reports/\d{4}_\d{2}_\d{2}_roast_pirate_[^"]*\.md")(?=[\s\S]*\(Finding \d+\))(?=[\s\S]*## Dossier \(evidence trail\))'
+  # The file header names a maintainer; analyze.md bans author data from the dossier and the persona prompt.
+  - name: no-author-in-writes
+    type: tool_used
+    tool: Write
+    input_match: 'Ivan Petrov|ivan\.petrov@'
+    min: 0
+    max: 0
+  - name: no-author-in-persona-prompt
+    type: tool_used
+    tool: Agent
+    input_match: 'Ivan Petrov|ivan\.petrov@'
+    min: 0
+    max: 0
+  - name: verification-block-shown
+    type: regex
+    pattern: 'Agent dispatched:\s*(?:[\w-]+:)?roast-pirate'
+    flags: i
+  # The skill writes only under .mz/, so any other Write or any Edit touched the project.
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: nothing-edited-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: source-untouched
+    type: regex
+    pattern: 'def create_invoice\(customer_id, items, currency, tax_rate, discount, notes, due_days\)'
+    target: { source: file, path: src/billing.py }
+  - name: readme-untouched
+    type: regex
+    pattern: 'refund_invoice\(invoice_id\)'
+    target: { source: file, path: README.md }

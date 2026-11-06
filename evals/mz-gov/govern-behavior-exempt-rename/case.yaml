@@ -1,0 +1,57 @@
+schema_version: "1.1"
+name: govern-behavior-exempt-rename
+description: 'A pure rename of a private helper is exempt: govern routes it to no artifact, notes the exemption and stops at Phase 1, with no critics, no writer and nothing under docs/.'
+tags: [track-d, behavior]
+plugins: ["../../../plugins/mz-gov"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+# Write is a gated tool: make eval PLUGIN=mz-gov EVAL_ARGS="--allow-tools Write Edit --case 'govern-behavior-*'"
+execution:
+  prompt: >-
+    /mz-gov:govern rename the private helper _fmt to _format_row in billing/invoice.py, a pure rename with no behavior change
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 25
+  timeout_seconds: 600
+graders:
+  # A slash prompt loads the skill without a Skill call, so look for the task folder only the skill writes.
+  - name: govern-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_govern_[^"]*/state\.md"'
+  - name: provenance-recorder-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-provenance-recorder"'
+    min: 1
+    max: 2
+  - name: router-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-router"'
+    min: 1
+    max: 2
+  # Exempt means Phase 1 is the last phase: no panel, no synthesis, no durable record.
+  - name: nothing-after-routing-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-(?:critic-[\w-]+|discussion-synthesizer|artifact-writer)"'
+    min: 0
+    max: 0
+  # The orchestrator appends this heading only on the exemption path; matching tool_use lines keeps propose.md's text out.
+  - name: exemption-noted-in-state
+    type: regex
+    pattern: '"name":"(?:Write|Edit)","input":\{[^\n]*## Exemption'
+    target: trace
+  - name: reply-reports-the-exemption
+    type: regex
+    pattern: 'exempt|no (?:governance )?artifact|does(?:n.t| not) need'
+    flags: i
+  # Only .mz/ may be written, so a docs/ record would land here.
+  # Edits to billing/ aren't graded: "exempt; just build" lets the run make the rename after routing.
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0

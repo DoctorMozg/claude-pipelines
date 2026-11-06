@@ -55,12 +55,13 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-creative",
         "mz-funny",
         "mz-memory",
+        "mz-handoff",
         "mz-design",
         "mz-knowledge",
         "mz-gov",
         "mz-rules",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 50
+    assert sum(len(package.skill_sources) for package in packages) == 51
     assert sum(len(package.role_sources) for package in packages) == 114
     assert {
         package.plan.name
@@ -290,6 +291,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
         "mz-creative",
         "mz-funny",
         "mz-memory",
+        "mz-handoff",
         "mz-design",
         "mz-knowledge",
         "mz-gov",
@@ -315,7 +317,7 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
     hook_specs = {
         spec.catalog.suite_name: spec.catalog.hooks[0] for spec in specs if spec.catalog.hooks
     }
-    assert tuple(hook_specs) == ("mz-dev-pipe", "mz-memory", "mz-knowledge")
+    assert tuple(hook_specs) == ("mz-dev-pipe", "mz-memory", "mz-handoff", "mz-knowledge")
     memory_hook = hook_specs["mz-memory"]
     assert tuple(
         (mapping.source_event, mapping.target_event) for mapping in memory_hook.events
@@ -369,7 +371,7 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
     assert sum(len(result.role_resource_paths) for result in results) == sum(
         len(package.skill_sources) * len(package.role_sources) for package in renderable_packages
     )
-    assert sum(len(result.hook_paths) for result in results) == 3
+    assert sum(len(result.hook_paths) for result in results) == 4
     assert sum(len(result.script_paths) for result in results) == sum(
         len(package.script_sources) for package in renderable_packages
     )
@@ -412,6 +414,10 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
                 '"${PLUGIN_ROOT}"/scripts/memory-prompt-inject.sh',
             ),
             "SessionEnd": ('"${PLUGIN_ROOT}"/scripts/memory-capture.sh',),
+        },
+        "mz-handoff": {
+            "SessionStart": ('"${PLUGIN_ROOT}"/scripts/handoff-session.sh',),
+            "Stop": ('"${PLUGIN_ROOT}"/scripts/handoff-stop.sh',),
         },
         "mz-knowledge": {
             "PostToolUse": (

@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: review-branch-near-miss-short-ref
+description: A pull request given as owner/repo#number belongs to github-review-pr, so review-branch must not fire.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I got tagged as a reviewer on cli/cli#9123. Go through all the changes in it and
+    tell me if anything in there is broken.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: review-branch-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?review-branch"'
+    min: 0
+    max: 0
+    arm: both
+  - name: github-review-pr-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?github-review-pr"'

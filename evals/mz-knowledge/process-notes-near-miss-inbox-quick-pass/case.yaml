@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: process-notes-near-miss-inbox-quick-pass
+description: A fast keep, merge, bin or park decision on every inbox note, with no write-up, is a triage pass, so it belongs to vault-triage.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Went to a conference last week and dumped a pile of quick notes into
+    inbox/. Before I write any of them up properly, I want a fast pass through
+    the folder that tells me for each note whether to keep it, fold it into
+    something I already have, throw it out, or park it for later.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: process-notes-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?process-notes"'
+    min: 0
+    max: 0
+    arm: both
+  - name: vault-triage-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-triage"'

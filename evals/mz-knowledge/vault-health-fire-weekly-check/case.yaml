@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: vault-health-fire-weekly-check
+description: A weekly check for orphan notes, broken wikilinks and stale content in a named vault is the core vault-health job.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Weekly maintenance time. Run a vault health check on ~/Documents/Obsidian/Research
+    and show me the orphan notes and broken wikilinks, plus anything stale.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-health-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-health"'

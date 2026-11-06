@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: obsidian-bases-near-miss-plugin-metadata-cache
+description: A TypeScript community-plugin API question is Obsidian plugin development, which this skill excludes and which needs no skill.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I'm building an Obsidian community plugin in TypeScript. Inside onload I register a
+    command that should read the frontmatter of the active note and show it in a Notice,
+    but app.metadataCache.getFileCache(file) keeps returning null for a note I just
+    created. What's going on, and what's the right way to wait for it?
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-bases-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-bases"'
+    min: 0
+    max: 0
+    arm: both

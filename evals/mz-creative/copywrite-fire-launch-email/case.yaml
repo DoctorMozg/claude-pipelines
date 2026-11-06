@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: copywrite-fire-launch-email
+description: A request for a customer-facing launch email that sells a new version is persuasive copy, so copywrite should handle it.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    We're launching v2 of Ledgerly, our invoicing app for freelancers, on the 14th. I need a
+    launch email for our existing customer list. The big things are recurring invoices, a client
+    portal, and 40% faster PDF export. Friendly tone, one clear call to action to try the new version.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: copywrite-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'

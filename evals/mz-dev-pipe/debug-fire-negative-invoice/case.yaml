@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: debug-fire-negative-invoice
+description: A single wrong behavior in a named module, described without trigger phrases, is still a reactive bug fix for debug.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    In services/billing/invoice.py, a customer with a 100 percent coupon gets an
+    invoice total of minus 0.01 instead of 0, and the payment provider then rejects
+    the charge. It only started after we moved the totals to Decimal last week.
+    Sort it out.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: debug-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?debug"'

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: init-rules-fire-rust-workspace
+description: A plain request to set up coding rules for the current project is the core job of init-rules.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-rules", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-knowledge"]
+execution:
+  prompt: >-
+    Set up the coding rules for this project. It's a Rust workspace with clippy and
+    cargo nextest.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: init-rules-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?init-rules"'

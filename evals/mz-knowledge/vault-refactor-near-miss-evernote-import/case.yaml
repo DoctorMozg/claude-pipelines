@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: vault-refactor-near-miss-evernote-import
+description: A whole-vault scan for dead wikilinks, orphans and stubs is a health audit, so it belongs to vault-health, not to a single-note rename.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Last week I imported a few hundred notes from Evernote and I'm pretty sure the
+    vault is a wreck now: dead wikilinks, orphan notes that nothing links to,
+    probably a pile of empty stubs too. Scan the whole vault and give me the full
+    list of orphans and broken links. Don't change anything yet.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-refactor-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-refactor"'
+    min: 0
+    max: 0
+    arm: both
+  - name: vault-health-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-health"'

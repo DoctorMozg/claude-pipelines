@@ -1,0 +1,54 @@
+schema_version: "1.1"
+name: lessons-promote-args-unknown-id
+description: 'A lesson id that is not in lessons.md is reported from the list script, with no gate, no rule written and no other lesson promoted in its place.'
+tags: [track-d, args, needs-bash]
+plugins: ["../../../plugins/mz-memory"]
+# Write, Edit and Bash are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit Bash --case 'lessons-promote-args-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-memory:lessons-promote L-0099
+  allowed_tools: [Skill, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 12
+  timeout_seconds: 300
+graders:
+  # A slash-command prompt makes no Skill call, so the skill's own list script shows it ran.
+  # State bookkeeping isn't graded: the skill creates its task folder with Bash mkdir, which the eval sandbox refuses.
+  - name: lessons-promote-started
+    type: tool_used
+    tool: Bash
+    input_match: 'lessons-promote\.sh\W{0,3}list\W+L-0099'
+  - name: reports-the-missing-id
+    type: regex
+    pattern: '^(?=[\s\S]*L-0099)(?=[\s\S]*(?:not in|not found|isn.t|is not|doesn.t|does not|no lesson|unknown|couldn.t|could not|can.t|cannot|missing))'
+    flags: i
+  - name: no-gate-shown
+    type: regex
+    pattern: 'Lesson promotion ready for review'
+    match: not_contains
+  - name: claude-md-intact
+    type: regex
+    pattern: Keep handlers thin
+    target: { source: file, path: CLAUDE.md }
+  - name: claude-md-not-promoted-into
+    type: regex
+    pattern: 'MIG-'
+    match: not_contains
+    target: { source: file, path: CLAUDE.md }
+  - name: write-touched-no-promotion-target
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: edit-touched-no-promotion-target
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: lesson-still-listed
+    type: regex
+    pattern: '\[L-0001\] n=4'
+    target: { source: file, path: .mz/memory/lessons.md }

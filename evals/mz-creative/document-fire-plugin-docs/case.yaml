@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: document-fire-plugin-docs
+description: Documenting a plugin system for contributors, grounded in the source, is technical documentation, so document should handle it.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Write docs for the plugin system in src/plugins/. Contributors should be able to add a new
+    plugin without asking me, so cover the hook lifecycle, the manifest format and a working example.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: document-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?document"'

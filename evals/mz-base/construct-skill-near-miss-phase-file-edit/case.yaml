@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: construct-skill-near-miss-phase-file-edit
+description: Changing one number in a phase file of an existing skill is a direct edit that needs no skill and no authoring loop.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-knowledge"]
+execution:
+  prompt: >-
+    In plugins/mz-dev-pipe/skills/debug/phases/fix_and_verify.md the step that says
+    to rerun the failing test twice should say three times. Just change that
+    number, nothing else.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: construct-skill-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?construct-skill"'
+    min: 0
+    max: 0
+    arm: both

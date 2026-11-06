@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: pipeline-web-researcher-fire-compiler-options
+description: A version-change question that asks for every point to be backed by official release notes is sourced web research.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-knowledge"]
+execution:
+  prompt: >-
+    What changed in the TypeScript compiler options between 5.8 and 5.9? Link
+    each change to the official release notes or docs page that announces it.
+  allowed_tools: [Agent]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: web-researcher-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-web-researcher"'
+    arm: with-only

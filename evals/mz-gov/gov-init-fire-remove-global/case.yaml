@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: gov-init-fire-remove-global
+description: Removing the instructions that make Claude reach for the decision-record workflow everywhere is an uninstall of the installed policy block.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    I tried the decision-record workflow for a week and it's too heavy for how I
+    work. Take out the instructions that got added to my global Claude config
+    telling it to use that workflow on design choices. Leave the rest of the file
+    alone.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-init-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-init"'

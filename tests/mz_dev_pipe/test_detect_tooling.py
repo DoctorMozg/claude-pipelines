@@ -12,6 +12,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "plugins/mz-dev-pipe/scripts/detect-tooling.sh"
 COMMON_LIB = REPO_ROOT / "plugins/mz-memory/scripts/lib/common.sh"
+HANDOFF_LIB = REPO_ROOT / "plugins/mz-handoff/scripts/lib/handoff.sh"
 BASH = shutil.which("bash") or "/bin/bash"
 FIND_ROOT_BODY = re.compile(r"^find_project_root\(\) \{\n.*?^\}$", re.S | re.M)
 
@@ -145,10 +146,12 @@ class TestUnwritableProject:
 
 
 class TestCopyStaysInSync:
-    def test_find_project_root_matches_mz_memory_copy(self) -> None:
-        hook_copy = FIND_ROOT_BODY.search(SCRIPT.read_text(encoding="utf-8"))
+    # mz-memory's copy is the original; the others must resolve the same .mz/ root.
+    @pytest.mark.parametrize("copy", [SCRIPT, HANDOFF_LIB], ids=["mz-dev-pipe", "mz-handoff"])
+    def test_find_project_root_matches_mz_memory_copy(self, copy: Path) -> None:
+        other_copy = FIND_ROOT_BODY.search(copy.read_text(encoding="utf-8"))
         library_copy = FIND_ROOT_BODY.search(COMMON_LIB.read_text(encoding="utf-8"))
 
-        assert hook_copy is not None
+        assert other_copy is not None
         assert library_copy is not None
-        assert hook_copy.group(0) == library_copy.group(0)
+        assert other_copy.group(0) == library_copy.group(0)

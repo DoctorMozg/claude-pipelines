@@ -1,0 +1,51 @@
+schema_version: "1.1"
+name: naturalize-behavior-docs-page
+description: 'A docs page with a code block and inline code; the rewrite must drop banned punctuation in prose, keep code and numbers exact, and stay near its length.'
+tags: [behavior, naturalizer-ab]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:naturalize @file:retries.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 30
+  timeout_seconds: 900
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task folder only the skill names.
+  - name: naturalize-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_naturalize_'
+    target: trace
+  - name: naturalizer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?expert-naturalizer"'
+  # The fixture keeps banned characters out of code and quotes, so any hit is prose; digit ranges such as 3–5 are allowed.
+  - name: no-banned-punctuation
+    type: regex
+    pattern: '—|;|…|→|←|⇒|(?<![0-9])–|–(?![0-9])'
+    match: not_contains
+    target: { source: file, path: retries.md }
+  # 103 to 197 words is −35% to +25% of the input, since cutting filler is the job; it also proves the file exists for the not_contains grader above.
+  - name: length-kept
+    type: regex
+    pattern: '^\s*(?:\S+\s+){102,196}\S+\s*$'
+    target: { source: file, path: retries.md }
+  - name: facts-kept
+    type: regex
+    pattern: '^(?=[\s\S]*client = Client\(max_retries=5, backoff_ms=100\))(?=[\s\S]*retry_unsafe=True)(?=[\s\S]*2\.7\.0)(?=[\s\S]*1\.75 seconds)(?=[\s\S]*max_elapsed_ms)'
+    target: { source: file, path: retries.md }
+  # The rewrite replaces the user's file, so vague claims belong in the report, not as placeholders in the text.
+  - name: no-specificity-marker
+    type: regex
+    pattern: '\[SPECIFICITY NEEDED'
+    match: not_contains
+    target: { source: file, path: retries.md }
+  # AskUserQuestion isn't available in eval sessions, so a gate would show up as a request in chat.
+  - name: approval-not-requested
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+    match: not_contains

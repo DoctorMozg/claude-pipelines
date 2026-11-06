@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: outreach-research-near-miss-deepen-card
+description: Deepening an existing company card and drafting a LinkedIn message from it belongs to outreach-enrich-company, not to company discovery.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    I already have the Northwind Logistics card at
+    .mz/outreach/active/2026-10-28_northwind-logistics.md and the intel on it is
+    pretty thin. Dig deeper on them, news, tech stack, who runs operations, and
+    then write a LinkedIn message for their head of operations.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-research-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'
+    min: 0
+    max: 0
+    arm: both
+  - name: outreach-enrich-company-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-enrich-company"'

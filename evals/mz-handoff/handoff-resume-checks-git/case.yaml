@@ -1,0 +1,36 @@
+schema_version: "1.1"
+name: handoff-resume-checks-git
+description: 'Resume mode checks the handoff against git and its verify commands, reports the commit made after it, and claims it.'
+tags: [handoff]
+plugins: ["../../../plugins/mz-handoff"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Resume from the handoff.
+  allowed_tools: [Skill, Bash, Read, Edit, Glob, Grep]
+  max_turns: 14
+  timeout_seconds: 360
+graders:
+  - name: handoff-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?handoff"'
+  # Any git log shows the later commit; later-commit-reported checks that it was noticed.
+  - name: git-history-checked
+    type: tool_used
+    tool: Bash
+    input_match: 'git log\b'
+  - name: verify-command-run
+    type: tool_used
+    tool: Bash
+    input_match: 'test -f src/retry\.py'
+  - name: handoff-claimed
+    type: regex
+    pattern: '^status: claimed \S+'
+    flags: m
+    target: { source: file, path: .mz/handoff/2026_11_05_1830_aaaaaaaa.md }
+  - name: later-commit-reported
+    type: regex
+    pattern: 'jitter'
+    flags: i

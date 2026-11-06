@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: memory-note-fire-future-sessions
+description: 'A paraphrase with no trigger phrase: the user wants a convention kept across sessions.'
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-memory", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Going forward, every session on this repo should know that API timestamps are always UTC
+    with a trailing Z. Make that stick.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: memory-note-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?memory-note"'

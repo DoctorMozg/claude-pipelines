@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: outreach-research-fire-icp-file
+description: Turning a written customer profile into a ranked list of real matching companies with decision makers is target discovery, so it belongs to outreach-research without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    docs/ideal-customer.md describes who the new invoice reconciliation tool is
+    for. Go through it and build me a ranked list of 40 real mid-size logistics
+    companies in Poland and Czechia that match, with a paragraph on each and the
+    name of whoever there would own the buying decision.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'

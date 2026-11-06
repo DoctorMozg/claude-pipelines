@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: combine-near-miss-passkey-deep-dive
+description: A terse request for a web deep dive on a new topic with no notes on disk belongs to deep-research, not combine.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    need a deep dive on passkey adoption - which big sites support them, browser and OS
+    gaps, main UX complaints. nothing written up on my side, so go find sources online
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: combine-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?combine"'
+    min: 0
+    max: 0
+    arm: both
+  - name: deep-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?deep-research"'

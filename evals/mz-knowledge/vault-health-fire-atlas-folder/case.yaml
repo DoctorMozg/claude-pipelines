@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: vault-health-fire-atlas-folder
+description: Finding unlinked notes, dangling links and abandoned one-liners across a project folder belongs to vault-health even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Projects/Atlas/ in my Obsidian vault has about 140 notes written over two years
+    and I no longer trust it. Go through that folder and tell me which notes nothing
+    points to, which links lead to pages that do not exist anymore, and which notes
+    are just a title and a sentence I never came back to. Write it up as a note I can
+    work through on Friday.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-health-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-health"'

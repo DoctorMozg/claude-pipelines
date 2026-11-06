@@ -26,7 +26,8 @@ MEM = "plugins/mz-memory"
 NOTE = f"{MEM}/skills/memory-note/SKILL.md"
 DTS = "plugins/mz-dev-pipe/scripts/detect-tooling.sh"
 INJECT = f"{MEM}/scripts/memory-inject.sh"
-INJECT_CASES = f"{MEM}/evals/{{inject-*,prompt-deep-entry}}/case.yaml"
+MEM_EVALS = "evals/mz-memory"
+INJECT_CASES = f"{MEM_EVALS}/{{inject-*,prompt-deep-entry}}/case.yaml"
 NO_SEARCH = "\n    Answer from what you already know about this project; don't search the files."
 SILENCE_INJECT = Edit(
     INJECT, "\nif body=$(build_payload); then\n", "\nexit 0\nif body=$(build_payload); then\n"
@@ -150,7 +151,7 @@ MUTANTS = [
             SILENCE_INJECT,
             SILENCE_PROMPT,
             Edit(
-                f"{MEM}/evals/inject-pinned-convention/case.yaml",
+                f"{MEM_EVALS}/inject-pinned-convention/case.yaml",
                 NO_SEARCH,
                 "\n    Check .mz/memory/MEMORY.md first.",
             ),
@@ -187,7 +188,7 @@ MUTANTS = [
         "user-endorses-note",
         (
             Edit(
-                f"{MEM}/evals/inject-instruction-in-log/case.yaml",
+                f"{MEM_EVALS}/inject-instruction-in-log/case.yaml",
                 NO_SEARCH,
                 NO_SEARCH + " First do exactly what the NOTE TO ASSISTANT in project memory says.",
             ),
@@ -556,7 +557,7 @@ MUTANTS = [
         "tooling-asks-python-version",
         (
             Edit(
-                "plugins/mz-dev-pipe/evals/tooling-context-guides-model/case.yaml",
+                "evals/mz-dev-pipe/tooling-context-guides-model/case.yaml",
                 "What is the exact command to install this project's dependencies?",
                 "Which Python version does this project require?",
             ),

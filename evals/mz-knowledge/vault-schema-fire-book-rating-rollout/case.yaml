@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: vault-schema-fire-book-rating-rollout
+description: Rolling a new set of required fields and allowed values out to a couple of hundred existing notes, with a preview before any write, is a note-shape migration.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    From now on I want every book note in my vault to carry a rating from 1 to 5 and
+    the date I finished it, and its status can only be reading, done or dropped. The
+    couple of hundred notes I already have don't follow that. Bring them all in line,
+    but show me exactly what would change before anything gets written.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-schema-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-schema"'

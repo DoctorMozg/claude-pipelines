@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: obsidian-cli-near-miss-closed-app-grep
+description: With Obsidian not running the CLI is unusable, and counting matches in a folder of markdown files is a plain grep that needs no skill.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Obsidian is closed. This is a headless box over SSH and my vault is just a
+    folder at ~/notes. How many of the .md files in there mention the word
+    invoice? Plain grep is fine.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-cli-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-cli"'
+    min: 0
+    max: 0
+    arm: both

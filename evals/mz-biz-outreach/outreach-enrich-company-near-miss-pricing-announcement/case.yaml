@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: outreach-enrich-company-near-miss-pricing-announcement
+description: Promotional copy announcing a pricing change to our own customers belongs to copywrite, not to per-contact outreach letters.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    We're changing our pricing next month: 20% off annual plans until April 30, and a new
+    free tier for teams under five. Write the announcement email for our customer
+    newsletter plus a LinkedIn post for the company page. Friendly, one clear call to
+    action.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-enrich-company-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-enrich-company"'
+    min: 0
+    max: 0
+    arm: both
+  - name: copywrite-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'

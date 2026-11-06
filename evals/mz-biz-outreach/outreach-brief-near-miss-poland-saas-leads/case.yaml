@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: outreach-brief-near-miss-poland-saas-leads
+description: Building a ranked list of prospect companies with contacts, for an offer that is already defined, belongs to outreach-research.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    Find me about 25 mid-size SaaS companies in Poland that would be a good fit
+    for our DevOps consulting. I want a ranked list of leads with what each one
+    does and who to contact.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-brief-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-brief"'
+    min: 0
+    max: 0
+    arm: both
+  - name: outreach-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'

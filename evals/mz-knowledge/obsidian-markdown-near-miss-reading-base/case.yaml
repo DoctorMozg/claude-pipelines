@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: obsidian-markdown-near-miss-reading-base
+description: A filtered, grouped database view with a formula column in a .base file belongs to obsidian-bases, not to the note-syntax skill.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I want a database view of my reading list in Obsidian. Create Library/Reading.base
+    that only includes notes in Library/Books tagged book, shows a table with title,
+    author and status, groups the rows by status, and has a formula column for how
+    many days it has been since I added each book.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-markdown-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-markdown"'
+    min: 0
+    max: 0
+    arm: both
+  - name: obsidian-bases-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-bases"'

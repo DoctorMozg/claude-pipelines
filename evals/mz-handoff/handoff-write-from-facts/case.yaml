@@ -1,0 +1,47 @@
+schema_version: "1.1"
+name: handoff-write-from-facts
+description: 'Write mode builds the handoff from the facts script: the user constraint quoted verbatim, the running task named, done lines with evidence.'
+tags: [handoff]
+plugins: ["../../../plugins/mz-handoff"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    We're partway through the retry work tracked in .mz/task/2026_11_05_build_retry/. Never push
+    to origin without asking me first. This session has gone on too long, so write a handoff now
+    and I'll /clear.
+  allowed_tools: [Skill, Bash, Read, Write, Glob, Grep]
+  max_turns: 14
+  timeout_seconds: 360
+# The eval sandbox keeps the session transcript out of the script's reach, so this case runs its
+# no-transcript path; make hooks-smoke covers the transcript facts.
+graders:
+  - name: handoff-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?handoff"'
+  - name: facts-script-run
+    type: tool_used
+    tool: Bash
+    input_match: 'handoff-facts\.sh'
+  # The file name carries the time and the session id, so the Write call in the trace is graded.
+  - name: written-where-the-facts-said
+    type: regex
+    pattern: '"name":"Write"[^\n]*\.mz/handoff/\d{4}_\d{2}_\d{2}_\d{4}_[0-9a-f]{8}\.md'
+    target: trace
+  - name: constraint-quoted-verbatim
+    type: regex
+    pattern: '"name":"Write"[^\n]*\.mz/handoff/[^\n]*Never push\s+to origin without asking me first'
+    target: trace
+  - name: running-task-named
+    type: regex
+    pattern: '"name":"Write"[^\n]*\.mz/handoff/[^\n]*task: \.mz/task/2026_11_05_build_retry/'
+    target: trace
+  - name: done-line-has-a-commit
+    type: regex
+    pattern: '"name":"Write"[^\n]*\.mz/handoff/[^\n]*## Done \(verified\)[^\n]*?Evidence:[^\n]*?\b[0-9a-f]{7,}\b'
+    target: trace
+  - name: frontmatter-open
+    type: regex
+    pattern: '"name":"Write"[^\n]*\.mz/handoff/[^\n]*status: open'
+    target: trace

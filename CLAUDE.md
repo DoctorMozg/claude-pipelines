@@ -10,6 +10,7 @@ This repository is a public plugin registry for Claude Code. It provides agents 
 - `plugins/<name>/agents/` — Agent definition files (markdown with YAML frontmatter)
 - `plugins/<name>/skills/` — Skill definitions (standard Claude Code skill format)
 - `plugins/<name>/hooks/hooks.json` — Optional lifecycle hooks; the scripts they run, and any scripts the plugin's skills call, live in `plugins/<name>/scripts/`
+- `evals/<plugin>/` — `claude plugin eval` cases for each plugin, run with `make eval PLUGIN=<name>`. They stay outside `plugins/`, because Anthropic's directory screens every file in a plugin and read a grader regex as a plugin command
 - `plugins/mz-base/shared/` — Rule files shared across plugins. Each consumer plugin carries a generated copy at `shared/` in its root, because Anthropic's directory blocks symlinks. Edit only mz-base's copy, then run `make vendor-shared`; `tests/plugin_lint/test_shared_copies.py` fails on drift
 
 ## Adding a New Plugin

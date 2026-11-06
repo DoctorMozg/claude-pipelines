@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: govern-fire-ledger-split
+description: Carving a ledger out of a shared payments table into its own service is a one-way door with several defensible options, so it belongs to govern even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    services/payments/ledger.py holds all the balance logic, and three other teams
+    read the balances table directly. I'm leaning toward pulling the ledger into its
+    own service with its own database, but once those teams migrate there's no going
+    back. Pressure-test the idea with some critics, then write up whichever way we
+    go in docs/ so the team lead can sign off before anyone writes code.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: govern-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?govern"'

@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: ask-near-miss-oauth-sequence
+description: A request to draw a sequence diagram of a code flow is a visual walkthrough, which belongs to explain.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Draw me a sequence diagram of what happens when a user logs in through the OAuth
+    flow in src/auth/, from the click in the browser to the session cookie being set.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: ask-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?ask"'
+    min: 0
+    max: 0
+    arm: both
+  - name: explain-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?explain"'

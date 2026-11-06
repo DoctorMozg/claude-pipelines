@@ -24,7 +24,7 @@ MZ_LOG_MAX_LINES=400
 # shellcheck disable=SC2034 # read by memory-capture.sh and memory-compress.sh, which source this file
 MZ_COMPRESS_THRESHOLD=300
 
-# Walk up from CLAUDE_PROJECT_DIR (or PWD) to the nearest .git, so monorepo
+# Walk up from CLAUDE_PROJECT_DIR (or the working directory) to the nearest .git, so monorepo
 # subdirectories share one MEMORY.md at the repo root. MZ_MEMORY_ROOT wins
 # unconditionally when set.
 find_project_root() {
@@ -32,8 +32,8 @@ find_project_root() {
     printf '%s\n' "$MZ_MEMORY_ROOT"
     return 0
   fi
-  local dir="${CLAUDE_PROJECT_DIR:-$PWD}"
-  dir=$(cd "$dir" 2>/dev/null && pwd) || dir="$PWD"
+  local dir="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+  dir=$(cd "$dir" 2>/dev/null && pwd) || dir=$(pwd)
   while [[ "$dir" != "/" && -n "$dir" ]]; do
     if [[ -e "$dir/.git" ]]; then
       printf '%s\n' "$dir"
@@ -41,7 +41,7 @@ find_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  printf '%s\n' "${CLAUDE_PROJECT_DIR:-$PWD}"
+  printf '%s\n' "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 }
 
 # Strip <private>...</private> regions from stdin and collapse the resulting

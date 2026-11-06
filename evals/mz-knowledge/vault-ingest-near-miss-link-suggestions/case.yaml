@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: vault-ingest-near-miss-link-suggestions
+description: Suggesting which existing notes should link to a note that is already captured is wikilink discovery, so it belongs to vault-connect.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I clipped a conference talk on Kafka exactly-once delivery into the vault last
+    week, it lives at Inbox/Kafka exactly-once talk.md. Look through the rest of my
+    notes and suggest which ones should link to it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-ingest-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-ingest"'
+    min: 0
+    max: 0
+    arm: both
+  - name: vault-connect-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-connect"'

@@ -6,7 +6,7 @@ from tests.eval_tools.local_graders import Outcome, grade, hook_line, load_cases
 
 PLUGIN = Path(__file__).resolve().parents[2] / "plugins/mz-dev-pipe"
 HOOK = PLUGIN / "scripts/detect-tooling.sh"
-CASES = load_cases(PLUGIN / "evals")
+CASES = load_cases(PLUGIN.parents[1] / "evals/mz-dev-pipe")
 TOOLING_CASES = sorted(name for name in CASES if name.startswith("tooling-"))
 
 

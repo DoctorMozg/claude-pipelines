@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: deep-research-fire-rust-kernel
+description: The user asks for a comprehensive multi-source deep dive on a topic, which is new web research for deep-research.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Deep dive into the current state of Rust in the Linux kernel. I want a comprehensive
+    analysis from several kinds of sources: mailing list threads, conference talks, and
+    distro and vendor announcements.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: deep-research-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?deep-research"'

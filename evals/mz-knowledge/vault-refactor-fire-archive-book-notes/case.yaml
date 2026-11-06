@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: vault-refactor-fire-archive-book-notes
+description: Relocating one named note to another folder while keeping every inbound link intact is vault-refactor, even without its trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Resources/Books/Deep Work highlights.md is finished business, so it should sit
+    in Archive/Books/ instead. A bunch of my other notes point at it, and none of
+    them should end up pointing at a file that isn't there.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-refactor-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-refactor"'

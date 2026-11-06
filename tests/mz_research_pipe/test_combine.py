@@ -29,7 +29,7 @@ def _min_task_tokens() -> int:
 
 def _fire_prompts() -> dict[str, str]:
     prompts: dict[str, str] = {}
-    for case_file in sorted(PLUGIN.glob("evals/combine-*/case.yaml")):
+    for case_file in sorted((REPO_ROOT / "evals/mz-research-pipe").glob("combine-*/case.yaml")):
         case = yaml.safe_load(case_file.read_text(encoding="utf-8"))
         if "fire" in case.get("tags", []):
             prompts[case_file.parent.name] = case["execution"]["prompt"]

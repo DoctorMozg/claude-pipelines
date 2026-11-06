@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: vault-provenance-fire-onboarding-borrowed
+description: Sorting one note's statements into lived, read, inferred and hearsay piles and recording the outside references is provenance work stated as a goal with no path.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I wrote up what I think about remote onboarding after a hectic month, and now
+    I can't tell what I actually lived through at my last company, what I picked
+    up from a couple of engineering newsletters and books, and what is just stuff
+    people always say. Sort the statements in that note into those piles and
+    record the outside references in the note itself.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-provenance-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-provenance"'

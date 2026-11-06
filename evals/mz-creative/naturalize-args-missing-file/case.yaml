@@ -1,0 +1,48 @@
+schema_version: "1.1"
+name: naturalize-args-missing-file
+description: 'A @file: path that does not exist stops naturalize in setup: it reports the missing path and asks, with no rewrite agent, no input.md and no guessed source.'
+tags: [track-d, args]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:naturalize @file:notes/launch.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 8
+  timeout_seconds: 300
+graders:
+  - name: reply-names-the-missing-path
+    type: regex
+    pattern: '^(?=[\s\S]*notes/launch\.md)(?=[\s\S]*(?:not found|does(?:n.t| not) exist|no such file|(?:can.?t|cannot|couldn.t|could not|unable to) (?:find|read|locate|open)|missing|isn.t (?:there|present)|no file))'
+    flags: i
+  - name: naturalizer-not-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"prompt"'
+    min: 0
+    max: 0
+  # Phase 0 copies the source to input.md only after it has read the file.
+  - name: no-input-copy-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/input\.md"'
+    min: 0
+    max: 0
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: nothing-edited-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: decoy-not-rewritten
+    type: regex
+    pattern: 'The launch went well — the team shipped on time; nobody was surprised\.'
+    target: { source: file, path: draft.md }

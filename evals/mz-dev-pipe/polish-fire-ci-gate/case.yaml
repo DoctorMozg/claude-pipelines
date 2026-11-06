@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: polish-fire-ci-gate
+description: Bringing a functionally finished package up to its type-check, lint and coverage gates is meeting criteria on existing code, which belongs to polish.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    The code in src/ingest/ does what it is supposed to, but it does not clear our CI gate yet. mypy --strict reports around 40 errors, ruff is unhappy, and coverage sits at 61% against an 85% requirement. Get that package to where the pipeline goes green.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: polish-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'

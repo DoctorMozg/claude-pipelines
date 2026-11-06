@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: obsidian-bases-fire-overdue-formula
+description: A broken date-difference formula in a .base file is exactly the Bases formula and Duration problem this skill covers.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Tasks.base has a column that should show how many days a task is overdue. I wrote
+    date.now() - due but the cell shows something weird and sorting on it does nothing.
+    Fix the formula.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-bases-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-bases"'

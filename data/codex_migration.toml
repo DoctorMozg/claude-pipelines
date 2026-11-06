@@ -45,6 +45,10 @@ name = "mz-memory"
 disposition = "ready"
 
 [[packages]]
+name = "mz-handoff"
+disposition = "ready"
+
+[[packages]]
 name = "mz-design"
 disposition = "ready"
 

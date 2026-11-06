@@ -157,6 +157,7 @@ work_units_remaining: 3
 - After compaction, re-read `state.md` explicitly before acting, then the current phase file (SKILL_GUIDELINES.md, "Phase and Reference Files"). Don't rely on the automatic re-read or on the summary.
 - Put the resume check and a resume pointer near the top of SKILL.md, where truncation won't reach them. The pointer is one line naming the `state.md` path and saying to re-read it after compaction.
 - Read cross-phase facts, such as paths, decisions and counters, back from `state.md`, not from conversation memory.
+- After `MZ_HANDOFF_AFTER` compactions (default 3), mz-handoff asks Claude for a handoff in `.mz/handoff/`, which a fresh session loads after `/clear`. The handoff names the running task directory and doesn't copy `state.md`, so `state.md` stays the source of truth and the pipeline resumes from it as usual.
 
 ## 7. Migration
 

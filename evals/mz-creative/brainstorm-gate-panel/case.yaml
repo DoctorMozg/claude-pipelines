@@ -1,0 +1,52 @@
+schema_version: "1.1"
+name: brainstorm-gate-panel
+description: 'brainstorm picks a five-lens panel, shows it at the panel gate and stops, because nobody can answer: no lens runs and no report is written.'
+tags: [track-d, gate]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+# Write is a gated tool: make eval PLUGIN=mz-creative EVAL_ARGS="--allow-tools Write Edit --case 'brainstorm-gate-*'"
+execution:
+  prompt: >-
+    /mz-creative:brainstorm ways to win back weekend library visitors
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 15
+  timeout_seconds: 300
+graders:
+  # A slash prompt loads the skill without a Skill call, so look for the task folder only the skill writes.
+  - name: brainstorm-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_brainstorm_[^"]*/state\.md"'
+  # Five lens-* names, repeats counted, because a justification may name its lens again.
+  - name: panel-lists-five-lenses
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/panel\.md")(?=[\s\S]*(?:lens-[a-z]+[\s\S]*?){5})'
+  # The state write names the gate; matching only tool_use lines keeps the skill text out.
+  - name: state-awaits-panel-gate
+    type: regex
+    pattern: '"name":"(?:Write|Edit)","input":\{[^\n]*awaiting approval: panel gate'
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate is asked in chat with the not-selected list.
+  - name: plan-message-lists-the-rest
+    type: regex
+    pattern: '"type":"text","text":"[^\n]*Panel ready for review[^\n]*Not selected:'
+    target: trace
+  - name: approval-asked-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  - name: no-lens-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"prompt"'
+    min: 0
+    max: 0
+  - name: no-report-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/reports/'
+    min: 0
+    max: 0

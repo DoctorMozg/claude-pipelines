@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: design-document-near-miss-branch-review
+description: Reviewing the changes on a git branch before a push, even when most of them are a design doc, is a branch review rather than writing a design.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-design", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-creative", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Review my branch against main before I push. Most of what I changed is
+    docs/design/notifications.md plus a handful of components.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: design-document-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?design-document"'
+    min: 0
+    max: 0
+    arm: both
+  - name: review-branch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?review-branch"'

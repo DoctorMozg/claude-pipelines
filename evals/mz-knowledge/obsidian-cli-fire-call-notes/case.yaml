@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: obsidian-cli-fire-call-notes
+description: Reading and extending a named note through the running Obsidian app means driving the obsidian CLI, even though the request never names it.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Obsidian is open on my laptop right now. Print Inbox/2026-10-14 call notes.md
+    here, then add the line - [ ] send recap to Dana at the end of it. Go through
+    the running app for both steps instead of touching the file yourself.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: obsidian-cli-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?obsidian-cli"'

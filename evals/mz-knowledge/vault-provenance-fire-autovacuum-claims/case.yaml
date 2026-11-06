@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: vault-provenance-fire-autovacuum-claims
+description: Classifying the epistemic status of claims in one note and back-filling its sources is the core job of vault-provenance.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    classify the epistemic status of the claims in Postgres autovacuum tuning.md
+    and back-fill the sources frontmatter. a few are from the official docs, the
+    rest is from our incident last spring
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-provenance-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-provenance"'

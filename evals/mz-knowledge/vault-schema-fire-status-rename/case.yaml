@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: vault-schema-fire-status-rename
+description: Bringing existing notes in line with changed status values in the vault's declared schema is a schema migration.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    I changed the status values in my vault schema: draft is now seedling and
+    evergreen is now mature. Run the schema migration so the old notes match.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-schema-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-schema"'

@@ -9,4 +9,4 @@
 __pycache__/
 
 # claude plugin eval output: per-run transcripts, scores and reports
-plugins/*/evals/results/
+evals/*/results/

@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: gov-review-fire-adr-gaps
+description: Asking whether the existing ADRs are any good is a quality check of written decision records, which is gov-review.
+tags: [routing, fire]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Are our ADRs any good? Look through docs/decisions and tell me which ones
+    have gaps. Read-only please.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: gov-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-review"'

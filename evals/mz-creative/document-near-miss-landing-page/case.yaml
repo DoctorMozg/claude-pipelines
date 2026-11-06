@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: document-near-miss-landing-page
+description: A landing page with hero, benefits and a call to action is marketing copy, so it belongs to copywrite even for a developer tool.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    need a landing page for Dbshift, our db migration CLI for Postgres and MySQL. hero headline,
+    three benefit sections, a short comparison against Flyway, and a call to action for the free tier.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: document-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?document"'
+    min: 0
+    max: 0
+    arm: both
+  - name: copywrite-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'

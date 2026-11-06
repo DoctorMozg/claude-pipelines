@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: job-recruiter-info-near-miss-cover-letter
+description: Drafting a cover letter for a role whose recruiter is already known is writing work, so it belongs to copywrite and not to a contact lookup.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-job-outreach", "../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    The recruiter at Canva already replied to my intro, so I have her email. Now I
+    need the cover letter to attach for the Senior Product Designer role. About 250
+    words, confident but not gushing. The job description is saved at
+    ~/jobs/canva_senior_pd.txt and my portfolio is https://example.com/portfolio.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: job-recruiter-info-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?job-recruiter-info"'
+    min: 0
+    max: 0
+    arm: both
+  - name: copywrite-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?copywrite"'

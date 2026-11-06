@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: review-branch-fire-big-diff
+description: A user asks for a deep pass over a large local feature branch against develop, which is review-branch territory.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    Merging feat/retry-queue into develop tomorrow and it's a big one, around 20 commits.
+    Go over the whole diff against develop and tell me what's wrong with it: bugs, missing
+    tests, anything sloppy.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: review-branch-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?review-branch"'

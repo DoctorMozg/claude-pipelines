@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: govern-near-miss-adr-audit
+description: Checking the quality of decision records that already exist is an audit of existing artifacts, so it belongs to gov-review, not govern.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    We have about twenty ADRs in docs/decisions and I suspect half of them are thin,
+    with no alternatives listed and nothing about consequences. Go through them and
+    tell me which ones are weak and why. Don't change anything, I just want a report.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: govern-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?govern"'
+    min: 0
+    max: 0
+    arm: both
+  - name: gov-review-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gov-review"'

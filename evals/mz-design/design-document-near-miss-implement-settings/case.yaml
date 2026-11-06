@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: design-document-near-miss-implement-settings
+description: Implementing an already approved design document in code is a build job, not writing the design.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-design", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-creative", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    The design doc for the new settings page is finished and signed off
+    (docs/design/settings-page.md, wireframes and flows included). Now implement
+    it in our React and TypeScript app, tests first, following the layouts in
+    the doc.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: design-document-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?design-document"'
+    min: 0
+    max: 0
+    arm: both
+  - name: build-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?build"'

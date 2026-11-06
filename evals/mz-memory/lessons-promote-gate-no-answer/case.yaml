@@ -1,0 +1,52 @@
+schema_version: "1.1"
+name: lessons-promote-gate-no-answer
+description: 'The approval gate for a promotion candidate goes unanswered, so no rule file or CLAUDE.md line is written and the lesson stays in lessons.md.'
+tags: [track-d, gate]
+plugins: ["../../../plugins/mz-memory"]
+# Write and Edit are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit --case 'lessons-promote-gate-*'"
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-memory:lessons-promote
+  allowed_tools: [Skill, Read, Write, Edit, Glob, Grep, AskUserQuestion]
+  max_turns: 15
+  timeout_seconds: 300
+graders:
+  # A slash-command prompt loads the skill without a Skill tool call, so look for the task state only the skill writes.
+  - name: lessons-promote-started
+    type: regex
+    pattern: '"name":"(?:Write|Edit)"[^\n]*\.mz/task/\d{4}_\d{2}_\d{2}_lessons-promote_[^\n]*state\.md'
+    target: trace
+  # AskUserQuestion isn't available in eval sessions, so the gate can only be asked in chat.
+  - name: approval-requested-in-chat
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+  - name: claude-md-intact
+    type: regex
+    pattern: Keep handlers thin
+    target: { source: file, path: CLAUDE.md }
+  - name: claude-md-not-promoted-into
+    type: regex
+    pattern: 'MIG-'
+    match: not_contains
+    target: { source: file, path: CLAUDE.md }
+  # The rule, the archive line and the decline record are all written only after an answer, and the file path alone is matched because state.md may name the target.
+  - name: write-touched-no-promotion-target
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  - name: edit-touched-no-promotion-target
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*(?:CLAUDE\.md|\.claude/rules/|lessons\.archive\.md|\.promote-declined)'
+    min: 0
+    max: 0
+  # Archiving moves the line out of lessons.md, so a surviving line proves it was not archived.
+  - name: lesson-still-listed
+    type: regex
+    pattern: '\[L-0001\] n=4'
+    target: { source: file, path: .mz/memory/lessons.md }

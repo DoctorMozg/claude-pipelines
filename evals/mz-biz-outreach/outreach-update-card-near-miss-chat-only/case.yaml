@@ -1,0 +1,20 @@
+schema_version: "1.1"
+name: outreach-update-card-near-miss-chat-only
+description: The user wants a contact remembered only for this conversation and says not to save it, so no card should be touched and no skill is needed.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    Heads up for this chat only: I emailed Dana at Orbis Foods this morning, so skip
+    her when we pick who to chase next. No need to write it down anywhere.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-update-card-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-update-card"'
+    min: 0
+    max: 0
+    arm: both

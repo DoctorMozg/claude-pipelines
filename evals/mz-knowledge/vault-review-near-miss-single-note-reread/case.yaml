@@ -1,0 +1,21 @@
+schema_version: "1.1"
+name: vault-review-near-miss-single-note-reread
+description: Checking one named note and fixing it is a plain read and edit, too small for a review queue or any skill.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+execution:
+  prompt: >-
+    Read Permanent/Bayes beats p-values for small samples.md and tell me if the
+    second paragraph still holds up. Wrote it two years ago. If something's off,
+    just fix it.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: vault-review-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?vault-review"'
+    min: 0
+    max: 0
+    arm: both

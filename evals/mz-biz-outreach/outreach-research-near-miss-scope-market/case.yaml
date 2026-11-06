@@ -1,0 +1,27 @@
+schema_version: "1.1"
+name: outreach-research-near-miss-scope-market
+description: Pinning down the offer, the audience and the local market before any company search is scoping, which belongs to outreach-brief.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-biz-outreach", "../../../plugins/mz-creative", "../../../plugins/mz-base", "../../../plugins/mz-job-outreach"]
+execution:
+  prompt: >-
+    Before we start looking for anyone specific, I want to get the plan straight.
+    We do on-site fire-safety audits for warehouses. I haven't decided between
+    Poland and Czechia, and honestly I know very little about what the business
+    climate looks like in either one. Help me nail down exactly what we're
+    selling, to whom, and how the market looks in those two countries.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: outreach-research-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-research"'
+    min: 0
+    max: 0
+    arm: both
+  - name: outreach-brief-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?outreach-brief"'

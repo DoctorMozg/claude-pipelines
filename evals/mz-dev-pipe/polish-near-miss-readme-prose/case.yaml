@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: polish-near-miss-readme-prose
+description: AI-sounding prose in README and docs markdown, with no code comments involved, belongs to naturalize, not polish.
+tags: [routing, near-miss]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base", "../../../plugins/mz-creative"]
+execution:
+  prompt: >-
+    README.md and docs/architecture.md read like ChatGPT wrote them. Every
+    paragraph opens with "It is worth noting", the word "robust" shows up
+    constantly, and everything comes in lists of three. Rewrite both so they sound
+    like a person wrote them.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: polish-not-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?polish"'
+    min: 0
+    max: 0
+    arm: both
+  - name: naturalize-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?naturalize"'

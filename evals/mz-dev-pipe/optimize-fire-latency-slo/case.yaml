@@ -1,0 +1,17 @@
+schema_version: "1.1"
+name: optimize-fire-latency-slo
+description: Getting an endpoint under a latency SLO with a benchmark script is a measurement-driven performance task, even without optimize's trigger phrases.
+tags: [routing, fire, held-out]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+execution:
+  prompt: >-
+    GET /api/orders spends around 800ms per request and our SLO is 250ms at p95.
+    There's a locust script in bench/ that reproduces it. Get us under the SLO.
+  allowed_tools: [Skill]
+  max_turns: 2
+  timeout_seconds: 180
+graders:
+  - name: optimize-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?optimize"'
