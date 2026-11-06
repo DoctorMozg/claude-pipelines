@@ -1,0 +1,51 @@
+schema_version: "1.1"
+name: naturalize-behavior-allow-dash
+description: 'A formal cover letter rewritten with allow:em-dash; the check runs with --allow, an em dash may stay, and the semicolon still goes, with the facts kept.'
+tags: [behavior, naturalizer-ab]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:naturalize allow:em-dash @file:cover_letter.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 30
+  timeout_seconds: 900
+graders:
+  - name: naturalize-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_naturalize_'
+    target: trace
+  - name: naturalizer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?expert-naturalizer"'
+  # Only the skill runs the check, so the flag in its command proves allow: reached it.
+  - name: check-allows-em-dash
+    type: regex
+    pattern: 'forbidden-punctuation\.sh[^\n]*--allow[ =]+em-dash'
+    target: trace
+  - name: em-dash-kept
+    type: regex
+    pattern: '—'
+    target: { source: file, path: cover_letter.md }
+  - name: other-punctuation-banned
+    type: regex
+    pattern: ';|…|→|←|⇒'
+    match: not_contains
+    target: { source: file, path: cover_letter.md }
+  - name: facts-kept
+    type: regex
+    pattern: '^(?=[\s\S]*Northwind)(?=[\s\S]*Brightline)(?=[\s\S]*Postgres)(?=[\s\S]*900 ?ms)(?=[\s\S]*120 ?ms)(?=[\s\S]*(?:four|4) engineers)'
+    target: { source: file, path: cover_letter.md }
+  - name: no-specificity-marker
+    type: regex
+    pattern: '\[SPECIFICITY NEEDED'
+    match: not_contains
+    target: { source: file, path: cover_letter.md }
+  - name: approval-not-requested
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+    match: not_contains

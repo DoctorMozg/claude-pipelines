@@ -57,13 +57,15 @@ Researches the codebase, drafts Diátaxis-aligned documentation (tutorial, how-t
 
 ### `/naturalize`: AI-Text Rewriter
 
-Rewrites AI-sounding text in one pass, with no approval gate. `expert-naturalizer` finds the patterns (vocabulary spikes, mechanical antithesis, low burstiness, fractal summaries, five-paragraph templates) and rewrites them. A script then checks the prose for banned punctuation (em and en dashes, semicolons, ellipsis characters, arrows). Given a file, it overwrites it in place, keeps the original under `.mz/task/`, and shows a diff. Pasted text comes back in chat. It assumes AI patterns are present, so don't use it to proofread human writing.
+Rewrites AI-sounding text in one pass, with no approval gate. `expert-naturalizer` finds the patterns (vocabulary spikes, mechanical antithesis, low burstiness, fractal summaries, five-paragraph templates) and rewrites them. A script then checks the prose for banned punctuation (em and en dashes, semicolons, ellipsis characters, arrows). Given a file, it overwrites it in place, keeps the original under `.mz/task/`, and shows a diff. Pasted text comes back in chat. With `voice:` it rewrites toward one writer's measured habits for the audience, such as final periods, commas and tone markers in chat. `allow:` lets chosen punctuation through for a register that uses it. It assumes AI patterns are present, so don't use it to proofread human writing.
 
 ```
 /naturalize <paste your text here>
 /naturalize @file:docs/intro.md
 /naturalize research:yes @file:blog_draft.md
 /naturalize preserve:leverage,robust @file:docs/risk.md
+/naturalize voice:@file:notes/my-voice.md @file:reply.md
+/naturalize allow:em-dash @file:cover_letter.md
 ```
 
 **Pipeline**: optional web research, `expert-naturalizer` (sonnet), punctuation check (one fix-only retry), then in-place overwrite with a diff

@@ -170,3 +170,47 @@ class TestPreservedTerms:
         result = run(*args)
         assert result.returncode == 2
         assert "usage" in result.stderr
+
+
+class TestAllowedPunctuation:
+    @pytest.mark.parametrize(
+        ("name", "char"),
+        [
+            ("em-dash", "—"),
+            ("en-dash", EN_DASH),
+            ("semicolon", ";"),
+            ("ellipsis", "…"),
+            ("arrow", "⇒"),
+        ],
+    )
+    def test_allowed_character_is_not_reported(
+        self, run: Run, write: Write, name: str, char: str
+    ) -> None:
+        result = run("--allow", name, write(f"It works {char} mostly.\n"))
+        assert (result.returncode, result.stdout) == (0, "")
+
+    def test_other_characters_are_still_reported(self, run: Run, write: Write) -> None:
+        result = run("--allow", "em-dash", write("One — two; three.\n"))
+        assert result.returncode == 1
+        assert result.stdout.splitlines() == ["doc.md:1: semicolon ;"]
+
+    def test_allow_and_preserve_combine_in_any_order(self, run: Run, write: Write) -> None:
+        doc = write("Fast→Lane — fast; really.\n")
+        result = run("--allow", "em-dash", "--preserve", "Fast→Lane", "--allow", "semicolon", doc)
+        assert (result.returncode, result.stdout) == (0, "")
+
+    @pytest.mark.parametrize(
+        "args",
+        [
+            pytest.param(("--allow", "colon", "doc.md"), id="unknown-name"),
+            pytest.param(("--allow", "em dash", "doc.md"), id="name-with-space"),
+            pytest.param(("--allow",), id="no-name"),
+        ],
+    )
+    def test_malformed_allow_is_a_usage_error(
+        self, run: Run, write: Write, args: tuple[str, ...]
+    ) -> None:
+        write("Clean.\n")
+        result = run(*args)
+        assert result.returncode == 2
+        assert "usage" in result.stderr

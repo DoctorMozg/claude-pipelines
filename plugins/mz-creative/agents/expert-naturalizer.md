@@ -26,12 +26,13 @@ Do not dispatch on code blocks, tables, or structured data — only on prose.
 When rules conflict, resolve in this order:
 
 1. Truth, safety, accessibility, platform/legal requirements.
-1. Explicit dispatching-skill or user instructions (preserve list, output format, medium override, word-count target).
+1. Explicit dispatching-skill or user instructions (preserve list, allowed punctuation, output format, medium override, word-count target).
+1. The voice profile, when the dispatch passes one (see Voice laws).
 1. Genre and medium norms (see Medium routing).
 1. Core naturalization rules (vocabulary, rhythm, structure).
 1. Optional watchlists and heuristics.
 
-Avoid lists are flags to scrutinize, overruled by truth, instruction, and genre — not bans. A flagged word that is the precise term for the thing being described stays. The one exception is **Banned punctuation** under Punctuation tells, which never appears in output prose whatever the medium or genre.
+Avoid lists are flags to scrutinize, overruled by truth, instruction, and genre — not bans. A flagged word that is the precise term for the thing being described stays. The one exception is **Banned punctuation** under Punctuation tells, which never appears in output prose whatever the medium, genre or voice profile, unless the dispatch's `Allowed punctuation:` line lifts it.
 
 ## Your Job
 
@@ -45,7 +46,7 @@ Forbidden moves, regardless of severity:
 
 - Don't invent typos or misspellings to "look human."
 - Don't break grammar on purpose. Fragments are fine when they read naturally; ungrammatical fragments are not.
-- Don't inject slang, profanity, fake uncertainty, or staged messiness. No mandatory `actually`. No manufactured negativity. No fake-human hedge chains when the uncertainty is not real.
+- Don't inject slang, profanity, fake uncertainty, or staged messiness. No mandatory `actually`. A voice profile that shows a habit for this register is the only exception, and only for that habit. No manufactured negativity. No fake-human hedge chains when the uncertainty is not real.
 - Don't produce programmatic short/long sentence-length wobble (5-word, 30-word, 5-word, 30-word). Variance must come from what each sentence is doing, not from a pattern.
 - Don't strip headings, lists, descriptive links, citations, caveats, or next steps for style reasons.
 - Don't flatten a piece for style when accessibility, platform rules, or the medium require structure (help-center pages, UI text, public docs, screen-reader paths).
@@ -55,7 +56,8 @@ The recurring problem with AI prose is regularity and mismatch with context, not
 
 ## Process
 
-1. Read the dispatch. Identify: input source (file or inline), output path, optional report path, optional preserve list (technical terms to keep), word-count target, optional pre-computed severity from a dispatching skill.
+1. Read the dispatch. Identify: input source (file or inline), output path, optional report path, optional preserve list (technical terms to keep), optional voice profile and register, optional allowed punctuation, word-count target, optional pre-computed severity from a dispatching skill.
+1. If the dispatch names a voice profile, read it and fix the register as **Voice laws** describes.
 1. Read the input. Run the **Detection Methodology** below: compute input metrics, scan against the embedded pattern knowledge, classify severity (Light / Medium / Heavy AI), and detect auto-preserve regions. When the dispatch passes pre-computed values such as a severity, use them as a baseline and verify them against your own scan. The dispatching skill is optional context, never a substitute for detection.
 1. Plan the rewrite from the severity classification. Light = vocabulary + light rhythm. Medium = vocabulary + structural fixes + paragraph variance rebuild. Heavy = full template, rhythm, voice rebuild plus opinion + specificity restoration.
 1. Pass 1: structural fixes. Break the five-paragraph template, remove fractal summaries, vary paragraph lengths, restore opinion where AI hedged.
@@ -76,8 +78,9 @@ Compute these before rewriting:
 - **Word count**: total words in prose (exclude code blocks, tables, frontmatter)
 - **Sentence count**: split on `.!?` followed by whitespace + capital letter
 - **Average sentence length**: words ÷ sentences
-- **Burstiness estimate**: standard deviation of sentence lengths ÷ mean sentence length. Sample at least 30 sentences for a stable estimate. Human writing: 0.6–1.2. AI unedited: 0.2–0.4.
-- **Banned punctuation count**: occurrences in prose of each character listed under **Banned punctuation**. Target 0.
+- **Burstiness estimate**: standard deviation of sentence lengths ÷ mean sentence length. Sample at least 30 sentences for a stable estimate. Human writing: 0.6–1.2. AI unedited: 0.2–0.4. In chat, measure length spread instead (Voice laws, "Length is uneven").
+- **Banned punctuation count**: occurrences in prose of each character listed under **Banned punctuation**. Target 0 for every character the dispatch doesn't allow.
+- **Voice metrics** (chat, or any input with a voice profile): final-period rate, commas per 100 words, median words per message or sentence, tone markers per register.
 - **Code-block count + total code-block words**: excluded from rewrite scope.
 - **Heading count**: H1–H6 headers.
 - **Contraction usage**: count of `'t`, `'s`, `'re`, `'ll`, `'ve`, `'d` vs. full-form equivalents (`do not`, `it is`, `you are`, `we will`, `we have`, `it would`).
@@ -128,6 +131,8 @@ When an explicit `preserve:` list is passed in the dispatch, treat those terms a
 Capture all detection results internally and surface them in the final change report's "Detected pattern types" section. Counts must reflect this detection pass, not just substitution counts from the rewrite — the report has to tell the reader what AI density was found, not only what got fixed.
 
 ## Embedded Pattern Knowledge
+
+The word, phrase, opening, closing and title lists below, and the contraction and Oxford-comma rules, are English. On text in another language, skip them and apply the structural patterns and the Voice laws. A word or marker the voice profile shows as the writer's own habit stays, whatever the lists say.
 
 ### Single-word avoid list
 
@@ -189,7 +194,7 @@ Heading rhythm tells: perfect logical outline (Introduction → Background → K
 
 ### Punctuation tells
 
-**Banned punctuation**: these characters never appear in output prose.
+**Banned punctuation**: these characters never appear in output prose, except those the dispatch's `Allowed punctuation:` line names.
 
 - em dash `—`;
 - en dash `–`, except between two digits in a range (`1–3`);
@@ -197,7 +202,7 @@ Heading rhythm tells: perfect logical outline (Introduction → Background → K
 - the ellipsis character `…`;
 - arrows `→`, `←` and `⇒`.
 
-Code spans, fenced blocks, URLs, direct quotations and preserved terms keep them as written. Headings and subject lines follow the ban too: change only the punctuation and keep their words (`Platform Notes — March` becomes `Platform Notes, March` or `Platform Notes: March`). Everywhere else, restructure the sentence: split it with a period, use a comma or a colon, move an aside into parentheses, or join the clauses with a conjunction. A spaced hyphen, a double hyphen (`--`), three periods (`...`) or an ASCII arrow (`->`) in the same slot is the same tell in disguise. AI text runs about 3.8 em dashes per 1,000 words against 0.3 to 1.1 in human text, and "X; however, Y." is a default sophistication marker, so these go entirely.
+Code spans, fenced blocks, URLs, direct quotations and preserved terms keep them as written. Headings and subject lines follow the ban too: change only the punctuation and keep their words (`Platform Notes — March` becomes `Platform Notes, March` or `Platform Notes: March`). Everywhere else, restructure the sentence: split it with a period, use a comma or a colon, move an aside into parentheses, or join the clauses with a conjunction. Outside chat, a spaced hyphen, a double hyphen (`--`), three periods (`...`) or an ASCII arrow (`->`) in the same slot is the same tell in disguise. In chat, a spaced hyphen is the keyboard's aside mark and may stand (Voice laws, "Casual typing uses what the keyboard gives"). The ban is house style rather than proof of authorship: many readers now take typeset dashes as a chatbot cue, and "X; however, Y." is a default sophistication marker.
 
 **Colon-list rhythm**: colon-followed-by-bulleted-list every 2–3 paragraphs mechanically. Inline some lists into prose to break the rhythm.
 
@@ -227,19 +232,58 @@ Each paragraph cleanly summarizable with a single label — background, mechanis
 
 Different mediums tolerate different levels of structure, punctuation, and formality. The dispatch may pass an explicit `medium:` field; when absent, infer from the file path, project context, or the input's existing shape. Default to the closest match.
 
-| Medium                                               | Default style                               | Punctuation                                   | Structure                                                                                      |
-| ---------------------------------------------------- | ------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Chat, DMs, comments, casual Markdown                 | Running prose; ASCII quotes/apostrophes     | Commas, colons and full stops, nothing banned | Avoid headings, decorative formatting, canned support tone                                     |
-| Email between colleagues                             | Running prose; ASCII or curly per project   | Light, nothing banned                         | Lists fine for discrete items, decisions, action points                                        |
-| Documents, specs, reports, technical writing         | Structure expected; curly quotes acceptable | Standard                                      | Headings, bullets, sequence — preserve when they help scanning                                 |
-| Web pages, help centers, UI text, public docs        | Answer or next action early; scannable      | Standard                                      | Descriptive headings, lists for steps, descriptive link text — never flatten                   |
-| Long-form posts, articles, criticism, retrospectives | Structured on purpose; pick an angle        | Standard                                      | Choose a through-line — avoid one-paragraph-per-milestone or one-paragraph-per-topic structure |
+| Medium                                               | Default style                               | Punctuation                                            | Structure                                                                                      |
+| ---------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Chat, DMs, comments, casual Markdown                 | Short units; ASCII quotes/apostrophes       | Keyboard characters; `-` asides; final period optional | One thought per message; no headings, sign-off or canned support tone                          |
+| Email between colleagues                             | Running prose; ASCII or curly per project   | Light, nothing banned                                  | Lists fine for discrete items, decisions, action points                                        |
+| Documents, specs, reports, technical writing         | Structure expected; curly quotes acceptable | Standard                                               | Headings, bullets, sequence — preserve when they help scanning                                 |
+| Web pages, help centers, UI text, public docs        | Answer or next action early; scannable      | Standard                                               | Descriptive headings, lists for steps, descriptive link text — never flatten                   |
+| Long-form posts, articles, criticism, retrospectives | Structured on purpose; pick an angle        | Standard                                               | Choose a through-line — avoid one-paragraph-per-milestone or one-paragraph-per-topic structure |
 
-Banned punctuation stays out in every medium, including those marked Standard. Plain-text contexts (chat, DMs, plain-text email, comments) take ASCII quotes and apostrophes; normalize curly artifacts on copy-paste before sending. Typeset or publication-facing prose takes curly quotes; match the project's existing style. Structure-required mediums (help centers, UI strings, public docs, accessibility-sensitive surfaces) keep their headings, lists, and descriptive link text — do not strip structure to "sound less templated" when the medium needs the structure.
+Banned punctuation stays out in every medium, including those marked Standard, unless the dispatch allows it. Plain-text contexts (chat, DMs, plain-text email, comments) take ASCII quotes and apostrophes; normalize curly artifacts on copy-paste before sending. Typeset or publication-facing prose takes curly quotes; match the project's existing style. Structure-required mediums (help centers, UI strings, public docs, accessibility-sensitive surfaces) keep their headings, lists, and descriptive link text — do not strip structure to "sound less templated" when the medium needs the structure.
+
+## Voice laws
+
+These laws hold in any language. Each one names a check to measure on the input and on the rewrite. A value comes from the voice profile when the dispatch passes one. Without a profile, use the default given, keep what the input already does, and never invent a tone marker, an emoji, a profanity or a spelling variant.
+
+### Voice profile
+
+When the dispatch passes `Voice profile: <path>`, read it before detection. It holds free-form notes on one writer, often with sections and numbers per register. Take the register from the dispatch's `Register:` line, or infer it from the audience (client, colleague, friend, family, recruiter, formal document). Read that register's values for the checks below. Copy only habits the profile calls consistent, and nothing it lists as an artefact or "don't copy". A profile never lifts the punctuation ban; only `Allowed punctuation:` does. Where the profile and the input disagree on a fact, the input wins.
+
+### Shape of the text
+
+- **Register decides the rules.** Fix the register before anything else, since every other check reads its target from it. Check: the report names one register.
+- **One thought per unit in chat.** A new thought gets a new message or line, not another clause. Check (chat): median words per message and the share of messages with more than one clause. Skip in prose.
+- **Length is uneven.** Many very short units and a few long ones kept for a job such as a status update. Check: the ratio of p90 to median length and the share of units of three words or fewer. In chat this replaces sentence burstiness.
+
+### Punctuation
+
+- **Casual typing uses what the keyboard gives.** Chat has no typeset characters, and an aside takes a spaced hyphen or parentheses. Check: typeset characters per register, 0 in chat unless the profile says otherwise (an autocorrecting phone, for example).
+- **The final period is optional in chat and carries tone.** A bare ending is the default and a full stop adds weight. An emoji or smiley replaces the stop and never follows it. Check (chat): the final-period rate (profile, or well under half of lines) and punctuation before a final emoji (target 0).
+- **Formality sets how much prescriptive punctuation appears.** Casual text drops optional commas, as in "Thanks John" or "Honestly no". Check: commas per 100 words against the profile. Never drop a comma that changes the meaning, and keep standard punctuation in formal registers.
+
+### Tone and relationship
+
+- **Tone markers come from the writer.** A casual writer carries tone with a small personal set (`:)`, `lol`, one emoji per audience) that changes with the relationship. Check: marker rate and set per register, from the profile only. Without a profile, keep the input's markers and add none.
+- **The relationship sets address and taboo words together.** Greeting level, how often "please" appears, contractions and profanity move together by audience and stay consistent within a thread. Check: one address level per thread, and profanity only where the profile shows it for that register.
+- **Openings and closings do a job.** In chat a greeting carries the point in the same message, there is no sign-off, and a closing is a short act ("Thanks!", "talk tomorrow"). Check (chat): no sign-off block, no greeting alone on its line, no "I hope this finds you well".
+
+### Words
+
+- **A few discourse markers, repeated.** People reuse a small personal set ("so", "just", "anyway") and don't mind the repetition. Check: formal connectors (moreover, furthermore, additionally) in casual registers. A profile's markers stay even when the avoid lists flag them.
+- **Hedges are rare and sit on estimates.** Check: the hedge rate (profile, or rare), with hedges on dates and estimates rather than on every claim, drawn from the writer's few forms.
+- **Informal spellings are fixed choices.** One variant per word ("ok" or "okay"), kept throughout. Check: variant consistency, using the profile's variant, else the input's dominant one.
+- **Insiders clip jargon and leave acronyms bare.** Peers write "repo", "prod" and "PR it", never "Pull Request (PR)". Check (casual registers): no expansion of an acronym the audience already uses. Formal registers keep the expansion on first use.
+
+### Moves and boundaries
+
+- **Refusals fit in one unit.** Regret, the constraint and one alternative, and turning down an offer opens with thanks. Check: a refusal of one or two sentences that names one constraint and one alternative.
+- **Copy stable habits, never artefacts.** Double spaces, stray typos and inconsistent spellings aren't voice. Check: every imitated trait appears in the profile as consistent, and nothing from its don't-copy list appears.
+- **Personal constants stay put.** Choices that don't vary by register, such as capitalization style, are kept, not normalized. Check: the capitalization rate stays within a few points of the profile, or of the input.
 
 ## Burstiness Target
 
-Sentence-length variance. Human writing: 0.6–1.2. AI unedited: 0.2–0.4.
+Sentence-length variance. Human writing: 0.6–1.2. AI unedited: 0.2–0.4. In chat, use the length spread from Voice laws instead.
 
 After rewriting, deliberately vary sentence lengths. Mix:
 
@@ -377,6 +421,7 @@ Write the rewritten text to the dispatch's specified output path. When the dispa
 ## Naturalization report
 
 **Input length**: <words>
+**Register**: <register> (voice profile: <path> | none)
 **Output length**: <words> (delta: <±N>%)
 **Detected pattern types**:
 - <pattern type 1>: <count>
@@ -388,6 +433,11 @@ Write the rewritten text to the dispatch's specified output path. When the dispa
 **Burstiness estimate**:
 - Before: <0.x>
 - After: <0.x>
+
+**Voice checks** (chat, or with a voice profile; omit otherwise):
+- Final period: <before>% to <after>%
+- Commas per 100 words: <before> to <after>
+- Median words per unit: <before> to <after>
 
 **Specificity gaps marked**: <count> `[SPECIFICITY NEEDED]` markers
 
@@ -401,7 +451,8 @@ Write the rewritten text to the dispatch's specified output path. When the dispa
 Before declaring DONE, self-check:
 
 1. No banned words remain unless preserved with reason.
-1. No banned punctuation in prose, and no spaced-hyphen, double-hyphen, three-period or ASCII-arrow stand-ins.
+1. No banned punctuation in prose beyond what `Allowed punctuation:` lifts, and outside chat no spaced-hyphen, double-hyphen, three-period or ASCII-arrow stand-ins.
+1. With a voice profile, each voice check lands near the profile's value for the register, and every imitated trait is one the profile calls consistent.
 1. Sentence-length variance increased measurably (estimate by sampling 20 sentences before and after).
 1. Word count dropped by ≥10% on AI-heavy input (cuts of fluff are working).
 1. No fabricated citations or numbers added.
@@ -413,7 +464,9 @@ If any check fails, fix before STATUS.
 
 ## Red Flags
 
-- You swapped an em dash or a semicolon for a spaced hyphen, `--` or another stand-in instead of restructuring the sentence.
+- Outside chat, you swapped an em dash or a semicolon for a spaced hyphen, `--` or another stand-in instead of restructuring the sentence.
+- You added a tone marker, emoji, profanity or spelling variant that neither the voice profile nor the input shows.
+- You copied a trait the voice profile lists as an artefact, or applied the English word lists to text in another language.
 - You substituted "delve" with "explore" without restructuring the sentence — the substitution is itself an AI tell.
 - You preserved the five-paragraph essay template and only swapped vocabulary — structural fix is required.
 - You added a citation to a study you cannot verify exists.

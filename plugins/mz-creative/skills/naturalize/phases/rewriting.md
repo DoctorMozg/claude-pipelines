@@ -38,6 +38,9 @@ Report file: <report_path>
 Preserve: <terms from preserve:, or "none beyond auto-preserve">
 Specificity gaps: list each vague claim in the report; the output replaces the user's text, so it carries no [SPECIFICITY NEEDED] marker
 Medium: <from the file's extension or path when obvious, else omit this line>
+Voice profile: <PROJECT_ROOT>/.mz/task/<task_name>/voice.md   (only with voice:, else omit this line)
+Register: <the audience the user named, such as "client chat" or "formal CV", else omit this line>
+Allowed punctuation: <the allow: names, else omit this line>
 Long-document handling: <chunk by H2 if the input exceeds CHUNK_THRESHOLD words, else single pass>
 Extra patterns: <only after step 1.2: read <PROJECT_ROOT>/.mz/task/<task_name>/web_research.md and add its patterns to this rewrite's pass list; omit this line otherwise>
 ```
@@ -60,7 +63,7 @@ Update `state.md`: `Phase: 1`, `phase_complete: true`, and add `output_path` and
 
 ### 2.1 Punctuation check
 
-Run `<PUNCTUATION_CHECK> <preserve flags> <output_path>` as a command of its own, not chained with `;` or `&&`, because the skill's Bash grant matches only that command. `<preserve flags>` is one `--preserve '<term>'` per `PreserveTerms` entry, or nothing when there are none, since the rewrite keeps those terms verbatim. It checks prose only; code, URLs, quotes and preserved terms are skipped, and the change report in `report_path` isn't checked at all.
+Run `<PUNCTUATION_CHECK> <preserve flags> <allow flags> <output_path>` as a command of its own, not chained with `;` or `&&`, because the skill's Bash grant matches only that command. `<preserve flags>` is one `--preserve '<term>'` per `PreserveTerms` entry, or nothing when there are none, since the rewrite keeps those terms verbatim. `<allow flags>` is one `--allow <name>` per `AllowedPunctuation` entry, or nothing. It checks prose only; code, URLs, quotes and preserved terms are skipped, and the change report in `report_path` isn't checked at all.
 
 - **Exit 0**: the rewrite is clean. Set `PunctuationCheck: clean`.
 
@@ -70,9 +73,10 @@ Run `<PUNCTUATION_CHECK> <preserve flags> <output_path>` as a command of its own
   Mode: punctuation fix
   Input file: <output_path>
   Output file: <output_path>
+  Medium: <the Medium line of the rewrite dispatch, or omit it>
   Lines to fix:
   <the check's stdout>
-  Restructure each flagged sentence so the banned character is gone: a period, a comma, parentheses or a conjunction, never a spaced hyphen, `--` or `...` in its place. Change nothing else and write no report.
+  Restructure each flagged sentence so the banned character is gone: a period, a comma, parentheses or a conjunction, never `--` or `...` in its place, and a spaced hyphen only as an aside in chat. Change nothing else and write no report.
   ```
 
   Run the check again. Exit 0 sets `PunctuationCheck: clean`. A second exit 1 sets `PunctuationCheck: concerns`; keep its lines for the final block and carry on: the rewrite is still applied, and those lines tell the user exactly what is left to fix by hand.

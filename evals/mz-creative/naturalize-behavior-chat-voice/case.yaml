@@ -1,0 +1,69 @@
+schema_version: "1.1"
+name: naturalize-behavior-chat-voice
+description: 'A Slack reply rewritten with voice: toward a measured work-chat profile; the profile is copied into the task folder, and the rewrite drops typeset punctuation, the sign-off, "okay", expanded acronyms and a period on every line, keeping the facts.'
+tags: [behavior, naturalizer-ab]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:naturalize voice:@file:voice.md @file:reply.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 30
+  timeout_seconds: 900
+graders:
+  - name: naturalize-ran
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_naturalize_'
+    target: trace
+  - name: naturalizer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?expert-naturalizer"'
+  # Only the skill writes the profile copy, so this proves voice: was parsed and handed on inside the project.
+  - name: profile-copied
+    type: regex
+    pattern: '\.mz/task/\d{4}_\d{2}_\d{2}_naturalize_[^/"\s]*/voice\.md'
+    target: trace
+  - name: no-banned-punctuation
+    type: regex
+    pattern: '—|;|…|→|←|⇒|–'
+    match: not_contains
+    target: { source: file, path: reply.md }
+  - name: no-sign-off
+    type: regex
+    pattern: 'best regards|kind regards|let me know if you have any|questions or concerns'
+    flags: i
+    match: not_contains
+    target: { source: file, path: reply.md }
+  # The profile writes "ok" and keeps acronyms bare between colleagues.
+  - name: profile-words-used
+    type: regex
+    pattern: '\bokay\b|pull request \(PR\)|production environment'
+    flags: i
+    match: not_contains
+    target: { source: file, path: reply.md }
+  # The input ends five lines with a period; the profile ends about one message in five that way.
+  - name: few-final-periods
+    type: regex
+    pattern: '\.[ \t]*$(?:[\s\S]*?\.[ \t]*$){2}'
+    flags: m
+    match: not_contains
+    target: { source: file, path: reply.md }
+  - name: facts-kept
+    type: regex
+    pattern: '^(?=[\s\S]*\bCI\b)(?=[\s\S]*certificate)(?=[\s\S]*\bPR\b)(?=[\s\S]*\b3 ?pm\b)(?=[\s\S]*roll ?back)'
+    flags: i
+    target: { source: file, path: reply.md }
+  - name: no-specificity-marker
+    type: regex
+    pattern: '\[SPECIFICITY NEEDED'
+    match: not_contains
+    target: { source: file, path: reply.md }
+  # AskUserQuestion isn't available in eval sessions, so a gate would show up as a request in chat.
+  - name: approval-not-requested
+    type: regex
+    pattern: '\bapprove\b'
+    flags: i
+    match: not_contains
