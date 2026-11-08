@@ -116,7 +116,7 @@ enforce_lessons_cap "$LESSONS_FILE" "$TODAY"
 
 # Compression and curation are on by default and MZ_MEMORY_COMPRESS=0 opts out of both.
 # Both run detached so SessionEnd never waits on the LLM.
-if [[ "${MZ_MEMORY_COMPRESS:-1}" != "0" ]] && command -v claude >/dev/null 2>&1; then
+if curator_enabled; then
   LOG_LEN=$(extract_log "$MEMORY_FILE" 9999 | awk -f "${CLAUDE_PLUGIN_ROOT}/scripts/awk/count-lines.awk")
   if [[ "${LOG_LEN:-0}" -gt "$MZ_COMPRESS_THRESHOLD" ]]; then
     nohup "${CLAUDE_PLUGIN_ROOT}/scripts/memory-compress.sh" >/dev/null 2>&1 &

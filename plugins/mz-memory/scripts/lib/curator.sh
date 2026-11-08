@@ -20,9 +20,13 @@ _lessons_region() {
 
 # curator_enabled — the LLM curator needs the CLI and jq, and MZ_MEMORY_COMPRESS=0 turns it off.
 curator_enabled() {
-  [[ "${MZ_MEMORY_COMPRESS:-1}" != "0" ]] \
-    && command -v claude >/dev/null 2>&1 \
-    && command -v jq >/dev/null 2>&1
+  [[ "${MZ_MEMORY_COMPRESS:-1}" != "0" && "${MZ_MEMORY_CURATOR:-0}" != "1" ]] || return 1
+  command -v jq >/dev/null 2>&1 || return 1
+  case "${MZ_MEMORY_CURATOR_BACKEND:-claude}" in
+    claude) command -v claude >/dev/null 2>&1 ;;
+    codex) command -v codex >/dev/null 2>&1 ;;
+    *) return 1 ;;
+  esac
 }
 
 # lessons_need_curation <lessons_file> — true once enough inbox items arrived since the last run.
@@ -99,6 +103,10 @@ curator_call() {
   local schema="$1" system="$2"
   local workdir runner raw
   curator_enabled || return 1
+  if [[ "${MZ_MEMORY_CURATOR_BACKEND:-claude}" == "codex" ]]; then
+    curator_codex_call "$schema" "$system"
+    return $?
+  fi
   runner=$(command -v timeout || command -v gtimeout || true)
   workdir=$(mktemp -d) || return 1
   # A fresh working directory keeps the project's CLAUDE.md out of the child's context.
@@ -112,6 +120,98 @@ curator_call() {
   rm -rf -- "$workdir"
   [[ -n "$raw" ]] || return 1
   printf '%s' "$raw" | jq -ce 'select(.is_error == false and .subtype == "success") | .structured_output // empty' 2>/dev/null
+}
+
+curator_codex_call() {
+  (
+    local schema="$1" system="$2" runner workdir auth child="" status=0 feature
+    runner=$(command -v timeout || command -v gtimeout || true)
+    if [[ -z "$runner" ]]; then
+      echo "memory curator: Codex requires timeout or gtimeout" >&2
+      return 1
+    fi
+    for feature in env git ln; do
+      if ! command -v "$feature" >/dev/null 2>&1; then
+        echo "memory curator: Codex requires $feature" >&2
+        return 1
+      fi
+    done
+    workdir=$(mktemp -d) || return 1
+    trap '[[ -z "$child" ]] || kill -KILL -- "-$child" 2>/dev/null || true; rm -rf -- "$workdir"' EXIT
+    trap 'exit 1' HUP INT TERM
+    mkdir -p "$workdir/home/.codex" "$workdir/workspace" || return 1
+    auth="${CODEX_HOME:-${HOME}/.codex}/auth.json"
+    if [[ -f "$auth" ]]; then
+      auth=$(cd "${auth%/*}" && printf '%s/auth.json' "$PWD") || return 1
+      ln -s "$auth" "$workdir/home/.codex/auth.json" || return 1
+    fi
+    # Anchor project discovery so a repository above the temporary directory cannot inject rules.
+    if ! env -i PATH="$PATH" HOME="$workdir/home" git init --quiet "$workdir/workspace" 2>/dev/null; then
+      echo "memory curator: could not initialize the isolated Codex workspace" >&2
+      return 1
+    fi
+    printf '%s' "$schema" >"$workdir/schema.json"
+    cat >"$workdir/prompt"
+    local -a credentials=() disabled=()
+    [[ -z "${CODEX_API_KEY:-}" ]] || credentials+=("CODEX_API_KEY=$CODEX_API_KEY")
+    [[ -z "${OPENAI_API_KEY:-}" ]] || credentials+=("OPENAI_API_KEY=$OPENAI_API_KEY")
+    for feature in hooks plugins apps multi_agent shell_tool browser_use computer_use \
+      image_generation view_image goals sleep_tool; do
+      disabled+=(--disable "$feature")
+    done
+    # Codex has no exact dollar cap. Bound runtime and reject any tool activity before applying data.
+    (
+      cd "$workdir/workspace" || exit 1
+      exec env -i PATH="$PATH" HOME="$workdir/home" CODEX_HOME="$workdir/home/.codex" \
+        MZ_MEMORY_CURATOR=1 MZ_MEMORY_COMPRESS=0 "${credentials[@]}" \
+        "$runner" --kill-after=5 "$MZ_CURATOR_TIMEOUT" codex exec \
+        --json --ephemeral --ignore-user-config --ignore-rules --sandbox read-only \
+        --model "${MZ_CODEX_MEMORY_CURATOR_MODEL:-gpt-6.1-sol}" "${disabled[@]}" \
+        -c 'agents.enabled=false' -c 'web_search="disabled"' \
+        -c "developer_instructions=$(jq -Rn --arg value "$system" '$value')" \
+        --output-schema "$workdir/schema.json" -o "$workdir/output.json" - \
+        <"$workdir/prompt" >"$workdir/events.jsonl" 2>"$workdir/stderr"
+    ) &
+    child=$!
+    wait "$child" || status=$?
+    if [[ "$status" -ne 0 ]]; then
+      if [[ "$status" -eq 124 || "$status" -eq 137 ]]; then
+        echo "memory curator: Codex timed out; child processes were terminated" >&2
+      else
+        echo "memory curator: Codex failed (exit $status)" >&2
+      fi
+      return 1
+    fi
+    if ! jq -se '
+      length > 0 and any(.[]; .type == "turn.completed")
+      and all(.[];
+        type == "object" and (
+          .type == "thread.started" or .type == "turn.started" or .type == "turn.completed"
+          or ((.type == "item.started" or .type == "item.updated" or .type == "item.completed")
+            and (.item | type) == "object"
+            and (.item.type == "reasoning" or .item.type == "agent_message"))
+        )
+      )
+    ' "$workdir/events.jsonl" >/dev/null 2>&1; then
+      echo "memory curator: Codex returned invalid events, an error, or tool activity" >&2
+      return 1
+    fi
+    if ! jq -se '
+      def strings: type == "array" and all(.[]; type == "string");
+      length == 1 and (.[0] |
+      type == "object" and keys == ["operations"] and (.operations | type) == "array"
+      and all(.operations[];
+        type == "object" and keys == ["inbox", "lessons", "op", "reason", "tags", "text"]
+        and (.op == "ADD" or .op == "MERGE" or .op == "SUPERSEDE" or .op == "DROP" or .op == "COMBINE")
+        and (.inbox | strings) and (.lessons | strings) and (.tags | strings)
+        and (.text | type) == "string" and (.reason | type) == "string"
+      ))
+    ' "$workdir/output.json" >/dev/null 2>&1; then
+      echo "memory curator: Codex returned malformed operations" >&2
+      return 1
+    fi
+    jq -c . "$workdir/output.json"
+  )
 }
 
 curator_schema() {

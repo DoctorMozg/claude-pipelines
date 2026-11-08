@@ -49,6 +49,7 @@ _COMMON_CODEX_TRANSFORMS = (
     ("${CLAUDE_PLUGIN_ROOT}", "${PLUGIN_ROOT}"),
     # Codex substitutes no variables in SKILL.md bodies, but it gives the model each skill's path.
     ("${CLAUDE_SKILL_DIR}", "<directory containing this SKILL.md>"),
+    (".claude-plugin/plugin.json", "plugin.json"),
     ("CLAUDE.md", "AGENTS.md"),
     (".claude/rules", ".codex/rules"),
     ("Agent(s)", "Codex subagent(s)"),
@@ -365,9 +366,12 @@ def _adapt_hook_config(spec: CodexPackageSpec, hook: HookSpec, source_path: Path
             )
 
         target_groups = rendered_groups.setdefault(target_event.value, [])
-        target_groups.extend(
-            _adapt_hook_group(source_path, source_event, target_event, group) for group in groups
-        )
+        for group in groups:
+            adapted = _adapt_hook_group(source_path, source_event, target_event, group)
+            if adapted not in target_groups:
+                target_groups.append(adapted)
+            else:
+                logger.debug("Combining duplicate %s hook group from %s", target_event, source_path)
 
     rendered_payload = {"hooks": rendered_groups}
     return _adapt_contents(
@@ -404,6 +408,12 @@ def _adapt_hook_group(
                 RenderFailure.INVALID_SOURCE,
                 "Codex hook adapters require command handlers",
             )
+        if handler.get("args"):
+            raise RenderError(
+                source_path,
+                RenderFailure.INVALID_SOURCE,
+                "Separate hook args are unsupported; include arguments in command",
+            )
         dropped = sorted(set(handler) - _CODEX_COMMAND_HANDLER_FIELDS)
         if dropped:
             logger.debug("Dropping Claude-only hook fields %s from %s", dropped, source_path)
@@ -413,6 +423,11 @@ def _adapt_hook_group(
 
     if source_event is HookEvent.POST_TOOL_USE and target_event is HookEvent.USER_PROMPT_SUBMIT:
         adapted_group.pop("matcher", None)
+    elif target_event in (HookEvent.PRE_TOOL_USE, HookEvent.POST_TOOL_USE) and adapted_group.get(
+        "matcher"
+    ) in ("Write", "Edit", "Write|Edit", "Edit|Write"):
+        # Codex's Write and Edit aliases both observe the same apply_patch invocation.
+        adapted_group["matcher"] = "apply_patch"
     adapted_group["hooks"] = adapted_handlers
     return adapted_group
 
@@ -425,7 +440,94 @@ def _adapt_script(
 ) -> str:
     if adapter is HookScriptAdapter.USER_PROMPT_JOURNAL:
         return _CODEX_USER_PROMPT_JOURNAL
-    return _adapt_contents(spec, source_path, contents)
+    rendered = _adapt_contents(spec, source_path, contents)
+    relative = source_path.relative_to(spec.source_root).as_posix()
+    if relative == "plugins/mz-handoff/scripts/handoff-facts.sh":
+        rendered = _adapt_handoff_facts(rendered)
+    elif relative == "plugins/mz-handoff/scripts/lib/handoff.sh":
+        rendered = rendered.replace(
+            'grep -c -F -- "$MZ_HANDOFF_BOUNDARY" "$1" 2>/dev/null || true',
+            'jq -sR \'[split("\\n")[] | fromjson? | '
+            'select(.type == "compacted" or .subtype == "compact_boundary")] | length\' '
+            '"$1" 2>/dev/null || echo 0',
+        ).replace(
+            '[[ "$comm" == "claude" || "$comm" == "node" ]]',
+            '[[ "$comm" == "codex" || "$comm" == "claude" || "$comm" == "node" ]]',
+        )
+    elif relative == "plugins/mz-knowledge/scripts/frontmatter-normalize.sh":
+        rendered = _adapt_frontmatter_hook(rendered)
+    return rendered
+
+
+def _adapt_frontmatter_hook(contents: str) -> str:
+    dispatch = r"""INPUT=$(cat)
+if [[ "$(jq -r '.tool_name // empty' <<<"$INPUT")" == "apply_patch" ]]; then
+  PATCH=$(jq -r 'if (.tool_input | type) == "string" then .tool_input
+    else .tool_input.command // .tool_input.patch // .tool_input.input // empty end' <<<"$INPUT")
+  CONTEXTS=""
+  while IFS= read -r changed; do
+    [[ "$changed" == /* ]] || changed="${PWD}/${changed}"
+    response=$(jq -n --arg path "$changed" '{tool_input: {file_path: $path}}' |
+      bash "${BASH_SOURCE[0]}") || continue
+    [[ -z "$response" ]] || CONTEXTS+="$response"$'\n'
+  done < <(jq -rn --arg patch "$PATCH" '$patch | split("\n")[]
+    | capture("^\\*\\*\\* (?:Add File|Update File|Move to): (?<path>.+)$")? | .path' |
+    awk '!seen[$0]++')
+  if [[ -n "$CONTEXTS" ]]; then
+    jq -s '[.[].hookSpecificOutput.additionalContext // empty] | join("\n") as $context
+      | {hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $context}}' \
+      <<<"$CONTEXTS"
+  fi
+  exit 0
+fi
+file=$(jq -r '.tool_input.file_path // empty' <<<"$INPUT" 2>/dev/null) || exit 0"""
+    return contents.replace(
+        "file=$(jq -r '.tool_input.file_path // empty' 2>/dev/null) || exit 0", dispatch
+    )
+
+
+def _adapt_handoff_facts(contents: str) -> str:
+    # Keep the proven presentation code and translate Codex's rollout records at its input boundary.
+    contents = contents.replace(
+        '  SESSION_ID=$(basename "$TRANSCRIPT" .jsonl)',
+        """  SESSION_ID=$(jq -rR 'fromjson? | select(.type == "session_meta")
+    | (.payload.id // .payload.session_id // empty) | strings
+    | select(test("^[A-Za-z0-9_-]+$"))' "$TRANSCRIPT" 2>/dev/null | head -n 1 || true)
+  if [[ -z "$SESSION_ID" ]]; then
+    SESSION_ID=$(basename "$TRANSCRIPT" .jsonl)
+    # Codex filenames start with a timestamp shared by many sessions.
+    case "$SESSION_ID" in
+      rollout-????-??-??T??-??-??-*) SESSION_ID="${SESSION_ID:28}" ;;
+    esac
+  fi""",
+    )
+    contents = contents.replace(
+        '  [[ -n "${CLAUDE_CODE_SESSION_ID:-}" ]] || die '
+        '"no transcript given and CLAUDE_CODE_SESSION_ID is unset"\n'
+        '  SESSION_ID="$CLAUDE_CODE_SESSION_ID"\n'
+        '  TRANSCRIPT=$(find "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects" '
+        '-maxdepth 2 -name "${SESSION_ID}.jsonl" 2>/dev/null | head -n 1 || true)',
+        '  SESSION_ID="${CODEX_THREAD_ID:-${CODEX_SESSION_ID:-}}"\n'
+        '  [[ "$SESSION_ID" =~ ^[A-Za-z0-9_-]+$ ]] || die '
+        '"no transcript given and Codex session id is unset or invalid"\n'
+        '  TRANSCRIPT=$(find "${CODEX_HOME:-$HOME/.codex}/sessions" '
+        '-maxdepth 4 -name "*-${SESSION_ID}.jsonl" 2>/dev/null | head -n 1 || true)',
+    )
+    normalizer = r"""fromjson?
+    | . as $record
+    | if .type == "response_item" and .payload.type == "message" then
+        {timestamp: .timestamp, type: .payload.role, message: {content:
+          [.payload.content[]?
+           | select(.type == "input_text" or .type == "output_text" or .type == "text")
+           | {type: "text", text: .text}]}}
+      elif .type == "response_item" and .payload.name == "apply_patch" then
+        (.payload.input // (.payload.arguments | fromjson? | .patch // .input) // "")
+        | split("\n")[]
+        | capture("^\\*\\*\\* (?:Add File|Update File|Move to): (?<path>.+)$")?
+        | {timestamp: $record.timestamp, type: "assistant", message: {content:
+            [{type: "tool_use", name: "Write", input: {file_path: .path}}]}}
+      else . end"""
+    return contents.replace("fromjson?", normalizer)
 
 
 def _render_dependency_contract(spec: CodexPackageSpec, staging_root: Path) -> Path | None:

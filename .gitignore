@@ -10,3 +10,6 @@ __pycache__/
 
 # claude plugin eval output: per-run transcripts, scores and reports
 evals/*/results/
+
+# Codex runs share a results root across canonical suites.
+evals/results/

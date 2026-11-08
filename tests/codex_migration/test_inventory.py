@@ -417,17 +417,13 @@ def test_renderable_packages_render_from_canonical_sources(tmp_path: Path) -> No
             "Stop": ('"${PLUGIN_ROOT}"/scripts/handoff-stop.sh',),
         },
         "mz-knowledge": {
-            "PostToolUse": (
-                '"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',
-                '"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',
-            ),
+            "PostToolUse": ('"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh',),
             "SessionStart": ('"${PLUGIN_ROOT}"/scripts/vault-context.sh',),
         },
     }
     assert rendered_hooks["mz-memory"]["SessionStart"][0]["matcher"] == "startup|clear|compact"
     assert [group["matcher"] for group in rendered_hooks["mz-knowledge"]["PostToolUse"]] == [
-        "Write",
-        "Edit",
+        "apply_patch",
     ]
     assert all(
         "once" not in handler and "if" not in handler

@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
+import re
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
+import yaml
 
+from mozg_pipelines.inventory import (
+    build_codex_package_spec,
+    discover_packages,
+    load_migration_plan,
+)
 from mozg_pipelines.models import (
     ExactTransformSpec,
     HookEvent,
@@ -309,7 +318,7 @@ def test_renderer_keeps_only_codex_handler_fields(hook_package: HookPackageBuild
     )
     assert rendered["hooks"]["PostToolUse"] == [
         {
-            "matcher": "Write",
+            "matcher": "apply_patch",
             "hooks": [
                 {
                     "command": "${PLUGIN_ROOT}/scripts/memory-inject.sh",
@@ -524,3 +533,237 @@ class TestSharedFolder:
 
         assert result.shared_path is None
         assert not (spec.package_root / "shared").exists()
+
+
+@pytest.fixture
+def rendered_handoff(tmp_path: Path) -> Path:
+    repository = Path(__file__).parents[2]
+    plan = load_migration_plan(repository / "data/codex_migration.toml")
+    package = next(
+        item for item in discover_packages(plan, repository) if item.plan.name == "mz-handoff"
+    )
+    target = tmp_path / "handoff"
+    render_codex_package(build_codex_package_spec(package, repository, target))
+    return target
+
+
+def test_handoff_facts_reads_codex_session_messages(rendered_handoff: Path, tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    (workspace / ".git").mkdir(parents=True)
+    codex_home = tmp_path / "codex"
+    sessions = codex_home / "sessions/2026/11/06"
+    sessions.mkdir(parents=True)
+    transcript = sessions / "rollout-2026-11-06T00-00-00-test-thread.jsonl"
+    transcript.write_text(
+        json.dumps(
+            {
+                "timestamp": "2026-11-06T00:00:00Z",
+                "type": "response_item",
+                "payload": {
+                    "type": "message",
+                    "role": "user",
+                    "content": [{"type": "input_text", "text": "PRESERVE-MY-DECISION"}],
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    environment = {
+        **os.environ,
+        "CODEX_THREAD_ID": "test-thread",
+        "CODEX_HOME": str(codex_home),
+        "CLAUDE_PROJECT_DIR": str(workspace),
+    }
+    environment.pop("CLAUDE_CODE_SESSION_ID", None)
+
+    result = subprocess.run(
+        ["bash", str(rendered_handoff / "scripts/handoff-facts.sh")],
+        cwd=workspace,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "session_id: test-thread" in result.stdout
+    assert "PRESERVE-MY-DECISION" in result.stdout
+
+
+def test_handoff_counts_codex_compactions(rendered_handoff: Path, tmp_path: Path) -> None:
+    transcript = tmp_path / "rollout.jsonl"
+    transcript.write_text(
+        '{"type": "compacted", "payload": {}}\n{"type":"compacted"}\n', encoding="utf-8"
+    )
+    library = rendered_handoff / "scripts/lib/handoff.sh"
+    result = subprocess.run(
+        ["bash", "-c", 'source "$1"; compaction_count "$2"', "bash", str(library), str(transcript)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "2"
+
+
+@pytest.mark.parametrize("metadata_key", ["id", "session_id", "missing"])
+def test_handoff_explicit_rollout_uses_session_metadata(
+    rendered_handoff: Path, tmp_path: Path, metadata_key: str
+) -> None:
+    workspace = tmp_path / "workspace"
+    (workspace / ".git").mkdir(parents=True)
+    transcript = workspace / "rollout-2026-11-06T00-00-00-other-name.jsonl"
+    metadata = {} if metadata_key == "missing" else {metadata_key: "actual-session"}
+    transcript.write_text(
+        json.dumps({"type": "session_meta", "payload": metadata}) + "\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        ["bash", str(rendered_handoff / "scripts/handoff-facts.sh"), str(transcript)],
+        cwd=workspace,
+        env={
+            **os.environ,
+            "CLAUDE_PROJECT_DIR": str(workspace),
+            "CODEX_THREAD_ID": "current-thread",
+        },
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    expected = "other-name" if metadata_key == "missing" else "actual-session"
+    assert f"session_id: {expected}\n" in result.stdout
+
+
+@pytest.mark.parametrize("input_shape", ["patch", "input", "command", "string"])
+def test_frontmatter_hook_normalizes_all_files_from_codex_patch(
+    tmp_path: Path, input_shape: str
+) -> None:
+    repository = Path(__file__).parents[2]
+    plan = load_migration_plan(repository / "data/codex_migration.toml")
+    package = next(
+        item for item in discover_packages(plan, repository) if item.plan.name == "mz-knowledge"
+    )
+    target = tmp_path / "knowledge"
+    render_codex_package(build_codex_package_spec(package, repository, target))
+    vault = tmp_path / "vault"
+    (vault / ".obsidian").mkdir(parents=True)
+    for name in ["first.md", "second note.md"]:
+        (vault / name).write_text("---\ntags: test\n---\nBody.\n", encoding="utf-8")
+    patch = (
+        "*** Begin Patch\n*** Update File: first.md\n*** Add File: second note.md\n*** End Patch"
+    )
+    payload = {
+        "tool_name": "apply_patch",
+        "tool_input": patch if input_shape == "string" else {input_shape: patch},
+    }
+
+    result = subprocess.run(
+        ["bash", str(target / "scripts/frontmatter-normalize.sh")],
+        cwd=vault,
+        env={**os.environ, "PLUGIN_ROOT": str(target)},
+        input=json.dumps(payload),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    for name in ["first.md", "second note.md"]:
+        frontmatter = (vault / name).read_text().split("---", 2)[1]
+        assert yaml.safe_load(frontmatter)["tags"] == ["test"]
+    context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert "first.md" in context
+    assert "second note.md" in context
+
+
+def test_gov_init_reads_the_rendered_portable_manifest_version(tmp_path: Path) -> None:
+    repository = Path(__file__).parents[2]
+    source = repository / "plugins/mz-gov/skills/gov-init/phases/run.md"
+    canonical = source.read_bytes()
+    assert b"<PLUGIN_ROOT>/.claude-plugin/plugin.json" in canonical
+    plan = load_migration_plan(repository / "data/codex_migration.toml")
+    package = next(
+        item for item in discover_packages(plan, repository) if item.plan.name == "mz-gov"
+    )
+    target = tmp_path / "gov"
+    spec = build_codex_package_spec(package, repository, target)
+
+    render_codex_package(spec)
+
+    assert source.read_bytes() == canonical
+    phase = (target / "skills/gov-init/phases/run.md").read_text(encoding="utf-8")
+    instruction = next(line for line in phase.splitlines() if "**Version**:" in line)
+    reference = instruction.split("read `", 1)[1].split("`", 1)[0]
+    manifest_path = Path(reference.replace("<PLUGIN_ROOT>", str(target)))
+    result = subprocess.run(
+        ["jq", "-r", ".version", str(manifest_path)],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert manifest_path == target / "plugin.json"
+    assert result.stdout.strip() == spec.version
+
+
+def test_knowledge_frontmatter_hook_runs_once_for_native_patch_aliases(tmp_path: Path) -> None:
+    repository = Path(__file__).parents[2]
+    source = repository / "plugins/mz-knowledge/hooks/hooks.json"
+    canonical = source.read_bytes()
+    plan = load_migration_plan(repository / "data/codex_migration.toml")
+    package = next(
+        item for item in discover_packages(plan, repository) if item.plan.name == "mz-knowledge"
+    )
+    target = tmp_path / "knowledge"
+
+    render_codex_package(build_codex_package_spec(package, repository, target))
+
+    assert source.read_bytes() == canonical
+    hooks: dict[str, Any] = json.loads((target / "hooks/hooks.json").read_text(encoding="utf-8"))
+    aliases = ("apply_patch", "Write", "Edit")
+    matching = [
+        (group, handler)
+        for group in hooks["hooks"]["PostToolUse"]
+        if any(re.search(group.get("matcher", ".*"), alias) for alias in aliases)
+        for handler in group["hooks"]
+        if "frontmatter-normalize.sh" in handler["command"]
+    ]
+    assert len(matching) == 1
+    group, handler = matching[0]
+    assert re.search(group["matcher"], "apply_patch")
+    assert handler["command"] == '"${PLUGIN_ROOT}"/scripts/frontmatter-normalize.sh'
+
+
+def test_renderer_refuses_nonempty_separate_hook_arguments(
+    hook_package: HookPackageBuilder,
+) -> None:
+    spec = hook_package(
+        (),
+        {
+            "SessionStart": [
+                {
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "bash",
+                            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/memory-inject.sh"],
+                        }
+                    ]
+                }
+            ]
+        },
+    )
+
+    with pytest.raises(RenderError, match=r"(?i)(args|arguments).*command") as caught:
+        render_codex_package(spec)
+
+    assert caught.value.kind is RenderFailure.INVALID_SOURCE
+    assert not spec.package_root.exists()

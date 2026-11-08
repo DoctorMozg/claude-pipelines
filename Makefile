@@ -1,13 +1,14 @@
-.PHONY: smoke contract-matrix pytest test validate vendor-shared gh-smoke hooks-smoke gate-smoke eval eval-mutants help
+.PHONY: smoke contract-matrix pytest test validate vendor-shared gh-smoke hooks-smoke gate-smoke eval eval-codex eval-mutants help
 
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
 EVAL_MODEL ?= sonnet
+CODEX_MODEL ?= gpt-6.1-sol
 # Pinned, so judge-scored results stay comparable across runs and releases.
 EVAL_JUDGE ?= claude-haiku-5-5
 EVAL_MAX_USD ?= 5
 EVAL_RUNS ?=
-# Each job is a full claude child on your credential, so jobs share one rate limit.
+# Each job is a model session on your credential, so jobs share one rate limit.
 EVAL_JOBS ?= 4
 # Routing and hook cases need no baseline; set with-without to measure what a plugin adds.
 EVAL_ABLATION ?= none
@@ -27,6 +28,7 @@ help:
 	@echo "  gate-smoke        Answer memory-note and polish gates headlessly, check the journal (spends tokens)"
 	@echo "  eval PLUGIN=<n>   Run a plugin's eval suite (EVAL_MODEL, EVAL_RUNS, EVAL_JOBS, EVAL_MAX_USD,"
 	@echo "                    EVAL_ABLATION, EVAL_ARGS; reads evals/<n>/flags; spends tokens)"
+	@echo "  eval-codex PLUGIN=<n> Run the same cases through Codex (CODEX_MODEL, EVAL_ARGS; spends tokens)"
 	@echo "  eval-mutants      Break plugin code in a HEAD snapshot and check the evals catch it"
 	@echo "                    (MUTANTS=<id ...>, all by default; EVAL_MODEL, EVAL_JUDGE, EVAL_JOBS; spends tokens)"
 
@@ -87,6 +89,11 @@ eval:
 		$(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") \
 		$(shell cat "evals/$(PLUGIN)/flags" 2>/dev/null) $(EVAL_ARGS) \
 		--json "evals/$(PLUGIN)/results/last-$(EVAL_MODEL).json"
+
+eval-codex:
+	@test -n "$(PLUGIN)" || { echo "usage: make eval-codex PLUGIN=<name|all> [CODEX_MODEL=gpt-6.1-sol] [EVAL_JOBS=4] [EVAL_RUNS=1] [EVAL_ARGS=--case=...]"; exit 2; }
+	@$(PYTHON) -E -s -m tests.eval_tools.codex_runner "$(PLUGIN)" --model "$(CODEX_MODEL)" \
+		--jobs "$(EVAL_JOBS)" $(if $(EVAL_RUNS),--runs "$(EVAL_RUNS)") $(EVAL_ARGS)
 
 # Runs every mutant unless MUTANTS names some. The anchors are checked for free in `make test`.
 MUTANTS ?=
