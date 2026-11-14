@@ -247,9 +247,9 @@ Check for the failures the skill can predict during input parsing, before the fi
 
 ## 9. Report Naming
 
-A report lives at `.mz/<root>/<task_name>.md`. `<task_name>` is the `<YYYY_MM_DD>_<skill>_<slug>` name stored in `state.md`, including any `_vN`. `<root>` is `reports` (skill reports), `reviews` (reviews and audits), `research`, `design` or `outreach`.
+A report lives at `.mz/<root>/<task_name>.md`. `<task_name>` is the `<YYYY_MM_DD>_<skill>_<slug>` name stored in `state.md`, including any `_vN`. `<root>` is `reports` (skill reports), `reviews` (reviews and audits), `research` or `design`.
 
-A run that writes several final files gets a folder, `.mz/<root>/<task_name>/`, as design-document does. Files that persist across runs keep their documented fixed names, such as `.mz/reports/audit_ledger.md`, the cards in `.mz/outreach/active/` and `.mz/outreach/_history/source_quality.json`.
+A run that writes several final files gets a folder, `.mz/<root>/<task_name>/`, as design-document does. Files that persist across runs keep their documented fixed names, such as `.mz/reports/audit_ledger.md`.
 
 - **Date.** Use the date already in `task_name`, fixed in Phase 0. Don't work out the date again when writing the report.
 - **Collisions.** Before writing, check the report path itself. If a file is already there, append the next free `_vN`.

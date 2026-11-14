@@ -2,7 +2,7 @@
 
 # mozg-pipelines
 
-Multi-agent plugins for [Claude Code](https://claude.com/claude-code). Autonomous development pipelines, code review, deep research, and business intelligence — all as slash commands.
+Multi-agent plugins for [Claude Code](https://claude.com/claude-code). Autonomous development pipelines, code review, deep research, and writing — all as slash commands.
 
 ## Workflows
 

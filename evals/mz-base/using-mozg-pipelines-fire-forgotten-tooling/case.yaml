@@ -6,7 +6,7 @@ plugins: ["../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../
 execution:
   prompt: >-
     Remind me what I've got set up here. I know there's something for reviewing code
-    and something for outreach emails, but I forget the rest.
+    and something for my notes vault, but I forget the rest.
   allowed_tools: [Skill]
   max_turns: 2
   timeout_seconds: 180
