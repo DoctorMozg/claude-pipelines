@@ -195,7 +195,7 @@ A skill that records a substantial decision should write it under `## Decisions`
 
 ## 8. Privacy and Redaction
 
-The journal stores interactions verbatim, including artifacts that can hold sensitive content such as outreach drafts, tokens or customer data.
+The journal stores interactions verbatim, including artifacts that can hold sensitive content such as email drafts, tokens or customer data.
 
 - **mz-memory redacts what it writes.** `journal_append` replaces every `<private>…</private>` span with `[redacted]` and keeps the surrounding whitespace, so code indentation survives (`redact_private` in `plugins/mz-memory/scripts/lib/common.sh`). The hook goes through it. Without perl, the `sed` fallback misses a span that contains `<` or crosses a line.
 - **A skill's own append isn't redacted.** A direct `>>` bypasses `journal_append`, so a `<private>` tag would be stored as is, with the secret inside it (observed). A skill writes `[redacted]` in place of each sensitive value itself, and replaces each `<private>…</private>` span with `[redacted]` before appending, for example when it copies an artifact verbatim. The second recipe in §4 does this through `shared/journal-artifact.sh`, which runs the perl expression mz-memory uses and so also handles spans that cross lines.

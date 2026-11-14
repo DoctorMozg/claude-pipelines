@@ -352,7 +352,7 @@ class TestPrivacy:
         self, project: Path, write_task: TaskWriter, run_capture: Callable[[], None]
     ) -> None:
         write_task(
-            "2026_11_01_outreach_acme",
+            "2026_11_01_copywrite_acme",
             "complete",
             "\n## Decisions\n\n- contact <private>jane@acme.test</private> first\n",
         )
