@@ -136,17 +136,21 @@ def test_canonical_claude_trace_with_regex_whitespace_is_unsupported(tmp_path: P
 
 
 def test_file_exists_excludes_fixture_files(tmp_path: Path) -> None:
-    repository = Path(__file__).parents[2]
-    case = load_case(repository / "evals/mz-biz-outreach/outreach-update-card-args-no-action")
-    active = tmp_path / ".mz/outreach/active"
-    active.mkdir(parents=True)
-    (active / "seed.md").write_text("Fixture card", encoding="utf-8")
-
-    result = evaluate_case(
-        case, tmp_path, [], "What action should I log?", created_files=frozenset()
+    case_dir = tmp_path / "example"
+    case_dir.mkdir()
+    (case_dir / "case.yaml").write_text(
+        "name: example\nexecution:\n  prompt: Check this.\ngraders:\n"
+        "  - name: no-new-note\n    type: file_exists\n    path: notes/*.md\n"
+        "    exists: false\n",
+        encoding="utf-8",
     )
+    workspace = tmp_path / "workspace"
+    (workspace / "notes").mkdir(parents=True)
+    (workspace / "notes/seed.md").write_text("Fixture note", encoding="utf-8")
 
-    assert next(g for g in result.graders if g.name == "no-new-active-card").status == "pass"
+    result = evaluate_case(load_case(case_dir), workspace, [], "OK", created_files=frozenset())
+
+    assert next(g for g in result.graders if g.name == "no-new-note").status == "pass"
 
 
 def test_files_target_uses_only_created_paths(tmp_path: Path) -> None:

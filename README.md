@@ -122,24 +122,6 @@ flowchart LR
 </details>
 
 <details>
-<summary><b>Outreach package in one evening</b> &nbsp;·&nbsp; <code>mz-biz-outreach</code> + <code>mz-research-pipe</code> + <code>mz-creative</code> &nbsp;&nbsp;<i>3 plugins</i></summary>
-
-```mermaid
-flowchart LR
-    A["/outreach-research"]:::outreach --> B["/deep-research"]:::research
-    B --> C["/brainstorm"]:::creative
-    classDef outreach fill:#fff1e5,stroke:#bc4c00,color:#bc4c00
-    classDef research fill:#eaeef2,stroke:#57606a,color:#57606a
-    classDef creative fill:#fbefff,stroke:#8250df,color:#8250df
-```
-
-1. **`/outreach-research`** — strategy → source research → scout → enrich → score → report
-1. **`/deep-research`** — domain context to ground outreach in current regulation
-1. **`/brainstorm`** — multi-lens positioning ideas tied back to the outreach-research report
-
-</details>
-
-<details>
 <summary><b>Performance rescue</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code></summary>
 
 ```mermaid
@@ -206,8 +188,6 @@ claude plugin install mz-rules          # Curated coding rules
 claude plugin install mz-dev-git        # Branch & GitHub PR review
 claude plugin install mz-dev-pipe       # Autonomous dev pipelines
 claude plugin install mz-research-pipe  # Research & content pipelines
-claude plugin install mz-biz-outreach   # Business lead generation
-claude plugin install mz-job-outreach   # Job & freelance hunting
 claude plugin install mz-creative       # Multi-perspective panels + writing
 claude plugin install mz-funny          # Character-voice code roasting
 claude plugin install mz-design         # UI/UX design documents
@@ -217,7 +197,7 @@ claude plugin install mz-knowledge      # Obsidian knowledge base
 claude plugin install mz-gov            # Development governance
 ```
 
-Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`; `mz-biz-outreach` brings in `mz-creative`.
+Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`.
 
 After installation, skills are available as slash commands:
 
@@ -226,7 +206,6 @@ After installation, skills are available as slash commands:
 /audit scope:branch security
 /debug "KeyError: 'user_id' in process_payment"
 /review-branch
-/outreach-research find AI startups in Berlin for consulting partnerships
 ```
 
 ## Plugins
@@ -325,39 +304,6 @@ Research and content skills spun off from `mz-dev-pipe` — they produce reports
 1 agent (pipeline-translator). `/deep-research`, `/combine`, and `/explain` reuse `pipeline-web-researcher` and `pipeline-researcher` from `mz-base`.
 
 **[Full documentation →](plugins/mz-research-pipe/)**
-
-______________________________________________________________________
-
-### [Mozg Business Outreach](plugins/mz-biz-outreach/) (`mz-biz-outreach`)
-
-Autonomous lead-generation pipeline plus a dossier-card lifecycle: discover companies, deepen their cards, and log every interaction.
-
-| Skill                       | Command                                       | What it does                                                                            |
-| --------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **outreach-research**       | `/outreach-research <goal>`                   | Strategy → source research → scout → scan → enrich → score → per-company cards → report |
-| **outreach-enrich-company** | `/outreach-enrich-company <card>`             | Deepens a card via 5 specialist subagents and drafts naturalized outreach letters       |
-| **outreach-update-card**    | `/outreach-update-card <card> action:"<...>"` | Appends a dated interaction entry to a company card's history                           |
-
-11 specialized agents covering strategy, source research, company discovery, reputation scanning, contact finding, news monitoring, growth analysis, tech stack analysis, enrichment orchestration, card writing, and reporting.
-
-**[Full documentation →](plugins/mz-biz-outreach/)**
-
-______________________________________________________________________
-
-### [Mozg Job Hunt](plugins/mz-job-outreach/) (`mz-job-outreach`)
-
-Autonomous job-hunt and freelance-hunt pipelines — full CV-to-listings discovery plus targeted one-shot output for salaried roles and freelance gigs.
-
-| Skill                  | Command                           | What it does                                                                          |
-| ---------------------- | --------------------------------- | ------------------------------------------------------------------------------------- |
-| **job-search**         | `/job-search <preferences>`       | CV-to-vacancies: strategy → scout boards → score → recruiter contacts → cover letters |
-| **job-recruiter-info** | `/job-recruiter-info <target>`    | One-shot recruiter / hiring-manager discovery for a single role or company            |
-| **freelance-search**   | `/freelance-search <preferences>` | CV-to-gigs across vetted networks and regional boards (Upwork / Fiverr excluded)      |
-| **freelance-pitch**    | `/freelance-pitch <gig>`          | Per-gig grounded proposal (≤350 words) citing gig scope and budget verbatim           |
-
-12 specialized agents covering CV strategy, board scouting, two-stage scoring, recruiter contact lookup, cover-letter writing, freelance proposal drafting, and reporting.
-
-**[Full documentation →](plugins/mz-job-outreach/)**
 
 ______________________________________________________________________
 

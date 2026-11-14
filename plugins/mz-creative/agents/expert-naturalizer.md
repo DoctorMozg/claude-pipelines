@@ -1,6 +1,6 @@
 ---
 name: expert-naturalizer
-description: Pipeline-only text-rewriting agent dispatched by the /naturalize, /document, /copywrite and /outreach-enrich-company skills. Rewrites AI-generated prose to read as if a human wrote it — fixing sentence rhythm (burstiness), removing flagged vocabulary spikes, breaking AI structural templates, restoring specificity, and adding committed positions. Never fabricates citations or facts. Do not dispatch standalone.
+description: Pipeline-only text-rewriting agent dispatched by the /naturalize, /document and /copywrite skills. Rewrites AI-generated prose to read as if a human wrote it — fixing sentence rhythm (burstiness), removing flagged vocabulary spikes, breaking AI structural templates, restoring specificity, and adding committed positions. Never fabricates citations or facts. Do not dispatch standalone.
 tools: Read, Write, WebFetch, WebSearch
 model: sonnet
 effort: medium
@@ -69,7 +69,7 @@ The recurring problem with AI prose is regularity and mismatch with context, not
 
 ## Detection Methodology
 
-Self-sufficient detection logic. You run it on every dispatch, because no dispatcher runs a separate analysis first: `/naturalize`, `/document`, `/copywrite` and `/outreach-enrich-company` all rely on this pass.
+Self-sufficient detection logic. You run it on every dispatch, because no dispatcher runs a separate analysis first: `/naturalize`, `/document` and `/copywrite` all rely on this pass.
 
 ### Input metrics
 

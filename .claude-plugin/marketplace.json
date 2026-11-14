@@ -66,43 +66,6 @@
       "source": "./plugins/mz-dev-git"
     },
     {
-      "category": "business",
-      "keywords": [
-        "outreach",
-        "lead-generation",
-        "business-intelligence",
-        "company-research",
-        "reviews",
-        "letters",
-        "linkedin",
-        "email",
-        "interaction-log",
-        "crm",
-        "b2b"
-      ],
-      "name": "mz-biz-outreach",
-      "source": "./plugins/mz-biz-outreach"
-    },
-    {
-      "category": "business",
-      "keywords": [
-        "job-search",
-        "freelance-search",
-        "freelance-pitch",
-        "cv-matching",
-        "vacancies",
-        "freelance-gigs",
-        "recruiter-contacts",
-        "hiring-manager",
-        "cover-letters",
-        "proposals",
-        "job-boards",
-        "career"
-      ],
-      "name": "mz-job-outreach",
-      "source": "./plugins/mz-job-outreach"
-    },
-    {
       "category": "creativity",
       "keywords": [
         "brainstorming",
@@ -218,6 +181,8 @@
     }
   ],
   "renames": {
-    "mz-dev-base": "mz-base"
+    "mz-biz-outreach": null,
+    "mz-dev-base": "mz-base",
+    "mz-job-outreach": null
   }
 }

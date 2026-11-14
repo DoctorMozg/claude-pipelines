@@ -33,7 +33,6 @@ _EXPECTED_DEPENDENCIES = {
     "mz-dev-pipe": ("mz-base",),
     "mz-research-pipe": ("mz-base", "mz-dev-pipe"),
     "mz-dev-git": ("mz-base",),
-    "mz-biz-outreach": ("mz-creative",),
     "mz-creative": ("mz-base",),
 }
 
@@ -50,8 +49,6 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-dev-pipe",
         "mz-research-pipe",
         "mz-dev-git",
-        "mz-biz-outreach",
-        "mz-job-outreach",
         "mz-creative",
         "mz-funny",
         "mz-memory",
@@ -61,8 +58,8 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-gov",
         "mz-rules",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 51
-    assert sum(len(package.role_sources) for package in packages) == 114
+    assert sum(len(package.skill_sources) for package in packages) == 43
+    assert sum(len(package.role_sources) for package in packages) == 88
     assert {
         package.plan.name
         for package in packages
@@ -286,8 +283,6 @@ def test_renderable_packages_build_complete_codex_specs(tmp_path: Path) -> None:
         "mz-dev-pipe",
         "mz-research-pipe",
         "mz-dev-git",
-        "mz-biz-outreach",
-        "mz-job-outreach",
         "mz-creative",
         "mz-funny",
         "mz-memory",

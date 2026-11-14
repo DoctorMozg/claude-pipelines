@@ -23,15 +23,6 @@ disposition = "dependent"
 dependencies = ["mz-base"]
 
 [[packages]]
-name = "mz-biz-outreach"
-disposition = "dependent"
-dependencies = ["mz-creative"]
-
-[[packages]]
-name = "mz-job-outreach"
-disposition = "ready"
-
-[[packages]]
 name = "mz-creative"
 disposition = "dependent"
 dependencies = ["mz-base"]
