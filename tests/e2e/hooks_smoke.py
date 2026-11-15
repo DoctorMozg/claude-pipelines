@@ -38,7 +38,7 @@ PINNED = "QUILLFEATHER"
 TASK = "2026_11_02_build_smoke_capture"
 MEMORY = Path(".mz/memory/MEMORY.md")
 RECORDS = Path(".hook-recorder/sessionstart.log")
-# Plugin eval traces omit UserPromptSubmit output, so the correction nudge is only observable here.
+# The nudge answers a correction in a resumed session, which a one-prompt plugin eval can't stage.
 NUDGE = "This corrects you: fix it"
 STARTUP_PROMPT = "Reply with just OK. Don't search the files, and you must never call a tool here."
 RESUME_PROMPT = "No, that's not what I asked. Reply with just OK again."
