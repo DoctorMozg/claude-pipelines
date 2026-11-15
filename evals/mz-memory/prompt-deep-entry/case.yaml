@@ -17,13 +17,14 @@ graders:
   - name: answer-has-port
     type: regex
     pattern: '\b6543\b'
+  # UserPromptSubmit also injects memory, OPAL-19 included, so these two check SessionStart alone.
   - name: session-start-injected-memory
     type: regex
-    pattern: '"subtype":"hook_response"[^\n]*Project memory'
+    pattern: '"subtype":"hook_response"[^\n]*"hook_event":"SessionStart"[^\n]*Project memory'
     target: trace
   - name: session-start-left-entry-out
     type: regex
-    pattern: '"subtype":"hook_response"[^\n]*OPAL-19'
+    pattern: '"subtype":"hook_response"[^\n]*"hook_event":"SessionStart"[^\n]*OPAL-19'
     match: not_contains
     target: trace
   - name: fact-not-read-from-disk
