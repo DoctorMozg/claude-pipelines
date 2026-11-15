@@ -27,7 +27,7 @@ MAX_CHARS=4000
 MIN_KEYWORD_LEN=4
 # Corrections come first in a message; a log pasted further down that quotes "you forgot" stays quiet.
 CORRECTION_SCAN_CHARS=500
-NUDGE='If this corrects something you did, fix it, then save the lesson with /memory-note --lesson "WHEN … → … — WHY …".'
+NUDGE='If this corrects a mistake, fix it; if it also states a rule worth keeping, save the lesson with /memory-note --lesson "WHEN … → … — WHY …".'
 # Phrases that push back on what Claude did. Plain instructions such as "don't search the files"
 # or "must never call X" are not corrections. Word edges are spelled out: BSD grep lacks \b.
 CORRECTION_RE="^(no[,.!]|no\$|nope([^a-z]|\$)|wrong([^a-z]|\$))"
