@@ -29,8 +29,8 @@ TOOLS_WITHOUT_JQ = ("dirname", "cat", "tr", "awk", "head", "sed", "paste", "grep
 HEADER = "Project memory matches for this prompt (.mz/memory/MEMORY.md):\n"
 LESSONS_HEADING = "## Matched lessons (.mz/memory/lessons.md)"
 NUDGE = (
-    "If this corrects a mistake, fix it; if it also states a rule worth keeping, "
-    'save the lesson with /memory-note --lesson "WHEN … → … — WHY …".'
+    "This corrects you: fix it, then save what it taught with /memory-note --lesson "
+    '"WHEN … → … — WHY …". Skip the lesson only for a one-off slip such as a typo.'
 )
 MAX_MATCHES = 15
 MAX_LESSONS = 5
