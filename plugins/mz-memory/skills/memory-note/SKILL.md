@@ -1,6 +1,6 @@
 ---
 name: memory-note
-description: 'Saves a note or decision to project memory; --lesson saves what a correction taught. Use when the user wants something remembered ("remember that", "note this", "pin this decision") or corrects you. Not for lookups (open MEMORY.md).'
+description: 'Saves a note or decision to project memory; --lesson saves what a correction taught. Use when the user wants something remembered ("remember that", "note this", "pin this decision") or corrects you. Not for CLAUDE.md or lookups (open MEMORY.md).'
 argument-hint: '<the note, verbatim as the user wrote it>  [--log to append to Activity Log instead of Pinned]  [--lesson to save a lesson to the lessons Inbox]'
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory-note.sh *), Bash(date *), Read, AskUserQuestion
 ---

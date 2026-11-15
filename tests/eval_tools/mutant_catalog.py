@@ -57,7 +57,7 @@ ANSWERS = (
 NOTE_DESCRIPTION = (
     "description: 'Saves a note or decision to project memory; --lesson saves what a correction "
     'taught. Use when the user wants something remembered ("remember that", "note this", '
-    '"pin this decision") or corrects you. Not for lookups (open MEMORY.md).\''
+    '"pin this decision") or corrects you. Not for CLAUDE.md or lookups (open MEMORY.md).\''
 )
 PROMOTE = f"{MEM}/skills/lessons-promote/SKILL.md"
 PROMOTE_DESCRIPTION = (
