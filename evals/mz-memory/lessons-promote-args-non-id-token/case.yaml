@@ -12,10 +12,11 @@ execution:
   max_turns: 10
   timeout_seconds: 300
 graders:
-  # AskUserQuestion isn't available in eval sessions, so the question can only be asked in chat.
+  # AskUserQuestion isn't available in eval sessions, so the question can only be asked in chat,
+  # sometimes as an instruction ("Reply with L-0001 or L-0002.") rather than with a "?".
   - name: asks-which-lesson
     type: regex
-    pattern: '^(?=[\s\S]*\?)(?=[\s\S]*(?:L-0001|L-0002|which (?:lesson|one)|lesson id))'
+    pattern: '^(?=[\s\S]*(?:\?|\b(?:reply|choose|pick|select|specify|confirm|tell me|let me know)\b))(?=[\s\S]*(?:L-0001|L-0002|which (?:lesson|one)|lesson id))'
     flags: i
   - name: no-proposal-shown
     type: regex
