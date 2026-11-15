@@ -6,7 +6,6 @@ plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh
-# Write is a gated tool: make eval PLUGIN=mz-creative EVAL_ARGS="--allow-tools Write Edit --case 'document-gate-*'"
 execution:
   prompt: >-
     /mz-creative:document write a how-to for loading plugins with src/pluginbox/loader.py type:howto

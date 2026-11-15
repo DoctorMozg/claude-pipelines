@@ -4,7 +4,6 @@ description: 'Polish assesses a failing suite, shows the assessment at its first
 tags: [gate, track-d, needs-bash]
 plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
 runs: 1
-# Write, Edit and Bash are gated tools: make eval PLUGIN=mz-dev-pipe EVAL_ARGS="--allow-tools Bash Write Edit --case polish-gate-*"
 context:
   scaffold_script: fixture.sh
 execution:

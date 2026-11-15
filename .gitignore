@@ -8,8 +8,6 @@
 .mz/
 __pycache__/
 
-# claude plugin eval output: per-run transcripts, scores and reports
+# mzeval's results store; older claude plugin eval runs left theirs in evals/<plugin>/results/.
+.mzeval/
 evals/*/results/
-
-# Codex runs share a results root across canonical suites.
-evals/results/

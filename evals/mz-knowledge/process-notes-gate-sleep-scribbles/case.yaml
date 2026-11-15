@@ -3,7 +3,6 @@ name: process-notes-gate-sleep-scribbles
 description: 'process-notes has atomization-proposer split a three-idea inbox note into proposals with titles of at most 70 characters, then stops at the proposals gate with no note written and link-suggester never dispatched.'
 tags: [gate, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'process-notes-gate-*'"
 context:
   scaffold_script: fixture.sh
 execution:

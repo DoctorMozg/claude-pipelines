@@ -3,7 +3,6 @@ name: frontmatter-hook-tag-becomes-list
 description: 'After Claude writes a vault note with a singular hashed tag, the PostToolUse hook rewrites it to a tags list, and Claude reads the rewritten note back.'
 tags: [hooks, frontmatter]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write --case frontmatter-hook-*"
 context:
   scaffold_script: fixture.sh
 execution:

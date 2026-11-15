@@ -4,7 +4,7 @@ description: 'review-branch run on main finds nothing to diff, records nothing_t
 tags: [track-d, behavior, needs-bash]
 plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
 runs: 1
-# Bash is granted for the read-only git branch check: make eval PLUGIN=mz-dev-git EVAL_ARGS="--allow-tools Bash --case review-branch-behavior-*"
+# Bash is allowed for the read-only git branch check.
 context:
   scaffold_script: fixture.sh
 execution:

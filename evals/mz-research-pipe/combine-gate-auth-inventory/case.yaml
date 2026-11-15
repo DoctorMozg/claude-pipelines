@@ -4,7 +4,7 @@ description: 'combine builds an inventory of three to six lenses from fresh loca
 tags: [track-d, gate, needs-bash]
 plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
 runs: 1
-# Bash is granted for the read-only ls and git commands that the inventory step runs: make eval PLUGIN=mz-research-pipe EVAL_ARGS="--allow-tools Bash --case combine-gate-*"
+# Bash is allowed for the read-only ls and git commands that the inventory step runs.
 context:
   scaffold_script: fixture.sh
 execution:

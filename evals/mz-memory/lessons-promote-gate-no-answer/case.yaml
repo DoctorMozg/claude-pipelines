@@ -3,7 +3,6 @@ name: lessons-promote-gate-no-answer
 description: 'The approval gate for a promotion candidate goes unanswered, so no rule file or CLAUDE.md line is written and the lesson stays in lessons.md.'
 tags: [track-d, gate]
 plugins: ["../../../plugins/mz-memory"]
-# Write and Edit are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit --case 'lessons-promote-gate-*'"
 context:
   scaffold_script: fixture.sh
 execution:

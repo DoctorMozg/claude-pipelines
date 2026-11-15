@@ -3,7 +3,6 @@ name: vault-answer-behavior-spaced-repetition
 description: 'vault-answer answers a two-part question from a three-note vault with a wikilink citation, lists the review interval no note records under Unknowns instead of guessing it, and leaves every vault note untouched.'
 tags: [behavior, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-answer-behavior-*'"
 context:
   scaffold_script: fixture.sh
 execution:

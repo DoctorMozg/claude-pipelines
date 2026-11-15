@@ -3,7 +3,6 @@ name: vault-health-gate-audit-findings
 description: 'vault-health has vault-audit-collector find the orphan note and the one broken wikilink in a small vault, then stops at the audit gate with no _vault_audit note written and no vault note changed.'
 tags: [gate, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-health-gate-*'"
 # The case grants no Bash, so the collector falls back to Glob and Grep; staleness needs mtimes and is not graded.
 context:
   scaffold_script: fixture.sh

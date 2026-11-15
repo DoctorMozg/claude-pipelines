@@ -3,7 +3,6 @@ name: vault-triage-gate-ladder-decisions
 description: 'vault-triage has triage-scorer apply its rule ladder to four inbox notes, leaves every merge target null, and stops at the triage gate with no note deleted, moved or stamped.'
 tags: [gate, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-triage-gate-*'"
 context:
   scaffold_script: fixture.sh
 execution:

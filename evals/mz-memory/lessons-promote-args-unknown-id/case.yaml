@@ -3,7 +3,6 @@ name: lessons-promote-args-unknown-id
 description: 'A lesson id that is not in lessons.md is reported from the list script, with no gate, no rule written and no other lesson promoted in its place.'
 tags: [track-d, args, needs-bash]
 plugins: ["../../../plugins/mz-memory"]
-# Write, Edit and Bash are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit Bash --case 'lessons-promote-args-*'"
 context:
   scaffold_script: fixture.sh
 execution:

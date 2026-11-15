@@ -3,7 +3,6 @@ name: vault-refactor-args-no-separator
 description: 'Without the :: separator vault-refactor asks which half is the old name and which the new one, instead of guessing, and dispatches no agent and writes nothing.'
 tags: [args, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-refactor-args-*'"
 context:
   scaffold_script: fixture.sh
 execution:

@@ -4,7 +4,7 @@ description: 'Optimize drafts its contract and stops at the contract gate: with 
 tags: [gate, track-d, needs-bash]
 plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
 runs: 1
-# Write, Edit and Bash are gated tools; the detector and every check need Bash: make eval PLUGIN=mz-dev-pipe EVAL_ARGS="--allow-tools Write Edit Bash --case optimize-gate-*"
+# The detector and every check need Bash.
 context:
   scaffold_script: fixture.sh
 execution:

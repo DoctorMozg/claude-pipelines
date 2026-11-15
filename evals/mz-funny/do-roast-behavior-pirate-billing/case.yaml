@@ -6,7 +6,6 @@ plugins: ["../../../plugins/mz-funny"]
 runs: 1
 context:
   scaffold_script: fixture.sh
-# Write is a gated tool: make eval PLUGIN=mz-funny EVAL_ARGS="--allow-tools Write Edit --case 'do-roast-behavior-*'"
 execution:
   prompt: >-
     /mz-funny:do-roast pirate src/billing.py

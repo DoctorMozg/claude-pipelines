@@ -3,7 +3,6 @@ name: vault-refactor-gate-references
 description: 'vault-refactor has the scanner report all twelve reference forms to a renamed note while keeping aliases, then stops at the refactor gate with the writer never dispatched, no rollback manifest and no vault file changed.'
 tags: [gate, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-refactor-gate-*'"
 context:
   scaffold_script: fixture.sh
 execution:

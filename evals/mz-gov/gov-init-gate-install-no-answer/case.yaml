@@ -6,7 +6,6 @@ plugins: ["../../../plugins/mz-gov"]
 runs: 1
 context:
   scaffold_script: fixture.sh
-# Write is a gated tool: make eval PLUGIN=mz-gov EVAL_ARGS="--allow-tools Write Edit --case 'gov-init-gate-*'"
 execution:
   prompt: >-
     /mz-gov:gov-init

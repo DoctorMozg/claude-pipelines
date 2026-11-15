@@ -3,7 +3,6 @@ name: vault-answer-behavior-no-answer
 description: 'When no note covers the question, vault-answer says the vault has nothing on it under Unknowns and cites no unrelated note, instead of answering from general knowledge.'
 tags: [behavior, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-answer-behavior-*'"
 context:
   scaffold_script: fixture.sh
 execution:

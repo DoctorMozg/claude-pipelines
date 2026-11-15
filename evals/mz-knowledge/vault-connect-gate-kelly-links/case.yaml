@@ -3,7 +3,6 @@ name: vault-connect-gate-kelly-links
 description: 'vault-connect has link-suggester propose typed links for Kelly criterion, skips a note that only shares the word criterion, and stops at the link gate with no wikilink written.'
 tags: [gate, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-connect-gate-*'"
 context:
   scaffold_script: fixture.sh
 execution:

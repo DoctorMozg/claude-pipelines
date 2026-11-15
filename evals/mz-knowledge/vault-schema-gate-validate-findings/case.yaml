@@ -3,7 +3,6 @@ name: vault-schema-gate-validate-findings
 description: 'vault-schema validate has schema-validator label three violations by severity, skips untyped and undeclared-type notes, and stops at the findings gate with no vault note changed and no migration plan written.'
 tags: [gate, track-d]
 plugins: ["../../../plugins/mz-knowledge"]
-# Write is a gated tool: make eval PLUGIN=mz-knowledge EVAL_ARGS="--allow-tools Write Edit --case 'vault-schema-gate-*'"
 context:
   scaffold_script: fixture.sh
 execution:

@@ -3,7 +3,6 @@ name: lessons-promote-behavior-nothing-to-promote
 description: 'With every lesson seen fewer than 3 times the skill lists candidates with its script, says there is nothing to promote, shows no gate and changes no rule file.'
 tags: [track-d, behavior, needs-bash]
 plugins: ["../../../plugins/mz-memory"]
-# Write, Edit and Bash are gated tools: make eval PLUGIN=mz-memory EVAL_ARGS="--allow-tools Write Edit Bash --case 'lessons-promote-behavior-*'"
 context:
   scaffold_script: fixture.sh
 execution:
