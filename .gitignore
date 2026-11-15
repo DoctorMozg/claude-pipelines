@@ -8,6 +8,5 @@
 .mz/
 __pycache__/
 
-# mzeval's results store; older claude plugin eval runs left theirs in evals/<plugin>/results/.
+# mzeval's results store, written by `make eval`.
 .mzeval/
-evals/*/results/
