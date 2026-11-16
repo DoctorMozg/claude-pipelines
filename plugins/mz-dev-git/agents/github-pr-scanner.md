@@ -44,6 +44,8 @@ A list of GitHub repositories in any format:
 
 Normalize all inputs to `owner/repo` form before proceeding.
 
+The dispatch prompt also names `task_name`, the folder under `.mz/task/` that every artifact path below uses.
+
 ## Important: Report Output Path
 
 Child agents may run in isolated git worktrees. You also read and write to `.mz/reviews/`. If running in a worktree, resolve the main repo path first:

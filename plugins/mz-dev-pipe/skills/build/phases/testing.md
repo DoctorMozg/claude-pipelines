@@ -192,7 +192,7 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/red_run.md`.
 
 ### 5.3 Handle results
 
-Set `red_iteration = 0`. Max iterations: `MAX_RED_ITERATIONS`.
+Set `red_iteration = 0` on first entry only. The jump back from 5.2 after a rewrite keeps its value, or the cap never binds; record it in `state.md` after each increment. Max iterations: `MAX_RED_ITERATIONS`.
 
 Classify each test in the run output:
 

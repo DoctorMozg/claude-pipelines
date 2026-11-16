@@ -49,10 +49,12 @@ The dispatch prompt from `branch-reviewer` provides:
 
 Write the findings to the output file as a markdown table. The schema is fixed; `category` is always `performance` and `triggering_frame` is always `performance`.
 
+- `map_match`: when the dispatch includes a Known Concerns Map, the key of the entry this finding matches by file, overlapping lines or topic; otherwise empty. Tag a matching finding; don't drop it.
+
 ```markdown
-| file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| src/api/orders.py | 142 | 156 | Critical: | performance | 85 | N+1 query in request handler — per-order user lookup → eager-load with `selectinload(User)` | `for order in orders:\n    user = db.query(User).get(order.user_id)` — N+1 in request handler; joined load or `.options(selectinload(User))` replaces N queries with 1. | Replace the per-iteration `db.query(User).get(...)` with eager loading on the original orders query: `db.query(Order).options(selectinload(Order.user)).all()`, then iterate without further DB round-trips. | performance |
+| file | line_start | line_end | severity | category | confidence | tldr | description | suggested_fix | triggering_frame | map_match |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| src/api/orders.py | 142 | 156 | Critical: | performance | 85 | N+1 query in request handler — per-order user lookup → eager-load with `selectinload(User)` | `for order in orders:\n    user = db.query(User).get(order.user_id)` — N+1 in request handler; joined load or `.options(selectinload(User))` replaces N queries with 1. | Replace the per-iteration `db.query(User).get(...)` with eager loading on the original orders query: `db.query(Order).options(selectinload(Order.user)).all()`, then iterate without further DB round-trips. | performance |  |
 ```
 
 Severity ladder for this lens:
