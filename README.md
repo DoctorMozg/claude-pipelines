@@ -244,7 +244,7 @@ Multi-lens deep review for local branches and GitHub pull requests. Runs six par
 
 | Skill                | Command                    | What it does                                                                         |
 | -------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
-| **review-branch**    | `/review-branch [base]`    | Walks every branch change, fans out 5 code-lens agents, produces a structured report |
+| **review-branch**    | `/review-branch [base]`    | Walks every branch change, fans out 6 code-lens agents, produces a structured report |
 | **github-review-pr** | `/github-review-pr <URL>`  | Deep-reviews a GitHub PR in an isolated worktree, with severity-labeled findings     |
 | **github-scan-prs**  | `/github-scan-prs [repos]` | Triages PRs across repos (review-requested, mentioned, assigned, changes-requested)  |
 
@@ -265,6 +265,7 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 | **debug**    | `/debug <bug report>`       | Reproduce → diagnose → regression test (TDD) → fix → verify; `certainty:low` investigates a hypothesis without touching code |
 | **polish**   | `/polish <criteria>`        | Iterative fix-test-review loop until criteria are met; also cleans up a scope (behavior unchanged) or strips AI leftovers    |
 | **optimize** | `/optimize <target + goal>` | Measure-first loop: baseline → profile → hypothesize → benchmark candidates → bank verified speedups                         |
+| **ask**      | `/ask <question>`           | Researches the codebase (and the web when needed) and answers with sources; read-only                                        |
 
 13 specialized agents (planner, plan-reviewer, coder, code-reviewer, test-writer, test-reviewer, test-runner, lint-runner, tooling-detector, optimizer, completeness-checker, measure-runner, perf-candidate).
 
@@ -428,15 +429,20 @@ Each plugin provides **agents** (specialized worker processes) and **skills** (o
 ```
 User runs /build "add rate limiting to the API"
   │
-  ├─ Phase 1: Researcher agent explores codebase
-  ├─ Phase 2: Planner agent creates implementation plan
-  │    └─ Plan reviewer validates the plan
-  ├─ Phase 3: User approves the plan
-  ├─ Phase 4: Coder agents implement in parallel (1-8 workers)
-  │    └─ Code reviewers validate each chunk
-  ├─ Phase 5: Test writer adds tests
-  │    └─ Test reviewer checks coverage + quality
-  ├─ Phase 6: Completeness checker verifies everything
+  ├─ Phase 0: Setup
+  ├─ Phase 1: Researcher agent explores the codebase
+  ├─ Phase 2: Planner agent creates the plan
+  │    ├─ Plan reviewer validates it (up to 3 rounds)
+  │    └─ You approve the plan
+  ├─ Phase 3: Test writer writes failing tests (RED)
+  ├─ Phase 4: Two test reviewers check them (up to 3 rounds)
+  ├─ Phase 5: Test runner confirms they fail
+  ├─ Phase 6: Coders implement in parallel waves, one per work unit (GREEN)
+  ├─ Phase 7: Code review (up to 3 rounds)
+  ├─ Phase 8: Lint, format, and verify the tests pass
+  ├─ Phase 9: Final code review (up to 2 rounds)
+  ├─ Phase 10: Refactor pass (up to 2 rounds)
+  ├─ Phase 11: Completeness checker verifies everything
   └─ Final: Summary report
 ```
 
