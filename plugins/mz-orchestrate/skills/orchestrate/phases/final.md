@@ -29,7 +29,9 @@ Emit the wave manifest and rollup in run.md's format, with `Purpose: full suite 
 
 ## Step 3: Review each integration branch
 
-For each repository whose suite isn't red, add a review unit and run it through the normal loop, so it goes to a review-role peer when one fits and to a subagent or a session otherwise:
+First run `git -C <worktree> diff --quiet <start_branch>...HEAD` for each repository. Exit 0 means the run changed nothing there (a sync merge alone doesn't count, since the three-dot diff starts at the merge base): record `review: no changes`, which Step 4 treats as a review with no findings, and add no unit for it. A review of an empty diff checks nothing, and a report of one reads like a pass.
+
+For each other repository whose suite isn't red, add a review unit and run it through the normal loop, so it goes to a review-role peer when one fits and to a subagent or a session otherwise:
 
 1. Write `<TASK_DIR>/final/<base>/review_<final_round>.json`:
    `{"id": "FR<final_round>-<base>", "title": "Final review of <base>", "kind": "review", "repo": "<repo>", "skill": "mz-dev-git:review-branch", "owns": [], "verify": "true", "depends_on": [], "backend": "auto", "spec": "<spec>"}`. The spec says: review every change between `<start_branch>` and this branch's head (`git diff <start_branch>...HEAD`), the work of the whole run, whose plan is `<TASK_DIR>/source_plan.md`; report findings with a severity of `critical`, `major` or `minor`, a `file:line` and a one-line fix; change nothing.
