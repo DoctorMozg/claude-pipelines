@@ -1,0 +1,63 @@
+schema_version: "1.1"
+name: plan-to-gate
+description: 'Planning a goal for parallel workers researches the code, has the planner write a plan document and a DAG that lints, has the DAG reviewed, and stops at the plan gate without running any unit.'
+tags: [behavior, needs-bash]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Plan this so several agents can build it in parallel with orchestrate: add calc/mul.py with mul(a, b), add calc/div.py with div(a, b) that raises ZeroDivisionError on zero, and add calc/cli.py, a command-line entry that uses both. Every module gets a unittest test. Don't ask me anything; assume what you need.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 80
+  timeout_seconds: 1800
+graders:
+  - name: plan-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate-plan"'
+  - name: research-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-researcher"'
+  - name: planner-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?orchestrate-planner"'
+  - name: dag-lints
+    type: regex
+    pattern: 'lint: ok \(\d+ units\)'
+    target: trace
+  - name: dag-reviewed
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?orchestrate-dag-reviewer"'
+  - name: plan-doc-written
+    type: regex
+    pattern: '^(?:.*/)?\.mz/design/\d{4}_\d{2}_\d{2}_orchestrate-plan_\w+\.md$'
+    flags: m
+    target: files
+  - name: plan-gate-shown
+    type: regex
+    pattern: '## Plan for review: orchestrate-plan'
+    target: trace
+  # Nobody can approve in a headless run, so the units never start.
+  - name: no-unit-runs
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?orchestrate-unit-runner"'
+    min: 0
+    max: 0
+  - name: orchestrate-not-started
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'
+    min: 0
+    max: 0
+  # Approval comes only through the gate; asking for "approve" in prose invites an answer the run can't record.
+  - name: no-prose-approval-ask
+    type: regex
+    pattern: 'reply\W{0,4}approve'
+    flags: i
+    match: not_contains
+    target: trace

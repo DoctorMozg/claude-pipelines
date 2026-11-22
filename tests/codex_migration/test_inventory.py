@@ -59,8 +59,8 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-rules",
         "mz-orchestrate",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 47
-    assert sum(len(package.role_sources) for package in packages) == 92
+    assert sum(len(package.skill_sources) for package in packages) == 48
+    assert sum(len(package.role_sources) for package in packages) == 93
     assert {
         package.plan.name
         for package in packages

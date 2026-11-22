@@ -8,6 +8,7 @@ The compiler can't see this conversation, so the plan it compiles is always a fi
 
 - **Conversation.** Write `<TASK_DIR>/source_plan.md` with the Write tool: the plan as the user settled it, quoted verbatim where the thread holds its text, followed by a `## Decisions from the conversation` section listing every choice the user made about it. Don't add work, and don't smooth over a question that was left open: list it under `## Open questions`. Tell the user the path in one line, so they can correct it at the gate.
 - **File.** Read it and write the same contents to `<TASK_DIR>/source_plan.md`. Record its original path and `sha256sum <path>` in state.
+- **An `/orchestrate-plan` task.** Read its `state.md` and run `sha256sum` on its `dag.json`. Write its plan document (the `plan` key) to `<TASK_DIR>/source_plan.md` and its `dag.json`, read and written back unchanged, to `<TASK_DIR>/dag.json`. Record `source` as the plan document, `source_kind: orchestrate-plan`, and `plan_approved: yes` when the hash equals its `dag_sha256`, `no` otherwise. Take `repos` from its state.
 
 Then find the repositories. The project root is one. For every other repository the plan names, resolve the path against PROJECT_ROOT and run `git -C <path> rev-parse --show-toplevel`. Record the absolute top levels in state as `repos`.
 
@@ -24,7 +25,9 @@ Set `Phase: compile` in state.
 
 ## Step 3: Compile
 
-Dispatch `orchestrate-plan-compiler` (model: **opus**, as pinned) with this prompt:
+For an `/orchestrate-plan` task, the DAG is already built: run `<PLUGIN_ROOT>/scripts/dag.sh <TASK_DIR>/dag.json lint` (add the REGISTRY path when it exists) and quote its last line. With `plan_approved: yes` and `lint: ok`, the user approved this DAG at the plan gate: add `- DAG approved at the plan gate of <plan task>: <TASK_DIR>/dag.json (<N> units), <UTC date>` under `## Decisions`, say so in one line, and go on to Phase 2 as SKILL.md says, with no review and no DAG gate. Otherwise say what changed (the hash, or the lint errors, which may come from peers attached since), dispatch the compiler with the prompt below plus `Revision: dag.json came from /orchestrate-plan and <changed since its plan gate | fails lint: <errors>>. Edit it rather than recompiling.`, and carry on from there as for any compile, review and DAG gate included.
+
+Otherwise, dispatch `orchestrate-plan-compiler` (model: **opus**, as pinned) with this prompt:
 
 ```text
 Compile the source plan into an orchestration DAG.

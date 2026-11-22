@@ -1,6 +1,6 @@
 # DAG Schema
 
-`dag.json` is the one source of truth for an orchestration run. The compiler writes it, `scripts/dag.sh` is the only thing that changes it afterwards, and every gate shows `dag.sh render` of it.
+`dag.json` is the one source of truth for an orchestration run. The compiler, or `orchestrate-planner` for `/orchestrate-plan`, writes it, `scripts/dag.sh` is the only thing that changes it afterwards, and every gate shows `dag.sh render` of it.
 
 ## Contents
 
@@ -21,7 +21,8 @@
 ```
 
 - `project`: the orchestrating repository, absolute.
-- `source.kind`: `markdown`, `build-plan`, `adr`, `design` or `conversation`.
+- `task`: the task that wrote the DAG, the orchestration itself or the `/orchestrate-plan` task it came from.
+- `source.kind`: `markdown`, `build-plan`, `adr`, `design`, `conversation` or `orchestrate-plan`.
 
 ## Unit fields
 

@@ -52,6 +52,7 @@ Routing table. Phrases are indicative, not exact matches.
 | "promote lessons", "turn lessons into rules"                                                                              | lessons-promote                                                | mz-memory        |
 | "write a handoff", "hand off before /clear", "resume from the handoff"                                                    | handoff                                                        | mz-handoff       |
 | "orchestrate this plan", "split this plan across agents", "run plan.md in parallel"                                       | orchestrate                                                    | mz-orchestrate   |
+| "plan this for orchestrate", "plan it so agents can split it", "break this goal into parallel units"                      | orchestrate-plan                                               | mz-orchestrate   |
 | "attach my other session as a worker", "use that session only for UI"                                                     | orchestrate-attach                                             | mz-orchestrate   |
 | "detach that session", "release the worker session"                                                                       | orchestrate-detach                                             | mz-orchestrate   |
 | "remember that", "note this", "pin this decision"                                                                         | memory-note                                                    | mz-memory        |

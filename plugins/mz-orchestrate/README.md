@@ -2,7 +2,7 @@
 
 # Mozg Orchestrate (`mz-orchestrate`)
 
-Runs a plan you have already settled as parallel units on workers, each unit in its own git worktree. Plan the work wherever you like: in a conversation, with `/govern`, with `/build`'s planner, in an ADR or a design doc. Then hand the plan to `/orchestrate`. It splits the plan into units with dependencies, asks you to approve that split once, and runs the units through the mozg skill that fits each one (`build`, `debug`, `polish`, `document`, or a review). As each unit finishes, it is merged into an integration branch and verified, and every unit it unblocked starts. After the DAG gate you are asked only when something leaves the plan, when the final review finds something to fix, and at the final gate.
+Runs a plan you have already settled as parallel units on workers, each unit in its own git worktree. Plan the work wherever you like: with `/orchestrate-plan`, in a conversation, with `/govern`, with `/build`'s planner, in an ADR or a design doc. Then hand the plan to `/orchestrate`. It splits the plan into units with dependencies, asks you to approve that split once, and runs the units through the mozg skill that fits each one (`build`, `debug`, `polish`, `document`, or a review). As each unit finishes, it is merged into an integration branch and verified, and every unit it unblocked starts. After the DAG gate you are asked only when something leaves the plan, when the final review finds something to fix, and at the final gate.
 
 It is for plans with at least a few units that don't touch the same files. For one small change, run `/build` or `/debug` directly: orchestration adds a compile, a DAG review and a gate.
 
@@ -28,13 +28,29 @@ Worker mode needs mz-dev-pipe (and mz-creative for documentation units) installe
    1. Fix the rounding bug in `app/billing/tax.py` (see issue 212). Independent of the rest.
    ```
 
-1. Run `/orchestrate PLAN.md`. The plan can also be `task:<task_name>` (the `plan.md` of an earlier `/build` run), or nothing at all, which takes the plan in the current conversation.
+1. Run `/orchestrate PLAN.md`. The plan can also be `task:<task_name>` (an `/orchestrate-plan` task, or the `plan.md` of an earlier `/build` run), or nothing at all, which takes the plan in the current conversation.
 
 1. Read the DAG gate. It shows the unit graph, and for each unit its skill, backend, owned paths, verify command, dependencies and full spec. Answer **Approve**, **Reject**, or type feedback and the DAG is recompiled.
 
 1. Wait. Units 1 and 4 start together. Unit 2 starts when 1 is merged, and unit 3 when 2 is merged.
 
 1. Answer the gates that come up, if any, then the final gate. On **Approve**, your branch is fast-forwarded to `orchestrate/<task>`. The report is at `.mz/reports/<task>.md`.
+
+## Planning with `/orchestrate-plan`
+
+With a goal but no plan yet, `/orchestrate-plan <goal>` writes one that is ready to run:
+
+```text
+/orchestrate-plan add invoices: model, POST /invoices, docs, and fix the tax rounding bug
+```
+
+1. **Interview.** It asks up to 4 questions about whatever the goal and the code leave open: scope, what "done" means, hard limits, which repositories. A clear goal gets no questions.
+1. **Research.** Up to 4 `pipeline-researcher` agents map the code each part of the goal touches, one per repository or major area: files, conventions, test commands and the shared files several changes would edit.
+1. **Plan.** `orchestrate-planner` (opus) writes the plan document to `.mz/design/<task>.md` (goal, scope, decisions with their reasons, risks, open questions) and the units to `dag.json`. `dag.sh lint` checks it, and `orchestrate-dag-reviewer` reviews it for up to 3 rounds.
+1. **Plan gate.** You see the plan, the unit graph and every unit's spec, owned paths and verify command. **Approve**, **Reject**, or type feedback and the planner revises.
+1. **Run.** On Approve it starts `/orchestrate task:<task>`. That approval counts as the DAG gate: `/orchestrate` checks that `dag.json` still has the approved hash and lints it against the sessions attached now, then starts the units. If the DAG changed or no longer lints, `/orchestrate` reviews it and shows its own DAG gate.
+
+Planning costs a few researchers, one opus planner and up to 3 sonnet reviews, roughly $2-4. With `MZ_DEV_PIPE_AUTO_APPROVE=1` it asks nothing: open points become assumptions listed in the plan, the gate is approved and logged, and the run that follows never lands on your branch.
 
 ## Flow
 
@@ -74,6 +90,7 @@ A script, not the model, computes ready sets, lint results and unit statuses (`s
 | Skill                 | What it does                                                                                                                                                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `/orchestrate`        | Compiles a plan (a conversation, any markdown file, a build `plan.md`, an ADR or a design doc) into a DAG of units with owned paths, dependencies, a skill and a verify command each. A script lints it, an agent reviews it, and you approve it once. |
+| `/orchestrate-plan`   | Plans a goal for `/orchestrate`: an interview, parallel codebase research, a plan document and a reviewed `dag.json`, approved at one gate, then starts the run.                                                                                       |
 | `/orchestrate-attach` | Lists the other Claude sessions on this machine, and the ones you pick become workers, each with a purpose such as "only UI in the web repo" or "only for review".                                                                                     |
 | `/orchestrate-detach` | Releases attached sessions. A session running a unit can finish it, hand it to another worker, or cancel it.                                                                                                                                           |
 | `orchestrate-worker`  | Not typed by hand. Attached sessions and started workers run it when an orchestrator's message arrives.                                                                                                                                                |
@@ -252,7 +269,7 @@ Rough cost per unit on small units, shown at the DAG gate: `build` about $2.50, 
 
 ## Data and network
 
-Messages between sessions travel over local Unix sockets that Claude Code manages. This plugin opens no network connections of its own and sends nothing off the machine. It writes `.mz/orchestrate/peers.json` (the attached sessions and their purposes) in the orchestrating project, `orchestrate-attachment.json` in each attached session's scratchpad directory, which is cleared with the session, task state under `.mz/task/`, and the run's report under `.mz/reports/`. The only change it makes to your own branch is the fast-forward you approve at the final gate. Worker worktrees live under each repository's `.claude/worktrees/`, and the integration worktrees under `.mz/worktrees/<task>/` in the orchestrating project. A fresh session is a `claude -p` run in auto mode with no permission prompts, so a step its classifier denies ends the unit as blocked instead of asking you. The plugin needs `jq` on `PATH`.
+Messages between sessions travel over local Unix sockets that Claude Code manages. This plugin opens no network connections of its own and sends nothing off the machine. It writes `.mz/orchestrate/peers.json` (the attached sessions and their purposes) in the orchestrating project, `orchestrate-attachment.json` in each attached session's scratchpad directory, which is cleared with the session, task state under `.mz/task/`, the plan documents `/orchestrate-plan` writes under `.mz/design/`, and the run's report under `.mz/reports/`. The only change it makes to your own branch is the fast-forward you approve at the final gate. Worker worktrees live under each repository's `.claude/worktrees/`, and the integration worktrees under `.mz/worktrees/<task>/` in the orchestrating project. A fresh session is a `claude -p` run in auto mode with no permission prompts, so a step its classifier denies ends the unit as blocked instead of asking you. The plugin needs `jq` on `PATH`.
 
 ## Requirements
 

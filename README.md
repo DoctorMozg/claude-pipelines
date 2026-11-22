@@ -45,6 +45,22 @@ flowchart LR
 </details>
 
 <details>
+<summary><b>Split a large goal across parallel agents</b> &nbsp;·&nbsp; <code>mz-orchestrate</code></summary>
+
+```mermaid
+flowchart LR
+    A["/orchestrate-attach"]:::orch --> B["/orchestrate-plan"]:::orch
+    B --> C["/orchestrate"]:::orch
+    classDef orch fill:#ddf4ff,stroke:#0969da,color:#0969da
+```
+
+1. **`/orchestrate-attach`** (optional) — turn other open sessions into workers, each limited to a purpose such as "only UI"
+1. **`/orchestrate-plan`** — interview, parallel codebase research, a plan doc and a reviewed DAG of units, approved at one gate
+1. **`/orchestrate`** — starts on approval: each unit runs in its own worktree, merges into `orchestrate/<task>` once verified, then a final suite, review and gate fast-forward your branch
+
+</details>
+
+<details>
 <summary><b>Hunt a production bug</b> &nbsp;·&nbsp; <code>mz-dev-pipe</code></summary>
 
 ```mermaid
@@ -278,15 +294,16 @@ ______________________________________________________________________
 
 ### [Mozg Orchestrate](plugins/mz-orchestrate/) (`mz-orchestrate`)
 
-Runs a plan you have already settled as parallel units, each in its own git worktree, on subagents, fresh sessions (`claude --bg` or `claude -p`) and Claude sessions you attach as workers. You approve the unit graph once; each unit then runs through the mozg skill that fits it (`build`, `debug`, `polish`, `document` or a review), is merged into an `orchestrate/<task>` branch and verified on the merged tree. A final suite and review run per repository before one final gate fast-forwards your branch. Plans can span several repositories.
+Plans a goal with `/orchestrate-plan`, or takes a plan you have already settled, and runs it as parallel units, each in its own git worktree, on subagents, fresh sessions (`claude --bg` or `claude -p`) and Claude sessions you attach as workers. You approve the unit graph once; each unit then runs through the mozg skill that fits it (`build`, `debug`, `polish`, `document` or a review), is merged into an `orchestrate/<task>` branch and verified on the merged tree. A final suite and review run per repository before one final gate fast-forwards your branch. Plans can span several repositories.
 
 | Skill                  | Command                             | What it does                                                                                          |
 | ---------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | **orchestrate**        | `/orchestrate <plan>`               | Compile plan → DAG review → DAG gate → dispatch and merge units → final suite and review → final gate |
+| **orchestrate-plan**   | `/orchestrate-plan <goal>`          | Interview → parallel research → plan doc + DAG → review → plan gate → starts /orchestrate             |
 | **orchestrate-attach** | `/orchestrate-attach [name] [role]` | Turns other open sessions into workers, each limited to a purpose such as "only for review"           |
 | **orchestrate-detach** | `/orchestrate-detach [name]`        | Releases attached sessions, letting a running unit finish, move elsewhere or cancel                   |
 
-4 agents (plan-compiler, dag-reviewer, unit-runner, merge-resolver).
+5 agents (planner, plan-compiler, dag-reviewer, unit-runner, merge-resolver).
 
 **[Full documentation →](plugins/mz-orchestrate/)**
 

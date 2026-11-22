@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: 'Runs an approved plan as parallel units on workers in their own worktrees. Use when the user says "orchestrate this plan" or "split this across agents", or hands over a plan.md or design doc to execute. Not for planning (use build).'
+description: 'Runs an approved plan as parallel units on workers in their own worktrees. Use when the user says "orchestrate this plan" or "split this across agents", or hands over a plan.md or design doc to execute. Not for making the plan (use orchestrate-plan).'
 argument-hint: '[<plan file> | task:<task_name> | this plan | resume [<task_name>]]'
 allowed-tools: Agent, Skill, SendMessage, ListAgents, AskUserQuestion, EnterWorktree, Read, Write, Edit, Glob, Grep, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/dag.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/integrate.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/session.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/peers.sh *), Bash(sleep *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Bash(git rev-parse *), Bash(git -C *), Bash(sha256sum *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE)
 ---
@@ -22,14 +22,14 @@ Resume pointer: after compaction, read `<PROJECT_ROOT>/.mz/task/<task_name>/stat
 
 ### When NOT to use
 
-- No plan yet: plan first with `/build`, `/govern` or a design doc, or in conversation, then come back.
+- No plan yet: `/orchestrate-plan` plans the goal and hands the plan back here; `/govern`, a design doc or the conversation work too.
 - One small change: run `/build` or `/debug` directly; orchestration costs a compile, a review and a gate.
 - Attaching or releasing worker sessions: `/orchestrate-attach`, `/orchestrate-detach`.
 
 ## Input
 
 - `<plan file>`: any markdown file. Its shape decides `source.kind`: a `## Work Units` section with `### WU-N` headings is a `build-plan`; MADR frontmatter with `## Decision Outcome` is an `adr`; an RFD, or a doc with `## The actual design` or `## Milestones`, is a `design`; anything else is `markdown`.
-- `task:<task_name>`: the `plan.md` in `<PROJECT_ROOT>/.mz/task/<task_name>/`, as a `build-plan`.
+- `task:<task_name>`: a task in `<PROJECT_ROOT>/.mz/task/<task_name>/`. One from `/orchestrate-plan`, whose `state.md` has `dag_sha256`, brings its approved `dag.json` and plan document, `source.kind: orchestrate-plan`; any other brings its `plan.md`, as a `build-plan`.
 - Nothing, "this plan" or "the plan above": the plan in the current conversation, `source.kind: conversation`.
 - `resume [<task_name>]`: continue an orchestration that stopped, such as after the session was closed. Without a name, the newest `<PROJECT_ROOT>/.mz/task/*_orchestrate_*` or `<PROJECT_ROOT>/.claude/worktrees/*/.mz/task/*_orchestrate_*`, where a `--bg` run keeps it, whose `Status` is `running` or `blocked`; TASK_DIR is wherever it was found. Saying `resume` answers the resume gate, so it isn't shown.
 
@@ -93,7 +93,7 @@ After the DAG gate approves, set `Phase: run` and read `<SKILL_DIR>/phases/run.m
 
 ## Verification
 
-Compile is done when `dag.sh <TASK_DIR>/dag.json lint` prints `lint: ok` and the DAG gate was answered Approve, recorded under `## Decisions`. The run is done when `dag.sh … list running` and `dag.sh … ready` print nothing, every change unit is `merged` or `skipped`, and each merge's verify output was quoted. The orchestration is done when the final gate was answered, each repository has a `landed` value, and `<PROJECT_ROOT>/.mz/reports/<task_name>.md` exists.
+Compile is done when `dag.sh <TASK_DIR>/dag.json lint` prints `lint: ok` and the DAG gate was answered Approve, or an `/orchestrate-plan` approval was accepted, recorded under `## Decisions`. The run is done when `dag.sh … list running` and `dag.sh … ready` print nothing, every change unit is `merged` or `skipped`, and each merge's verify output was quoted. The orchestration is done when the final gate was answered, each repository has a `landed` value, and `<PROJECT_ROOT>/.mz/reports/<task_name>.md` exists.
 
 ## References
 
@@ -117,4 +117,4 @@ Compile is done when `dag.sh <TASK_DIR>/dag.json lint` prints `lint: ok` and the
 
 > State persists to `.mz/task/<task_name>/state.md` under the project root, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`, resolved once at the start of the run. Schema is **v2**: line 1 is `schema_version: 2`; line 2 is `Status:` with one of `pending`, `running`, `blocked`, `complete`, `aborted_by_user` or `failed`, lowercase and unquoted; then `Phase`, `Started`, `phase_complete` (boolean) and `what_remains` (YAML list of strings), with skill-specific keys below them. Milestones go in `Phase`; the reason for `blocked` or `failed` goes in `what_remains`. Set `phase_complete: false` on phase entry and `true` once the phase's artifacts are written and its gates pass. Refresh `what_remains` on every phase transition; it is `[]` when `Status` is `complete`. Write the file after every phase and before every gate, and re-read it after compaction. Record decisions worth recalling under a heading that reads exactly `## Decisions`, placed before `## Notes`; mz-memory harvests them only once `Status` is `complete`. Under a heading that reads exactly `## Lessons`, add one line whenever a review finding is accepted and fixed, a step fails, gate feedback corrects a mistake, or an approved approach is reversed, in the form `- (review|failure|correction|change) WHEN <situation> → <what to do> — WHY <cause>`, concrete and under about 40 words; mz-memory harvests lessons whatever the `Status`. Treat a legacy `completed` as `complete`. On reading a `schema_version: 1` or unversioned file, put `schema_version: 2` on line 1 and `Status` on line 2, add the missing keys, and log the upgrade. Leave a file with a higher `schema_version` untouched: ask whether to Restart (archive it), start New (`_v2`) or Abort, and stop if nobody can answer.
 
-Skill keys: `source` (original path, or `conversation`), `source_kind`, `source_sha256`, `repos` (absolute paths), `dag`, `review_round`, `unattended`, `integration` (per repository: `start_branch`, `start_checkout`, `integration_branch`, `worktree`, `tip`, and `landed`: a commit, `user` or `no`), `final_round` and `abort`. `Phase` moves through `ingest`, `compile`, `review`, `gate`, `run`, `final` and `done`; a fix round goes from `final` back to `run`. Unit statuses live only in `dag.json`.
+Skill keys: `source` (original path, or `conversation`), `source_kind`, `source_sha256`, `plan_approved` (for an `/orchestrate-plan` task), `repos` (absolute paths), `dag`, `review_round`, `unattended`, `integration` (per repository: `start_branch`, `start_checkout`, `integration_branch`, `worktree`, `tip`, and `landed`: a commit, `user` or `no`), `final_round` and `abort`. `Phase` moves through `ingest`, `compile`, `review`, `gate`, `run`, `final` and `done`; a fix round goes from `final` back to `run`. Unit statuses live only in `dag.json`.
