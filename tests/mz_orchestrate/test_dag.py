@@ -75,6 +75,13 @@ class TestLint:
 
         assert run("lint").stdout == "lint: ok (4 units)\n"
 
+    def test_a_codex_unit_may_work_in_another_repo(
+        self, write: Callable[[list[Unit]], None], run: Run
+    ) -> None:
+        write([unit("A", repo="/other", backend="codex")])
+
+        assert run("lint").stdout == "lint: ok (1 units)\n"
+
     @pytest.mark.parametrize(
         ("units", "message"),
         [

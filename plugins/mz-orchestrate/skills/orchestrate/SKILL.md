@@ -2,7 +2,7 @@
 name: orchestrate
 description: 'Runs an approved plan as parallel units on workers in their own worktrees. Use when the user says "orchestrate this plan" or "split this across agents", or hands over a plan.md or design doc to execute. Not for making the plan (use orchestrate-plan).'
 argument-hint: '[<plan file> | task:<task_name> | this plan | resume [<task_name>]]'
-allowed-tools: Agent, Skill, SendMessage, ListAgents, AskUserQuestion, EnterWorktree, Read, Write, Edit, Glob, Grep, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/dag.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/integrate.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/session.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/peers.sh *), Bash(sleep *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Bash(git rev-parse *), Bash(git -C *), Bash(sha256sum *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE)
+allowed-tools: Agent, Skill, SendMessage, ListAgents, AskUserQuestion, EnterWorktree, Read, Write, Edit, Glob, Grep, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/dag.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/integrate.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/session.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/codex.sh *), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/peers.sh *), Bash(sleep *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Bash(git rev-parse *), Bash(git -C *), Bash(sha256sum *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE)
 ---
 
 # Orchestrate
@@ -11,7 +11,7 @@ allowed-tools: Agent, Skill, SendMessage, ListAgents, AskUserQuestion, EnterWork
 
 Takes a plan that is already settled, from a conversation, `/govern`, `/build`'s planner, a design doc or any markdown file, and turns it into a DAG of units: each with its own spec, owned paths, dependencies, skill and verify command. The DAG is linted by a script, reviewed by an agent, and shown to the user once. After that approval the user is asked again only when something leaves the plan.
 
-Each unit runs in its own git worktree through the mozg skill that fits it, on a subagent, a fresh session (`claude --bg` in a trusted repository, `claude -p` otherwise) or an attached peer session, in any repository the plan names. It is merged into that repository's integration branch, `orchestrate/<task>`, once its verify passes on the merged tree. When every unit is in, each integration branch gets its full suite and a review, and the user's branch moves only at the final gate, by fast-forward, never pushed. A restarted run picks up where the old one stopped and runs nothing twice.
+Each unit runs in its own git worktree through the mozg skill that fits it, on a subagent, a fresh session (`claude --bg` in a trusted repository, `claude -p` otherwise), an attached peer session, or Codex when the plan names it, in any repository the plan names. It is merged into that repository's integration branch, `orchestrate/<task>`, once its verify passes on the merged tree. When every unit is in, each integration branch gets its full suite and a review, and the user's branch moves only at the final gate, by fast-forward, never pushed. A restarted run picks up where the old one stopped and runs nothing twice.
 
 Resume pointer: after compaction, read `<PROJECT_ROOT>/.mz/task/<task_name>/state.md`, then re-read the phase file named by its `Phase`.
 

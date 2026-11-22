@@ -294,7 +294,7 @@ ______________________________________________________________________
 
 ### [Mozg Orchestrate](plugins/mz-orchestrate/) (`mz-orchestrate`)
 
-Plans a goal with `/orchestrate-plan`, or takes a plan you have already settled, and runs it as parallel units, each in its own git worktree, on subagents, fresh sessions (`claude --bg` or `claude -p`) and Claude sessions you attach as workers. You approve the unit graph once; each unit then runs through the mozg skill that fits it (`build`, `debug`, `polish`, `document` or a review), is merged into an `orchestrate/<task>` branch and verified on the merged tree. A final suite and review run per repository before one final gate fast-forwards your branch. Plans can span several repositories.
+Plans a goal with `/orchestrate-plan`, or takes a plan you have already settled, and runs it as parallel units, each in its own git worktree, on subagents, fresh sessions (`claude --bg` or `claude -p`), Claude sessions you attach as workers, and Codex for the units you name. You approve the unit graph once; each unit then runs through the mozg skill that fits it (`build`, `debug`, `polish`, `document` or a review), is merged into an `orchestrate/<task>` branch and verified on the merged tree. A final suite and review run per repository before one final gate fast-forwards your branch. Plans can span several repositories.
 
 | Skill                  | Command                             | What it does                                                                                          |
 | ---------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------- |

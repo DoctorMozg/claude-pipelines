@@ -1,6 +1,6 @@
 # Backends: Dispatch, Results and Liveness
 
-Read by `phases/run.md`. `session.sh` and `peers.sh` are the scripts under `<PLUGIN_ROOT>/scripts/`. `REGISTRY` is the peer registry; it may not exist.
+Read by `phases/run.md`. `session.sh`, `codex.sh` and `peers.sh` are the scripts under `<PLUGIN_ROOT>/scripts/`. `REGISTRY` is the peer registry; it may not exist.
 
 ## Choosing a backend
 
@@ -9,9 +9,10 @@ Resolve each ready unit's `backend` when it is dispatched, not at compile time, 
 - `peer:<name>`: that peer, when `dag.sh DAG fits <id> REGISTRY` prints its name; otherwise the unit waits for it.
 - `subagent`: a subagent.
 - `session`: a fresh session.
+- `codex`: a Codex run. Only a unit whose `backend` says so goes there; `auto` never picks it.
 - `auto`: the first name `dag.sh DAG fits <id> REGISTRY` prints, when REGISTRY exists; otherwise a subagent when `repo` is PROJECT_ROOT, and a fresh session when it isn't.
 
-Subagents and sessions together take at most `MAX_WORKERS` slots. Each peer runs one unit at a time, outside that limit; `fits` leaves out a peer that is busy.
+Subagents, sessions and Codex runs together take at most `MAX_WORKERS` slots. Each peer runs one unit at a time, outside that limit; `fits` leaves out a peer that is busy.
 
 ## Subagent
 
@@ -30,6 +31,16 @@ The session runs in the unit's repository, in a worktree named `orch-<task_name>
 
 Either way the session's permissions are its own: auto mode with no permission prompts, so a step its classifier denies comes back as `FAILED` or `BLOCKED` rather than a question.
 
+## Codex
+
+Codex runs the unit's skill from the mozg plugins installed in Codex, which it reads from the same marketplace. It can't run `orchestrate-worker`, so `codex.sh` does that skill's work around it: it makes the worktree `<repo>/.claude/worktrees/<name>` on the unit's branch at `base-commit`, writes the brief, runs `codex exec` in Codex's `workspace-write` sandbox, then runs `verify`, commits only the `owns` paths and prints the `ORCH-RESULT`. The worktree name is the fresh-session one, `orch-<task_name>-<id>` (`.<attempt>` on a retry).
+
+1. Write the envelope with the Write tool to `<TASK_DIR>/units/<id>.<attempt>.envelope`.
+1. `dag.sh DAG mark <id> running backend_used=codex worktree=<repo>/.claude/worktrees/<name> worktree_branch=<branch from the envelope>`.
+1. Start `codex.sh <repo> <name> <envelope file> <TASK_DIR>/units/<id>.<attempt>.codex` with Bash `run_in_background: true`. It blocks until Codex ends, so its exit is the result notification. Its stdout is the `ORCH-RESULT`; go on to Step 3. A non-zero exit means the run never started: treat its stderr as a `FAILED` result.
+
+`REFUSED` with `skill not installed` means the unit's plugin isn't installed and enabled in Codex. Say so at the out-of-plan gate: the user can install it there, or Re-plan the unit onto another backend. The run's events, stderr and Codex's last message stay in the `.codex` folder for a unit that failed.
+
 ## Attached peer
 
 1. `dag.sh DAG mark <id> running backend_used=peer:<name> worktree_branch=worktree-orch-<task_name>-<id>`, then `peers.sh REGISTRY unit <name> <task_name>/<id>`.
@@ -46,6 +57,6 @@ Every dispatch records `deadline=<UTC ISO time>`, now plus `UNIT_DEADLINE`. Whil
 
 - For every running unit past its `deadline`:
   - peer: if its `note` isn't `status-asked`, send `ORCH-STATUS` and `dag.sh DAG mark <id> running note=status-asked`; when it already is, the peer stayed silent: go to the out-of-plan gate with reason `silent past deadline`.
-  - session or subagent: go to the out-of-plan gate with reason `past deadline`; stop a `--bg` session first with `session.sh stop`. The worker keeps running; its result, if one comes later, is handled as usual unless the gate's answer already re-dispatched or skipped the unit, in which case say so and drop it.
+  - session, Codex run or subagent: go to the out-of-plan gate with reason `past deadline`; stop a `--bg` session first with `session.sh stop`. The worker keeps running; its result, if one comes later, is handled as usual unless the gate's answer already re-dispatched or skipped the unit, in which case say so and drop it.
 - For every unit running on a `--bg` session, run `session.sh state <session id>`. `idle` or `gone` with no `ORCH-RESULT` yet means the session ended its turn without replying; when that holds at two fires in a row, go to the out-of-plan gate with reason `session ended without a result`, and tell the user `claude logs <session id>` shows its output.
 - Start the next watchdog if units are still running on a session or a peer.

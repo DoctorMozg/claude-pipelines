@@ -106,7 +106,7 @@ lint() {
            (($u.depends_on // [])[] | select(IN($ids[]) | not) | "\($id): depends on unknown unit \(.)"),
            (($u.depends_on // [])[] | select(. == $id) | "\($id): depends on itself"),
            (($u.backend // "auto") as $b
-             | if ($b | IN("auto", "subagent", "session")) or ($b | startswith("peer:")) then empty
+             | if ($b | IN("auto", "subagent", "session", "codex")) or ($b | startswith("peer:")) then empty
                else "\($id): unknown backend \($b)" end),
            (if ($u.backend // "") == "subagent" and $u.repo != $root.project
              then "\($id): a subagent can only work in the project repo" else empty end))),

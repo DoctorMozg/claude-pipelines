@@ -128,16 +128,29 @@ The full field list and the rules for a good unit are in `skills/orchestrate/ref
 
 ## Backends
 
-| `backend`   | Where the unit runs                                                                                                                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `subagent`  | An `orchestrate-unit-runner` subagent of the orchestrating session, in its own worktree. Works only in the project repository.                                                                         |
-| `session`   | A fresh session in the unit's repository, in worktree `orch-<task>-<id>`, in auto mode with no permission prompts. It's a `claude --bg` session when you trust that repository, otherwise `claude -p`. |
-| `peer:name` | A session you attached with `/orchestrate-attach`. Needs a peer whose role covers the unit.                                                                                                            |
-| `auto`      | Resolved when the unit is dispatched: the first attached peer whose role fits and that is idle, else a subagent when `repo` is the project, else a fresh session.                                      |
+| `backend`   | Where the unit runs                                                                                                                                                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `subagent`  | An `orchestrate-unit-runner` subagent of the orchestrating session, in its own worktree. Works only in the project repository.                                                                                                                                                        |
+| `session`   | A fresh session in the unit's repository, in worktree `orch-<task>-<id>`, in auto mode with no permission prompts. It's a `claude --bg` session when you trust that repository, otherwise `claude -p`.                                                                                |
+| `codex`     | A `codex exec` run in the unit's repository, in worktree `orch-<task>-<id>` and Codex's `workspace-write` sandbox. Codex runs the unit's skill from the mozg plugins installed in Codex, and `codex.sh` writes the brief, runs verify, commits the owned paths and builds the result. |
+| `peer:name` | A session you attached with `/orchestrate-attach`. Needs a peer whose role covers the unit.                                                                                                                                                                                           |
+| `auto`      | Resolved when the unit is dispatched: the first attached peer whose role fits and that is idle, else a subagent when `repo` is the project, else a fresh session.                                                                                                                     |
 
-The compiler leaves `backend` at `auto` unless the plan or you name one. Subagents and fresh sessions together take at most 3 slots (`MAX_WORKERS`), because each worker runs a skill that dispatches about 6 agents of its own. Each peer runs one unit at a time, outside that limit.
+The compiler leaves `backend` at `auto` unless the plan or you name one, and `auto` never picks Codex. Subagents, fresh sessions and Codex runs together take at most 3 slots (`MAX_WORKERS`), because each worker runs a skill that dispatches about 6 agents of its own. Each peer runs one unit at a time, outside that limit.
 
 A fresh `--bg` session shows up in `claude agents` under the name `orch-<task>-<id>`. You can watch it with `claude attach orch-<task>-<id>`, and it messages its result back to the orchestrator. Claude Code refuses `--bg` in a repository you haven't trusted (open `claude` there once and accept the prompt), and then the unit runs as `claude -p`. A fresh session's permissions are its own: a step its auto-mode classifier denies ends the unit as `FAILED` or `BLOCKED` instead of asking you.
+
+### Running units on Codex
+
+Name Codex in the plan or in your request ("run the docs unit on Codex") and that unit gets `backend: codex`. Codex reads this repository's marketplace like Claude Code does, so install the plugins the unit's skill comes from in Codex too, at 0.58.0 or later for worker mode:
+
+```bash
+codex plugin marketplace add DoctorMozg/claude-pipelines   # once
+codex plugin add mz-dev-pipe@mozg-pipelines                 # each plugin a unit's skill comes from
+codex plugin marketplace upgrade mozg-pipelines             # pick up new versions
+```
+
+A unit whose plugin isn't installed and enabled in Codex comes back `REFUSED` with `skill not installed`, and the out-of-plan gate lets you install it and retry, or move the unit elsewhere. Codex runs under its own account and settings, and `MZ_ORCHESTRATE_CODEX_ARGS` passes extra flags such as `-m <model>`. Its events, stderr and last message stay in `.mz/task/<task>/units/<id>.<attempt>.codex/`. The merge, verify on the merged tree, final suite and review are the same as for any unit.
 
 ## Attaching sessions
 
@@ -269,10 +282,11 @@ Rough cost per unit on small units, shown at the DAG gate: `build` about $2.50, 
 
 ## Data and network
 
-Messages between sessions travel over local Unix sockets that Claude Code manages. This plugin opens no network connections of its own and sends nothing off the machine. It writes `.mz/orchestrate/peers.json` (the attached sessions and their purposes) in the orchestrating project, `orchestrate-attachment.json` in each attached session's scratchpad directory, which is cleared with the session, task state under `.mz/task/`, the plan documents `/orchestrate-plan` writes under `.mz/design/`, and the run's report under `.mz/reports/`. The only change it makes to your own branch is the fast-forward you approve at the final gate. Worker worktrees live under each repository's `.claude/worktrees/`, and the integration worktrees under `.mz/worktrees/<task>/` in the orchestrating project. A fresh session is a `claude -p` run in auto mode with no permission prompts, so a step its classifier denies ends the unit as blocked instead of asking you. The plugin needs `jq` on `PATH`.
+Messages between sessions travel over local Unix sockets that Claude Code manages. This plugin opens no network connections of its own and sends nothing off the machine. It writes `.mz/orchestrate/peers.json` (the attached sessions and their purposes) in the orchestrating project, `orchestrate-attachment.json` in each attached session's scratchpad directory, which is cleared with the session, task state under `.mz/task/`, the plan documents `/orchestrate-plan` writes under `.mz/design/`, and the run's report under `.mz/reports/`. The only change it makes to your own branch is the fast-forward you approve at the final gate. Worker worktrees live under each repository's `.claude/worktrees/`, and the integration worktrees under `.mz/worktrees/<task>/` in the orchestrating project. A fresh session is a `claude -p` run in auto mode with no permission prompts, so a step its classifier denies ends the unit as blocked instead of asking you. A unit you put on Codex runs through `codex exec` under your OpenAI account, so its brief and the code it reads go to OpenAI under their terms. The plugin needs `jq` on `PATH`.
 
 ## Requirements
 
 - Claude Code with cross-session messaging (v2.1.224 or later on macOS, Linux and WSL 2).
 - mz-dev-pipe in every session that runs units, mz-creative for documentation units, and mz-dev-git for review units.
 - `jq` on `PATH`.
+- For `backend: codex` only: the `codex` CLI, signed in, with the unit's mozg plugins installed in Codex at 0.58.0 or later.

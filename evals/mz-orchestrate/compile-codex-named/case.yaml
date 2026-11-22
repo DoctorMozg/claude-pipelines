@@ -1,0 +1,34 @@
+schema_version: "1.1"
+name: compile-codex-named
+description: 'A plan that names Codex for one step compiles that unit, and only that unit, to backend codex; the others stay auto.'
+tags: [compile, needs-bash]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    We settled the plan in PLAN.md. Orchestrate it: split it into units for parallel workers.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 80
+  timeout_seconds: 2400
+graders:
+  - name: orchestrate-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'
+  - name: dag-lints-clean
+    type: regex
+    pattern: 'lint: ok \(\d+ units\)'
+    target: trace
+  # dag.sh render prints Unit | Title | Kind | Skill | Repo | Backend; the docs row carries codex.
+  - name: docs-unit-on-codex
+    type: regex
+    pattern: '\| [A-Z]+-\d+ \| [^|\n]*(?:[Dd]oc|README|Tags)[^|\n]* \|(?:[^|\n]*\|){3} codex \|'
+    target: trace
+  # The plan keeps everything else on Claude, so no other row may name codex.
+  - name: only-docs-on-codex
+    type: regex
+    pattern: '\| [A-Z]+-\d+ \| (?![^|\n]*(?:[Dd]oc|README|Tags))[^|\n]* \|(?:[^|\n]*\|){3} codex \|'
+    match: not_contains
+    target: trace
