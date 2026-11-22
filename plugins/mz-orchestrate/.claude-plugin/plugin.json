@@ -1,0 +1,23 @@
+{
+  "author": {
+    "name": "Stanislav Gonorovskii",
+    "url": "https://github.com/drmozg"
+  },
+  "dependencies": [
+    "mz-base",
+    "mz-creative",
+    "mz-dev-git",
+    "mz-dev-pipe"
+  ],
+  "description": "Runs an approved plan across workers: subagents, fresh sessions and attached peer sessions, each unit in its own worktree, merged and verified as it finishes",
+  "displayName": "Mozg Orchestrate",
+  "documentationUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/plugins/mz-orchestrate/README.md",
+  "homepage": "https://www.sgon.ai/open-source/claude-pipelines",
+  "license": "MIT",
+  "name": "mz-orchestrate",
+  "privacyPolicyUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/PRIVACY.md",
+  "repository": "https://github.com/DoctorMozg/claude-pipelines",
+  "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
+  "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
+  "version": "0.58.0"
+}

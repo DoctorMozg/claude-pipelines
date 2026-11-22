@@ -1,0 +1,58 @@
+schema_version: "1.1"
+name: final-gate-resume
+description: 'A resumed run in its final phase syncs the moved start branch into the integration branch, runs the full suite, reviews the branch as an added review unit and stops at the final gate without moving main.'
+tags: [final, needs-bash]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Resume the orchestration 2026_11_22_orchestrate_calc and take it to the end.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 120
+  timeout_seconds: 2700
+graders:
+  - name: orchestrate-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'
+  # main gained a commit after the integration branch was cut, so Step 1 has something to merge.
+  - name: start-branch-synced
+    type: tool_used
+    tool: Bash
+    input_match: 'integrate\.sh merge \S+ main '
+  - name: suite-runner-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-test-runner"'
+  # The review joins the DAG through dag.sh add, which lints the two-unit DAG.
+  - name: review-unit-added
+    type: regex
+    pattern: 'lint: ok \(2 units\)'
+    target: trace
+  - name: review-unit-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: 'FR1-'
+  - name: final-gate-shown
+    type: regex
+    pattern: '## Final gate: 2026_11_22_orchestrate_calc'
+    target: trace
+  - name: final-gate-artifact
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/2026_11_22_orchestrate_calc/final_gate\.md'
+    target: trace
+  # The eval has no AskUserQuestion, so the final gate has no answer and the run must stop blocked.
+  - name: blocked-at-final-gate
+    type: regex
+    pattern: '^Status: blocked$'
+    flags: m
+    target: { source: file, path: ".mz/task/2026_11_22_orchestrate_calc/state.md" }
+  # Landing waits for Approve; the sync and the review never touch the user's checkout directly.
+  - name: no-git-merge-in-the-checkout
+    type: tool_used
+    tool: Bash
+    input_match: 'git (?:-C \S+ )?merge '
+    min: 0
+    max: 0

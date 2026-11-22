@@ -57,14 +57,15 @@ def test_migration_plan_covers_the_canonical_marketplace() -> None:
         "mz-knowledge",
         "mz-gov",
         "mz-rules",
+        "mz-orchestrate",
     )
-    assert sum(len(package.skill_sources) for package in packages) == 43
-    assert sum(len(package.role_sources) for package in packages) == 88
+    assert sum(len(package.skill_sources) for package in packages) == 47
+    assert sum(len(package.role_sources) for package in packages) == 92
     assert {
         package.plan.name
         for package in packages
         if package.plan.disposition is PackageDisposition.BLOCKED
-    } == {"mz-rules"}
+    } == {"mz-rules", "mz-orchestrate"}
     assert {
         package.plan.name: package.plan.dependencies
         for package in packages

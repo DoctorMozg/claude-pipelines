@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Collection of Claude Code plugins - agents and skills for development workflows",
-    "version": "0.57.0"
+    "version": "0.58.0"
   },
   "name": "mozg-pipelines",
   "owner": {
@@ -178,6 +178,19 @@
       ],
       "name": "mz-rules",
       "source": "./plugins/mz-rules"
+    },
+    {
+      "category": "development",
+      "keywords": [
+        "orchestration",
+        "subagents",
+        "worktrees",
+        "parallel",
+        "multi-session",
+        "workers"
+      ],
+      "name": "mz-orchestrate",
+      "source": "./plugins/mz-orchestrate"
     }
   ],
   "renames": {

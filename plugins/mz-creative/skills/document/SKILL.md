@@ -29,6 +29,7 @@ Technical documentation (README, API reference, guide, tutorial, how-to, explana
 - `scope:branch|global|working` — constrains codebase research to a subset (default: `global`)
 - `type:tutorial|howto|reference|explanation|readme|api|all` — Diátaxis content type target (default: `all` lets the writer choose; explicit type produces a single-type doc)
 - `@doc:<path>` — existing document to polish instead of creating from scratch
+- `unit:<path>` — worker mode, set by mz-orchestrate. The task description is the brief's `## Spec`, and `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question and gate in this skill and its phase files.
 
 If `$ARGUMENTS` is empty, ask via `AskUserQuestion`. Never guess.
 
@@ -63,7 +64,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 1. Resolve `PROJECT_ROOT` with the command in Constants, before any `cd` or worktree switch, and use it for every `.mz/` path below.
 1. Parse `$ARGUMENTS`. Extract: brief, `scope:`, `type:`, `@doc:` references.
-1. If brief is empty → `AskUserQuestion` for the topic. Never guess.
+1. If brief is empty → `AskUserQuestion` for the topic. Never guess. In worker mode, follow `worker-mode.md`, "Setup", instead.
 1. `task_name` = `<YYYY_MM_DD>_document_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is a snake_case summary (max 20 chars). On same-day collision append `_v2`, `_v3`.
 1. Run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`.
 1. Write `state.md`: schema_version: 2, Status, Phase, Started, phase_complete: false, what_remains: [], FilesWritten.
@@ -98,6 +99,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 - **Approve** → add `- research approved: .mz/task/<task_name>/research.md` under `## Decisions` in `state.md`, remove the `awaiting approval` entry from `what_remains`, set `Phase: research_approved`, and proceed to Phase 2.
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
+- **Worker** (`unattended: worker` in `state.md`) → `<PLUGIN_ROOT>/shared/worker-mode.md`, "Gates": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate as `auto-approved (worker)`.
 - **Any other reply (feedback)** → re-run Phase 1 with feedback, overwrite `research.md`, return to Surface 1, re-read `research.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: research gate`, stop. A missing answer is never approval.
 

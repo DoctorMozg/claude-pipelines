@@ -1,0 +1,62 @@
+schema_version: "1.1"
+name: compile-build-plan
+description: 'A build plan.md maps one to one onto units: WU-1 and WU-2 stay parallel, WU-3 depends on both, and the ids survive into the rendered gate.'
+tags: [compile, needs-bash]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    Take the build plan in plan.md and orchestrate it across workers.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 80
+  timeout_seconds: 2400
+graders:
+  - name: orchestrate-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'
+  - name: dag-written
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_orchestrate_[a-z0-9_]+/dag\.json'
+    target: trace
+  # The skill runs dag.sh lint itself; its output in a tool result is the evidence, not the compiler's claim.
+  - name: dag-lints-clean
+    type: regex
+    pattern: 'lint: ok \(\d+ units\)'
+    target: trace
+  - name: reviewer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?orchestrate-dag-reviewer"'
+    min: 1
+  - name: gate-shows-the-dag
+    type: regex
+    pattern: '## Plan for review: orchestrate[\s\S]*graph TD'
+    target: trace
+  - name: source-kind-recorded
+    type: regex
+    pattern: 'source_kind: build-plan'
+    target: trace
+  # Compiling never touches the code; only .mz/ artifacts are written.
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: ids-and-edges-kept
+    type: regex
+    pattern: '\| WU-3 \|(?:[^|\n]*\|){5} WU-1, WU-2 \|'
+    target: trace
+  - name: parallel-units-have-no-deps
+    type: regex
+    pattern: '\| WU-1 \|(?:[^|\n]*\|){5} - \|[\s\S]*\| WU-2 \|(?:[^|\n]*\|){5} - \|'
+    target: trace

@@ -57,3 +57,11 @@ disposition = "blocked"
 blockers = [
     "init-rules writes Claude settings.json hooks, and the CLAUDE.md -> AGENTS.md rewrite garbles its AGENTS.md guard.",
 ]
+
+[[packages]]
+name = "mz-orchestrate"
+disposition = "blocked"
+dependencies = ["mz-base", "mz-creative", "mz-dev-git", "mz-dev-pipe"]
+blockers = [
+    "Runs workers through Claude Code subagent worktree isolation, cross-session messaging (ListAgents, SendMessage) and the claude CLI; Codex has no equivalent.",
+]

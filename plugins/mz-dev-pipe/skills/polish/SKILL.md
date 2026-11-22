@@ -38,6 +38,7 @@ Existing code that must meet specific criteria, such as failing tests, lint or o
   - "Clean up src/billing/ — dead code, unused imports, nesting; behavior unchanged" (a cleanup criterion)
   - "No AI leftovers in this branch" (a residue criterion)
   - Any combination of pass/fail criteria and behavioral requirements
+- `unit:<path>` — worker mode, set by mz-orchestrate. The task description is the brief's `## Spec`, and `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question and gate in this skill and its phase files.
 
 If empty, ask the user what needs to be polished.
 
@@ -82,7 +83,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list; the task-dir step saves it. Otherwise all project files eligible.
 1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/"). Mark each one `check` (verified by a command), `cleanup` or `residue`; the last two carry a scope (glob, directory, git range or description) that Phase 1 resolves.
 1. **Task name** — `<YYYY_MM_DD>_polish_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case of criteria (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. Save the resolved scope list, if any, to `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`.
+1. **Task dir & state** — **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. In worker mode, follow `worker-mode.md`, "Setup", instead of the resume gate and the `printenv` check. Save the resolved scope list, if any, to `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
 ### Phase 1.5: User Approval Gate
@@ -122,6 +123,7 @@ Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop 
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → incorporate, re-run Phase 1 if needed, overwrite `assessment.md`, return to this gate, re-read `assessment.md`, and re-emit the entire plan message from scratch with the full new contents — never diff-only, never summary-only, since context compaction may have destroyed the user's memory of earlier iterations. Then re-present the selector. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 2 without explicit approval.
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
+- **Worker** (`unattended: worker` in `state.md`) → `<PLUGIN_ROOT>/shared/worker-mode.md`, "Gates": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate as `auto-approved (worker)`.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: assessment gate`, stop. A missing answer is never approval.
 
 ## Common Rationalizations
@@ -142,6 +144,8 @@ Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop 
 ## Verification
 
 Output the final criteria checklist with every item checked, along with the test run status, lint status, and iteration count. Any unchecked item blocks completion.
+
+In worker mode, end as `<PLUGIN_ROOT>/shared/worker-mode.md`, "Final message", describes, with the `STATUS:` line last.
 
 ## References
 

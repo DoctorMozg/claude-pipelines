@@ -1,0 +1,72 @@
+schema_version: "1.1"
+name: polish-worker-cleanup-unit
+description: 'Given a cleanup unit brief, polish runs as a worker: it auto-approves its assessment gate, edits only the owned module to drop dead code and unused imports, keeps render() and ends with a STATUS line without asking or committing.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:polish unit:units/WU-3.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 80
+  timeout_seconds: 1500
+graders:
+  # A slash prompt loads the skill without a Skill call, so the state file only the skill writes proves it ran.
+  - name: polish-ran
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_polish_[a-z0-9_]+/state\.md'
+    target: trace
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_polish_[a-z0-9_]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: ends-with-status-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  # The orchestrator's worker commits; the skill itself never does.
+  - name: no-commit
+    type: tool_used
+    tool: Bash
+    input_match: 'git\s+(?:-\S+\s+\S+\s+)*commit'
+    min: 0
+    max: 0
+  - name: no-edit-outside-owns
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|shop/report\.py))'
+    min: 0
+    max: 0
+  - name: no-write-outside-owns
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|shop/report\.py))'
+    min: 0
+    max: 0
+  # The skill text names the authority with a placeholder; only the model's own state or journal write carries the real unit id.
+  - name: gate-auto-approved-as-worker
+    type: regex
+    pattern: 'mz-orchestrate DAG gate, unit WU-3'
+    target: trace
+  - name: module-edited
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"[^"]*shop/report\.py'
+    min: 1
+  - name: render-kept
+    type: regex
+    pattern: 'def render\('
+    target: { source: file, path: shop/report.py }
+  # Worker mode answers the gates; it doesn't shrink the pipeline into an inline edit.
+  - name: pipeline-agents-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-(?:optimizer|code-reviewer)"'
+    min: 1

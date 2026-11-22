@@ -39,6 +39,7 @@ HIGH_EFFORT_AGENTS = {
     "gov-critic-blast-radius": "adversarial decision critique",
     "gov-critic-reversibility": "adversarial decision critique",
     "pipeline-planner": "implementation planning",
+    "orchestrate-plan-compiler": "plan to parallel units, where a missed shared file breaks merges",
     "accessibility-specialist": "WCAG hard-gate validation",
     "pipeline-coder": "bug fixes in polish and debug, where edge cases are likely",
     "pipeline-test-writer": "edge-case tests written before the code",

@@ -86,6 +86,8 @@ A user opts in to unattended runs, for CI or scheduled jobs, by setting `MZ_DEV_
   - the final report, which lists every `## Auto-approvals` entry.
 - Variant gates don't auto-approve, because they need an explicit choice. In an unattended run they take the No-answer path.
 
+Worker mode is the other auto-approving mode: a `unit:<path>` token from mz-orchestrate, with `unattended: worker` in `state.md`. It follows `worker-mode.md`, which never asks the user anything.
+
 ## Journal entry
 
 After the gate resolves, append an entry to `<PROJECT_ROOT>/.mz/journal.md`. `<PROJECT_ROOT>` is the absolute project root the skill resolved during setup, `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`. Don't append to a path relative to the Bash working directory. When mz-memory is installed, its hook records the selector's question and answer but never the artifact. Journaling never delays the gate.
@@ -93,7 +95,7 @@ After the gate resolves, append an entry to `<PROJECT_ROOT>/.mz/journal.md`. `<P
 The entry is a header line, a blank line, then `- key: value` bullets, one key per bullet:
 
 - The header is `### <UTC time> · <skill> · <task_name> · gate`, with the time from `date -u +%Y-%m-%dT%H:%M:%SZ`.
-- `phase`, `gate` (the label) and `outcome`. The outcome is `approve`, `reject`, `feedback`, `no answer` or `auto-approved (unattended)`.
+- `phase`, `gate` (the label) and `outcome`. The outcome is `approve`, `reject`, `feedback`, `no answer`, `auto-approved (unattended)` or `auto-approved (worker)`.
 - `artifact`: the path relative to the project root, followed by the artifact verbatim. In unattended mode the entry carries the path only and adds `authority: MZ_DEV_PIPE_AUTO_APPROVE=1`.
 
 A direct `>>` append bypasses the journal's redactor. In the first recipe, `<PLUGIN_ROOT>/shared/journal-artifact.sh` appends the artifact: it replaces each `<private>…</private>` span with `[redacted]`, spans across lines included, and indents the text under its bullet. Run it as a command of its own, not chained with `&&` or `;`, so the skill's grant `Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *)` matches it. Anywhere else, write a sensitive value as `[redacted]` yourself. Placeholders go into the `printf` format, which turns `%` and `\` sequences into other text, so pass a free-text value as a `%s` argument instead.

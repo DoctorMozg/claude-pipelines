@@ -1,0 +1,61 @@
+schema_version: "1.1"
+name: document-worker-readme-unit
+description: 'Given a docs unit brief, document runs as a worker: it auto-approves its research gate, writes only the owned README and ends with a STATUS line, never asking the user or committing.'
+tags: [worker, needs-bash]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:document unit:units/WU-5.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 80
+  timeout_seconds: 1500
+graders:
+  # A slash prompt loads the skill without a Skill call, so the state file only the skill writes proves it ran.
+  - name: document-ran
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_document_[a-z0-9_]+/state\.md'
+    target: trace
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_document_[a-z0-9_]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: ends-with-status-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  # The orchestrator's worker commits; the skill itself never does.
+  - name: no-commit
+    type: tool_used
+    tool: Bash
+    input_match: 'git\s+(?:-\S+\s+\S+\s+)*commit'
+    min: 0
+    max: 0
+  - name: no-edit-outside-owns
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|README\.md))'
+    min: 0
+    max: 0
+  - name: no-write-outside-owns
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|README\.md))'
+    min: 0
+    max: 0
+  # The skill text names the authority with a placeholder; only the model's own state or journal write carries the real unit id.
+  - name: gate-auto-approved-as-worker
+    type: regex
+    pattern: 'mz-orchestrate DAG gate, unit WU-5'
+    target: trace
+  - name: readme-covers-order-total
+    type: regex
+    pattern: 'order_total'
+    target: { source: file, path: README.md }

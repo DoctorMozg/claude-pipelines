@@ -27,6 +27,7 @@ Creating a new feature, module or component that spans multiple files and benefi
 ## Input
 
 - `$ARGUMENTS` — The task description. If empty, ask the user what they want built.
+- `unit:<path>` — worker mode, set by mz-orchestrate. The task description is the brief's `## Spec`, and `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question and gate in this skill and its phase files.
 
 ## Scope Parameter
 
@@ -68,7 +69,7 @@ Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's 
 
 **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
 
-**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`.
+**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. In worker mode, follow `worker-mode.md`, "Setup", instead of the resume gate and the `printenv` check.
 
 Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Pass `project_root: <PROJECT_ROOT>` and `output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`. If it returns `DONE_WITH_CONCERNS` with the test or lint command set to "none detected", note `tooling: not_detected` in `state.md` and proceed. If it returns `BLOCKED` (it couldn't write `tooling.md`), record the reason in `state.md` and proceed the same way. Tooling gaps are non-fatal at setup time.
 
@@ -121,6 +122,7 @@ Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet
 - **Reject** → update state to `aborted_by_user` and stop. Do not proceed.
 - **Any other reply (feedback)** → spawn `pipeline-planner` with feedback, overwrite `plan.md`. Do not re-run plan review — user's word is final. Return to Surface 1, re-read `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md`, and re-emit the entire plan message from scratch — never diff-only, never summary-only. This is a loop — repeat until the user explicitly approves. Never proceed to Phase 3 without explicit approval.
 - **Unattended** (`unattended: true` in `state.md`) → `<PLUGIN_ROOT>/shared/approval-gate.md`, "Unattended mode": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate in chat, under `## Auto-approvals`, in the journal and in the final report.
+- **Worker** (`unattended: worker` in `state.md`) → `<PLUGIN_ROOT>/shared/worker-mode.md`, "Gates": emit Surface 1, skip Surface 2, continue as on Approve, and log the gate as `auto-approved (worker)`.
 - **No answer** → set `Status: blocked`, keep `awaiting approval: plan gate`, stop. A missing answer is never approval.
 
 ### Phase 3: Test Writing (RED)
@@ -180,6 +182,8 @@ Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is
 ## Verification
 
 Output the final state block: task dir path, all phases marked complete, review iteration counts, file list, and tests-passing status. If any phase is incomplete, print the blocker explicitly.
+
+In worker mode, end as `<PLUGIN_ROOT>/shared/worker-mode.md`, "Final message", describes, with the `STATUS:` line last.
 
 ## Error Handling
 

@@ -195,9 +195,10 @@ claude plugin install mz-memory         # Cross-session project memory
 claude plugin install mz-handoff        # Session handoff after compaction
 claude plugin install mz-knowledge      # Obsidian knowledge base
 claude plugin install mz-gov            # Development governance
+claude plugin install mz-orchestrate    # Run a plan across parallel workers
 ```
 
-Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`.
+Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`; `mz-orchestrate` brings in `mz-base`, `mz-dev-pipe`, `mz-dev-git` and `mz-creative`.
 
 After installation, skills are available as slash commands:
 
@@ -272,6 +273,22 @@ Multi-agent orchestration skills that run full development workflows. Each skill
 All pipeline skills support `scope:branch|global|working` to constrain which files agents may edit.
 
 **[Full documentation →](plugins/mz-dev-pipe/)**
+
+______________________________________________________________________
+
+### [Mozg Orchestrate](plugins/mz-orchestrate/) (`mz-orchestrate`)
+
+Runs a plan you have already settled as parallel units, each in its own git worktree, on subagents, fresh sessions (`claude --bg` or `claude -p`) and Claude sessions you attach as workers. You approve the unit graph once; each unit then runs through the mozg skill that fits it (`build`, `debug`, `polish`, `document` or a review), is merged into an `orchestrate/<task>` branch and verified on the merged tree. A final suite and review run per repository before one final gate fast-forwards your branch. Plans can span several repositories.
+
+| Skill                  | Command                             | What it does                                                                                          |
+| ---------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **orchestrate**        | `/orchestrate <plan>`               | Compile plan → DAG review → DAG gate → dispatch and merge units → final suite and review → final gate |
+| **orchestrate-attach** | `/orchestrate-attach [name] [role]` | Turns other open sessions into workers, each limited to a purpose such as "only for review"           |
+| **orchestrate-detach** | `/orchestrate-detach [name]`        | Releases attached sessions, letting a running unit finish, move elsewhere or cancel                   |
+
+4 agents (plan-compiler, dag-reviewer, unit-runner, merge-resolver).
+
+**[Full documentation →](plugins/mz-orchestrate/)**
 
 ______________________________________________________________________
 

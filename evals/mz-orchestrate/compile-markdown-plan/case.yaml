@@ -1,0 +1,59 @@
+schema_version: "1.1"
+name: compile-markdown-plan
+description: 'A free-form markdown plan with four deliverables compiles into a linted DAG: export and search depend on storage, nothing else is chained, and the gate shows the table and graph.'
+tags: [compile, needs-bash]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    We settled the plan in PLAN.md. Orchestrate it: split it into units for parallel workers.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 80
+  timeout_seconds: 2400
+graders:
+  - name: orchestrate-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?orchestrate"'
+  - name: dag-written
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_orchestrate_[a-z0-9_]+/dag\.json'
+    target: trace
+  # The skill runs dag.sh lint itself; its output in a tool result is the evidence, not the compiler's claim.
+  - name: dag-lints-clean
+    type: regex
+    pattern: 'lint: ok \(\d+ units\)'
+    target: trace
+  - name: reviewer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?orchestrate-dag-reviewer"'
+    min: 1
+  - name: gate-shows-the-dag
+    type: regex
+    pattern: '## Plan for review: orchestrate[\s\S]*graph TD'
+    target: trace
+  - name: source-kind-recorded
+    type: regex
+    pattern: 'source_kind: markdown'
+    target: trace
+  # Compiling never touches the code; only .mz/ artifacts are written.
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  # Search uses NoteStore.by_tag and export uses Note, so both wait for the storage unit.
+  - name: storage-is-a-dependency
+    type: regex
+    pattern: '\| [A-Z]+-\d+ \| [^|\n]*[Ss]earch[^|\n]* \|(?:[^|\n]*\|){4} [A-Z]+-\d+ \|'
+    target: trace
