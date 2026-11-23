@@ -17,23 +17,13 @@ Take the top unattempted hypothesis from `backlog.md`. **First read the `## Hist
 
 ## 4.2 Stage A — parallel candidate implementation
 
-**Snapshot the base first.** An `isolation: worktree` agent starts from the repository's default branch (or local HEAD under `worktree.baseRef: "head"`), never from the working tree. Without a snapshot, a candidate would miss the user's uncommitted edits and every win promoted in an earlier round, since promotions stay uncommitted. So it would optimize stale code and be measured against a different baseline. Before dispatch, snapshot the working tree into a commit object without touching the user's index, branch, or HEAD. Run it as one Bash call:
+**Snapshot the base first.** An `isolation: worktree` agent starts from the repository's default branch (or local HEAD under `worktree.baseRef: "head"`), never from the working tree. Without a snapshot, a candidate would miss the user's uncommitted edits and every win promoted in an earlier round, since promotions stay uncommitted. So it would optimize stale code and be measured against a different baseline. Before dispatch, snapshot the working tree into a commit object without touching the user's index, branch, or HEAD:
 
 ```bash
-set -eu
-cd "$(git rev-parse --show-toplevel)"
-idx="$(mktemp -d)/index"
-GIT_INDEX_FILE="$idx" git read-tree HEAD
-GIT_INDEX_FILE="$idx" git add -A -- . ':(exclude).claude/worktrees'
-tree=$(GIT_INDEX_FILE="$idx" git write-tree)
-base=$(git -c user.name=mz-optimize -c user.email=mz-optimize@localhost \
-  commit-tree "$tree" -p HEAD -m "mz optimize <task_name> iter<N> <H#> base")
-git update-ref "refs/mz/optimize/<task_name>/iter<N>-<H#>" "$base"
-rm -r "$(dirname "$idx")"
-echo "BASE_SHA=$base"
+<PLUGIN_ROOT>/scripts/optimize-git.sh snapshot refs/mz/optimize/<task_name>/iter<N>-<H#> "mz optimize <task_name> iter<N> <H#> base"
 ```
 
-`read-tree HEAD` keeps tracked files that match an ignore rule; `add -A` then records modified, deleted, and untracked files. The ref keeps the commit safe from `git gc` until §4.10 deletes it. Record `base_sha: <BASE_SHA>` in `state.md`.
+It builds the commit in a private index, so it records modified, deleted and untracked files, and tracked files that match an ignore rule. The ref keeps the commit safe from `git gc` until §4.10 deletes it. Record the printed `BASE_SHA` as `base_sha: <BASE_SHA>` in `state.md`.
 
 Dispatch `CANDIDATE_COUNT` `pipeline-perf-candidate` agents in **one** message (parallel), each in its own worktree (`isolation: worktree`).
 
@@ -146,21 +136,15 @@ For each survivor, compare the measured outcome against the hypothesis's *predic
 
 ## 4.8 Winner promotion
 
-Among survivors, the winner is the candidate with the best measured value (on a tie, lowest CV, then lowest risk). Promote it by applying its commit's diff against `BASE_SHA` to the working tree, in one Bash call:
+Among survivors, the winner is the candidate with the best measured value (on a tie, lowest CV, then lowest risk). Promote it by applying its commit's diff against `BASE_SHA` to the working tree:
 
 ```bash
-set -eu
-cd "$(git rev-parse --show-toplevel)"
-patch="<PROJECT_ROOT>/.mz/task/<task_name>/patches/iter<N>_<H#>.patch"
-mkdir -p "$(dirname "$patch")"
-git diff --binary <BASE_SHA> <CANDIDATE_SHA> > "$patch"
-git apply --check "$patch"
-git apply "$patch"
+<PLUGIN_ROOT>/scripts/optimize-git.sh promote <BASE_SHA> <CANDIDATE_SHA> <PROJECT_ROOT>/.mz/task/<task_name>/patches/iter<N>_<H#>.patch
 ```
 
 Worktrees share the object store, so the candidate commit is readable from the main checkout. The patch is exactly the measured change, and no agent re-types it, so nothing invalidates the measurement. `git apply` writes files only; the user's index and branch stay as they were. Record `winner_patch: <path>` in `state.md`: Phase 5 reverts a rejected promotion with `git apply -R <winner_patch>`.
 
-If `git apply --check` fails, the working tree changed after the snapshot. Do not force the patch. Keep it, record `PROMOTION CONFLICT` with the patch path in the history buffer, tell the user which files conflict, and route the round as a `DEAD END` (§4.11).
+If it exits 1 with `no longer applies`, the working tree changed after the snapshot. Do not force the patch. Keep it, record `PROMOTION CONFLICT` with the patch path in the history buffer, tell the user which files conflict, and route the round as a `DEAD END` (§4.11).
 
 If the contract's `correctness_command` is `manual`, run the **Phase 4.7 Manual Correctness Checkpoint** in `<SKILL_DIR>/phases/loop_checkpoints.md` now, before continuing — a human must confirm behavior is unchanged before the candidate is banked.
 
@@ -170,7 +154,7 @@ If no candidate survived §4.5 for this hypothesis, emit `DEAD END` for it and r
 
 ## 4.10 Worktree cleanup
 
-Before §4.11, **remove every candidate worktree** from this round — the winner's patch is already applied and saved under `patches/`; the losers are discarded. For each entry in `candidate_worktrees`, run `git worktree remove --force <path>` (`git worktree unlock <path>` first if git reports it locked), then `git branch -D <branch>`. Then delete the round's base ref with `git update-ref -d refs/mz/optimize/<task_name>/iter<N>-<H#>` and set `candidate_worktrees: []`. Leave no orphan worktree, branch or ref: verify with `git worktree list` and `git for-each-ref refs/mz/optimize/<task_name>/`. This runs every round, win or `DEAD END`.
+Before §4.11, **remove every candidate worktree** from this round — the winner's patch is already applied and saved under `patches/`; the losers are discarded. Run `<PLUGIN_ROOT>/scripts/optimize-git.sh sweep <task_name> <branch> <path> …`, with each `candidate_worktrees` entry as a branch and path pair, quoting a path that contains spaces. It unlocks and removes each worktree, deletes its branch and the task's base refs, and must print `remaining=0`. Then set `candidate_worktrees: []`. This runs every round, win or `DEAD END`.
 
 ## 4.11 Round outcome & routing
 

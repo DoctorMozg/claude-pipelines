@@ -3,7 +3,7 @@
 PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 CLAUDE ?= claude
 # Pinned, so a run is reproducible; bump the sha to take a newer mzeval.
-MZEVAL ?= uvx --from git+https://github.com/DoctorMozg/mozg-eval-pipelines@78b707b mzeval
+MZEVAL ?= uvx --from git+https://github.com/DoctorMozg/mozg-eval-pipelines@ac92a08 mzeval
 EVAL_DRIVER ?= claude
 EVAL_MODEL ?= $(if $(filter codex,$(EVAL_DRIVER)),gpt-6.1-sol,sonnet)
 # Pinned, so judge-scored results stay comparable across runs and releases. Needs ANTHROPIC_API_KEY.

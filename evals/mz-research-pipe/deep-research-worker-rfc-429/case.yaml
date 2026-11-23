@@ -1,0 +1,48 @@
+schema_version: "1.1"
+name: deep-research-worker-rfc-429
+description: 'A context brief with a narrow question and a smallest-depth line. deep-research in worker mode auto-approves the decomposition, dispatches web researchers, writes the report under .mz/ and ends with the report path and STATUS: DONE.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-research-pipe:deep-research unit:units/CX1-rfc-429.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, WebSearch, WebFetch]
+  max_turns: 40
+  timeout_seconds: 1500
+graders:
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_deep_research_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: researchers-dispatched
+    type: tool_used
+    tool: Agent
+    min: 1
+  - name: report-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/research/[^"/]+\.md"'
+  - name: ends-with-report-and-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Summary)(?=[^\n]*## Report)(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0

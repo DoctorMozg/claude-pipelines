@@ -64,26 +64,10 @@ The optimization run is complete.
 
 ## 6.5 Leftover sweep — every exit
 
-§4.10 cleans up after each finished round, but a run that stops mid-round leaves candidate worktrees, their branches, and base refs behind. Every exit runs this sweep before writing the final `Status`: the §6.4 stop, a Reject at any gate, a Phase 1 hard-block, and `ALREADY WITHIN BUDGET`. Run it as one Bash call, with one `<branch> <path>` line per `candidate_worktrees` entry in `state.md` (branch first, because a path may contain spaces):
+§4.10 cleans up after each finished round, but a run that stops mid-round leaves candidate worktrees, their branches, and base refs behind. Every exit runs this sweep before writing the final `Status`: the §6.4 stop, a Reject at any gate, a Phase 1 hard-block, and `ALREADY WITHIN BUDGET`. Run it with each `candidate_worktrees` entry in `state.md` as a branch and path pair, quoting a path that contains spaces:
 
 ```bash
-set -u
-cd "$(git rev-parse --show-toplevel)" || exit 1
-while read -r branch wt; do
-  [ -n "$wt" ] || continue
-  if git worktree list --porcelain | grep -qxF "worktree $wt"; then
-    git worktree unlock "$wt" 2>/dev/null || true
-    git worktree remove --force "$wt"
-  fi
-  git branch -D "$branch" 2>/dev/null || true
-done <<'LIST'
-<branch> <path>
-LIST
-git for-each-ref --format='%(refname)' "refs/mz/optimize/<task_name>/" | while read -r ref; do
-  git update-ref -d "$ref"
-done
-git worktree prune
-git for-each-ref "refs/mz/optimize/<task_name>/"
+<PLUGIN_ROOT>/scripts/optimize-git.sh sweep <task_name> <branch> <path> <branch> <path>
 ```
 
-The last command must print nothing. Set `candidate_worktrees: []` in `state.md`. Keep `patches/`: Phase 5 needs the winner patch to revert a rejected promotion, and the patches are the record of every banked change.
+It must print `remaining=0`. Set `candidate_worktrees: []` in `state.md`. Keep `patches/`: Phase 5 needs the winner patch to revert a rejected promotion, and the patches are the record of every banked change.

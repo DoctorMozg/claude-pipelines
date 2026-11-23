@@ -27,18 +27,24 @@ class CountUniqueTests(unittest.TestCase):
     def test_repeats(self):
         self.assertEqual(count_unique([3, 1, 3, 2, 1]), 3)
 PY
-# Best of five in-process runs keeps the CV well under the noise ceiling.
+# Each timing covers 20 calls on many repeats of few values, so the set version still takes ~25 ms,
+# and best of 15 keeps its CV near 0.05: a sub-millisecond benchmark ran at CV 0.16-0.25, over optimize's 0.10 ceiling.
 cat >bench.py <<'PY'
 import time
 
 from textstats import count_unique
 
-words = [i % 1500 for i in range(3000)]
-best = min(
-    (lambda t0: (count_unique(words), time.perf_counter() - t0)[1])(time.perf_counter())
-    for _ in range(5)
-)
-print(f"{best * 1000:.3f}")
+words = [i % 30 for i in range(200000)]
+
+
+def once():
+    t0 = time.perf_counter()
+    for _ in range(20):
+        count_unique(words)
+    return time.perf_counter() - t0
+
+
+print(f"{min(once() for _ in range(15)) * 1000:.3f}")
 PY
 cat >units/OP-1.md <<'MD'
 # Unit OP-1: Speed up count_unique
@@ -51,7 +57,7 @@ cat >units/OP-1.md <<'MD'
 
 ## Spec
 
-Optimize `count_unique` in `textstats.py`. Metric: wall-clock time in milliseconds, lower is better; target below 5 ms. Measurement command: `python3 bench.py`, which prints the time in ms as its only output line. Correctness command: `make test`. Cap the run at 2 iterations. Edit only `textstats.py`: `bench.py` and the tests stay as they are.
+Optimize `count_unique` in `textstats.py`. Metric: wall-clock time in milliseconds, lower is better; target below 100 ms. Measurement command: `python3 bench.py`, which prints the time in ms as its only output line. Correctness command: `make test`. Cap the run at 2 iterations. Edit only `textstats.py`: `bench.py` and the tests stay as they are.
 MD
 git add -A
 git -c user.name=eval -c user.email=eval@example.invalid commit -q -m fixture
