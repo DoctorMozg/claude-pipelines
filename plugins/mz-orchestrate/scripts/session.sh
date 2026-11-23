@@ -30,7 +30,7 @@ check_unit() {
   git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || fail "$repo is not a git repository"
   [ -f "$envelope" ] || fail "no envelope file $envelope"
   [[ $name =~ ^[A-Za-z0-9._-]+$ ]] || fail "worktree name '$name' may hold only letters, digits, '.', '_' and '-'"
-  command -v claude >/dev/null || fail "the claude CLI is not on PATH"
+  command -v "$claude" >/dev/null || fail "the claude CLI '$claude' is not on PATH"
 }
 
 # The harness addresses a session by the socket named after its process id.
@@ -42,9 +42,12 @@ address_of() {
 }
 
 session_field() {
-  claude agents --json 2>/dev/null | jq -r --arg k "$1" --arg v "$2" --arg f "$3" \
+  "$claude" agents --json 2>/dev/null | jq -r --arg k "$1" --arg v "$2" --arg f "$3" \
     'first(.[] | select(.[$k] == $v) | .[$f]) // empty'
 }
+
+# A wrapper that sets its account's env itself, such as gnai-claude, can stand in for claude.
+claude=${MZ_ORCHESTRATE_CLAUDE:-claude}
 
 [ $# -ge 1 ] || usage
 cmd=$1
@@ -65,7 +68,7 @@ bg)
   prompt=$(sed "1a\\
 reply-to: $reply_to" "$envelope")
   # --allowedTools takes every word after it, so the prompt goes after --.
-  out=$(cd "$repo" && claude --bg --name "$name" --worktree "$name" --permission-mode auto \
+  out=$(cd "$repo" && "$claude" --bg --name "$name" --worktree "$name" --permission-mode auto \
     --permission-prompts none --settings '{"crossSessionInbound":"accept"}' \
     --allowedTools "${allowed[@]}" "${extra[@]}" -- "$prompt" 2>&1) || {
     case $out in *"not trusted"*) fallback "$repo is not a trusted workspace" ;; esac
@@ -92,7 +95,7 @@ state)
 stop)
   [ $# -eq 1 ] || usage
   # Stopping a session that already ended fails harmlessly; one still busy is a real failure.
-  if ! err=$(claude stop "$1" 2>&1) && [ "$(session_field id "$1" status)" = busy ]; then
+  if ! err=$("$claude" stop "$1" 2>&1) && [ "$(session_field id "$1" status)" = busy ]; then
     fail "could not stop session $1: $err"
   fi
   echo "stopped $1"
@@ -109,7 +112,7 @@ run)
   status=0
   (cd "$repo" &&
     CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=${CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS:-3600000} \
-      claude -p -w "$name" --output-format json --permission-mode auto --permission-prompts none \
+      "$claude" -p -w "$name" --output-format json --permission-mode auto --permission-prompts none \
       --allowedTools "${allowed[@]}" "${extra[@]}" <"$envelope" >"$out") || status=$?
   printf 'worktree=%s\nworktree_branch=%s\nexit=%s\n' \
     "$(cd "$repo" && pwd)/.claude/worktrees/$name" "worktree-$name" "$status"

@@ -1,0 +1,46 @@
+schema_version: "1.1"
+name: review-branch-worker-reviews-unit
+description: 'A final review brief that names main as its base. review-branch in worker mode diffs against main, dispatches branch-reviewer with the unit spec, edits nothing, and ends with the report path, findings and STATUS: DONE without asking.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-git:review-branch unit:units/FR1-app.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 40
+  timeout_seconds: 1500
+graders:
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_review_branch_[a-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: reviewer-gets-main-and-the-spec
+    type: tool_used
+    tool: Agent
+    input_match: '(?=[^\n]*base_branch: main)(?=[^\n]*Unit spec)'
+  - name: report-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/reviews/[^"]+\.md"'
+  - name: ends-with-report-findings-and-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Report)(?=[^\n]*## Findings)(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: source-untouched
+    type: regex
+    pattern: 'sum\(items\[1:\]\)'
+    target: { source: file, path: cart.py }

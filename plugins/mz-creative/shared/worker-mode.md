@@ -1,6 +1,6 @@
 # Worker Mode
 
-mz-orchestrate runs one unit of an approved plan by invoking a skill with a `unit:<path>` token. The user already approved the whole plan at the orchestrator's DAG gate, and nobody is watching this run. Skills that support worker mode (`build`, `debug`, `polish`, `document`) follow this file whenever the token is present.
+mz-orchestrate runs one unit of an approved plan by invoking a skill with a `unit:<path>` token. The user already approved the whole plan at the orchestrator's DAG gate, and nobody is watching this run. Skills that support worker mode (`build`, `debug`, `polish`, `document`, and `review-branch` and `audit` for `kind: review` units) follow this file whenever the token is present.
 
 ## Unit brief
 

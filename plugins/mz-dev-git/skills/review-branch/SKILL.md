@@ -2,7 +2,7 @@
 name: review-branch
 description: 'Reviews every change on the current git branch against its base and writes a findings report. Use when the user says "review my branch", "what did I change" or "check this before I push". Not for a pushed GitHub PR (use github-review-pr).'
 argument-hint: '[base-branch (default: main)]'
-allowed-tools: Agent, Bash(git rev-parse *), Bash(git branch --show-current *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, AskUserQuestion
+allowed-tools: Agent, Bash(git rev-parse *), Bash(git branch --show-current *), Bash(git diff *), Bash(mkdir *), Bash(date *), Read, Write, Glob, Grep, AskUserQuestion
 ---
 
 # Review Current Branch
@@ -26,6 +26,19 @@ Reviewing every change on the current git branch against a base branch and writi
 ## Arguments
 
 - `$ARGUMENTS[0]` (optional) — Base branch to diff against. Defaults to `main`.
+- `unit:<path>` — worker mode, set by mz-orchestrate for a final review unit. The token is never a base branch: the base comes from the brief, as Worker Mode below says.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill, and these steps replace the parts of Core Process they name:
+
+- **Brief.** Read it; its `kind` is `review` and `owns` is empty. Write nothing outside `.mz/` and edit no code. Its `## Spec` goes into the branch-reviewer prompt as a `Unit spec:` block.
+- **Setup.** Follow worker-mode.md, "Setup": `task_name` is `<YYYY_MM_DD>_review_branch_<id-slug>`, and `state.md` gets `worker_unit` and `unattended: worker`.
+- **Base.** The base is the branch the spec names after `Base branch:`. Check it with `git rev-parse --verify <base>`. A spec that names none, or a base that doesn't resolve, is a blocker; never fall back to `main`.
+- **Step 1.** Replace the main/master check with `git diff --quiet <base>...HEAD`. Exit 0 means nothing to review: set `Status: complete`, `Phase: nothing_to_review`, and end `STATUS: DONE` with that note.
+- **Step 2.** Dispatch branch-reviewer with both waves as usual. Reading the diff yourself skips the review the merge relies on.
+- **Errors.** Every AskUserQuestion escalation under Error Handling is a blocker: record it in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`.
+- **Final message.** After the Step 3 summary, add `## Report` with the report's absolute path, then `## Findings`, one line per finding: `<severity> <file>:<line> — <one-line fix>`. `Critical:` maps to `critical`, `Optional:` to `major` and `Nit:` to `minor`; `FYI:` and low-confidence lines stay in the report only. Then `## Verify` (not run: the worker runs it) and the status line. Findings never change the status: a finished report is `STATUS: DONE`.
 
 ## Constants
 

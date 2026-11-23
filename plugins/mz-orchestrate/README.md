@@ -13,7 +13,7 @@ claude plugin marketplace add DoctorMozg/claude-pipelines
 claude plugin install mz-orchestrate
 ```
 
-Worker mode needs mz-dev-pipe (and mz-creative for documentation units) installed in every session that runs units.
+Worker mode needs mz-dev-pipe (and mz-creative for documentation units) installed in every session that runs units, and mz-dev-git wherever the final review runs.
 
 ## Quick start
 
@@ -138,7 +138,7 @@ The full field list and the rules for a good unit are in `skills/orchestrate/ref
 
 The compiler leaves `backend` at `auto` unless the plan or you name one, and `auto` never picks Codex. Subagents, fresh sessions and Codex runs together take at most 3 slots (`MAX_WORKERS`), because each worker runs a skill that dispatches about 6 agents of its own. Each peer runs one unit at a time, outside that limit.
 
-A fresh `--bg` session shows up in `claude agents` under the name `orch-<task>-<id>`. You can watch it with `claude attach orch-<task>-<id>`, and it messages its result back to the orchestrator. Claude Code refuses `--bg` in a repository you haven't trusted (open `claude` there once and accept the prompt), and then the unit runs as `claude -p`. A fresh session's permissions are its own: a step its auto-mode classifier denies ends the unit as `FAILED` or `BLOCKED` instead of asking you.
+A fresh `--bg` session shows up in `claude agents` under the name `orch-<task>-<id>`. You can watch it with `claude attach orch-<task>-<id>`, and it messages its result back to the orchestrator. Claude Code refuses `--bg` in a repository you haven't trusted (open `claude` there once and accept the prompt), and then the unit runs as `claude -p`. A fresh session's permissions are its own: a step its auto-mode classifier denies ends the unit as `FAILED` or `BLOCKED` instead of asking you. Fresh sessions inherit the orchestrator's environment, so an alias that sets `HOME` or `CODEX_HOME` carries over. When you start Claude Code through a wrapper script that sets its own environment, set `MZ_ORCHESTRATE_CLAUDE` to that script's name or path and fresh sessions start through it instead of plain `claude`.
 
 ### Running units on Codex
 
@@ -238,7 +238,7 @@ Started as `claude --bg`, `/orchestrate` has to move into its own worktree befor
 
 ## Worker mode in other plugins
 
-`build`, `debug` and `polish` (mz-dev-pipe) and `document` (mz-creative) take a `unit:<path>` argument, a brief written by the orchestrator. With it they answer their own approval gates on the strength of the orchestrator's approval, still run every phase and agent, never ask a question, keep their edits inside the unit's files, and end with a `STATUS:` line. A question they would have asked comes back to the orchestrator as `STATUS: BLOCKED`. The contract is in `shared/worker-mode.md`.
+`build`, `debug` and `polish` (mz-dev-pipe) and `document` (mz-creative) take a `unit:<path>` argument, a brief written by the orchestrator. With it they answer their own approval gates on the strength of the orchestrator's approval, still run every phase and agent, never ask a question, keep their edits inside the unit's files, and end with a `STATUS:` line. A question they would have asked comes back to the orchestrator as `STATUS: BLOCKED`. The review skills take the same argument and edit nothing: `review-branch` (mz-dev-git), used for the final review, diffs against the base branch the brief names, and `audit` (mz-dev-pipe) reads its depth, scope and lenses from the spec. Both list their findings as `critical`, `major` or `minor`. The contract is in `shared/worker-mode.md`.
 
 If a skill needs a file outside `owns`, it makes the smallest edit and reports it under `## Concerns`. A large edit stops with `STATUS: BLOCKED`. The worker, not the skill, commits the result: one commit per unit, staging only the `owns` paths.
 

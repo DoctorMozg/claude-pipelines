@@ -31,6 +31,18 @@ A report-only hunt for problems across multiple files and concern categories, as
 ## Input
 
 - `$ARGUMENTS` — Optional `depth:` modifier (default `standard`), scope hint (`scope:branch`), lens hint (`"security review"`), or combination. If ambiguous, ask. Never guess.
+- `unit:<path>` — worker mode, set by mz-orchestrate for a review unit. The brief's `## Spec` takes the place of `$ARGUMENTS`, and Worker Mode below says what changes.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill and its phase files. These steps replace the parts they name:
+
+- **Brief.** Read it; its `kind` is `review` and `owns` is empty. Parse the `## Spec` as the argument: `depth:`, `scope:`, paths and lens keywords. The audit is report-only as always, so write nothing outside `.mz/`.
+- **Setup.** Follow worker-mode.md, "Setup", instead of the resume gate: `task_name` is `<YYYY_MM_DD>_audit_<id-slug>` (`_deep_audit_` for `depth:deep`), and `state.md` gets `worker_unit` and `unattended: worker`. Write it with the Write tool, which creates the folder.
+- **Lens selection.** A spec with no lens keyword and no path runs all five lenses, as a vague argument does, instead of asking: the planner wrote it in prose and the DAG gate approved it. Note that under `## Ask-user events` in `scope.md`.
+- **Pipeline.** Run every phase of the chosen depth and dispatch every researcher. Reading the code yourself skips the lenses the review relies on.
+- **Blockers.** The zero-files question in Phase 3, a write conflict that persists after one retry, and any other point where the skill would ask: record it in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`.
+- **Final message.** After the Verification block, add `## Report` with the absolute path of `summary.md`, then `## Findings`, one line per finding in the report body: `<severity> <file>:<line> — <one-line fix>`. Map each lattice level to its review label with `<PLUGIN_ROOT>/shared/severity-lattice.md`, "Mapping to review labels", then `Critical:` to `critical`, `Optional:` to `major` and `Nit:` to `minor`; `FYI:` findings stay in the report only. Then `## Verify` (not run: the worker runs it) and the status line. Findings never change the status: a finished report is `STATUS: DONE`.
 
 ## Scope Parameter
 

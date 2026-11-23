@@ -254,6 +254,33 @@ class TestStateAndStop:
         assert "could not stop session ab12cd34" in run("stop", "ab12cd34", code=1, env=env).stderr
 
 
+class TestClaudeBinary:
+    @pytest.fixture
+    def wrapper(self, tmp_path: Path, log: Path) -> Path:
+        path = tmp_path / "gnai-claude"
+        path.write_text(f'#!/usr/bin/env bash\necho "$1" >> "{log}.wrapped"\nexec claude "$@"\n')
+        path.chmod(0o755)
+        return path
+
+    def test_every_call_goes_through_the_named_wrapper(
+        self, run: Run, repo: Path, envelope: Path, log: Path, tmp_path: Path, wrapper: Path
+    ) -> None:
+        env = {"MZ_ORCHESTRATE_CLAUDE": str(wrapper), "FAKE_AGENTS": "[]"}
+        run("run", repo, "n", "direct", envelope, tmp_path / "out.json", env=env)
+        run("stop", "ab12cd34", env=env)
+
+        assert log.with_suffix(".wrapped").read_text().splitlines() == ["-p", "stop"]
+
+    def test_a_missing_wrapper_fails_before_starting_anything(
+        self, run: Run, repo: Path, envelope: Path, log: Path, tmp_path: Path
+    ) -> None:
+        env = {"MZ_ORCHESTRATE_CLAUDE": "no-such-claude"}
+        result = run("run", repo, "n", "direct", envelope, tmp_path / "o.json", code=1, env=env)
+
+        assert "'no-such-claude' is not on PATH" in result.stderr
+        assert not log.with_suffix(".args").exists()
+
+
 class TestResult:
     def test_prints_the_final_text(self, run: Run, tmp_path: Path) -> None:
         out = tmp_path / "out.json"

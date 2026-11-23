@@ -1,0 +1,46 @@
+schema_version: "1.1"
+name: audit-worker-reports-unit
+description: 'A review brief whose spec names no lens and no path. audit in worker mode runs its lenses instead of asking, edits nothing, and ends with the summary path, findings and STATUS: DONE.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:audit unit:units/RV1-cart.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 40
+  timeout_seconds: 1200
+graders:
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_audit_[a-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: researchers-dispatched
+    type: tool_used
+    tool: Agent
+    min: 2
+  - name: summary-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_audit_[a-z0-9_-]+/summary\.md"'
+  - name: ends-with-report-findings-and-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Report)(?=[^\n]*## Findings)(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: source-untouched
+    type: regex
+    pattern: 'sum\(items\[1:\]\)'
+    target: { source: file, path: cart.py }
