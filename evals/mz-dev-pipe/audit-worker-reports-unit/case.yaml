@@ -15,7 +15,7 @@ execution:
 graders:
   - name: worker-mode-recorded
     type: regex
-    pattern: '_audit_[a-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    pattern: '_audit_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
     target: trace
   - name: never-asks-the-user
     type: tool_used
@@ -29,7 +29,7 @@ graders:
   - name: summary-written
     type: tool_used
     tool: Write
-    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_audit_[a-z0-9_-]+/summary\.md"'
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_audit_[A-Za-z0-9_-]+/summary\.md"'
   - name: ends-with-report-findings-and-done
     type: regex
     pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Report)(?=[^\n]*## Findings)(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'

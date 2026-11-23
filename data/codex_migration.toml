@@ -61,7 +61,7 @@ blockers = [
 [[packages]]
 name = "mz-orchestrate"
 disposition = "blocked"
-dependencies = ["mz-base", "mz-creative", "mz-dev-git", "mz-dev-pipe"]
+dependencies = ["mz-base", "mz-creative", "mz-dev-git", "mz-dev-pipe", "mz-research-pipe"]
 blockers = [
     "Runs workers through Claude Code subagent worktree isolation, cross-session messaging (ListAgents, SendMessage) and the claude CLI; Codex has no equivalent.",
 ]

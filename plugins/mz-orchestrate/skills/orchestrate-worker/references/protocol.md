@@ -24,7 +24,7 @@ Plain-text envelopes that the orchestrator and its workers exchange. Peers get t
 ORCH-ATTACH v1 (handle with mz-orchestrate:orchestrate-worker)
 orchestrator: <name> [<ref>]
 project: <orchestrator project root>
-role-kinds: change, review
+role-kinds: change, review, context
 role-repos: <absolute repo paths, or "any">
 role-paths: <globs, or "any">
 role-skills: <plugin:skill list, or "any">
@@ -60,7 +60,7 @@ reply-to: <orchestrator address, only in the prompt of a started --bg session>
 task: <orchestrator task name>
 unit: <id>
 title: <title>
-kind: change|review
+kind: change|review|context
 skill: <plugin:skill>|direct
 repo: <absolute repo path>
 base-commit: <sha on the integration branch>

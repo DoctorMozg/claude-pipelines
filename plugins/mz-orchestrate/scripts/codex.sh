@@ -32,6 +32,8 @@ repo=$(cd "$repo" && git rev-parse --show-toplevel)
 wt=$repo/.claude/worktrees/$name
 mkdir -p "$out"
 
+report_path=none report_text=none
+
 # status verify head-commit files notes; the worktree is reported only once it exists.
 result() {
   local where=none
@@ -40,8 +42,8 @@ result() {
     printf 'ORCH-RESULT v1 (handle with mz-orchestrate:orchestrate)\n'
     printf 'task: %s\nunit: %s\nstatus: %s\nrepo: %s\nworktree: %s\nbranch: %s\n' \
       "$task" "$unit" "$1" "$repo" "$where" "$branch"
-    printf 'head-commit: %s\nverify: %s\nfiles: %s\nreport: none\n' "$3" "$2" "$4"
-    printf -- '--- notes ---\n%s\n--- report ---\nnone\nEND ORCH-RESULT\n' "${5:-none}"
+    printf 'head-commit: %s\nverify: %s\nfiles: %s\nreport: %s\n' "$3" "$2" "$4" "$report_path"
+    printf -- '--- notes ---\n%s\n--- report ---\n%s\nEND ORCH-RESULT\n' "${5:-none}" "$report_text"
   } | tee "$out/result.txt"
   exit 0
 }
@@ -82,7 +84,17 @@ DONE | DONE_WITH_CONCERNS | BLOCKED) ;;
 *) result FAILED not-run none "" "codex exited $code without a STATUS line: $(tail -n 5 "$out/stderr.log")" ;;
 esac
 
-[ "$kind" = review ] && result "$status" not-run none "" "$notes"
+if [ "$kind" != change ]; then
+  # A review or context skill names its report under `## Report`; the text goes back whole,
+  # because a context unit's dependents read it after this worktree is gone.
+  path=$(sed -n '/^## Report$/,${/^## Report$/d;/^[[:space:]]*$/d;p;q;}' <<<"$final" | tr -d '`')
+  [ -z "$path" ] || [[ $path == /* ]] || path=$wt/$path
+  if [ -n "$path" ] && [ -f "$path" ]; then
+    report_path=$path
+    report_text=$(cat "$path")
+  fi
+  result "$status" not-run none "" "$notes"
+fi
 
 verified=not-run
 if [ -n "$verify" ]; then

@@ -7,7 +7,8 @@
     "mz-base",
     "mz-creative",
     "mz-dev-git",
-    "mz-dev-pipe"
+    "mz-dev-pipe",
+    "mz-research-pipe"
   ],
   "description": "Runs an approved plan across workers: subagents, fresh sessions and attached peer sessions, each unit in its own worktree, merged and verified as it finishes",
   "displayName": "Mozg Orchestrate",
@@ -19,5 +20,5 @@
   "repository": "https://github.com/DoctorMozg/claude-pipelines",
   "supportUrl": "https://github.com/DoctorMozg/claude-pipelines/issues",
   "termsOfServiceUrl": "https://github.com/DoctorMozg/claude-pipelines/blob/master/LICENSE",
-  "version": "0.61.0"
+  "version": "0.62.0"
 }

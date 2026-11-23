@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The git side of an orchestration run: the integration worktree, unit merges, the scope check and cleanup.
+# The git side of an orchestration run: the integration worktree, unit merges, the scope check, checkpoint probes and cleanup.
 set -euo pipefail
 
 usage() {
@@ -11,6 +11,9 @@ usage: integrate.sh init <repo> <task> <worktree>
        integrate.sh abort <worktree>
        integrate.sh scope <repo> <base> <unit-branch> <glob> [<glob> ...]
        integrate.sh cleanup <repo> <unit-worktree|none> <unit-branch> <integration-branch>
+       integrate.sh merges <worktree> <since-commit>
+       integrate.sh probe <repo> <path> <commit>
+       integrate.sh unprobe <repo> <path>
 EOF
   exit 2
 }
@@ -186,6 +189,32 @@ cleanup)
     git -C "$repo" branch -q -D "$branch"
   fi
   echo "removed $branch"
+  ;;
+merges)
+  [ $# -eq 2 ] || usage
+  require_repo "$1"
+  # One line per merge on the integration branch, oldest first: the steps a checkpoint bisects.
+  git -C "$1" log --first-parent --reverse --format='%H %s' "$2..HEAD"
+  ;;
+probe)
+  [ $# -eq 3 ] || usage
+  repo=$1 path=$2 commit=$3
+  require_repo "$repo"
+  sha=$(git -C "$repo" rev-parse -q --verify "$commit^{commit}") || fail "no commit $commit"
+  # A detached worktree, so the suite runs on a fixed commit while merges go on in the integration worktree.
+  if [ -d "$path" ] && git -C "$path" rev-parse --git-dir >/dev/null 2>&1; then
+    git -C "$path" checkout -q --force --detach "$sha"
+  else
+    git -C "$repo" worktree add -q --detach "$path" "$sha"
+  fi
+  printf 'probe=%s\ncommit=%s\n' "$(cd "$path" && pwd)" "$sha"
+  ;;
+unprobe)
+  [ $# -eq 2 ] || usage
+  require_repo "$1"
+  [ ! -d "$2" ] || git -C "$1" worktree remove --force "$2"
+  git -C "$1" worktree prune
+  echo "removed $2"
   ;;
 *)
   usage

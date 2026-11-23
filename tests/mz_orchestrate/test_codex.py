@@ -201,6 +201,39 @@ class TestReviewResult:
         assert notes(out.stdout) == "Critical: calc/ops.py:2 add ignores overflow."
 
 
+class TestContextResult:
+    @pytest.mark.parametrize("named", [".mz/research/r.md", "`{wt}/.mz/research/r.md`"])
+    def test_hands_back_the_named_report_in_full(
+        self, run: Run, envelope: Callable[..., Path], repo: Path, named: str
+    ) -> None:
+        wt = repo / ".claude" / "worktrees" / "orch-t1-WU-1"
+        last = f"Retry-After applies.\n## Report\n{named.format(wt=wt)}\nSTATUS: DONE"
+        out = run(
+            envelope(kind="context", skill="mz-research-pipe:deep-research"),
+            env={
+                "FAKE_LAST": last,
+                "FAKE_FILES": ".mz/research/r.md",
+                "FAKE_PLUGINS": "mz-research-pipe@m  installed, enabled  1 /x",
+            },
+        )
+        result = fields(out.stdout)
+        assert (result["status"], result["report"]) == ("DONE", f"{wt}/.mz/research/r.md")
+        assert out.stdout.split("--- report ---\n")[1].startswith("changed\nEND ORCH-RESULT")
+
+    def test_a_missing_report_file_sends_none(
+        self, run: Run, envelope: Callable[..., Path]
+    ) -> None:
+        out = run(
+            envelope(kind="context", skill="mz-research-pipe:explain"),
+            env={
+                "FAKE_LAST": "## Report\n.mz/nowhere.md\nSTATUS: DONE",
+                "FAKE_FILES": "",
+                "FAKE_PLUGINS": "mz-research-pipe@m  installed, enabled  1 /x",
+            },
+        )
+        assert fields(out.stdout)["report"] == "none"
+
+
 class TestRefusal:
     def test_a_skill_missing_from_codex_is_refused_before_any_worktree(
         self, run: Run, envelope: Callable[..., Path], repo: Path, tmp_path: Path

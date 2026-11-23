@@ -16,8 +16,9 @@ Then find the repositories. The project root is one. For every other repository 
 
 Write `<TASK_DIR>/skills.md` from this session's own skill listing, so units go only to skills that are installed. One line per skill that is present: `<plugin:skill> — <its description>`, for these:
 
-- `mz-dev-pipe:build`, `mz-dev-pipe:debug`, `mz-dev-pipe:polish`, `mz-creative:document`: change skills that accept a `unit:` brief.
+- `mz-dev-pipe:build`, `mz-dev-pipe:debug`, `mz-dev-pipe:polish`, `mz-dev-pipe:optimize`, `mz-creative:document`, `mz-creative:copywrite`, `mz-creative:naturalize`, `mz-research-pipe:translate`: change skills that accept a `unit:` brief.
 - `mz-dev-git:review-branch`, `mz-dev-pipe:audit`: review skills.
+- `mz-research-pipe:deep-research`, `mz-research-pipe:explain`: context skills, whose report goes into the specs of the units that depend on them.
 
 Add `direct — the worker makes a small mechanical edit itself` as the last line. When none of the change skills is installed, say so: every change unit will be `direct`, and the user should install mz-dev-pipe first.
 

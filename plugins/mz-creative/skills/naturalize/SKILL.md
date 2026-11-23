@@ -32,6 +32,7 @@ Rewrites existing AI-generated prose so it reads as human-written.
 - `voice:@file:<path>` — a voice profile: free-form notes on how one writer writes, per register (sentence length, final periods, commas, tone markers, stock phrases, what not to copy). The agent rewrites toward the register it matches
 - `allow:<name>[,<name>...]` — punctuation the ban lets through, from `em-dash`, `en-dash`, `semicolon`, `ellipsis` and `arrow`, for a writer whose formal register uses them
 - `research:yes` — `pipeline-web-researcher` pulls current AI pattern data from authoritative web sources before the rewrite (use when the embedded vocabulary may be 18+ months old)
+- `unit:<path>` — worker mode, set by mz-orchestrate. The brief's `## Spec` names the files and choices, and `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill and its phase files. See Worker Mode below.
 
 If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a file path. Never guess.
 
@@ -40,6 +41,7 @@ If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for either inline text or a 
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
 - **TASK_DIR**: `<PROJECT_ROOT>/.mz/task/`
 - **REPORT_DIR**: `<PROJECT_ROOT>/.mz/reports/`
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill and phase files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file, running a command, or passing a path to an agent.
 - **CHUNK_THRESHOLD**: 2000 (words above this trigger section-by-section rewriting)
 - **PUNCTUATION_CHECK**: `${CLAUDE_PLUGIN_ROOT}/scripts/forbidden-punctuation.sh` (each `--preserve <term>` exempts a preserved term and each `--allow <name>` an allowed character; exit 0 when clean, 1 with one `file:line: <name> <char>` line per hit, 2 on a usage error or a file it can't read)
 
@@ -70,6 +72,18 @@ No phase asks for approval. File input is safe to overwrite because `input.md` k
 1. Emit a visible setup block: `task_name`, input source, length in words, preserve terms, voice profile, allowed punctuation, research flag.
 
 Then run Phases 1 and 2 from `phases/rewriting.md`.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill and its phase files. These steps replace the parts they name:
+
+- **Brief.** Read it; its `kind` is `change`. Parse the `## Spec` as the argument: the files to rewrite (as `@file:` references or plain paths) and any `preserve:`, `voice:`, `allow:` or `research:yes` choices, in those forms or in prose. Every named file must sit inside `owns`; the rewrite is in place, as for any file input.
+- **Setup.** Follow worker-mode.md, "Setup", instead of the empty-argument question: `task_name` is `<YYYY_MM_DD>_naturalize_<id-slug>`, started fresh with `_vN` on a collision. `state.md` gets `worker_unit: <path>` and `unattended: worker`, written with the Write tool before Phase 1. With several files, `state.md` stays at the task root and each file runs Phases 1 and 2 in its own subfolder `<task_name>/<file-slug>/`, with its own `input.md`, `output.md` and report.
+- **Choices.** Where the skill would ask, the spec settles it. A choice the spec doesn't give takes the skill's default: no `preserve:`, no `voice:`, no `allow:` and no research. A named `voice:` profile that is missing or binary, or an unknown `allow:` name, is a blocker, since a default would not be the writer's choice.
+- **Pipeline.** Run every phase and dispatch `expert-naturalizer` for every file, plus `pipeline-web-researcher` first when the spec asks for research. Rewriting inline skips the pattern detection the plan relies on. The punctuation check script still runs, including its one fix-only re-dispatch.
+- **Gates.** There is no approval gate: the overwrite and the diff already run unasked. Log it in `state.md` and the final message as `outcome: auto-approved (worker)` with `authority: mz-orchestrate DAG gate, unit <id>`.
+- **Blockers.** No file named, a named file that is missing, binary or over 50KB, a file outside `owns`, inline text with no file to rewrite, a missing `voice:` profile, an unknown `allow:` name, a `BLOCKED` return from `expert-naturalizer`, a `NEEDS_CONTEXT` that the one re-dispatch doesn't settle, and a `state.md` with a higher `schema_version`: record the question in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`. Files that need no answer are still rewritten first.
+- **Final message.** After the Verification block, add `## Files changed` (one path per line, the rewritten files only), `## Verify` (the brief's `verify` command and its result, or not run and why), `## Concerns` when the punctuation check left lines, and the status line last. A check that still reports lines is `STATUS: DONE_WITH_CONCERNS`.
 
 ## Common Rationalizations
 

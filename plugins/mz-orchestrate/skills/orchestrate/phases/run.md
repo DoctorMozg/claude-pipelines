@@ -18,16 +18,18 @@ Run this step only when resuming a task whose `Phase` is `run`. The old session'
    - On a `--bg` session (`backend_used: session:bg`): its `reply-to` names the old session, so its result can't arrive. Run `session.sh stop` with the session id from its `note`, then treat it as the cases below do.
    - Otherwise, when its `branch` exists with a commit beyond `base_commit` (`git -C <repo> rev-list --count <base_commit>..<branch>`), the worker finished its commit before the restart: `dag.sh DAG mark <id> done head_commit=<branch tip> note=resumed` and treat it as `DONE` in Step 3, which checks scope and merges with verify. It is not run again.
    - Otherwise nothing of it survived: clean up its worktree as in Step 4, using the unit's recorded `worktree` and `worktree_branch`, or, for a subagent that never reported, the entry of `git -C <repo> worktree list --porcelain` on `branch`. Then `dag.sh DAG requeue <id>`, which doesn't count the lost attempt, and Step 2 runs it again.
+1. A checkpoint that was running died with the old session: remove `checkpoint_running`, and Step 4's next merge starts a new one.
 1. Say in chat what was merged, re-queued and asked, then continue with Step 2.
 
 ## Step 1: Prepare
 
 1. For each repository in `repos`, run `integrate.sh init <repo> <task_name> <PROJECT_ROOT>/.mz/worktrees/<task_name>/<repo basename>`. Record `start_branch`, `start_checkout`, `integration_branch`, `worktree` and `tip` for it in state under `integration`. When the repository is a `--bg` session's worktree, `start_branch` and `start_checkout` are the branch and checkout the session left, not the worktree's own. When it prints `dirty=yes`, tell the user in one line that uncommitted edits in their checkout are not part of the run; `dirty=unknown` means the session can't see them.
+1. Take a baseline, so checkpoints count only what the run breaks. In one wave, dispatch `mz-dev-pipe:pipeline-tooling-detector` (model as pinned) for each repository with `project_root: <integration worktree>` and `output_path: <TASK_DIR>/final/<repo basename>/tooling.md`. Then, in one wave, for each repository whose tooling names a test command, dispatch `mz-dev-pipe:pipeline-test-runner` with `test_command: cd <integration worktree> && <test command>` and `output_path: <TASK_DIR>/checkpoints/<repo basename>/baseline.md`. Record `checkpoint: <tip>` for the repository under `integration`, and the tests that already fail as `baseline_failures`. A repository with no test command gets `checkpoint: off`. Reuse both files when they exist.
 1. Set `Phase: run`, `phase_complete: false`.
 
 ## Step 2: Dispatch ready units
 
-Run `dag.sh DAG ready` and `dag.sh DAG list running`. Choose each ready unit's backend as backends.md says, in the order `ready` prints them, while a slot is free.
+Run `dag.sh DAG ready` and `dag.sh DAG list running`. Choose each ready unit's backend as backends.md says, in the order `ready` prints them, while a slot is free. An `exclusive` unit runs alone: once it is ready, `ready` holds every other unit back until running units finish and it has run, so its benchmark doesn't share the machine.
 
 For each unit:
 
@@ -35,7 +37,7 @@ For each unit:
 
 1. `dag.sh DAG mark <id> running base_commit=<base> branch=<branch> deadline=<now plus UNIT_DEADLINE>`.
 
-1. Build the envelope from the unit, in the `ORCH-UNIT` format of `<PLUGIN_ROOT>/skills/orchestrate-worker/references/protocol.md`: `owns` comma-separated, `deadline` now plus `UNIT_DEADLINE`, and the unit's `spec` after `--- spec ---`. On a retry, append a `## Previous attempt` section to the spec with the last result's notes and any guidance the user gave.
+1. Build the envelope from the unit, in the `ORCH-UNIT` format of `<PLUGIN_ROOT>/skills/orchestrate-worker/references/protocol.md`: `owns` comma-separated, `deadline` now plus `UNIT_DEADLINE`, and the unit's `spec` after `--- spec ---`. For each `depends_on` unit of `kind: context`, append `## Context from <dep id>: <dep title>` and the full text of `<TASK_DIR>/units/<dep id>.md` to the spec, since the worker never reads `.mz/`. On a retry, append a `## Previous attempt` section to the spec with the last result's notes and any guidance the user gave.
 
 1. Dispatch it on its backend, as backends.md says.
 
@@ -58,8 +60,8 @@ Wave complete (units, batch <b>) — <returned>/<dispatched> agents returned
 
 Take the last `ORCH-RESULT` envelope in the worker's output or message; the unit's `worktree` and `worktree_branch` are in DAG by now. When its `--- report ---` section isn't `none`, Write that text to `<TASK_DIR>/units/<id>.md`; the unit's worktree may already be gone. Output with no envelope counts as `status: FAILED` with note `no result from the worker`.
 
-- **`DONE` or `DONE_WITH_CONCERNS`, `kind: change`.** Run `integrate.sh scope <repo> <base_commit> <branch> <owns globs…>`. Any file it prints is outside the unit's `owns`: go to Step 5 with reason `edited outside owns`. Otherwise `dag.sh DAG mark <id> done head_commit=<sha> result=<one line>` and merge it (Step 4). Keep the concerns for the final summary.
-- **`DONE`, `kind: review`.** `dag.sh DAG mark <id> done result=<TASK_DIR>/units/<id>.md>`, keep the findings for the final summary, and clean up as in Step 4.
+- **`DONE` or `DONE_WITH_CONCERNS`, `kind: change`.** Run `integrate.sh scope <repo> <base_commit> <branch> <owns globs…>`. Any file it prints is outside the unit's `owns`: go to Step 5 with reason `edited outside owns`. Otherwise `dag.sh DAG mark <id> done head_commit=<sha> result=<one line>` and merge it (Step 4). Keep the concerns for the final summary. For an `mz-dev-pipe:optimize` unit, the one line is the metric with its baseline and banked values from the worker's results block, such as `p50 latency ms: 16.2 → 4.1`, because the final phase measures it again against that value.
+- **`DONE` or `DONE_WITH_CONCERNS`, `kind: review` or `kind: context`.** `dag.sh DAG mark <id> done result=<TASK_DIR>/units/<id>.md`, keep review findings for the final summary, and clean up as in Step 4. A context unit whose `--- report ---` is `none` has nothing for its dependents: treat it as `FAILED` with note `no report`.
 - **`FAILED`, or verify `fail`.** If `attempts` is at most `MAX_AUTO_RETRIES`, `dag.sh DAG mark <id> pending note=<one line>` and let Step 2 retry it with the failure in its spec. Otherwise Step 5 with reason `failed twice`.
 - **`BLOCKED`.** Step 5 with the worker's question and options.
 - **`REFUSED`.** Step 5 with the refusal reason.
@@ -75,8 +77,21 @@ Merges into one repository run one at a time, in the order results arrive. Each 
 1. Exit 3 with `conflicted=<file>` lines: dispatch `orchestrate-merge-resolver` (model: **opus**, as pinned) with the integration worktree, the conflicted files, `DAG`, the unit id, the ids of merged units whose `owns` cover those files, and their verify commands. On `DONE`, continue with 4. On anything else, `integrate.sh abort <integration worktree>` and go to Step 5 with reason `merge conflict` and the resolver's report.
 1. Run the unit's `verify` in the integration worktree, as one Bash call that starts with `cd <integration worktree> &&`, and quote its last lines. A red verify: `integrate.sh abort <integration worktree>` and Step 5 with reason `red after merge`.
 1. `integrate.sh conclude <integration worktree>`, record the new `tip`, `dag.sh DAG mark <id> merged`, then clean up: `integrate.sh cleanup <repo> <worktree> <branch> <integration_branch>` with the unit's `worktree` (or `none`), and `git -C <repo> branch -D <worktree_branch>` for the branch the harness made with the worktree, which the worker left behind. A `-p` worktree is left locked; cleanup unlocks it.
+1. `integrate.sh merges <integration worktree> <checkpoint>` lists the merges since the repository's last green checkpoint. With `CHECKPOINT_EVERY` or more, and no checkpoint already running for this repository and no `checkpoint: off`, start Step 4b.
 
 Then go back to Step 2.
+
+## Step 4b: Checkpoint
+
+A unit's own `verify` passing on the merged tree doesn't show that the other units' tests still pass. A checkpoint runs the full suite on a fixed commit in a probe worktree, `<PROJECT_ROOT>/.mz/worktrees/<task_name>/<repo basename>.probe`, so merges and dispatch go on while it runs.
+
+1. `integrate.sh probe <repo> <probe> <tip>`, record `checkpoint_running: <tip>` for the repository, and dispatch `mz-dev-pipe:pipeline-test-runner` with `test_command: cd <probe> && <test command>` and `output_path: <TASK_DIR>/checkpoints/<repo basename>/<tip short sha>.md`. Say in chat `Checkpoint <repo basename> at <tip short sha>: <n> merges`.
+1. When it returns, read its artifact. Every failing test also in `baseline_failures` is not this run's: green means none other fails. Green: set `checkpoint: <that tip>` and remove `checkpoint_running`.
+1. Red: find the merge that broke it. The candidates are the merges between `checkpoint` and the checked tip, from `integrate.sh merges`. Bisect them: probe the middle merge, run the suite there the same way, and keep the half that holds the first merge whose suite has a new failure, until one merge is left. Its subject names the unit. Each step is one dispatch, so three merges need at most two more suite runs.
+1. Dispatch `orchestrate-plan-compiler` (model: **opus**, as pinned) with the Phase 1 compile prompt plus `Checkpoint fix: add one change unit with id CK<n>-<repo basename> and exclusive: true that makes these tests pass again: <the new failures, verbatim>. They broke at the merge of unit <id> (<title>); its diff is git -C <repo> show <merge sha>. Use mz-dev-pipe:debug, and a verify that runs the repository's full suite. Make every pending unit that owns a file it needs depend on it. Keep every other unit unchanged.` Run `dag.sh DAG lint <REGISTRY>` and show `dag.sh DAG render` in chat. Because the fix unit is `exclusive`, `ready` starts nothing else until it has run, so no other unit builds on the broken tree. Remove `checkpoint_running`; `checkpoint` stays at the last green tip, so the fix unit's merge brings the next checkpoint.
+1. When the fix unit itself fails, Step 3 handles it like any unit, and its second failure reaches Step 5.
+
+Add a `## Lessons` line when the culprit's `owns` or `verify` should have covered the broken tests.
 
 ## Step 5: The out-of-plan gate
 
@@ -117,7 +132,7 @@ Add a `## Lessons` line in state when the cause is one a later plan should avoid
 
 ## Step 6: Finish
 
-The run is over when `dag.sh DAG list running` and `dag.sh DAG ready` both print nothing. Show `dag.sh DAG render`, set `phase_complete: true`, and read `<SKILL_DIR>/phases/final.md`:
+The run is over when `dag.sh DAG list running` and `dag.sh DAG ready` both print nothing and no checkpoint is running. Run `integrate.sh unprobe <repo> <probe>` for each repository that has a probe, show `dag.sh DAG render`, set `phase_complete: true`, and read `<SKILL_DIR>/phases/final.md`:
 
 - After Abort, or when no change unit is `merged`, go straight to its Step 7, the report; nothing lands.
 - Otherwise start at its Step 1. A fix round from its Step 5 comes back here too, and returns to Step 1 with the next `final_round`.

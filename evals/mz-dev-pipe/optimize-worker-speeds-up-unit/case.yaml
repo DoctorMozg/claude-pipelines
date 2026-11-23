@@ -1,0 +1,71 @@
+schema_version: "1.1"
+name: optimize-worker-speeds-up-unit
+description: 'Given a unit brief from mz-orchestrate, optimize runs unattended as a worker: it auto-approves its contract, backlog and sign-off gates, runs the measurement and candidate agents, leaves only the winning change uncommitted inside the owned file and ends with a STATUS line, never asking the user.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:optimize unit:units/OP-1.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 120
+  timeout_seconds: 2400
+graders:
+  # A slash prompt loads the skill without a Skill call, so the state file only the skill writes proves it ran.
+  - name: optimize-ran
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_optimize_[A-Za-z0-9_-]+/state\.md'
+    target: trace
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_optimize_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: ends-with-status-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Files changed)(?=[^\n]*## Verify)(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  # Candidate agents commit inside their own worktrees, so the check reads main's reflog: only the fixture commit may be there.
+  - name: no-commit-on-main
+    type: regex
+    pattern: '\A[^\n]*\n?\Z'
+    target: { source: file, path: .git/logs/HEAD }
+  - name: no-edit-outside-owns
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|textstats\.py))'
+    min: 0
+    max: 0
+  - name: no-write-outside-owns
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|textstats\.py))'
+    min: 0
+    max: 0
+  # The skill text names the authority with a placeholder; only the model's own state or journal write carries the real unit id.
+  - name: gate-auto-approved-as-worker
+    type: regex
+    pattern: 'mz-orchestrate DAG gate, unit OP-1'
+    target: trace
+  # Worker mode answers the gates; it doesn't shrink the pipeline into an inline edit and a stopwatch.
+  - name: measure-runner-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-measure-runner"'
+    min: 1
+  - name: candidates-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-perf-candidate"'
+    min: 1
+  # The winning change lands in the owned file; the quadratic scan is gone.
+  - name: quadratic-scan-removed
+    type: regex
+    pattern: '\A(?![\s\S]*not in seen)[\s\S]*def count_unique'
+    target: { source: file, path: textstats.py }

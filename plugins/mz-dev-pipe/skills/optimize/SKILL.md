@@ -42,9 +42,19 @@ Making source code, container images and services, LLM hyperparameters, build pi
 Modifiers:
 
 - `scope:` — `branch` | `global` | `working`; bounds which files / artifacts a candidate change may touch.
+
 - `type:` — `code` | `container` | `llm_hyperparams` | `build_pipeline` | `system` | `generic`; selects the contract auto-detect path. If omitted, it is inferred from the target in Phase 0.5.
 
+- `unit:<path>` — worker mode, set by mz-orchestrate for a `kind: change` unit. The brief's `## Spec` takes the place of `$ARGUMENTS`, and Worker Mode below says what changes.
+
 If `$ARGUMENTS` is empty, or names no measurable metric, the Phase 0 Goal Declaration gate collects it before the run proceeds.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question and gate in this skill and its phase files. The orchestrator runs an optimize unit alone (`exclusive: true`), so nothing else disturbs the benchmarks. Read `<SKILL_DIR>/phases/worker_mode.md` at the end of Phase 0 setup; it replaces the parts it names: the brief, setup, the goal and measurement-command checks, every gate and question, the candidate worktrees and the final message.
+
+- **Setup.** `task_name` is `<YYYY_MM_DD>_optimize_<id-slug>`; skip the `MZ_DEV_PIPE_AUTO_APPROVE` check and the resume check, and write `state.md` with the Write tool, recording `worker_unit: <path>` and `unattended: worker`.
+- **Pipeline.** Run every phase and dispatch every agent, including every `pipeline-perf-candidate` and `pipeline-measure-runner`. Editing the target yourself, or timing it with your own commands, produces a number the harness never measured.
 
 ## Scope Parameter
 

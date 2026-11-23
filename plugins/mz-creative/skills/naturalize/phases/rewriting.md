@@ -55,7 +55,7 @@ Dispatch it as a single Agent tool call with `subagent_type: expert-naturalizer`
 1. Code blocks, tables and every `preserve:` term from the input still appear in the output.
 1. `output_path` holds no `[SPECIFICITY NEEDED]` marker, because Phase 2 copies it over the user's file. Delete any marker that slipped through with Edit, leaving its sentence as written, and add that sentence to `report_path` under the specificity gaps.
 
-On `BLOCKED`, leave the user's file untouched and escalate via AskUserQuestion. On `NEEDS_CONTEXT`, re-dispatch once with the missing context, usually a clearer preserve list.
+On `BLOCKED`, leave the user's file untouched and escalate via AskUserQuestion. On `NEEDS_CONTEXT`, re-dispatch once with the missing context, usually a clearer preserve list. In worker mode, a `BLOCKED` or an unsettled `NEEDS_CONTEXT` ends the unit as `STATUS: BLOCKED` (SKILL.md, Worker Mode).
 
 Update `state.md`: `Phase: 1`, `phase_complete: true`, and add `output_path` and `report_path`, relative to the project root, to `FilesWritten`.
 

@@ -50,7 +50,7 @@ Set `Phase: plan` in state.
 
 ## Step 3: Catalog the skills
 
-Write `<TASK_DIR>/skills.md` from this session's own skill listing, so units go only to skills that are installed. One line per skill that is present: `<plugin:skill> — <its description>`, for `mz-dev-pipe:build`, `mz-dev-pipe:debug`, `mz-dev-pipe:polish` and `mz-creative:document` (change skills that accept a `unit:` brief), and `mz-dev-git:review-branch` and `mz-dev-pipe:audit` (review skills). Add `direct — the worker makes a small mechanical edit itself` as the last line.
+Write `<TASK_DIR>/skills.md` from this session's own skill listing, so units go only to skills that are installed. One line per skill that is present: `<plugin:skill> — <its description>`, for `mz-dev-pipe:build`, `mz-dev-pipe:debug`, `mz-dev-pipe:polish`, `mz-dev-pipe:optimize`, `mz-creative:document`, `mz-creative:copywrite`, `mz-creative:naturalize`, `mz-research-pipe:translate` (change skills that accept a `unit:` brief), `mz-dev-git:review-branch` and `mz-dev-pipe:audit` (review skills), and `mz-research-pipe:deep-research` and `mz-research-pipe:explain` (context skills). Add `direct — the worker makes a small mechanical edit itself` as the last line.
 
 ## Step 4: Plan
 

@@ -27,6 +27,24 @@ Translating or localizing documents, READMEs, docs directories and i18n resource
 
 `$ARGUMENTS` is a natural-language request. Accepted forms: `translate <path> to <lang>` and `translate <path> to <lang> mode:<sidecar|inplace|i18n>`. There is no verification opt-in flag in the grammar — tiered verification is always on and its fixed cost is shown to the user at the approval gate. Source language defaults to auto-detect; output mode defaults to `sidecar`. Empty or ambiguous arguments escalate via AskUserQuestion — never guess.
 
+- `unit:<path>` — worker mode, see Worker Mode below.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question and gate in this skill and its phase files. These steps replace the parts they name:
+
+- **Brief.** Read it; its `kind` is `change` and `owns` lists the files this unit may write. Parse the `## Spec` as the argument: target language, source files or globs, `mode:` and any glossary or style decisions. Other text in the arguments is ignored.
+- **Setup.** Follow worker-mode.md, "Setup", instead of the schema-version question: `task_name` is `<YYYY_MM_DD>_translate_<id-slug>`, and `state.md` gets `worker_unit` and `unattended: worker`. Write it with the Write tool, which creates the folder.
+- **Input.** A missing target language, no source files, a target that fails the allow-list, an identical source and target, and two output modes in the spec are blockers. So are an unsupported binary format and a source sample under 20 characters.
+- **Zero files.** A glob that matches no files, or only skipped ones, is a blocker. Never broaden it.
+- **Source language.** Take the spec's if it names one; otherwise auto-detect as usual. When every detection tier fails, that is a blocker; never assume English.
+- **Output mode.** Use the spec's `mode:`; with none, the default `sidecar`. `inplace` only with a literal `mode:inplace` in the spec. Every output path must match an `owns` glob; a path outside `owns` is a blocker, not an edit. A `FILE_EXISTS` flag on a path inside `owns` is fine to overwrite, since the unit owns it. Name it under `## Concerns` when the file isn't a previous run's output.
+- **Glossary and register.** The spec's glossary and style decisions win over the seeded glossary, and are passed to every translator as hard constraints. For terms the spec doesn't settle, use the seeded glossary as the skill does and record the choices in `glossary.json`. The skill's default register for the target language stands; a term that has no safe rendering and can't stay verbatim is a blocker.
+- **Plan gate (Phase 1.5).** Auto-approve per worker-mode.md, "Gates": write state, emit the plan as the Surface 1 message, skip the AskUserQuestion selector and continue as on Approve. No feedback loop runs, so `approval_iterations` stays 0 and `MAX_APPROVAL_ITERATIONS` never applies. Log it as `outcome: auto-approved (worker)` with `authority: mz-orchestrate DAG gate, unit <id>`.
+- **Pipeline.** Run every phase and dispatch every agent: `pipeline-researcher` for discovery and glossary, `pipeline-translator` for each chunk, the Tier-2 judges and the Tier-3 probes. Translating inline skips the structural and semantic checks the merge relies on. Pass the `owns` globs to every translator as a hard constraint.
+- **Blockers.** A translator `BLOCKED`, a second `NEEDS_CONTEXT` from the same chunk, and any other point where the skill would ask: finish the chunks that don't depend on the answer, record the question and its options in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`. A chunk with an unresolved `Critical:` after Phase 6 is `DONE_WITH_CONCERNS`, as the skill already reports it.
+- **Final message.** After the Verification block, add `## Files changed` (one translated output path per line), then `## Verify` (the brief's `verify` command and its result, or not run and why), `## Concerns` or `## Blocker` when they apply, and the status line last. Don't commit.
+
 ## Scope Parameter
 
 See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`branch`, `global`, `working`) and their git commands. Document any skill-specific overrides or restrictions below this line.

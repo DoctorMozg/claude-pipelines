@@ -26,9 +26,25 @@ Exhaustive multi-source web research on a topic, synthesized into a single sourc
 
 `$ARGUMENTS` is the research topic or question. If empty, ask the user.
 
+- `unit:<path>` — worker mode, set by mz-orchestrate for a context unit. The brief's `## Spec` takes the place of `$ARGUMENTS`, and Worker Mode below says what changes.
+
 ## Constants
 
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
+- **PLUGIN_ROOT**: `${CLAUDE_PLUGIN_ROOT}`. Skill files write `<PLUGIN_ROOT>/...` because files opened with Read get no variable substitution; expand it to this absolute path before reading a file.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill and its phase files. These steps replace the parts they name:
+
+- **Brief.** Read it; its `kind` is `context` and `owns` is empty. The `## Spec` is the research question, with any scope, depth or source constraints. A spec with no question is a blocker: write it to `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`. Write nothing outside `.mz/`.
+- **Setup.** Follow worker-mode.md, "Setup": `task_name` is `<YYYY_MM_DD>_deep_research_<id-slug>`, and `state.md` gets `worker_unit` and `unattended: worker` next to `Topic`. Write it with the Write tool, which creates the folder.
+- **Decomposition gate.** An Approve/Reject gate: write `decomposition.md` and `state.md`, emit Surface 1, skip Surface 2 and continue as on Approve. Log it under `## Auto-approvals` in `state.md` and in the final message, with `outcome: auto-approved (worker)` and `authority: mz-orchestrate DAG gate, unit <id>`.
+- **Depth.** If the spec sets a subtopic count or a page target, use it: 2 subtopics is the floor, and the dispatch prompt's page and query minimums become the spec's numbers. Without one, use the defaults. Other scoping questions are settled from the spec, or from the default of the widest reading of the topic.
+- **Pipeline.** Run every phase and dispatch one `pipeline-web-researcher` per subtopic in a single parallel wave. Answering from your own knowledge or running the searches inline skips the sourcing the report relies on.
+- **Blockers.** `WebSearch`, `WebFetch` or the `Agent` tool unavailable, and any other point where the skill would ask: record it in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`. A researcher that is still empty after the one retry is not a blocker: list the gap under `## Research Gaps`, name it under `## Concerns` and end `STATUS: DONE_WITH_CONCERNS`.
+- **Report.** The report is the markdown file from Step 4, and it is what the orchestrator pastes into dependent specs, so keep it self-contained with its sources inline.
+- **Final message.** After the Verification block, add `## Summary` (the key findings, each with its source URL, in under 15 lines), then `## Report` with the absolute path of the report file, then `## Verify` (not run: the worker runs it), then `## Concerns` when it applies and the status line last.
 
 ## Core Process
 

@@ -1,0 +1,71 @@
+schema_version: "1.1"
+name: naturalize-worker-docs-unit
+description: 'Given a prose unit brief, naturalize runs as a worker: it rewrites only the owned file in place without asking or committing, runs the naturalizer, and ends with a STATUS line.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-creative", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-creative:naturalize unit:units/WU-3.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 60
+  timeout_seconds: 1200
+graders:
+  # A slash prompt loads the skill without a Skill call, so the state file only the skill writes proves it ran.
+  - name: naturalize-ran
+    type: regex
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_naturalize_[A-Za-z0-9_-]+/state\.md'
+    target: trace
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_naturalize_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: naturalizer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?expert-naturalizer"'
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: ends-with-status-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  # The orchestrator's worker commits; the skill itself never does.
+  - name: no-commit
+    type: tool_used
+    tool: Bash
+    input_match: 'git\s+(?:-\S+\s+\S+\s+)*commit'
+    min: 0
+    max: 0
+  - name: no-edit-outside-owns
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|docs/cache\.md))'
+    min: 0
+    max: 0
+  - name: no-write-outside-owns
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|docs/cache\.md))'
+    min: 0
+    max: 0
+  # Flagged AI vocabulary from the fixture is gone, and the facts survive.
+  - name: ai-phrases-removed
+    type: regex
+    pattern: 'fast-paced|digital landscape|Moreover|delve|empower|unlock'
+    flags: i
+    match: not_contains
+    target: { source: file, path: docs/cache.md }
+  - name: facts-kept
+    type: regex
+    pattern: '^(?=[\s\S]*90 seconds)(?=[\s\S]*`CACHE_TTL`)'
+    target: { source: file, path: docs/cache.md }
+  - name: file-outside-owns-untouched
+    type: regex
+    pattern: 'It is important to note that this file is not part of the unit\. Furthermore, it must stay exactly as it is\.'
+    target: { source: file, path: docs/notes.md }

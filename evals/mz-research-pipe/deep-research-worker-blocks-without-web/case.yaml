@@ -1,0 +1,55 @@
+schema_version: "1.1"
+name: deep-research-worker-blocks-without-web
+description: 'A context brief with a narrow web question, run where no agent has WebSearch or WebFetch (the eval driver grants none). deep-research in worker mode auto-approves the decomposition and dispatches researchers, then records the missing web tools as a blocker instead of writing a report from memory, and ends STATUS: BLOCKED without asking.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-research-pipe:deep-research unit:units/CX1-rfc-429.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 40
+  timeout_seconds: 1500
+graders:
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_deep_research_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: researchers-dispatched
+    type: tool_used
+    tool: Agent
+    min: 1
+  # A report written from recollection would reach dependent specs as fact.
+  - name: no-report-from-memory
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/research/[^"/]+\.md"'
+    min: 0
+    max: 0
+  - name: state-records-the-block
+    type: regex
+    pattern: '_deep_research_[A-Za-z0-9_-]+/state\.md[^\n]*Status: blocked'
+    target: trace
+  - name: ends-blocked
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"[^\n]*STATUS: BLOCKED[^\n]*"parent_tool_use_id":null'
+    target: trace
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0

@@ -46,6 +46,7 @@ A path that doesn't exist is reported, and the skill asks for the right one in p
 - **INTEGRATE_SH**: `<PLUGIN_ROOT>/scripts/integrate.sh`, which does every git step on the integration and unit branches.
 - **MAX_WORKERS**: 3 units at once. Each worker runs a skill that dispatches about 6 agents of its own, and a session runs at most 20 subagents.
 - **MAX_FINAL_ROUNDS**: 2. The final review runs at most twice, so one round of fixes is checked before the final gate.
+- **CHECKPOINT_EVERY**: 3 merges into one repository between full-suite checkpoints, so a unit that breaks another unit's tests is found a few merges later, not at the end.
 - **MAX_AUTO_RETRIES**: 1. A unit that fails is retried once with its failure in the spec; a second failure goes to the user.
 - **UNIT_DEADLINE**: 45 minutes, written into each envelope and into DAG.
 - **WATCHDOG_SECONDS**: 600, how often a silent run is checked while units run on sessions or peers.
@@ -54,13 +55,13 @@ A path that doesn't exist is reported, and the skill asks for the right one in p
 
 ### Phase Overview
 
-| Phase | Goal               | Details                               | Loop                                |
-| ----- | ------------------ | ------------------------------------- | ----------------------------------- |
-| 0     | Setup              | Inline below                          |                                     |
-| 1     | Ingest and compile | `phases/plan.md`                      | review up to `MAX_REVIEW_ROUNDS`    |
-| 1.5   | DAG gate           | `phases/plan.md`                      | until approved                      |
-| 2     | Run, merge, verify | `phases/run.md`, `phases/backends.md` | until nothing is ready or running   |
-| 3     | Final review, gate | `phases/final.md`                     | fix rounds up to `MAX_FINAL_ROUNDS` |
+| Phase | Goal                           | Details                               | Loop                                |
+| ----- | ------------------------------ | ------------------------------------- | ----------------------------------- |
+| 0     | Setup                          | Inline below                          |                                     |
+| 1     | Ingest and compile             | `phases/plan.md`                      | review up to `MAX_REVIEW_ROUNDS`    |
+| 1.5   | DAG gate                       | `phases/plan.md`                      | until approved                      |
+| 2     | Run, merge, verify, checkpoint | `phases/run.md`, `phases/backends.md` | until nothing is ready or running   |
+| 3     | Final review, gate             | `phases/final.md`                     | fix rounds up to `MAX_FINAL_ROUNDS` |
 
 ### Phase 0: Setup
 

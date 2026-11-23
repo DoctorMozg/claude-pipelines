@@ -91,7 +91,16 @@ class TestLint:
             ([unit("A"), unit("A", owns=["x/*"])], "A: duplicate id"),
             ([unit("A", owns=[])], "A: a change unit needs owns globs"),
             ([unit("A", verify="")], "A: a change unit needs a verify command"),
-            ([unit("A", kind="refactor")], "A: kind must be change or review"),
+            ([unit("A", kind="refactor")], "A: kind must be change, review or context"),
+            (
+                [unit("C", kind="context", owns=["x/*"]), unit("A", "C")],
+                "C: a context unit owns nothing",
+            ),
+            ([unit("C", kind="context", owns=[])], "C: no unit depends on this context unit"),
+            (
+                [unit("A", skill="mz-dev-pipe:optimize")],
+                "A: an optimize unit needs exclusive: true",
+            ),
             ([unit("A", repo="app")], "A: repo must be an absolute path"),
             ([unit("A", backend="cloud")], "A: unknown backend cloud"),
             ([unit("A", repo="/other", backend="subagent")], "A: a subagent can only work"),
@@ -215,6 +224,30 @@ class TestFits:
         assert run("fits", "A", str(peers)).stdout.split() == []
 
 
+class TestExclusive:
+    @pytest.fixture(autouse=True)
+    def _units(self, write: Callable[[list[Unit]], None]) -> None:
+        write([unit("A"), unit("O", exclusive=True), unit("B")])
+
+    def test_a_ready_exclusive_unit_holds_back_the_rest(self, run: Run) -> None:
+        assert run("ready").stdout.split() == ["O"]
+
+    def test_it_waits_until_nothing_runs(self, run: Run) -> None:
+        run("mark", "A", "running")
+
+        assert run("ready").stdout.split() == []
+
+    def test_nothing_starts_beside_it(self, run: Run) -> None:
+        run("mark", "O", "running")
+
+        assert run("ready").stdout.split() == []
+
+    def test_the_rest_go_once_it_has_run(self, run: Run) -> None:
+        run("mark", "O", "merged")
+
+        assert run("ready").stdout.split() == ["A", "B"]
+
+
 class TestScheduling:
     @pytest.fixture(autouse=True)
     def _diamond(self, write: Callable[[list[Unit]], None]) -> None:
@@ -240,6 +273,14 @@ class TestScheduling:
     ) -> None:
         write([unit("R", kind="review", owns=[]), unit("F", "R")])
         run("mark", "R", "done")
+
+        assert run("ready").stdout.split() == ["F"]
+
+    def test_a_finished_context_unit_counts_as_satisfied(
+        self, write: Callable[[list[Unit]], None], run: Run
+    ) -> None:
+        write([unit("C", kind="context", owns=[]), unit("F", "C")])
+        run("mark", "C", "done")
 
         assert run("ready").stdout.split() == ["F"]
 

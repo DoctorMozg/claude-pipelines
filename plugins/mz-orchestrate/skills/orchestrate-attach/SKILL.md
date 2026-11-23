@@ -66,6 +66,7 @@ Turn each purpose into a role (PROTOCOL, "Role filter"): `kinds`, `repos`, `path
 
 - **Any unit**: everything `"any"`.
 - **Review only**: `kinds: ["review"]`.
+- **Research only**: `kinds: ["context"]`.
 - **Only its own repo**: `repos: ["own"]`, resolved from the peer's `ORCH-HELLO`.
 - Free text: map what it names to the closest fields; paths become globs (`web/**`). Keep anything that doesn't map in `note` only. The orchestrator's compiler reads the note when it routes units.
 

@@ -13,7 +13,7 @@ claude plugin marketplace add DoctorMozg/claude-pipelines
 claude plugin install mz-orchestrate
 ```
 
-Worker mode needs mz-dev-pipe (and mz-creative for documentation units) installed in every session that runs units, and mz-dev-git wherever the final review runs.
+Worker mode needs mz-dev-pipe installed in every session that runs units, mz-creative for documentation, copy and naturalize units, mz-research-pipe for translation and context units, and mz-dev-git wherever the final review runs.
 
 ## Quick start
 
@@ -70,10 +70,12 @@ flowchart TD
     F --> M
     A --> M
     M -->|more units ready| D
+    M -->|every 3 merges| K[checkpoint: full suite on a probe worktree]
+    K -->|red: bisect, add a fix unit| D
     M -->|unit fails, blocks or leaves its files| G2{{out-of-plan gate}}
     G2 -->|Retry / Re-plan / Skip| D
     M -->|nothing ready or running| Y[sync with start branch]
-    Y --> T[full suite per repository]
+    Y --> T[full suite, lint, types and benchmarks per repository]
     T --> V[review unit per repository]
     V --> G3{{findings gate}}
     G3 -->|Fix, up to 2 rounds| D
@@ -117,11 +119,12 @@ The compiler turns the plan into `dag.json`. Each unit is one piece of work a si
 }
 ```
 
-- `kind` is `change` (commits on its own branch) or `review` (read-only, returns findings, and `owns` is `[]`).
+- `kind` is `change` (commits on its own branch), `review` (read-only, returns findings, and `owns` is `[]`) or `context` (read-only, returns a report). A context unit's report is pasted into the spec of every unit that depends on it, so research or a code walkthrough reaches the units that need it.
 - `spec` is all the worker sees. It never reads the plan, so the spec carries the goal, binding decisions, interfaces from dependencies, acceptance criteria and what is out of scope. When the plan left a choice open, the spec tells the worker to stop with `STATUS: BLOCKED` before writing code.
 - `owns` lists every path the unit may create or change, tests and shared files included. Two units that can run at the same time may not own overlapping paths in one repository. `dag.sh lint` rejects that, and the fix is a dependency edge or a split.
-- `skill` is chosen by intent and only from the skills installed in your session: new behavior is `mz-dev-pipe:build`, a defect with a reproduction is `mz-dev-pipe:debug`, cleanup or getting tests green is `mz-dev-pipe:polish`, documentation is `mz-creative:document`, a read-only check is `mz-dev-git:review-branch` or `mz-dev-pipe:audit`, and a mechanical edit of a few lines is `direct`. With none of the change skills installed, every change unit becomes `direct`.
-- `verify` is a non-interactive command that proves the unit, using the repository's own test runner. It runs in the unit's worktree and again on the merged tree before the unit counts as merged. A `review` unit uses `true`.
+- `skill` is chosen by intent and only from the skills installed in your session: new behavior is `mz-dev-pipe:build`, a defect with a reproduction is `mz-dev-pipe:debug`, cleanup or getting tests green is `mz-dev-pipe:polish`, a measured speedup is `mz-dev-pipe:optimize`, documentation is `mz-creative:document`, release notes or launch copy is `mz-creative:copywrite`, humanizing prose is `mz-creative:naturalize`, localization is `mz-research-pipe:translate`, a read-only check is `mz-dev-git:review-branch` or `mz-dev-pipe:audit`, web research or a code walkthrough for later units is `mz-research-pipe:deep-research` or `mz-research-pipe:explain`, and a mechanical edit of a few lines is `direct`. With none of the change skills installed, every change unit becomes `direct`.
+- `verify` is a non-interactive command that proves the unit, using the repository's own test runner. It runs in the unit's worktree and again on the merged tree before the unit counts as merged. A `review` or `context` unit uses `true`.
+- `exclusive: true` runs a unit alone. Every `optimize` unit needs it, so its benchmark never shares the machine with another unit: once it is ready, other units wait until it has run.
 - `status` is written only by `dag.sh`: `pending`, `running`, `done`, `merged`, `blocked`, `failed` or `skipped`.
 
 The full field list and the rules for a good unit are in `skills/orchestrate/references/dag-schema.md`.
@@ -205,15 +208,22 @@ With `MZ_DEV_PIPE_AUTO_APPROVE=1`, nobody is asked, and each gate picks the safe
 
 The integration branch `orchestrate/<task>` is left for you to review and merge.
 
+## Checkpoints
+
+A unit's `verify` runs on the merged tree, but it proves only that unit. If merging WU-5 breaks the tests of WU-2, the unit's own check can't see it. So before the first unit runs, each repository gets a baseline suite, and after every 3 merges into it the full suite runs again on a probe worktree at the integration tip. Merging and dispatch go on while it runs.
+
+A test that already failed in the baseline doesn't count. When a new one fails, the merges since the last green checkpoint are bisected to find the one that broke it, and the compiler adds a fix unit (`mz-dev-pipe:debug`, verified by the full suite) with the failing tests and that merge's diff in its spec. The fix unit is `exclusive`, so nothing else starts until it has run, and no other unit builds on the broken tree. Its merge brings the next checkpoint. A fix unit that fails twice goes to the out-of-plan gate like any unit.
+
 ## The final phase
 
 When nothing is ready or running, each repository's integration branch is checked as a whole:
 
 1. The start branch is merged into the integration branch, so the checks see what landing would produce. A conflict goes to the merge resolver. If that fails, the repository is listed with `sync: conflict`.
-1. The full suite runs through the tooling detector and the test runner. A repository with no detected test command gets `suite: not-run`.
+1. The full suite runs through the test runner. A repository with no detected test command gets `suite: not-run`. Beside it, the lint runner checks lint and formatting on the files the run changed, in check mode, and runs the type check on the whole project. Errors in files the run didn't change were there before it and are only counted.
+1. Each merged `optimize` unit's measurement command runs again, alone, 10 times. A missed target, or a median worse than the unit's banked value by more than twice the measured noise, is a finding: a later merge undid the speedup.
 1. A review unit (`mz-dev-git:review-branch`) reads `git diff <start_branch>...HEAD` for each repository whose suite isn't red. It goes to a review-role peer when one fits. Findings are `critical`, `major` or `minor`, and `minor` findings are only reported.
-1. Critical and major findings and failing tests are the open items. With none, the run goes to the final gate. Otherwise the findings gate asks. **Fix** adds at most one fix unit per repository (`mz-dev-pipe:debug` for failing tests and bugs, `mz-dev-pipe:polish` for the rest), runs them, and checks again.
-1. The final gate lists, per repository, the start branch, the commits to land, the diffstat, the suite result, open items, and any units that ended `blocked`, `skipped` or `failed`.
+1. Critical and major findings, failing tests, lint and type errors in the run's files, and lost speedups are the open items. With none, the run goes to the final gate. Otherwise the findings gate asks. **Fix** adds at most one fix unit per repository (`mz-dev-pipe:debug` for failing tests and bugs, `mz-dev-pipe:polish` for the rest) plus an `optimize` unit for each lost speedup, runs them, and checks again.
+1. The final gate lists, per repository, the start branch, the commits to land, the diffstat, the suite, lint and type results, each optimize unit's banked and re-measured value, the checkpoints and the fix units they added, open items, and any units that ended `blocked`, `skipped` or `failed`.
 
 Landing is `integrate.sh land`, a fast-forward: no merge commit in your checkout, nothing over uncommitted edits, never a push. If you committed during the gate, the sync and suite run once more, and green lands without asking again. If a checkout is on another branch or has uncommitted edits in the way, that repository is recorded as `landed: no` with the command for you to run. Nothing is forced.
 
@@ -238,7 +248,7 @@ Started as `claude --bg`, `/orchestrate` has to move into its own worktree befor
 
 ## Worker mode in other plugins
 
-`build`, `debug` and `polish` (mz-dev-pipe) and `document` (mz-creative) take a `unit:<path>` argument, a brief written by the orchestrator. With it they answer their own approval gates on the strength of the orchestrator's approval, still run every phase and agent, never ask a question, keep their edits inside the unit's files, and end with a `STATUS:` line. A question they would have asked comes back to the orchestrator as `STATUS: BLOCKED`. The review skills take the same argument and edit nothing: `review-branch` (mz-dev-git), used for the final review, diffs against the base branch the brief names, and `audit` (mz-dev-pipe) reads its depth, scope and lenses from the spec. Both list their findings as `critical`, `major` or `minor`. The contract is in `shared/worker-mode.md`.
+`build`, `debug` and `polish` (mz-dev-pipe) and `document` (mz-creative) take a `unit:<path>` argument, a brief written by the orchestrator. With it they answer their own approval gates on the strength of the orchestrator's approval, still run every phase and agent, never ask a question, keep their edits inside the unit's files, and end with a `STATUS:` line. A question they would have asked comes back to the orchestrator as `STATUS: BLOCKED`. The review skills take the same argument and edit nothing: `review-branch` (mz-dev-git), used for the final review, diffs against the base branch the brief names, and `audit` (mz-dev-pipe) reads its depth, scope and lenses from the spec. Both list their findings as `critical`, `major` or `minor`. `optimize`, `translate`, `naturalize` and `copywrite` take it for change units, and `deep-research` and `explain` for context units, which end with the report their dependents get. The contract is in `shared/worker-mode.md`.
 
 If a skill needs a file outside `owns`, it makes the smallest edit and reports it under `## Concerns`. A large edit stops with `STATUS: BLOCKED`. The worker, not the skill, commits the result: one commit per unit, staging only the `owns` paths.
 
@@ -250,9 +260,10 @@ If a skill needs a file outside `owns`, it makes the smallest edit and reports i
 | DAG review rounds | 3          | A DAG still failing review after three revisions is shown at the gate with its findings     |
 | Auto retries      | 1          | A failed unit is retried once with the failure in its spec. A second failure goes to you    |
 | Final rounds      | 2          | The final review runs at most twice, so one round of fixes is checked before the final gate |
+| Checkpoint every  | 3 merges   | Merges into one repository between full-suite checkpoints                                   |
 | Unit deadline     | 45 minutes | A unit past it goes to the out-of-plan gate, and a silent peer gets one `ORCH-STATUS` first |
 
-Rough cost per unit on small units, shown at the DAG gate: `build` about $2.50, `debug` about $1, `polish` about $0.50, a review about $1, `direct` about $0.20. Each `build`, `debug` and `polish` unit runs that skill's full pipeline of agents, so large units cost more. The final review adds one review unit per repository.
+Rough cost per unit on small units, shown at the DAG gate: `build` about $2.50, `debug` about $1, `polish` about $0.50, a review about $1, `direct` about $0.20. Each `build`, `debug` and `polish` unit runs that skill's full pipeline of agents, so large units cost more. The final review adds one review unit per repository. Each checkpoint costs one suite run, plus up to two more when it has to bisect, and the baseline adds one suite run per repository at the start.
 
 ## Troubleshooting
 
@@ -287,6 +298,6 @@ Messages between sessions travel over local Unix sockets that Claude Code manage
 ## Requirements
 
 - Claude Code with cross-session messaging (v2.1.224 or later on macOS, Linux and WSL 2).
-- mz-dev-pipe in every session that runs units, mz-creative for documentation units, and mz-dev-git for review units.
+- mz-dev-pipe in every session that runs units, mz-creative for documentation, copy and naturalize units, mz-research-pipe for translation and context units, and mz-dev-git for review units.
 - `jq` on `PATH`.
 - For `backend: codex` only: the `codex` CLI, signed in, with the unit's mozg plugins installed in Codex at 0.58.0 or later.

@@ -1,0 +1,67 @@
+schema_version: "1.1"
+name: translate-worker-german-locale
+description: 'Given a unit brief from mz-orchestrate, translate runs unattended as a worker: it auto-approves its plan gate on the DAG gate authority, dispatches its translators, writes only the owned German locale file with the placeholder intact and ends with a STATUS line, never asking the user or committing.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-research-pipe:translate unit:units/TR-de.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 60
+  timeout_seconds: 1500
+graders:
+  # A slash prompt loads the skill without a Skill call, so the state file only the skill writes proves it ran.
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_translate_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: ends-with-status-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  # The orchestrator's worker commits; the skill itself never does.
+  - name: no-commit
+    type: tool_used
+    tool: Bash
+    input_match: 'git\s+(?:-\S+\s+\S+\s+)*commit'
+    min: 0
+    max: 0
+  - name: no-edit-outside-owns
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|locales/de/))'
+    min: 0
+    max: 0
+  - name: no-write-outside-owns
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*(?:\.mz/|locales/de/))'
+    min: 0
+    max: 0
+  # The spec's glossary pins "Welcome" to "Willkommen", so the key word is stable across runs.
+  - name: german-file-translated
+    type: regex
+    pattern: 'Willkommen[\s\S]*\{name\}'
+    target: { source: file, path: locales/de/app.json }
+  - name: english-source-untouched
+    type: regex
+    pattern: '"greeting": "Welcome back, \{name\}!"'
+    target: { source: file, path: locales/en/app.json }
+  - name: plan-gate-auto-approved-as-worker
+    type: regex
+    pattern: 'mz-orchestrate DAG gate, unit TR-de'
+    target: trace
+  # Worker mode answers the gates; it doesn't shrink the pipeline into an inline translation.
+  - name: translator-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-translator"'
+    min: 1

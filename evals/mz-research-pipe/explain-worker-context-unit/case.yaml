@@ -1,0 +1,56 @@
+schema_version: "1.1"
+name: explain-worker-context-unit
+description: 'A context brief that names a module and a question. explain in worker mode runs its researchers instead of asking, edits nothing, and ends with a summary that names the discount function, the report path and STATUS: DONE.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-research-pipe", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-research-pipe:explain unit:units/CX1-invoice.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 40
+  timeout_seconds: 1200
+graders:
+  - name: worker-mode-recorded
+    type: regex
+    pattern: '_explain_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    target: trace
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  - name: researcher-dispatched
+    type: tool_used
+    tool: Agent
+    min: 1
+  - name: report-written-under-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/reports/\d{4}_\d{2}_\d{2}_explain_[A-Za-z0-9_-]+\.md"'
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: ends-with-summary-report-and-done
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Summary)(?=[^\n]*## Report)(?=[^\n]*STATUS: DONE)[^\n]*"parent_tool_use_id":null'
+    target: trace
+  - name: summary-names-discount-function
+    type: regex
+    pattern: '"role":"assistant","content":\[\{"type":"text","text":"(?=[^\n]*## Summary)[^\n]*apply_loyalty_discount[^\n]*"parent_tool_use_id":null'
+    target: trace
+  - name: source-untouched
+    type: regex
+    pattern: 'subtotal \* 90 // 100'
+    target: { source: file, path: billing/discounts.py }

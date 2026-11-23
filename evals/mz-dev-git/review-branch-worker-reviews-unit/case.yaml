@@ -15,7 +15,7 @@ execution:
 graders:
   - name: worker-mode-recorded
     type: regex
-    pattern: '_review_branch_[a-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    pattern: '_review_branch_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
     target: trace
   - name: never-asks-the-user
     type: tool_used

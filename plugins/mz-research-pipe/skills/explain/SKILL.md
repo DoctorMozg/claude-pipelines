@@ -25,11 +25,26 @@ Understanding existing code through a read-only, diagram-rich report on how it w
 ## Input
 
 - `$ARGUMENTS` — The scope and optional question. Any combination of:
+
   - **Path/glob**: `"src/auth/"`, `"src/**/*.py"` — which files to explain
   - **Free-text question**: `"how does the payment flow work"`, `"explain the WebSocket reconnection logic"` — what to focus on
   - **Combined**: `"src/auth/ how does token refresh work"` — narrows both scope and focus
 
+- `unit:<path>` — worker mode, set by mz-orchestrate for a context unit. The brief's `## Spec` takes the place of `$ARGUMENTS`, and Worker Mode below says what changes.
+
 If empty or ambiguous, ask the user via AskUserQuestion. Never guess.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill and its phase files. These steps replace the parts they name:
+
+- **Brief.** Read it; its `kind` is `context` and `owns` is empty. Parse the `## Spec` as the argument: it names the code (paths, module, symbol) and the question the dependent units need answered. The skill is read-only as always, so write nothing outside `.mz/`.
+- **Setup.** Follow worker-mode.md, "Setup": `task_name` is `<YYYY_MM_DD>_explain_<id-slug>`, and `state.md` gets `worker_unit` and `unattended: worker`. Write it with the Write tool, which creates the folder. There is no schema-version prompt: if `state.md` already exists at a higher `schema_version`, use the next `_vN` name instead.
+- **Empty argument.** A spec that names nothing to explain, or only paths that match no files, is a blocker, and so is `scope:global` without a question. Phase 0 and Phase 1 would ask; record the reason in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`.
+- **Free-text scope.** When the spec names a symbol or feature but no path, still dispatch the scoping `pipeline-researcher` in Phase 1. If it finds several plausible matches, take the one that best fits the spec's question and note the choice and the runners-up in `scope.md` under `## Ask-user events`. If nothing matches, that is a blocker.
+- **Output.** An `output:<path>` in the spec is honored only under `.mz/`; otherwise use the default path from Output Parameter. The report is that one markdown file, mermaid diagrams included, since the orchestrator pastes its text into dependent specs. The `research_*.md` and `scope.md` files stay in the task folder and are not the report.
+- **Pipeline.** Run every phase and dispatch every researcher the dispatch matrix calls for, even for a small scope. Reading the code and writing the report yourself skips the research the report relies on. There is no Approve/Reject gate in this skill.
+- **Final message.** After the Verification block, add `## Summary`: the answer to the spec's question in a few lines, with `file:line` anchors. Then `## Report` with the absolute path of the report file, then `## Verify` (not run: a context unit has no verify command) and the status line last. A finished report is `STATUS: DONE`.
 
 ## Scope Parameter
 
@@ -115,7 +130,7 @@ Resolve the argument into a concrete file list:
 
 **Exclusions**: `.gitignore`, vendored deps, generated/lock files, files > 5000 LOC. Test files are not excluded — they're valuable context.
 
-**If the file list is empty**: report and exit. **If `scope:global` with no focusing question**: ask the user what aspect to explain.
+**If the file list is empty**: report and exit (worker mode: a blocker). **If `scope:global` with no focusing question**: ask the user what aspect to explain.
 
 Write `<PROJECT_ROOT>/.mz/task/<task_name>/scope.md` with Mode, file count, Question/focus, and the file list (collapsed by directory if > 30 files). Update state phase to `scope_resolved`.
 

@@ -16,11 +16,11 @@ graders:
   # A slash prompt loads the skill without a Skill call, so the state file only the skill writes proves it ran.
   - name: review-branch-ran
     type: regex
-    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_review_branch_[a-z0-9_-]+/state\.md'
+    pattern: 'File created successfully at: \S*\.mz/task/\d{4}_\d{2}_\d{2}_review_branch_[A-Za-z0-9_-]+/state\.md'
     target: trace
   - name: worker-mode-recorded
     type: regex
-    pattern: '_review_branch_[a-z0-9_-]+/state\.md[^\n]*unattended: worker'
+    pattern: '_review_branch_[A-Za-z0-9_-]+/state\.md[^\n]*unattended: worker'
     target: trace
   - name: never-asks-the-user
     type: tool_used
@@ -40,7 +40,7 @@ graders:
     max: 0
   - name: blocker-in-state
     type: regex
-    pattern: '_review_branch_[a-z0-9_-]+/state\.md[^\n]*Status: blocked'
+    pattern: '_review_branch_[A-Za-z0-9_-]+/state\.md[^\n]*Status: blocked'
     target: trace
   - name: ends-with-status-blocked
     type: regex

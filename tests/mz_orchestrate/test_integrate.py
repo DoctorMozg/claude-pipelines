@@ -336,3 +336,51 @@ class TestCleanup:
         assert "not merged" in result.stderr
         assert worktree.exists()
         assert git(repo, "branch", "--list", "orch/t/A") != ""
+
+
+def merge_unit(repo: Path, tmp_path: Path, integration: Path, run: Run, name: str) -> str:
+    unit_branch(repo, tmp_path, name, {f"{name}.txt": f"{name}\n"})
+    run("merge", integration, f"orch/t/{name}", f"orch merge {name}: unit {name}")
+    return fields(run("conclude", integration).stdout)["tip"]
+
+
+class TestCheckpoint:
+    def test_merges_lists_each_merge_since_a_commit_oldest_first(
+        self, repo: Path, tmp_path: Path, integration: Path, run: Run
+    ) -> None:
+        start = git(integration, "rev-parse", "HEAD")
+        tip_a = merge_unit(repo, tmp_path, integration, run, "A")
+        tip_b = merge_unit(repo, tmp_path, integration, run, "B")
+
+        lines = run("merges", integration, start).stdout.splitlines()
+
+        assert lines == [f"{tip_a} orch merge A: unit A", f"{tip_b} orch merge B: unit B"]
+        assert run("merges", integration, tip_b).stdout == ""
+
+    def test_probe_checks_out_a_commit_apart_from_the_integration_worktree(
+        self, repo: Path, tmp_path: Path, integration: Path, run: Run
+    ) -> None:
+        start = git(integration, "rev-parse", "HEAD")
+        tip = merge_unit(repo, tmp_path, integration, run, "A")
+        probe = tmp_path / "probe"
+
+        assert fields(run("probe", repo, probe, start).stdout)["commit"] == start
+        assert not (probe / "A.txt").exists()
+
+        (probe / "build.log").write_text("left by a test run\n")
+        (probe / "shared.txt").write_text("edited by a test run\n")
+        run("probe", repo, probe, tip)
+        assert git(probe, "rev-parse", "HEAD") == tip
+        assert (probe / "A.txt").read_text() == "A\n"
+        assert (probe / "shared.txt").read_text() == "one\ntwo\n"
+        assert git(integration, "rev-parse", "HEAD") == tip
+
+    def test_unprobe_removes_the_probe(
+        self, repo: Path, tmp_path: Path, integration: Path, run: Run
+    ) -> None:
+        probe = tmp_path / "probe"
+        run("probe", repo, probe, "HEAD")
+        run("unprobe", repo, probe)
+
+        assert not probe.exists()
+        assert str(probe) not in git(repo, "worktree", "list")

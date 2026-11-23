@@ -52,7 +52,7 @@ def prefix: sub("[*?\\[{].*$"; "");
 def overlaps($a; $b): ($a | prefix) as $p | ($b | prefix) as $q | ($p | startswith($q)) or ($q | startswith($p));
 def under($g; $role): ($g | prefix) as $p | any($role[]; . as $r | $p | startswith($r | prefix));
 def owns_list: if (.owns | type) == "array" then .owns else [] end;
-def satisfied: (.status // "pending") as $s | $s == "merged" or ($s == "done" and .kind == "review");
+def satisfied: (.status // "pending") as $s | $s == "merged" or ($s == "done" and .kind != "change");
 def role_misses($r):
   . as $u
   | (if ($r.kinds // "any") == "any" or ($u.kind | IN($r.kinds[])) then empty
@@ -93,16 +93,23 @@ lint() {
   local errors
   errors=$(jq -r --argjson reg "$peers_json" "$lib"'
     deps as $d
+    | .units as $root_units
     | [.units[].id] as $ids
     | (if (.task // "") == "" then "dag: missing task" else empty end),
       (if ((.project // "") | startswith("/")) then empty else "dag: project must be an absolute path" end),
       ($ids | group_by(.) | map(select(length > 1) | .[0]) | .[] | "\(.): duplicate id"),
       (.units[] | . as $u | .id as $id
         | ((["id", "title", "repo", "skill", "spec"][] | select(($u[.] // "") == "") | "\($id): missing \(.)"),
-           (if ($u.kind | IN("change", "review")) then empty else "\($id): kind must be change or review" end),
+           (if ($u.kind | IN("change", "review", "context")) then empty else "\($id): kind must be change, review or context" end),
            (if (($u.repo // "") | startswith("/")) or ($u.repo // "") == "" then empty else "\($id): repo must be an absolute path" end),
            (if $u.kind == "change" and ($u | owns_list | length) == 0 then "\($id): a change unit needs owns globs" else empty end),
            (if $u.kind == "change" and ($u.verify // "") == "" then "\($id): a change unit needs a verify command" else empty end),
+           (if $u.kind == "context" and ($u | owns_list | length) > 0 then "\($id): a context unit owns nothing" else empty end),
+           (if $u.kind == "context" and ([$root_units[] | select(any(.depends_on[]?; . == $id))] | length) == 0
+             then "\($id): no unit depends on this context unit, so nobody reads its report" else empty end),
+           # A benchmark shares the machine with every unit running beside it.
+           (if $u.skill == "mz-dev-pipe:optimize" and $u.exclusive != true
+             then "\($id): an optimize unit needs exclusive: true" else empty end),
            (($u.depends_on // [])[] | select(IN($ids[]) | not) | "\($id): depends on unknown unit \(.)"),
            (($u.depends_on // [])[] | select(. == $id) | "\($id): depends on itself"),
            (($u.backend // "auto") as $b
@@ -143,10 +150,16 @@ lint)
   ;;
 ready)
   [ $# -eq 0 ] || usage
+  # An exclusive unit runs alone: once one is ready, the rest wait until it has run.
   jq -r "$lib"'
     (reduce .units[] as $u ({}; .[$u.id] = ($u | satisfied))) as $ok
-    | .units[] | select((.status // "pending") == "pending")
-    | select(all((.depends_on // [])[]; $ok[.] == true)) | .id' "$dag"
+    | [.units[] | select((.status // "pending") == "running")] as $running
+    | [.units[] | select((.status // "pending") == "pending")
+       | select(all((.depends_on // [])[]; $ok[.] == true))] as $ready
+    | [$ready[] | select(.exclusive == true)] as $excl
+    | if any($running[]; .exclusive == true) then empty
+      elif ($excl | length) > 0 then (if ($running | length) == 0 then $excl[0].id else empty end)
+      else $ready[].id end' "$dag"
   ;;
 list)
   [ $# -eq 1 ] || usage

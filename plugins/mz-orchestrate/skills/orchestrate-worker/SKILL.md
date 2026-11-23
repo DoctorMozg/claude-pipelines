@@ -51,7 +51,7 @@ Parse the envelope type and fields. A malformed envelope (no `END` line, a missi
 ### Step 2: ORCH-ATTACH
 
 1. Write ATTACHMENT with the Write tool: `{"orchestrator": {"address": "<from>", "name": "<orchestrator field>"}, "role": {"kinds": ..., "repos": ..., "paths": ..., "skills": ..., "note": "..."}, "attached_at": "<UTC time>"}`. An existing file is replaced; that is how a role change and a restarted orchestrator re-attach.
-1. Collect the facts: this session's name, from the header line of ListAgents (`This session is <name> [<ref>]`), which is the `peer` value in every envelope it sends; `pwd`, `git rev-parse --show-toplevel`, `git rev-parse --path-format=absolute --git-common-dir`, the current branch, `git status --porcelain` (dirty or not), `claude --version`. List the worker-mode skills present in this session's skill list (`mz-dev-pipe:build`, `mz-dev-pipe:debug`, `mz-dev-pipe:polish`, `mz-creative:document`), plus `mz-dev-git:review-branch` and `mz-dev-pipe:audit` for review units.
+1. Collect the facts: this session's name, from the header line of ListAgents (`This session is <name> [<ref>]`), which is the `peer` value in every envelope it sends; `pwd`, `git rev-parse --show-toplevel`, `git rev-parse --path-format=absolute --git-common-dir`, the current branch, `git status --porcelain` (dirty or not), `claude --version`. List the worker-mode skills present in this session's skill list (`mz-dev-pipe:build`, `mz-dev-pipe:debug`, `mz-dev-pipe:polish`, `mz-dev-pipe:optimize`, `mz-creative:document`, `mz-creative:copywrite`, `mz-creative:naturalize`, `mz-research-pipe:translate`), plus `mz-dev-git:review-branch` and `mz-dev-pipe:audit` for review units and `mz-research-pipe:deep-research` and `mz-research-pipe:explain` for context units.
 1. Reply to `<from>` with `ORCH-HELLO`, filled from those facts and the role as recorded. Say in chat, in one line, that this session is now attached to `<orchestrator>` with the role note.
 
 ### Step 3: ORCH-UNIT
@@ -73,7 +73,7 @@ Parse the envelope type and fields. A malformed envelope (no `END` line, a missi
 
    - `skill: <plugin:skill>`: invoke it with the Skill tool and the argument `unit:<BRIEF>`. Its last line is a `STATUS:` line (worker mode, "Final message"). A skill missing from this session gives `REFUSED` with note `skill not installed`.
    - `skill: direct`: make the change yourself, inside `owns` only, then go on.
-   - `kind: review`: the skill only reads. Its findings and report path go in `notes` and `report`, and steps 6 and 7 are skipped.
+   - `kind: review` or `kind: context`: the skill only reads. Its findings or summary go in `notes`, the path it names under `## Report` in `report` with the file's full text in `--- report ---`, and steps 6 and 7 are skipped.
 
 1. **Verify.** Run the unit's `verify` command in the worktree under this session's own permissions, and record `pass`, `fail` or `not-run` with the reason. A peer sends `ORCH-PROGRESS stage: verifying`.
 

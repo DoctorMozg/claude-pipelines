@@ -1,6 +1,6 @@
 # Worker Mode
 
-mz-orchestrate runs one unit of an approved plan by invoking a skill with a `unit:<path>` token. The user already approved the whole plan at the orchestrator's DAG gate, and nobody is watching this run. Skills that support worker mode (`build`, `debug`, `polish`, `document`, and `review-branch` and `audit` for `kind: review` units) follow this file whenever the token is present.
+mz-orchestrate runs one unit of an approved plan by invoking a skill with a `unit:<path>` token. The user already approved the whole plan at the orchestrator's DAG gate, and nobody is watching this run. Skills that support worker mode follow this file whenever the token is present: `build`, `debug`, `polish`, `document`, `optimize`, `translate`, `naturalize` and `copywrite` for `kind: change` units, `review-branch` and `audit` for `kind: review` units, and `deep-research` and `explain` for `kind: context` units.
 
 ## Unit brief
 
@@ -10,7 +10,7 @@ The path, absolute or relative to the project root, points to a markdown file th
 # Unit <id>: <title>
 
 - task: <orchestrator task name>
-- kind: change
+- kind: change | review | context
 - skill: <plugin>:<skill>
 - owns: <glob>, <glob>
 - verify: <command>
@@ -21,6 +21,8 @@ The path, absolute or relative to the project root, points to a markdown file th
 ```
 
 The `## Spec` section is the skill's task description. Other text in the arguments is ignored.
+
+A `review` unit returns findings for the orchestrator's final summary, and a `context` unit returns a report that the orchestrator pastes into the spec of every unit that depends on it. Both own nothing: write only under `.mz/`, and end with `## Report` naming the report file, since the worker hands its full text back.
 
 ## Setup
 

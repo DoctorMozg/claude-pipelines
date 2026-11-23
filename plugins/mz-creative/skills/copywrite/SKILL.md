@@ -29,8 +29,23 @@ Promotional copy (landing page, email, announcement, social post, changelog entr
 - `format:landing|email|announcement|social|changelog|pitch` — the output format. **Required**. If absent, the orchestrator asks via `AskUserQuestion`.
 - `scope:branch|global|working` — constrains codebase scan to a subset (default: `global`). Used for tone-matching against existing copy in the repo.
 - `@brief:<path>` — existing brief, product spec, or feature doc to ground the copy in. Strongly recommended.
+- `unit:<path>` — worker mode, set by mz-orchestrate for a change unit. The brief's `## Spec` takes the place of `$ARGUMENTS`, and Worker Mode below says what changes.
 
 If `$ARGUMENTS` is empty, ask via `AskUserQuestion` for the product, audience, and format. Never guess.
+
+## Worker Mode
+
+With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question and gate in this skill and its phase files. These steps replace the parts they name:
+
+- **Brief.** Read it; its `kind` is `change`. Parse the `## Spec` as the argument: topic, audience, goal, `format:`, product facts and tone. A format named in prose (`release notes` as `changelog`, `launch email` as `email`) counts when it maps to one of SUPPORTED_FORMATS.
+- **Setup.** Follow worker-mode.md, "Setup", instead of the resume gate: `task_name` is `<YYYY_MM_DD>_copywrite_<id-slug>`, and `state.md` gets `worker_unit` and `unattended: worker`. Write it with the Write tool, which creates the folder.
+- **Missing input.** The Phase 0 questions (format, topic) and a missing `@brief:` path are blockers, not questions: no format the spec names, an empty topic, or no product facts in the spec, in `@brief:` or in the codebase scan. Never invent a fact to fill the gap.
+- **Pipeline.** Run every phase and dispatch both agents: research, `expert-copywriter`, then `expert-naturalizer`. Writing the copy inline skips the dispatch the brief and the naturalize pass rely on.
+- **Brief gate.** Phase 1.5 is auto-approved: write `state.md`, emit Surface 1, skip Surface 2 and continue as on Approve. Log it as `auto-approved (worker)` with `authority: mz-orchestrate DAG gate, unit <id>`, in chat, under `## Auto-approvals` in `state.md` and in the journal.
+- **Tone and framework.** Where the spec is silent, take Phase 1.8's defaults (the codebase voice when there is one, else professional, balanced, numbers-heavy) and let the copywriter pick the framework. Record each choice in `brief.md` and name it in the final message.
+- **Other questions.** An empty codebase scan continues without tone-matching, as always. A `schema_version` higher than 2 gets a fresh `_vN` task. `expert-copywriter` still blocked or malformed after its one retry is a blocker, since the escalation question has no one to answer it; the naturalizer's `BLOCKED` keeps the Phase 2 copy, as always, and goes under `## Concerns`.
+- **Owned file.** The final copy goes to the file the spec names, which must match `owns`; with no named file and a single literal path in `owns`, use that one, otherwise it is a blocker. Write the report to `.mz/reports/` as usual, then write the post-naturalize copy, without the naturalization report appended at its end, to the owned file and say so in the final message. Edits stay inside `owns` and `.mz/`; pass `owns` to both agents as a hard constraint.
+- **Final message.** After the Verification block, add `## Files changed` (the owned file), `## Verify` (the brief's `verify` command and its result, or not run and why), `## Concerns` or `## Blocker` when they apply, and the status line last.
 
 ## Scope Parameter
 
