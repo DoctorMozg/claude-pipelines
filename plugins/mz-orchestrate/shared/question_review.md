@@ -108,7 +108,7 @@ Write the grades to: <qr_dir>/grades.md
 
 ## Finding the coder notes
 
-A consumer that has its own task folder with `decisions.md` (build, debug, polish) uses that folder and skips this search. A consumer reviewing a branch, such as `/review-branch` or an audit with `scope:branch`, names its own task folder, so the notes of the build, debug or polish run that made the branch sit elsewhere. Find them like this:
+A consumer that has its own task folder with `decisions.md` (build, debug, polish) uses that folder and skips this search. A consumer reviewing a branch, such as `/review-branch` or an audit with `scope:branch`, names its own task folder, so the notes of the build, debug or polish run that made the branch sit elsewhere. Notes the caller names explicitly, such as the merged units' notes of an orchestrated run, are used as given and skip this search. Otherwise find them like this:
 
 1. Search `<artifact root>/.mz/task/*/state.md` for a `Branch: <reviewed branch>` line. A detached HEAD has no branch to match, so skip the search.
 1. Keep a task only when its folder holds `decisions.md` and its `StartCommit` lies in the reviewed range: `git merge-base --is-ancestor <merge-base> <StartCommit>` and `git merge-base --is-ancestor <StartCommit> HEAD` both succeed (an equal commit counts). The check drops old tasks from a reused branch name. Run git against the reviewed checkout.

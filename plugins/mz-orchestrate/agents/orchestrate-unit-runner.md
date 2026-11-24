@@ -44,6 +44,8 @@ report: <path>
 <concerns, blocker and options, or the failure>
 --- report ---
 <the skill's report, verbatim, or none>
+--- decisions ---
+<the skill's decisions.md, verbatim, or none>
 END ORCH-RESULT
 STATUS: <DONE or DONE_WITH_CONCERNS as in the envelope; BLOCKED for BLOCKED, FAILED or REFUSED>
 ```

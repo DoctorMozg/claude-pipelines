@@ -104,8 +104,12 @@ report: <path of the skill's report in the worktree, or none>
 <concerns, the blocker and its options, the refusal reason, or findings for a review unit>
 --- report ---
 <the full text of the skill's report, or none>
+--- decisions ---
+<the full text of the skill's decisions.md for a change unit, or none>
 END ORCH-RESULT
 ```
+
+The `--- decisions ---` section carries the coder notes of a `change` unit, which the final review reads after the unit's worktree is gone. A result without the section counts as `none`.
 
 `REFUSED` means the unit never started: a wrong sender, a unit outside the role, a busy worker, or a repo the worker can't reach.
 

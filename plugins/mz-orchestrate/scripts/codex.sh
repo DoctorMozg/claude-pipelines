@@ -32,7 +32,7 @@ repo=$(cd "$repo" && git rev-parse --show-toplevel)
 wt=$repo/.claude/worktrees/$name
 mkdir -p "$out"
 
-report_path=none report_text=none
+report_path=none report_text=none decisions_text=none
 
 # status verify head-commit files notes; the worktree is reported only once it exists.
 result() {
@@ -43,7 +43,8 @@ result() {
     printf 'task: %s\nunit: %s\nstatus: %s\nrepo: %s\nworktree: %s\nbranch: %s\n' \
       "$task" "$unit" "$1" "$repo" "$where" "$branch"
     printf 'head-commit: %s\nverify: %s\nfiles: %s\nreport: %s\n' "$3" "$2" "$4" "$report_path"
-    printf -- '--- notes ---\n%s\n--- report ---\n%s\nEND ORCH-RESULT\n' "${5:-none}" "$report_text"
+    printf -- '--- notes ---\n%s\n--- report ---\n%s\n' "${5:-none}" "$report_text"
+    printf -- '--- decisions ---\n%s\nEND ORCH-RESULT\n' "$decisions_text"
   } | tee "$out/result.txt"
   exit 0
 }
@@ -115,6 +116,12 @@ if git -C "$wt" diff --cached --quiet; then
 elif ! git -C "$wt" commit -q -m "orch $unit: $title" >"$out/commit.log" 2>&1; then
   result FAILED "$verified" none "" "commit: $(cat "$out/commit.log")"
 fi
+
+# The worktree is fresh and .mz/ is never committed, so any decisions.md under it is this unit's.
+for f in "$wt"/.mz/task/*/decisions.md; do
+  [ -f "$f" ] || continue
+  if [ "$decisions_text" = none ]; then decisions_text=$(cat "$f"); else decisions_text+=$'\n'$(cat "$f"); fi
+done
 
 result "$status" "$verified" "$(git -C "$wt" rev-parse HEAD)" \
   "$(git -C "$wt" diff --name-only "$base"..HEAD | paste -sd, -)" "$notes"

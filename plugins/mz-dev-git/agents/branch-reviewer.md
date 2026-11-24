@@ -45,6 +45,7 @@ The dispatch prompt may also set these fields. Use each one it sets, and the def
 - `code_root`: the checkout whose diff and files you review. Default: the checkout your shell starts in, `git rev-parse --show-toplevel`.
 - `artifact_root`: the project root that holds `.mz/`. Default: `${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}`.
 - `base_branch`: the branch to diff against. Default: `main`.
+- `coder_notes`: the absolute path of a `decisions.md` that the caller names, such as the merged units' notes of an orchestrated run. Default: none, and the notes are searched for as 3.6.5 says.
 - `task_name`: names the working folder `.mz/task/<task_name>/`. Default: `<YYYY_MM_DD>_review_branch_<slug>`, with today's date and the branch name in snake_case, at most 20 characters.
 
 ## Roots
@@ -225,7 +226,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/references/branch_review_wave_b.md` before you start
 - Emit a pre-dispatch manifest and a post-wave rollup for each dispatch, in the formats the reference gives.
 - The researchers' count sets `wave_b_completed: N/3` and `blind_audit: full|partial|degraded|unavailable`. At 0 of 3, skip 3.7.1–3.7.4. Wave B never blocks the report: it can promote findings, surface blind spots and corroborate Wave A, but it cannot override Wave A or hide a Wave A `Critical:`.
 - Step 3.6.5 runs question review one agent at a time. A failed questioner, or no `questions.md` on disk, sets `question_review: unavailable`; `No questions.` sets `full` with `questions: 0`. A failed answerer sets `unanswered` and a failed grader `ungraded`; the questions then go to the report as `FYI:` and raise no findings.
-- Finding the coder notes (3.6.5 Step A): give the answerer the task folder's `decisions.md` and `implementation.md` when they exist. When `decisions.md` is missing there, apply "Finding the coder notes" in `question_review.md` with the reviewed branch from `branch_info.md` and the merge-base of `<base_branch>` and HEAD, running git as `git -C "$CODE_ROOT"`, and add a decisions line and a notes line per match. A branch made by a person has none; the answerer then works from the code, the history and the docs.
+- Finding the coder notes (3.6.5 Step A): when `coder_notes` is set and the file exists, pass it as the decisions line and skip the rest of this item. Otherwise give the answerer the task folder's `decisions.md` and `implementation.md` when they exist. When `decisions.md` is missing there, apply "Finding the coder notes" in `question_review.md` with the reviewed branch from `branch_info.md` and the merge-base of `<base_branch>` and HEAD, running git as `git -C "$CODE_ROOT"`, and add a decisions line and a notes line per match. A branch made by a person has none; the answerer then works from the code, the history and the docs.
 
 ### Phase 3.7 — Blinded Cross-Reference
 

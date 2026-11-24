@@ -32,7 +32,7 @@ Reviewing every change on the current git branch against a base branch and writi
 
 With a `unit:<path>` token, `<PLUGIN_ROOT>/shared/worker-mode.md` overrides every question in this skill, and these steps replace the parts of Core Process they name:
 
-- **Brief.** Read it; its `kind` is `review` and `owns` is empty. Write nothing outside `.mz/` and edit no code. Its `## Spec` goes into the branch-reviewer prompt as a `Unit spec:` block.
+- **Brief.** Read it; its `kind` is `review` and `owns` is empty. Write nothing outside `.mz/` and edit no code. Its `## Spec` goes into the branch-reviewer prompt as a `Unit spec:` block. When the spec has a `Coder notes: <path>` line, also pass `coder_notes: <path>` in the dispatch.
 - **Setup.** Follow worker-mode.md, "Setup": `task_name` is `<YYYY_MM_DD>_review_branch_<id-slug>`, and `state.md` gets `worker_unit` and `unattended: worker`.
 - **Base.** The base is the branch the spec names after `Base branch:`. Check it with `git rev-parse --verify <base>`. A spec that names none, or a base that doesn't resolve, is a blocker; never fall back to `main`.
 - **Step 1.** Replace the main/master check with `git diff --quiet <base>...HEAD`. Exit 0 means nothing to review: set `Status: complete`, `Phase: nothing_to_review`, and end `STATUS: DONE` with that note.

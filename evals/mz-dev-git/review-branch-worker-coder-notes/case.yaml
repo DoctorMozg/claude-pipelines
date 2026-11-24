@@ -1,0 +1,32 @@
+schema_version: "1.1"
+name: review-branch-worker-coder-notes
+description: 'A final review brief names a decisions.md of merged units in its spec as Coder notes. review-branch in worker mode passes it to the branch-reviewer, and the answerer gets that path instead of a task-folder search.'
+tags: [worker, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-git:review-branch unit:units/FR1-app.md
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion]
+  max_turns: 40
+  timeout_seconds: 1800
+graders:
+  - name: never-asks-the-user
+    type: tool_used
+    tool: AskUserQuestion
+    min: 0
+    max: 0
+  # The answerer's prompt carries the decisions line, so anchor on subagent_type and then on the named path.
+  - name: answerer-gets-the-named-notes
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-answerer")(?=[\s\S]*orchestrate_fixture/final/repo/decisions\.md)'
+    min: 1
+  - name: questioner-asks-blind
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner")(?=[\s\S]*Mode: ask)(?=[\s\S]*(?:decisions\.md|orchestrate_fixture))'
+    min: 0
+    max: 0

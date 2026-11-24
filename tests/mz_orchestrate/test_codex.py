@@ -156,6 +156,16 @@ class TestChangeResult:
         assert git(worktree, "log", "-1", "--format=%s") == "orch WU-1: mul module"
         assert git(worktree, "status", "--porcelain", "--untracked-files=all", "--", "stray.txt")
 
+    def test_hands_back_the_skill_decisions(self, run: Run, envelope: Callable[..., Path]) -> None:
+        out = run(
+            envelope(), env={"FAKE_FILES": "calc/mul.py .mz/task/2026_01_01_build_mul/decisions.md"}
+        )
+        assert out.stdout.split("--- decisions ---\n")[1] == "changed\nEND ORCH-RESULT\n"
+
+    def test_no_decisions_file_sends_none(self, run: Run, envelope: Callable[..., Path]) -> None:
+        out = run(envelope(), env={"FAKE_FILES": "calc/mul.py"})
+        assert out.stdout.split("--- decisions ---\n")[1] == "none\nEND ORCH-RESULT\n"
+
     def test_a_failing_verify_is_reported_not_hidden(
         self, run: Run, envelope: Callable[..., Path]
     ) -> None:
@@ -218,7 +228,9 @@ class TestContextResult:
         )
         result = fields(out.stdout)
         assert (result["status"], result["report"]) == ("DONE", f"{wt}/.mz/research/r.md")
-        assert out.stdout.split("--- report ---\n")[1].startswith("changed\nEND ORCH-RESULT")
+        assert out.stdout.split("--- report ---\n")[1].startswith(
+            "changed\n--- decisions ---\nnone\nEND ORCH-RESULT"
+        )
 
     def test_a_missing_report_file_sends_none(
         self, run: Run, envelope: Callable[..., Path]

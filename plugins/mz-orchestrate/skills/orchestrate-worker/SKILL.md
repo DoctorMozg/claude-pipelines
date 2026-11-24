@@ -85,7 +85,7 @@ Parse the envelope type and fields. A malformed envelope (no `END` line, a missi
    - files: `git diff --name-only <base-commit>..HEAD`;
    - notes: the skill's `## Concerns` or `## Blocker` section, verbatim.
 
-   When the skill wrote a report, put its full text in the `--- report ---` section. The result is the only thing that leaves a subagent: it can't write outside its worktree, and a worktree that gained no commits is removed as soon as the subagent ends.
+   When the skill wrote a report, put its full text in the `--- report ---` section. For a `kind: change` unit, put the full text of the skill's `decisions.md` in the `--- decisions ---` section: the skill's task folder is the one under `<PROJECT_ROOT>/.mz/task/` whose `state.md` has a `worker_unit:` line naming BRIEF (`Grep` for it), and a folder without `decisions.md`, or no such folder, gives `none`. `.mz/` is gitignored, so these notes don't reach the integration branch, and the final review reads them from the result. The result is the only thing that leaves a subagent: it can't write outside its worktree, and a worktree that gained no commits is removed as soon as the subagent ends.
 
    A peer records the result under `units` in ATTACHMENT, sends it to the orchestrator's address, and calls ExitWorktree with `action: keep`. A prompt-borne worker makes the envelope its entire final message; when its envelope has a `reply-to` line, it is a started `--bg` session, and it first sends the same envelope with SendMessage to that address.
 
