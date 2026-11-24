@@ -1,6 +1,6 @@
 # Phase 2: Multi-Lens Research
 
-**Goal**: Dispatch parallel researchers to locate problems across the changed files. Uses two waves: Wave A (6 context-aware researchers) and Wave B (3 blinded adversarial researchers dispatched after Wave A, receiving only the raw diff).
+**Goal**: Dispatch parallel researchers to locate problems across the changed files. Uses two waves: Wave A (6 context-aware researchers) and Wave B (3 blinded adversarial researchers plus the design questioner, dispatched after Wave A and receiving only the raw diff, or the scoped file list when the scope has no diff). Question review then answers and grades the questioner's questions.
 
 ## Wave A — Context-Aware Lenses
 
@@ -208,23 +208,26 @@ An agent that returns no valid `STATUS:` line is listed as `NO RETURN BLOCK` and
 
 ## Wave B — Blinded Adversarial Lenses
 
-Dispatch 3 `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin because blinded attacker-path tracing is accuracy-critical) in a **single message**, AFTER Wave A completes. Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
+Dispatch 3 `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin because blinded attacker-path tracing is accuracy-critical) and one `pipeline-design-questioner` in a **single message**, AFTER Wave A completes. Emit the pre-dispatch manifest before launching, and pass each role label as the agent's `description`:
 
 ```
-Dispatching Wave B blind audit — 3 agents in parallel
-Purpose: independent diff-only adversarial review to break confirmation bias
+Dispatching Wave B blind audit — 4 agents in parallel
+Purpose: independent diff-only (or file-list-only for scope:global) adversarial review to break confirmation bias
 - pipeline-researcher — blinded production reliability adversary
 - pipeline-researcher — blinded security attacker
 - pipeline-researcher — blinded ops and SRE adversary
+- pipeline-design-questioner — design questions, ask mode
 ```
 
-**Critical**: Wave B researchers receive only the raw git diff output. They must not receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
+**Critical**: Wave B agents receive only the raw diff (the questioner also gets the audit argument). They must not receive scope.md, the trust boundary analysis, or any Wave A findings. The blinded constraint is the entire point of Wave B — it breaks confirmation bias by forcing independent adversarial analysis.
 
-Obtain the raw diff:
+Build the diff from the scope, so Wave B reviews the same changes the audit covers:
 
-```bash
-git diff $(git merge-base HEAD origin/main)...HEAD
-```
+- `scope:branch`: `git diff $(git merge-base HEAD <BaseRef>)...HEAD`, with `BaseRef` from `state.md`.
+- `scope:working`: `git diff HEAD`, then `git diff --no-index /dev/null <file>` for each path from `git ls-files --others --exclude-standard`, appended to it. `--no-index` exits 1 when the files differ, which is expected here and not a failure.
+- `scope:global`: no diff exists. The researchers get the scoped file list from Phase 1 §1.2 instead, one path per line, under the line `Audited files (no diff; read each file in full):`. This is the one exception to "raw diff only" in `<PLUGIN_ROOT>/shared/blinded_lenses.md`; the blinding is unchanged.
+
+Before dispatching, save exactly what Wave B will receive with the Write tool to `<PROJECT_ROOT>/.mz/task/<task_name>/wave_b.diff` (for `scope:global`, the labelled file list).
 
 ### Wave B Researcher Prompts
 
@@ -232,10 +235,20 @@ The three blinded prompt blocks are the single source of truth at `<PLUGIN_ROOT>
 
 1. Read `<PLUGIN_ROOT>/shared/blinded_lenses.md`.
 1. For each role (`blinded_production`, `blinded_security`, `blinded_ops`), extract the literal text inside the fenced ```` ``` ```` block under that role's `###` header.
-1. Replace the literal placeholder `<raw diff output>` with the unified diff captured above (still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template).
+1. Replace the literal placeholder `<raw diff output>` with the contents of `wave_b.diff` (the unified diff, or the labelled file list for `scope:global`; still wrapped inside the existing `<untrusted-content>...</untrusted-content>` envelope from the prompt template).
 1. Dispatch all three `pipeline-researcher` agents (model: **opus**, overriding the sonnet pin as above) in a single message using parallel tool calls. Each role's prompt becomes that agent's full input — do not add scope.md, the Known Concerns Map, Wave A findings, or any prior consolidation table.
 
 The dispatch invariants in `<PLUGIN_ROOT>/shared/blinded_lenses.md` (typed agents with diff-only prompts in their own wave after Wave A, raw diff only, opus, `pipeline-researcher`) are binding. Inlining the prompt text here would silently drift from `branch-reviewer`'s copy on the next edit — read from the reference instead.
+
+### Wave B Design Questioner Prompt
+
+The question-review protocol, its prompt blocks and its dispatch invariants live in `<PLUGIN_ROOT>/shared/question_review.md`. Read it before dispatching Wave B and build the questioner's prompt from its "Step Q: ask" block. Every step below uses `<qr_dir>` = `<PROJECT_ROOT>/.mz/task/<task_name>/question_review`.
+
+- **Diff**: the same diff the blinded researchers get, from `wave_b.diff`. When the scope has no diff (`scope:global`) or that diff is empty, put the scoped file list from Phase 1 §1.2 in its place, one path per line, after the line `Audited files (no diff; questions may anchor on any line in these files):`, as the shared file's anchor rule for an audit says.
+- **Task or plan text**: the audit argument as the user gave it (in worker mode, the brief's `## Spec`).
+- **Repository root**: `<PROJECT_ROOT>`.
+
+Dispatch it as the typed `pipeline-design-questioner` (registered by mz-base, so any plugin prefix is `mz-base:`), never a fork, with no model override, in the same message as the three blinded researchers. Like them, it gets no scope.md and no Wave A findings; the only `.mz/task/` paths in its prompt are its two output files.
 
 ### Wave B — Persist Responses
 
@@ -247,15 +260,27 @@ After Wave B returns, the orchestrator writes each response:
 | blinded_security   | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_blinded_security.md`   |
 | blinded_ops        | `<PROJECT_ROOT>/.mz/task/<task_name>/findings_blinded_ops.md`        |
 
-Once every Wave B researcher has reported, failed or been stopped and the responses are persisted, emit the post-wave rollup before consolidation:
+The questioner writes `<qr_dir>/questions.md` and `<qr_dir>/rubric.md` itself; check that `questions.md` exists on disk.
+
+Once every Wave B agent has reported, failed or been stopped and the responses are persisted, emit the post-wave rollup before question review:
 
 ```
 Wave complete (Wave B blind audit) — <returned>/<dispatched> agents returned
 - pipeline-researcher: <STATUS> — <summary, ≤8 words>
+- pipeline-design-questioner: <STATUS> — <summary, ≤8 words>
 ```
 
 An agent that returns no valid `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
 
-A Wave B agent that doesn't return, or returns `NEEDS_CONTEXT`, is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/blinded_lenses.md`: it counts as not returned, and with 0 of 3 back the corroboration step is skipped and Wave A's result stands. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
+A Wave B researcher that doesn't return, or returns `NEEDS_CONTEXT`, is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/blinded_lenses.md`: it counts as not returned, and with 0 of 3 back the corroboration step is skipped and Wave A's result stands. The questioner is handled by the "Partial completion" section of `<PLUGIN_ROOT>/shared/question_review.md`. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
-Update state file phase to `researched`. Record finding counts per lens in state.md.
+## Question Review — Answer and Grade
+
+Run after the Wave B rollup, one dispatch at a time, following "The three steps" in `<PLUGIN_ROOT>/shared/question_review.md`. When `questions.md` is missing or the questioner failed, set `question_review: unavailable` and skip this section. When it says `No questions.`, set `question_review: full` with `questions: 0` and skip both steps.
+
+1. **Step A.** Dispatch `pipeline-design-answerer` with the "Step A: answer" block: `<qr_dir>/questions.md`, the same diff or file list the questioner got, `<PROJECT_ROOT>` as the repository root, and `<qr_dir>/answers.md` as the output. For `scope:branch`, apply "Finding the coder notes" in `question_review.md` with `git rev-parse --abbrev-ref HEAD` as the branch (`HEAD` means detached: no search) and `git merge-base HEAD <BaseRef>` as the merge-base, and add the decisions and notes lines per match. For `scope:working` and `scope:global` there is no branch range to match a task against, so leave out those lines. Without a match the answerer works from the code, the git history and `docs/decisions`, `docs/rfcs` and `docs/design`. Never pass `rubric.md`.
+1. **Step G.** Once `answers.md` exists, dispatch `pipeline-design-questioner` again, fresh, with the "Step G: grade" block, writing `<qr_dir>/grades.md`.
+
+Check each output file on disk before the next step. Map failures to the `question_review` value with the shared file's "Partial completion" section (`unanswered` when the answerer fails, `ungraded` when the grader fails).
+
+Update state file phase to `researched`. Record finding counts per lens in state.md, and the question-review telemetry line from the end of `grades.md` (`questions: N, sound: N, unclear: N, not_optimal: N`) with `question_review: <value>`.

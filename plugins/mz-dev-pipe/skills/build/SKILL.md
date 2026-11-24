@@ -2,7 +2,7 @@
 name: build
 description: 'Builds a new feature, module or component test-first, with code review. Use when the user wants something new built or implemented ("build X", "implement Y", "add feature"). Not for bug fixes (use debug) or bringing code up to criteria (use polish).'
 argument-hint: <task description>
-allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(mv *), Bash(printf *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git branch --show-current *), Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git status *), Bash(mkdir *), Bash(date *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(mv *), Bash(printf *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Autonomous Development Pipeline (TDD)
@@ -69,7 +69,7 @@ Derive task name as `<YYYY_MM_DD>_build_<slug>` where `<YYYY_MM_DD>` is today's 
 
 **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop.
 
-**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. In worker mode, follow `worker-mode.md`, "Setup", instead of the resume gate and the `printenv` check.
+**Fresh-task setup**: run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"`. Write `state.md` per the v2 schema in `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by `Status`, `Phase`, `PhaseName`, `Started`, `Iteration`, `FilesWritten`, and the progress-ledger keys `phase_complete: false` and `what_remains: []` (`last_verified` is omitted until the first gate passes). Also record `Branch:` (`git branch --show-current`, or `detached` when it prints nothing) and `StartCommit:` (`git rev-parse HEAD`) below the schema keys, so a later `/review-branch` can find this task's `decisions.md`. Use TaskCreate for per-phase tracking. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. In worker mode, follow `worker-mode.md`, "Setup", instead of the resume gate and the `printenv` check.
 
 Then dispatch `pipeline-tooling-detector` to detect the project's test command, lint command, and formatter. Pass `project_root: <PROJECT_ROOT>` and `output_path: <PROJECT_ROOT>/.mz/task/<task_name>/tooling.md`. If it returns `DONE_WITH_CONCERNS` with the test or lint command set to "none detected", note `tooling: not_detected` in `state.md` and proceed. If it returns `BLOCKED` (it couldn't write `tooling.md`), record the reason in `state.md` and proceed the same way. Tooling gaps are non-fatal at setup time.
 
@@ -93,8 +93,8 @@ See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface patter
 
 **Compute the cost preview** before emitting the Surface 1 message:
 
-- Count `N` from the plan: `N = 1 (test-writer) + 2 (test-reviewers) + W (parallel coder waves from plan.md work units) + 1 (code-reviewer) + 1 (final-reviewer) + 1 (optimizer) + 1 (completeness-checker)` where `W` is the number of work units in `plan.md`.
-- Default per-agent budget: ~20k tokens (mixed Sonnet + Opus). For a typical 5-work-unit plan, `N ≈ 12`, total ≈ 240k tokens.
+- Count `N` from the plan: `N = 1 (test-writer) + 2 (test-reviewers) + W (parallel coder waves from plan.md work units) + 1 (code-reviewer) + 3 (question review: questioner, answerer, grader) + 1 (final-reviewer) + 1 (optimizer) + 1 (completeness-checker)` where `W` is the number of work units in `plan.md`.
+- Default per-agent budget: ~20k tokens (mixed Sonnet + Opus). For a typical 5-work-unit plan, `N ≈ 15`, total ≈ 300k tokens.
 - Use the formula in `<PLUGIN_ROOT>/shared/approval-gate.md` to convert to a dollar estimate at the active price.
 
 **Surface 1 — emit the plan message.** Output the plan verbatim as a normal markdown chat message. Emit the full verbatim contents of `<PROJECT_ROOT>/.mz/task/<task_name>/plan.md` — do not substitute a path, summary, or placeholder. Structure:
@@ -143,7 +143,7 @@ Parse work units into execution waves and dispatch parallel `pipeline-coder` age
 
 ### Phase 7: Code Review
 
-Review with `pipeline-code-reviewer` (model: opus), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 7. Set `Phase: code_review_passed`.
+Review with `pipeline-code-reviewer` (model: opus), with question review on the first pass (`<PLUGIN_ROOT>/shared/question_review.md`), iterate fixes up to 3 times. See `phases/implementation_and_review.md` → Phase 7. Set `Phase: code_review_passed`.
 
 ### Phase 8: Lint, Format, and Verify GREEN
 
@@ -181,7 +181,7 @@ Final gate: `pipeline-completeness-checker` (model: opus) decides if the task is
 
 ## Verification
 
-Output the final state block: task dir path, all phases marked complete, review iteration counts, file list, and tests-passing status. If any phase is incomplete, print the blocker explicitly.
+Output the final state block: task dir path, all phases marked complete, review iteration counts, the question-review telemetry line (`questions: N, sound: N, unclear: N, not_optimal: N, question_review: <outcome>`), file list, and tests-passing status. If any phase is incomplete, print the blocker explicitly.
 
 In worker mode, end as `<PLUGIN_ROOT>/shared/worker-mode.md`, "Final message", describes, with the `STATUS:` line last.
 

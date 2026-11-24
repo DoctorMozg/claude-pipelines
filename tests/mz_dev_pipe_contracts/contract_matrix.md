@@ -28,8 +28,10 @@ Cell legend: `X` = required (the agent file MUST mention this token), `.` = not 
 | pipeline-lint-runner          |  X   |         X          |       X       |    X    |       .       |       .       |
 | pipeline-measure-runner       |  X   |         X          |       X       |    X    |       .       |       .       |
 | pipeline-perf-candidate       |  X   |         X          |       X       |    X    |       .       |       .       |
+| pipeline-design-questioner    |  X   |         X          |       X       |    X    |       .       |       .       |
+| pipeline-design-answerer      |  X   |         X          |       X       |    X    |       .       |       .       |
 
-Cell count: 65 required cells across 15 agents (4 STATUS per agent, one fewer for each researcher; VERDICT cells for the review-style agents only).
+Cell count: 73 required cells across 17 agents (4 STATUS per agent, one fewer for each researcher; VERDICT cells for the review-style agents only).
 
 ## Notes
 

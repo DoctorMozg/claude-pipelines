@@ -10,6 +10,7 @@ Full detail for the implementation phases of the build skill. Coders are dispatc
   - 6.3 Collect results
 - [Phase 7: Code Review](#phase-7-code-review)
   - 7.1 Review code
+  - 7.1.5 Question review
   - 7.2 Handle verdict
 - [Phase 8: Lint, Format, and Verify GREEN](#phase-8-lint-format-and-verify-green)
   - 8.1 Detect project tooling
@@ -85,6 +86,7 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/red_run.md for the current failure outp
 5. Do not write new tests — that phase is complete.
 6. Do not run linters — that's a separate phase.
 7. After implementation, list all files you created or modified and which tests you confirmed pass locally (if you ran any).
+8. Record your non-obvious choices in <PROJECT_ROOT>/.mz/task/<task_name>/decisions.md, as your Record Decisions step describes.
 
 Be precise. Don't add features not in the plan. Don't refactor unrelated code.
 ```
@@ -126,6 +128,17 @@ Set `code_review_iteration = 0`.
 
 ### 7.1 Review code
 
+The reviewer goes out together with one question-review agent (7.1.5): the questioner on the first pass (`code_review_iteration = 0`), the answerer on a later pass that has open questions. Emit the pre-dispatch manifest before the pair, and pass each role label as the agent's `description`. With no open questions on a later pass, the reviewer goes alone and needs neither manifest nor rollup.
+
+```
+Dispatching code review — 2 agents in parallel
+Purpose: review the implementation and question its design choices
+- pipeline-code-reviewer — review of modified production files
+- pipeline-design-questioner — design questions on the diff
+```
+
+On a later pass, the second line of the manifest reads `- pipeline-design-answerer — re-answer open design questions`, and the rollup names the answerer too.
+
 Spawn a `pipeline-code-reviewer` agent (model: **opus**) with:
 
 ```
@@ -156,7 +169,29 @@ Output a structured review:
 
 Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<iteration>.md`.
 
+When both agents of the pair have reported, failed or been stopped, emit the post-wave rollup:
+
+```
+Wave complete (code review) — <returned>/<dispatched> agents returned
+- pipeline-code-reviewer: <VERDICT> — <summary, ≤8 words>
+- pipeline-design-questioner: <STATUS> — <questions asked, ≤8 words>
+```
+
+An agent that returns no valid final `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not returned.
+
+### 7.1.5 Question review
+
+Read `<PLUGIN_ROOT>/shared/question_review.md` and build every prompt from its Step Q, A and G blocks; its dispatch invariants bind here. `<qr_dir>` is `<PROJECT_ROOT>/.mz/task/<task_name>/question_review/` (create it with `mkdir -p`), and the task dir is `<PROJECT_ROOT>/.mz/task/<task_name>`.
+
+- **First pass.** Step Q runs in the 7.1 pair. Its diff is `git diff HEAD` plus `git diff --no-index /dev/null <file>` for each new file listed in `implementation.md`, and its task or plan text is the task description and the contents of `plan.md`. Give it nothing else from the task directory: no `decisions.md`, `implementation.md`, coder reports or `code_review_*.md`. After the pair returns, dispatch `pipeline-design-answerer` (Step A; both question-review agents are registered by mz-base, so a prefix is `mz-base:`), with `decisions.md` and `implementation.md` as its sources, then dispatch `pipeline-design-questioner` in grade mode (Step G).
+- **Later passes.** Re-grade as the shared file's "Re-grading in review loops" describes: the answerer, given only the IDs in `qr_open`, runs in the 7.1 pair and writes `answers_r<n>.md`, then the grader writes `grades_r<n>.md`, where `<n>` is `code_review_iteration + 1`.
+- **Outcome.** A failed step follows the shared file's "Partial completion". Record in `state.md`, beside the review iteration count, `question_review: <outcome>`, its telemetry line (`questions: N, sound: N, unclear: N, not_optimal: N`) and `qr_open: [<IDs whose latest grade is not sound>]`.
+
+**Merge** the latest grade of each question into the review, applying the shared file's "Severity rule". A `not optimal` finding that names a better alternative, the cost of the current choice and a `file:line` is a Critical issue, and turns the verdict to FAIL like any reviewer Critical. Every other `not optimal` finding, and every `unclear` one, is a Minor issue. A finding that matches a reviewer issue (same `file:line`, an overlapping range, or the same behavior in the same file) is listed once, as the reviewer's issue, with `corroborated_by: question_review`. Append the merged findings, each tagged with its `Q<n>`, to `code_review_<iteration>.md` under `## Question Review`.
+
 ### 7.2 Handle verdict
+
+The verdict is the merged one from 7.1.5.
 
 **If PASS**: proceed to Phase 8.
 
@@ -166,7 +201,7 @@ Save review to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<iteration>.md`.
 - Group critical issues by file/work-unit
 - Spawn `pipeline-coder` agents in parallel to fix issues, giving each agent the specific issues for its files. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - With two or more fix agents, emit the pre-dispatch manifest right before launching them, in the form of Phase 6.2 with the label `review fixes` and one `pipeline-coder — <file group, ≤6 words>` line per agent, and pass each role label as the agent's `description`. Once every fix agent has reported, failed or been stopped, emit the post-wave rollup in the same form as Phase 6.2, labeled `review fixes`, before checking STATUS. A single fix agent needs neither.
-- Each fix agent gets: the review feedback for its files, the plan for context, the failing-test list, and the instruction to fix only the flagged issues. Restate the no-test-modification rule.
+- Each fix agent gets: the review feedback for its files, the plan for context, the failing-test list, and the instruction to fix only the flagged issues. Restate the no-test-modification rule. It also gets the decisions file path and the question-review findings anchored in its files, Minor ones included, with the instruction to change the code or append a `Defended (question review Q<n>): <reason>` line to `decisions.md` for each.
 - **After each coder dispatch, check the coder's STATUS.** If the coder returns `BLOCKED`: break the review loop immediately. Escalate via AskUserQuestion with: the coder's blocker message, the review iteration count consumed, and the current review failure details. Do not continue iterating. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 - Only proceed with the review loop on `DONE` or `DONE_WITH_CONCERNS`.
 - **Go to Loop start**
@@ -208,7 +243,7 @@ output_path: <PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md
 
 Read `<PROJECT_ROOT>/.mz/task/<task_name>/lint_results.md`.
 
-If `STATUS: DONE_WITH_CONCERNS`: dispatch a `pipeline-coder` (model: **opus**) with the lint issues from `lint_results.md` to fix them directly. Re-dispatch `pipeline-lint-runner` to confirm clean.
+If `STATUS: DONE_WITH_CONCERNS`: dispatch a `pipeline-coder` (model: **opus**) with the lint issues from `lint_results.md` and the decisions file path to fix them directly. Re-dispatch `pipeline-lint-runner` to confirm clean.
 
 ### 8.3 Run the full test suite
 
@@ -232,7 +267,7 @@ Set `green_iteration = 0`. Max iterations: `MAX_GREEN_ITERATIONS`.
   - **TDD test (from `<PROJECT_ROOT>/.mz/task/<task_name>/tests.md`) failing** — implementation does not yet satisfy that test. Coder must finish the work; do not delete or weaken the test.
   - **Pre-existing test failing** — the implementation regressed something. Coder must adjust the implementation to stop breaking existing behavior. Pre-existing tests may not be modified to "make them pass" without explicit user approval.
 - Increment `green_iteration`.
-- Dispatch a `pipeline-coder` agent (model: **opus**) with the classified failure list. Reinforce: **no test modifications**.
+- Dispatch a `pipeline-coder` agent (model: **opus**) with the classified failure list and the decisions file path. Reinforce: **no test modifications**.
 - **Check coder STATUS.** If `BLOCKED`: break the loop, escalate via AskUserQuestion with the blocker details and the failing test list. Do not continue iterating.
 - Re-dispatch `pipeline-test-runner` to re-run.
 - **Check test-runner STATUS.** If `BLOCKED` (e.g., command not found, exit 127): break the loop, escalate via AskUserQuestion. Do not retry a permanently unavailable test command.

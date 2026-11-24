@@ -43,6 +43,8 @@ STRIDE-delta findings with a stated attacker path qualify as T1 by default. STRI
 
 Blinded-inversion findings (Wave B) are not severity-ranked by the researcher; the consolidation agent assigns an initial evidence tier of T2 if the finding cites a specific code location, T3 otherwise.
 
+Question-review findings (graded design questions, lens `question_review`) take their tier from the grade, as Phase 3 §3.2.5 sets out: a not-optimal finding that names a better alternative, a concrete cost and a file:line is T1, so it can stand at High on its own; any other not-optimal or unclear finding is T2 with a file:line, T3 otherwise, and never goes above Medium. A match with an existing finding adds `question_review` to its `corroborated_by` list without a tier boost.
+
 ## Role Corroboration Boost
 
 Applied in Phase 3 §3.2 (Blinded Cross-Reference) when a Wave B finding merges with a Wave A finding whose lens falls inside the Wave B researcher's adversarial domain. The boost raises `evidence_tier` by one step; the standard capping rules earlier in this file are then re-applied — so the boost can never produce a severity higher than the tier's normal maximum.

@@ -20,6 +20,8 @@ Multiple pipelines run a blinded adversarial wave to break confirmation bias fro
 - audit, deep research phase, Wave B
 - branch-reviewer, Phase 3.6
 
+Both also run a question review in the same wave; its prompts and rules live in `question_review.md`, not here.
+
 Both dispatch `pipeline-researcher` (model: opus, overriding its sonnet pin; see the invariants below) with role-specific adversarial prompts that receive only the raw diff. Inlining identical prompts in two places guarantees drift; this file is the authoritative copy. Each consumer reads this file at dispatch time, extracts the prompt under each role header, substitutes the diff, and dispatches.
 
 ## Blinded Dispatch Invariants
@@ -27,7 +29,7 @@ Both dispatch `pipeline-researcher` (model: opus, overriding its sonnet pin; see
 These four constraints are binding on every consumer. Violating any one of them silently destroys the value of the wave (Wave B becomes a redundant rerun of Wave A under a different prompt).
 
 1. **Typed agents, diff-only prompts.** Dispatch Wave B as typed `pipeline-researcher` agents, never as forks, which inherit the whole conversation. Build each prompt from the diff alone. Wave B runs as its own wave after Wave A because Wave A already fills the six-agent wave cap.
-1. **Raw diff only.** Researchers receive only the unified diff wrapped in `<untrusted-content>...</untrusted-content>` delimiters. They get no scope file, no Known Concerns Map, no Wave A finding artifact and no prior consolidation table.
+1. **Raw diff only.** Researchers receive only the unified diff wrapped in `<untrusted-content>...</untrusted-content>` delimiters. They get no scope file, no Known Concerns Map, no Wave A finding artifact and no prior consolidation table. The one exception is an audit whose scope has no diff (`scope:global`): it passes the scoped file list in the diff's place, one path per line under the line `Audited files (no diff; read each file in full):`, and the researchers read those files in full. The wrapper and the blinding are unchanged.
 1. **Model: opus.** Adversarial framing and attacker-path tracing are accuracy-critical. Sonnet underperforms here.
 1. **Agent: `pipeline-researcher`.** All three roles use the same researcher with role-specific prompts. Every consumer dispatches the `pipeline-researcher` agent by its registered name, which resolves across loaded plugins.
 
@@ -41,7 +43,7 @@ These four constraints are binding on every consumer. Violating any one of them 
 
 ## Role Prompts
 
-Each prompt block below is the literal text that consumers extract and dispatch. The placeholder `<raw diff output>` is replaced at dispatch time with the actual unified diff (`git diff <merge-base>...HEAD` or the equivalent for the consumer's scope).
+Each prompt block below is the literal text that consumers extract and dispatch. The placeholder `<raw diff output>` is replaced at dispatch time with the actual unified diff (`git diff <merge-base>...HEAD` or the equivalent for the consumer's scope). For a scope with no diff, the labelled file list replaces it the same way, inside the same `<untrusted-content>` wrapper.
 
 ### blinded_production
 
@@ -163,4 +165,4 @@ A Wave B agent that returns `NEEDS_CONTEXT` counts as not returned, because resu
 
 - The prompt blocks above are the only acceptable copy. Inlining identical prompt text in any consumer file is a regression — replace with a directive to read this file.
 - The corroboration table is the single source of truth for which Wave A lenses corroborate which blinded role. Consumers that maintain their own evidence-tier rules (e.g. the audit skill's `references/evidence-tier-rules.md`) must stay in sync with this table; on conflict, this file wins.
-- The dispatch invariants (typed agents with diff-only prompts, raw diff only, opus, `pipeline-researcher`) have no exceptions. A consumer that documents one is broken — fix the consumer rather than weakening this file.
+- The dispatch invariants (typed agents with diff-only prompts, raw diff only, opus, `pipeline-researcher`) have one exception, the file list for a scope with no diff, documented in invariant 2. A consumer that documents any other is broken — fix the consumer rather than weakening this file.

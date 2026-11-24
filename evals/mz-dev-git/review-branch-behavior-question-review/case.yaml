@@ -1,0 +1,56 @@
+schema_version: "1.1"
+name: review-branch-behavior-question-review
+description: 'A branch hand-rolls a retry loop where main already has retry_with_backoff. branch-reviewer runs question review: the questioner asks blind in Wave B, the answerer answers, a fresh questioner dispatch grades, and the report has a Design Questions section that names the helper as the better alternative.'
+tags: [track-d, behavior, needs-bash]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-git:review-branch
+  allowed_tools: [Skill, Agent, Bash, Read, Write, Edit, Glob, Grep]
+  max_turns: 40
+  timeout_seconds: 1800
+graders:
+  # Nested dispatches by branch-reviewer show up in the trace; anchor on subagent_type, since the names also appear in prompt text.
+  - name: questioner-asks
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner")(?=[\s\S]*Mode: ask)'
+  - name: questioner-asks-blind
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner")(?=[\s\S]*Mode: ask)(?=[\s\S]*(?:decisions\.md|implementation\.md|Known Concerns|phase3_))'
+    min: 0
+    max: 0
+  - name: answerer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-answerer"'
+  - name: questioner-grades
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner")(?=[\s\S]*Mode: grade)'
+  - name: grader-names-helper
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/question_review/grades\.md")(?=[\s\S]*Better alternative:(?:(?!\\+n)[\s\S])*retry_with_backoff)'
+  - name: report-has-design-questions
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/reviews/\d{4}_\d{2}_\d{2}_review_branch_[^"]*\.md")(?=[\s\S]*## Design Questions)(?=[\s\S]*question_review: full)'
+  - name: report-names-helper-as-alternative
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/reviews/\d{4}_\d{2}_\d{2}_review_branch_[^"]*\.md")(?=[\s\S]*## Design Questions[\s\S]*retry_with_backoff)(?=[\s\S]*## Design Questions[\s\S]*not optimal)'
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: source-untouched
+    type: regex
+    pattern: 'except Exception as exc'
+    target: { source: file, path: src/inventory/client.py }

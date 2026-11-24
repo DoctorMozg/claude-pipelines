@@ -8,18 +8,30 @@ Extract the `scope:` parameter from `$ARGUMENTS`. If no `scope:` is provided, de
 
 Scope modes:
 
-- `scope:branch` — files changed on the current branch vs `origin/main`
+- `scope:branch` — files changed on the current branch vs the base resolved in §1.1.5
 - `scope:working` — files with uncommitted changes (`git diff --name-only` + untracked)
 - `scope:global` — full repository (use audit's roam-mode exclusions)
 
 Remove the `scope:` token from `$ARGUMENTS` before passing to subsequent argument parsing.
+
+## 1.1.5 Resolve the base (scope:branch only)
+
+`scope:working` and `scope:global` need no base; skip this step for them. For `scope:branch`, resolve the base once and use it everywhere, in this phase and in Wave B. Take the first that works:
+
+1. `git symbolic-ref --short refs/remotes/origin/HEAD`
+1. `origin/main`, when `git rev-parse --verify --quiet origin/main` succeeds
+1. `origin/master`, when `git rev-parse --verify --quiet origin/master` succeeds
+
+If none resolves, ask the user for the base ref with AskUserQuestion. In worker or unattended mode, treat it as a blocker: record it in `state.md`, set `Status: blocked` and end `STATUS: BLOCKED`.
+
+Record the result in `state.md` as `BaseRef: <ref>`, a skill-specific key below the schema keys.
 
 ## 1.2 Materialise the file list
 
 For `scope:branch` (default):
 
 ```bash
-git diff $(git merge-base HEAD origin/main)...HEAD --name-only --diff-filter=ACM
+git diff $(git merge-base HEAD <BaseRef>)...HEAD --name-only --diff-filter=ACM
 ```
 
 For `scope:working`:
@@ -102,7 +114,10 @@ Use the file path and content signals:
 Collect:
 
 - `file_count`: total files in scope
-- `diff_LOC`: total lines added + removed across the diff (run `git diff --stat` and sum the changes column)
+- `diff_LOC`: total lines added + removed across the scope's changes. Sum the first two columns of `git diff --numstat`, counting a binary file's `-` as 0:
+  - `scope:branch`: `git diff --numstat $(git merge-base HEAD <BaseRef>)...HEAD`
+  - `scope:working`: `git diff --numstat HEAD`, plus `git diff --no-index --numstat /dev/null <file>` for each untracked file (it exits 1 when the file has content; that is expected)
+  - `scope:global`: no diff, so `diff_LOC` is 0 and the budget rests on the other two metrics
 - `distinct_concern_count`: number of distinct directories or top-level modules touched
 
 These are passed to `scope.md` for Phase 3's cognitive-load budget calculation.

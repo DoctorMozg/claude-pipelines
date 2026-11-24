@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: review-branch-behavior-question-review-notes
+description: 'A feature branch hand-rolls a fixed-delay retry loop. Two earlier task folders name the same branch; only one has a StartCommit in the reviewed range. The answerer prompt names the in-range decisions.md and not the stale one.'
+tags: [track-d, behavior, needs-bash]
+plugins: ["../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-git:review-branch
+  allowed_tools: [Skill, Agent, Bash, Read, Write, Edit, Glob, Grep]
+  max_turns: 40
+  timeout_seconds: 1800
+graders:
+  # The answerer's prompt carries the decisions line, so anchor on subagent_type and then on the task folder token.
+  - name: answerer-gets-in-range-notes
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-answerer")(?=[\s\S]*2026_11_20_build_inventory_zebra/decisions\.md)'
+    min: 1
+  - name: answerer-skips-stale-notes
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-answerer")(?=[\s\S]*2026_08_03_build_inventory_walrus)'
+    min: 0
+    max: 0
+  - name: questioner-asks-blind
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner")(?=[\s\S]*Mode: ask)(?=[\s\S]*(?:decisions\.md|zebra|walrus))'
+    min: 0
+    max: 0

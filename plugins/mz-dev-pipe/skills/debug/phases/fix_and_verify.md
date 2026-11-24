@@ -128,6 +128,7 @@ Read <PROJECT_ROOT>/.mz/task/<task_name>/regression_test.md for the test that mu
 4. Do not modify the regression test.
 5. Do not add new dependencies unless the diagnosis explicitly requires it.
 6. The regression test must PASS after your fix.
+7. Record your non-obvious choices in <PROJECT_ROOT>/.mz/task/<task_name>/decisions.md, as your Record Decisions step describes.
 
 ## Report
 - Files modified with description of changes
@@ -172,7 +173,7 @@ On each iteration:
 
 1. Increment `fix_iteration` at the START of the iteration (before dispatching the coder).
 1. Analyze what went wrong: read failing test output, compare to diagnosis.
-1. If regression test still fails: the fix is insufficient. Re-dispatch coder with the failure output and previous attempt context.
+1. If regression test still fails: the fix is insufficient. Re-dispatch coder with the 4.2 prompt, the failure output and previous attempt context.
 1. If regression test passes but other tests regress: the fix is too broad. Re-dispatch coder with regression details and instruction to narrow the change.
 1. After the coder dispatch, check the coder's STATUS:
    - If `BLOCKED`: break the loop immediately. Do not run verification. Escalate via AskUserQuestion with the blocker message, the number of iterations consumed (`fix_iteration`), and the still-failing test output.
@@ -247,6 +248,17 @@ Read both artifacts. All must pass (or match pre-existing failure state). If any
 
 ### 5.2 Code review
 
+The reviewer goes out together with one question-review agent (5.2.5): the questioner on the first review pass, the answerer on a later pass that has open questions. Emit the pre-dispatch manifest before the pair, and pass each role label as the agent's `description`. With no open questions on a later pass, the reviewer goes alone and needs neither manifest nor rollup.
+
+```
+Dispatching code review — 2 agents in parallel
+Purpose: review the fix and question its design choices
+- pipeline-code-reviewer — review of fix and regression test
+- pipeline-design-questioner — design questions on the diff
+```
+
+On a later pass, the second line of the manifest reads `- pipeline-design-answerer — re-answer open design questions`, and the rollup names the answerer too.
+
 Dispatch a `pipeline-code-reviewer` agent (model: **opus**):
 
 ```
@@ -272,12 +284,32 @@ PASS — fix is correct, minimal, and well-tested.
 FAIL — with specific issues that must be addressed.
 ```
 
+When both agents of the pair have reported, failed or been stopped, emit the post-wave rollup:
+
+```
+Wave complete (code review) — <returned>/<dispatched> agents returned
+- pipeline-code-reviewer: <VERDICT> — <summary, ≤8 words>
+- pipeline-design-questioner: <STATUS> — <questions asked, ≤8 words>
+```
+
+An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and counted as not-returned.
+
+### 5.2.5 Question review
+
+Read `<PLUGIN_ROOT>/shared/question_review.md` and build every prompt from its Step Q, A and G blocks; its dispatch invariants bind here. `<qr_dir>` is `<PROJECT_ROOT>/.mz/task/<task_name>/question_review/` (create it with `mkdir -p`), and the task dir is `<PROJECT_ROOT>/.mz/task/<task_name>`. A review pass `<n>` is `Review retries + 1`.
+
+- **First pass.** Step Q runs in the 5.2 pair. Its diff is `git diff HEAD` plus `git diff --no-index /dev/null <file>` for each new file the fix or the regression test added, and its task or plan text is the bug report (still in its `<untrusted-content>` wrapper) and the contents of `diagnosis.md`. Give it nothing else from the task directory: no `decisions.md`, coder reports or review output. After the pair returns, dispatch `pipeline-design-answerer` (Step A; both question-review agents are registered by mz-base, so a prefix is `mz-base:`), with `decisions.md` as its source, then dispatch `pipeline-design-questioner` in grade mode (Step G).
+- **Later passes.** Re-grade as the shared file's "Re-grading in review loops" describes: the answerer, given only the IDs in `qr_open`, runs in the 5.2 pair and writes `answers_r<n>.md`, then the grader writes `grades_r<n>.md`.
+- **Outcome.** A failed step follows the shared file's "Partial completion". Record in `state.md`, beside `Review retries`, `question_review: <outcome>`, its telemetry line (`questions: N, sound: N, unclear: N, not_optimal: N`) and `qr_open: [<IDs whose latest grade is not sound>]`.
+
+**Merge** the latest grade of each question into the review, applying the shared file's "Severity rule". A `not optimal` finding that names a better alternative, the cost of the current choice and a `file:line` is a must-fix issue, and turns the verdict to FAIL like any issue the reviewer raises. Every other `not optimal` finding, and every `unclear` one, is optional: it goes into the report like the reviewer's similar patterns and fails nothing. A finding that matches a reviewer issue (same `file:line`, an overlapping range, or the same behavior in the same file) is listed once, as the reviewer's issue, with `corroborated_by: question_review`. Save the review, with the merged findings tagged `Q<n>` under `## Question Review`, to `<PROJECT_ROOT>/.mz/task/<task_name>/code_review_<n>.md`.
+
 ### 5.3 Handle review verdict
 
-| Verdict  | Action                                                                                                                                                                                                                                                                            |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **PASS** | Proceed to Phase 6.                                                                                                                                                                                                                                                               |
-| **FAIL** | Dispatch `pipeline-coder` (opus) with reviewer feedback. Re-verify (5.1). Re-review. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. |
+| Verdict  | Action                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PASS** | Proceed to Phase 6.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **FAIL** | Dispatch `pipeline-coder` (opus) with the merged review from `code_review_<n>.md`, the decisions file path, and the instruction to change the code or append a `Defended (question review Q<n>): <reason>` line to `decisions.md` for each question-review finding, optional ones included. Re-verify (5.1). Re-review. When a finding accepted and fixed here points to a mistake a later run should avoid, add a `- (review) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`. |
 
 **Retry limit**: `MAX_REVIEW_RETRIES = 2`. If the review still fails after 2 retries, escalate via AskUserQuestion with the reviewer's feedback and ask the user how to proceed.
 
@@ -339,9 +371,13 @@ If a file with that name exists, append `_v2`, `_v3`, etc.
 ## Similar Patterns
 <other locations with the same bug pattern, noted by reviewer — not fixed>
 
+## Design Questions
+<the section `<PLUGIN_ROOT>/shared/question_review.md` describes under "Report section", from 5.2.5>
+
 ## Pipeline Stats
 - **Fix iterations**: <N>
 - **Review retries**: <N>
+- **Question review**: <questions: N, sound: N, unclear: N, not_optimal: N, question_review: <outcome>>
 - **Domain research**: <yes — topic / no>
 ```
 

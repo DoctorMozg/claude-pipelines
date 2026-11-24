@@ -1,6 +1,6 @@
 import re
 
-from .conftest import DocSet, assert_no_violations, split_fences, split_tool_list
+from .conftest import DocSet, PluginDoc, assert_no_violations, split_fences, split_tool_list
 
 KNOWN_KEYS = frozenset(
     {
@@ -45,6 +45,7 @@ HIGH_EFFORT_AGENTS = {
     "pipeline-coder": "bug fixes in polish and debug, where edge cases are likely",
     "pipeline-test-writer": "edge-case tests written before the code",
     "pipeline-perf-candidate": "optimizations that must keep the correctness command green",
+    "pipeline-design-questioner": "spotting the better alternative and grading answers against it",
 }
 COLORS = frozenset({"red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"})
 KNOWN_TOOLS = frozenset(
@@ -274,5 +275,36 @@ class TestBody:
             f"{doc.relative}: no ## Red Flags section outside code fences"
             for doc in agents.docs
             if "## Red Flags" not in (line.rstrip() for line in split_fences(doc.body)[0])
+        ]
+        assert_no_violations(violations)
+
+
+class TestPrReviewerCarriesBranchReviewerSections:
+    # branch-reviewer's report requires these; the PR report copies them or they never show.
+    SECTIONS = ("## Blind Spots", "## Design Questions")
+
+    @staticmethod
+    def _output_format(doc: PluginDoc) -> str:
+        if doc.stem == "branch-reviewer":
+            # The template lives in a reference file the agent reads before Phase 6.
+            template = doc.path.parent.parent / "references" / "branch_review_report.md"
+            assert template.is_file(), f"{doc.relative}: report template {template} missing"
+            return template.read_text(encoding="utf-8")
+        # The fenced template holds its own ## headings, so cut at the next real section.
+        start = doc.body.find("\n## Output Format\n")
+        end = doc.body.find("\n## Terminal Status\n", start)
+        assert start != -1, f"{doc.relative}: Output Format section missing"
+        assert end != -1, f"{doc.relative}: Terminal Status section missing"
+        return doc.body[start:end]
+
+    def test_sections_appear_in_both_output_formats(self, agents: DocSet) -> None:
+        by_stem = {doc.stem: doc for doc in agents.docs}
+        violations = [
+            f"{by_stem[stem].relative}: Output Format lacks {section}"
+            for stem in ("branch-reviewer", "github-pr-reviewer")
+            for section in self.SECTIONS
+            if not re.search(
+                rf"^{re.escape(section)}$", self._output_format(by_stem[stem]), re.MULTILINE
+            )
         ]
         assert_no_violations(violations)

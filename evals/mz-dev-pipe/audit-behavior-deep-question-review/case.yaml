@@ -1,0 +1,53 @@
+schema_version: "1.1"
+name: audit-behavior-deep-question-review
+description: 'A deep audit of a branch whose new pricing client hand-rolls a retry loop beside the repo backoff helper. Wave B adds the design questioner, question review answers and grades its questions, and the summary has a Design Questions section.'
+tags: [behavior, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:audit depth:deep scope:branch
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 90
+  timeout_seconds: 2400
+graders:
+  # One dispatch asks in Wave B, a fresh one grades after the answers.
+  - name: questioner-asks-and-grades
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner"'
+    min: 2
+  - name: answerer-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-answerer"'
+    min: 1
+  # The questioner asks blind: no Wave A findings file reaches its prompt.
+  - name: questioner-gets-no-wave-a-findings
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=.*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-design-questioner")(?=.*findings_(?:correctness|security|performance|maintainability|reliability|stride_delta))'
+    min: 0
+    max: 0
+  - name: summary-has-design-questions
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*_deep_audit_[^"]*/summary\.md")(?=[\s\S]*## Design Questions[\s\S]*question_review: full)'
+  - name: pricing-loop-untouched
+    type: regex
+    pattern: 'time\.sleep\(1\)'
+    target: { source: file, path: shop/clients/pricing.py }
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0

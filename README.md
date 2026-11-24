@@ -235,7 +235,7 @@ Standalone agents and skills for everyday development. No pipeline orchestration
 | ------------------- | --------------------------- | ------------------------------------------------------- |
 | **construct-skill** | `/construct-skill <intent>` | Drafts a plugin skill in a marketplace repo, test-first |
 
-3 user-facing agents: code-reviewer (single-file/staged-diff review), technical-writer (source-grounded docs) and pipeline-web-researcher (sourced web research, which other plugins' pipelines also dispatch), plus 2 shared pipeline agents (pipeline-researcher, code-lens-over-engineering). Also ships a `using-mozg-pipelines` routing map that answers "which skill fits". The coding rules and `/init-rules` moved to `mz-rules` in 0.54.0.
+3 user-facing agents: code-reviewer (single-file/staged-diff review), technical-writer (source-grounded docs) and pipeline-web-researcher (sourced web research, which other plugins' pipelines also dispatch), plus 4 shared pipeline agents (pipeline-researcher, code-lens-over-engineering, and the question-review pair pipeline-design-questioner and pipeline-design-answerer). Also ships a `using-mozg-pipelines` routing map that answers "which skill fits". The coding rules and `/init-rules` moved to `mz-rules` in 0.54.0.
 
 **[Full documentation →](plugins/mz-base/)**
 

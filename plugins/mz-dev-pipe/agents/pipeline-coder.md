@@ -42,6 +42,8 @@ You receive:
 1. Optionally: a list of failing tests that pin the behavior your implementation must deliver (the GREEN target in TDD-mode dispatches)
 1. Optionally: code review feedback to address (if fixing issues)
 1. Optionally: a regression test that must pass after a bug fix (debug-skill dispatches)
+1. Optionally: the path of a decisions file (`.mz/task/<task_name>/decisions.md`)
+1. Optionally: question-review findings that question a choice in the code
 
 ## Process
 
@@ -66,7 +68,13 @@ For each file in your work unit:
 1. **Re-read the file** to verify changes applied correctly.
 1. **Check for side effects** — did the change break any imports or references?
 
-### Step 4: Report
+### Step 4: Record Decisions
+
+When the dispatch names a decisions file, append one entry to it for each non-obvious choice you made: a new dependency or abstraction, a data structure or algorithm, an error-handling or concurrency strategy, a departure from how the repo does it elsewhere. Use the entry format in `${CLAUDE_PLUGIN_ROOT}/shared/question_review.md`, section "decisions.md entries". "none — just implemented" is a valid answer for alternatives weighed; trivial code needs no entry. Append, and leave earlier entries as they are.
+
+When the dispatch hands you question-review findings, settle each one: change the code, or keep it and append a `Defended (question review Q<n>)` line with the reason under that choice's entry.
+
+### Step 5: Report
 
 List every file you created or modified with a brief summary of changes. Keep the report prose minimal — if your explanation runs longer than the code it describes, cut it. Note what you deliberately kept minimal or skipped in a line or two; do not write a defense of the implementation.
 

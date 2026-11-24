@@ -1,0 +1,39 @@
+schema_version: "1.1"
+name: audit-behavior-deep-working-diff
+description: 'A deep audit of scope:working in a repo with no remote. Clean committed code, one uncommitted bug in a tracked file and one untracked new file. Wave B must receive the uncommitted hunk and the untracked file, and save them as wave_b.diff.'
+tags: [behavior, track-d, needs-bash]
+plugins: ["../../../plugins/mz-dev-pipe", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-dev-pipe:audit depth:deep scope:working
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 90
+  timeout_seconds: 2400
+graders:
+  # A blinded researcher's prompt carries the uncommitted hunk from the tracked file.
+  - name: blinded-researcher-sees-uncommitted-hunk
+    type: tool_used
+    tool: Agent
+    input_match: '^(?=[\s\S]*"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-researcher")(?=[\s\S]*apply_coupon_zq7)'
+    min: 1
+  # wave_b.diff holds the untracked file too, which plain git diff never shows.
+  - name: wave-b-diff-has-untracked-file
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*wave_b\.diff")(?=[\s\S]*split_bill_wk4)'
+    min: 1
+  - name: no-edit-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0
+  - name: no-write-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*\.mz/)'
+    min: 0
+    max: 0

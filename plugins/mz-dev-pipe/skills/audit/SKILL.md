@@ -12,7 +12,7 @@ allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git 
 Orchestrates a multi-lens codebase audit and produces a ranked findings report. Two depth modes:
 
 - **`depth:standard`** (default) — single-wave parallel researchers across correctness, security, performance, maintainability, and reliability lenses. Quick scan suitable for in-progress work or focused bug hunts. Cap mode: `quick` per `<PLUGIN_ROOT>/shared/severity-lattice.md`.
-- **`depth:deep`** — pre-PR multi-wave audit with blast-radius tier gating, evidence-tiered severity caps, trust-boundary STRIDE delta, three blinded adversarial lenses, rollback rehearsal (BLOCKING for missing down-migrations), cognitive-load budget, and persistent ledger append. Cap mode: `pre-PR`.
+- **`depth:deep`** — pre-PR multi-wave audit with blast-radius tier gating, evidence-tiered severity caps, trust-boundary STRIDE delta, three blinded adversarial lenses, question review of the design choices, rollback rehearsal (BLOCKING for missing down-migrations), cognitive-load budget, and persistent ledger append. Cap mode: `pre-PR`.
 
 No code is modified in either mode. Hand the summary to `build`, `debug`, or `polish` to act on it.
 
@@ -62,7 +62,7 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 ## Constants
 
 - **PROJECT_ROOT**: resolved once in setup with `echo "${MZ_MEMORY_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"`; expand `<PROJECT_ROOT>` to it in every command and agent prompt.
-- **MAX_RESEARCHERS**: 5 (standard) | **MAX_RESEARCHERS_WAVE_A**: 6 (deep) | **MAX_RESEARCHERS_WAVE_B**: 3 (deep)
+- **MAX_RESEARCHERS**: 5 (standard) | **MAX_RESEARCHERS_WAVE_A**: 6 (deep) | **MAX_RESEARCHERS_WAVE_B**: 3 (deep; the design questioner joins them, so Wave B dispatches 4 agents)
 - **Severity caps**: cap modes `quick` (standard) and `pre-PR` (deep) from `<PLUGIN_ROOT>/shared/severity-lattice.md`. Findings over a cap are written to `findings_capped.md`, never dropped.
 - **CRITICAL_CAP**: unlimited, BLOCKING included — a ship-stopper cut from the report body would defeat the audit.
 - **HIGH_CAP**: 10 (standard) | unlimited (deep) — standard lists what is worth fixing today; deep makes every HIGH visible before a PR.
@@ -107,7 +107,7 @@ When `depth:deep`: additionally dispatch `pipeline-tooling-detector` to detect t
 
 ### Phases 1–4
 
-Route by `depth:` to the phase files in the table above. Both depth modes stop at the report — neither modifies code. The blinded invariant in `depth:deep` Phase 2 (Wave B dispatched as typed `pipeline-researcher` agents, in its own wave after Wave A completes) has no exceptions.
+Route by `depth:` to the phase files in the table above. Both depth modes stop at the report — neither modifies code. The blinded invariant in `depth:deep` Phase 2 (Wave B dispatched as typed `pipeline-researcher` agents and a typed `pipeline-design-questioner`, in its own wave after Wave A completes) has no exceptions. Question review follows `<PLUGIN_ROOT>/shared/question_review.md`, whose dispatch invariants are binding too.
 
 ## Common Rationalizations
 

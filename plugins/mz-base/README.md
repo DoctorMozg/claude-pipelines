@@ -2,9 +2,9 @@
 
 # Mozg Base (`mz-base`)
 
-mz-base is the foundation plugin of the mozg-pipelines marketplace. It ships five agents (a code reviewer, a technical writer, two researchers and an over-engineering lens used by review and cleanup pipelines) and two skills. One drafts new skills for a plugin. The other routes a task to the right skill across the `mz-*` plugins. It's for developers who want a reviewer, a researcher or a doc writer on call, and for users of other mozg plugins, whose skills dispatch these agents.
+mz-base is the foundation plugin of the mozg-pipelines marketplace. It ships seven agents (a code reviewer, a technical writer, two researchers, an over-engineering lens used by review and cleanup pipelines, and a design questioner and answerer for question review) and two skills. One drafts new skills for a plugin. The other routes a task to the right skill across the `mz-*` plugins. It's for developers who want a reviewer, a researcher or a doc writer on call, and for users of other mozg plugins, whose skills dispatch these agents.
 
-**Works in:** Claude Code and Cowork. claude.ai chat loads skills without their agents: `/using-mozg-pipelines` dispatches none, but `/construct-skill` can dispatch a subagent, and the five agents aren't available there.
+**Works in:** Claude Code and Cowork. claude.ai chat loads skills without their agents: `/using-mozg-pipelines` dispatches none, but `/construct-skill` can dispatch a subagent, and the seven agents aren't available there.
 
 ## Installation
 
@@ -32,15 +32,17 @@ The `/init-rules` skill moved to the separate mz-rules plugin.
 
 ## Agents
 
-You can invoke `code-reviewer`, `technical-writer` and `pipeline-web-researcher` directly. `pipeline-web-researcher`, `pipeline-researcher` and `code-lens-over-engineering` live here because skills in several plugins dispatch them.
+You can invoke `code-reviewer`, `technical-writer` and `pipeline-web-researcher` directly. `pipeline-web-researcher`, `pipeline-researcher`, `code-lens-over-engineering`, `pipeline-design-questioner` and `pipeline-design-answerer` live here because skills in several plugins dispatch them.
 
-| Agent                          | Purpose                                                                                                                                                                                             |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **code-reviewer**              | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability                                                                                                    |
-| **technical-writer**           | Creates and improves technical documentation grounded in actual code                                                                                                                                |
-| **pipeline-researcher**        | Pipeline-only. Codebase exploration and domain research for planning and review pipelines such as `/build`, `/debug`, `/audit` and the `branch-reviewer` agent                                      |
-| **pipeline-web-researcher**    | Sourced web research on a technical question, such as a version change or a tool comparison. Also dispatched by `/deep-research`, `/combine`, `/ask`, `/naturalize` and the branch and PR reviewers |
-| **code-lens-over-engineering** | Pipeline-only. Flags code that should not exist or should be smaller. Dispatched by branch-reviewer and the build, polish, cleanup and optimize skills                                              |
+| Agent                          | Purpose                                                                                                                                                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **code-reviewer**              | Reviews code changes for bugs, security vulnerabilities, performance issues, and maintainability                                                                                                        |
+| **technical-writer**           | Creates and improves technical documentation grounded in actual code                                                                                                                                    |
+| **pipeline-researcher**        | Pipeline-only. Codebase exploration and domain research for planning and review pipelines such as `/build`, `/debug`, `/audit` and the `branch-reviewer` agent                                          |
+| **pipeline-web-researcher**    | Sourced web research on a technical question, such as a version change or a tool comparison. Also dispatched by `/deep-research`, `/combine`, `/ask`, `/naturalize` and the branch and PR reviewers     |
+| **code-lens-over-engineering** | Pipeline-only. Flags code that should not exist or should be smaller. Dispatched by branch-reviewer and the build, polish, cleanup and optimize skills                                                  |
+| **pipeline-design-questioner** | Pipeline-only. Asks why a change made its non-obvious choices, then grades the answers as sound, unclear or not optimal. Question review in branch-reviewer, `/audit`, `/build`, `/debug` and `/polish` |
+| **pipeline-design-answerer**   | Pipeline-only. Answers the design questions from the code, the coder's `decisions.md`, git history and design docs, citing a source or saying none is recorded                                          |
 
 For local branch review (`/review-branch`) and GitHub PR workflows (`/github-review-pr`, `/github-scan-prs`) plus their lens agents and PR collectors, see [`mz-dev-git`](https://github.com/DoctorMozg/claude-pipelines/tree/master/plugins/mz-dev-git).
 
@@ -55,6 +57,7 @@ What gets written, and where:
 - `/construct-skill` runs local checks such as `claude plugin validate`, `pre-commit` and `make test`. The only shell command the skill pre-approves is `claude plugin validate`. The others follow your normal permission settings.
 - `technical-writer` creates and edits documentation files in your project as part of the task you give it. It has no approval step of its own, though it asks before writing when the audience, scope or source of truth is unclear. It can run Bash to compile or run the snippets it documents, but only snippets that work offline without credentials. It never reads API keys, tokens or `.env` files.
 - `code-lens-over-engineering` writes one findings file, at the path the dispatching skill gives it.
+- `pipeline-design-questioner` writes its questions, rubric and grades, and `pipeline-design-answerer` its answers, to the paths the dispatching skill gives them. The answerer runs Bash for read-only `git log`, `git blame` and `git show` only.
 - `code-reviewer` reads your code and has Bash access. It has no Write or Edit tool and returns its report in the reply.
 - `pipeline-researcher` and `pipeline-web-researcher` are read-only: no Write, Edit or Bash. They return findings in their reply, and the dispatching skill decides what to save.
 - `/using-mozg-pipelines` has no write tool. It reads its routing table and asks questions.

@@ -20,6 +20,7 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md` and `<PROJECT_ROOT>/.mz/t
 - Files scanned: N
 - Lenses run (Wave A): correctness, security, performance, maintainability, reliability, stride_delta
 - Lenses run (Wave B, blinded): blinded_production, blinded_security, blinded_ops
+- Design questions: questions: N, sound: N, unclear: N, not_optimal: N, question_review: full | unanswered | ungraded | unavailable
 - Total findings located (before caps): <raw count>
 - Findings in report (after caps): <count>
 - BLOCKING findings (rollback analysis): R
@@ -47,6 +48,9 @@ Read `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md` and `<PROJECT_ROOT>/.mz/t
 - Source: blinded_<production|security|ops>
 - Evidence tier: T2 / T3
 - Description: <one line>
+
+## Design Questions
+<the "Report section" block of <PLUGIN_ROOT>/shared/question_review.md, filled from findings.md and question_review/: its telemetry line, then one ### Q<n> entry per question. Finding names the lattice level and ID, such as `HIGH F12`, or "none"; with question_review unanswered or ungraded, list the questions (and any answers) as INFO with no finding. When question_review is unavailable, the section holds the telemetry line alone.>
 
 ## Rollback Plan (abbreviated)
 <top rollback concerns — link to rollback_plan.md for full detail>
@@ -88,6 +92,7 @@ Display:
 - Headline: "Found X findings (N critical, M high, P medium, R BLOCKING) across K files at tier T<n>. Report-only — no code was modified."
 - Cognitive-load score + SPLIT RECOMMENDATION if emitted
 - Blind-spot count (Wave B findings unmatched by Wave A)
+- The design-questions telemetry line (`questions: N, sound: N, unclear: N, not_optimal: N, question_review: <value>`)
 - Ledger append count: "<n> BLOCKING findings appended to .mz/reports/audit_ledger.md"
 - Suggest `/build`, `/debug`, or `/polish` for the user to follow up on specific findings.
 

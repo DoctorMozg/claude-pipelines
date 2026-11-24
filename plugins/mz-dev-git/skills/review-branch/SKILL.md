@@ -76,7 +76,7 @@ artifact_root: <PROJECT_ROOT>
 base_branch: <base-branch>
 task_name: <task_name>
 Analyze all changes file-by-file for bugs, architecture issues, codebase consistency, missing functionality, and test coverage.
-Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers as their own wave after Phase 3.5 returns, reading the prompts from <PLUGIN_ROOT>/shared/blinded_lenses.md, and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1.
+Run the always-on blind audit (Wave B) per Phase 3.6: dispatch the 3 blinded adversarial researchers and the design questioner as their own wave after Phase 3.5 returns, reading the prompts from <PLUGIN_ROOT>/shared/blinded_lenses.md and <PLUGIN_ROOT>/shared/question_review.md; then answer and grade the questions per Phase 3.6.5 and cross-reference per Phase 3.7. The Blind Spots section is mandatory whenever wave_b_completed >= 1, and the Design Questions section always is.
 Use researcher agents for domain research if the implementation topic is complex.
 Save the report to <PROJECT_ROOT>/.mz/reviews/ using the naming convention: <YYYY_MM_DD>_review_branch_<branch_name><_vN>.md (append _v2, _v3 etc. if a report with the same base name already exists).
 ```

@@ -93,7 +93,7 @@ For each **simple** failure, fix it directly (no agent needed):
 After quick fixes, re-run all failing criteria checks.
 Update the criteria checklist in state.md.
 
-If all criteria now pass, counting cleanup and residue criteria as handled by Phase 5, skip to Phase 5 (Optimization & cleanup). Read `phases/fix_review_and_finalize.md` and jump to Phase 5.
+If all criteria now pass, counting cleanup and residue criteria as handled by Phase 5, skip to Phase 5 (Optimization & cleanup). Read `phases/optimize_and_finalize.md` and jump to Phase 5.
 
 ______________________________________________________________________
 
@@ -167,4 +167,4 @@ An agent that returns no `STATUS:` line is listed as `NO RETURN BLOCK` and count
 Write findings to `<PROJECT_ROOT>/.mz/task/<task_name>/research.md`.
 Update state phase to `researched`.
 
-Proceed to Phase 4. Read `phases/fix_review_and_finalize.md`.
+Proceed to Phase 4. Read `phases/fix_and_review.md`.

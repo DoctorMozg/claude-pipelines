@@ -47,6 +47,8 @@ Researches the codebase and writes a parallelizable plan. After you approve it, 
 
 **Pipeline**: Research, Plan, Plan Review, Approval Gate, Tests (RED), Test Review, Verify RED, Parallel Implementation (GREEN), Code Review, Lint & Verify GREEN, Final Review, Refactor, Completeness Check
 
+**Question review** (build, debug and polish): coders record each non-obvious choice, and the alternatives they weighed, in `.mz/task/<task>/decisions.md`. On the first code-review pass, `pipeline-design-questioner` asks up to eight questions about the change without seeing those notes, `pipeline-design-answerer` answers from the notes and the code, and the questioner grades each answer. A choice graded *not optimal*, with a better alternative, its cost and a `file:line`, fails the review like any `Critical:` finding. The coder then changes the code or records why it stands, and the next pass grades it again.
+
 ### `/audit`: Multi-Lens Codebase Audit
 
 Report-only. Scans code through five independent lenses (correctness, security, performance, maintainability, reliability) and ranks the findings by severity. It never edits code. Pass the report to `/build`, `/debug` or `/polish` to act on it. With a bounded scope (`branch`, `working` or a path list) it also inspects files downstream of the change.
@@ -63,7 +65,7 @@ Report-only. Scans code through five independent lenses (correctness, security, 
 
 **Severity caps** (standard depth): all critical, top 10 high, top 5 medium. Findings over a cap, and all low findings, go to `findings_capped.md`.
 
-**`depth:deep`** adds blast-radius tiering, evidence-tiered severity caps, three blinded adversarial lenses, a rollback rehearsal, and a ledger of blocking findings at `.mz/reports/audit_ledger.md`.
+**`depth:deep`** adds blast-radius tiering, evidence-tiered severity caps, three blinded adversarial lenses, a question review of the code's design choices, a rollback rehearsal, and a ledger of blocking findings at `.mz/reports/audit_ledger.md`.
 
 ### `/debug`: Reactive Bug Investigation & Hypothesis Verification
 

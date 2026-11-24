@@ -34,9 +34,9 @@ Reviews every change on the current branch against a base branch (default `main`
 /review-branch develop      # compare against develop
 ```
 
-`branch-reviewer` walks each changed file and runs six lenses in parallel with full repo context. It then runs a blind audit: three adversarial researchers (production reliability, security, ops/SRE) see only the raw diff and surface "Blind Spots" the first wave missed. A branch in an unfamiliar domain also gets a web research pass. The report is saved to `.mz/reviews/`.
+`branch-reviewer` walks each changed file and runs six lenses in parallel with full repo context. It then runs a blind audit: three adversarial researchers (production reliability, security, ops/SRE) see only the raw diff and surface "Blind Spots" the first wave missed. Alongside them, a question review asks up to eight questions about the branch's non-obvious choices ("why a hand-rolled retry loop instead of the existing helper?"), another agent answers them from the code, git history and design records, and the questioner grades each answer as sound, unclear or not optimal. A branch in an unfamiliar domain also gets a web research pass. The report is saved to `.mz/reviews/`.
 
-**Pipeline**: branch-info-collector gathers git metadata and prior review reports. Optional web research comes next, then 6 code-lens agents in parallel, then 3 blinded researchers, and finally the consolidated report.
+**Pipeline**: branch-info-collector gathers git metadata and prior review reports. Optional web research comes next, then 6 code-lens agents in parallel, then 3 blinded researchers and the design questioner, the answer and grade passes, and finally the consolidated report.
 
 ### `/github-review-pr`: pull request review
 
@@ -51,7 +51,7 @@ Findings are cross-referenced with what reviewers and bots such as Copilot and C
 
 The review is skipped, with the reason written to the report, when the PR is closed, merged, a draft, empty, authored by you (unless you ask explicitly), or already approved by you.
 
-**Pipeline**: github-pr-reviewer gathers the PR data, builds the map of existing concerns and sets up the worktree. branch-reviewer then fans out on the worktree, the findings are cross-referenced, and the report carries the verdict and Critical-finding count.
+**Pipeline**: github-pr-reviewer gathers the PR data, builds the map of existing concerns and sets up the worktree. branch-reviewer then fans out on the worktree, the findings are cross-referenced, and the report carries the verdict, the Critical-finding count, and the Blind Spots and Design Questions sections from branch-reviewer.
 
 ### `/github-scan-prs`: PR triage
 
@@ -68,7 +68,7 @@ The scan reads metadata and counts, never diff content, and doesn't review code.
 
 ## Reading the report
 
-Every finding carries one label: `Critical:`, `Nit:`, `Optional:` or `FYI:`. A new finding becomes `Critical:` only when its confidence is 80 or higher and two independent signals agree, either two lenses or a lens plus a matching blind-audit finding. Findings that only the blind audit raised are capped at `Optional:` or `FYI:` and listed under Blind Spots.
+Every finding carries one label: `Critical:`, `Nit:`, `Optional:` or `FYI:`. A new finding becomes `Critical:` only when its confidence is 80 or higher and two independent signals agree, either two lenses or a lens plus a matching blind-audit finding. Findings that only the blind audit raised are capped at `Optional:` or `FYI:` and listed under Blind Spots. Question review is the one exception to the two-signal rule: a choice graded *not optimal* is `Critical:` on its own when the grader names a better alternative, what the current choice costs and a `file:line`. An answer that only lacks a recorded reason stays at `Optional:`. Both are listed under Design Questions.
 
 The verdict line is `VERDICT: PASS` when there are no `Critical:` findings, `VERDICT: FAIL` otherwise.
 

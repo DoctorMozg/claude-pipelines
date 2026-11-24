@@ -1,6 +1,6 @@
 # Phase 3: Consolidate, Evidence-Cap, Rollback, Cognitive-Load
 
-**Goal**: Turn per-lens findings (Wave A + Wave B) into one evidence-capped, rollback-analyzed, cognitive-load-budgeted report. Write `findings.md` and `rollback_plan.md`.
+**Goal**: Turn per-lens findings (Wave A + Wave B) and graded design questions into one evidence-capped, rollback-analyzed, cognitive-load-budgeted report. Write `findings.md` and `rollback_plan.md`.
 
 ## 3.1 Merge and Dedupe
 
@@ -33,6 +33,21 @@ For each Wave B finding (blinded_production, blinded_security, blinded_ops):
 
 All unmatched Wave B findings are promoted to a dedicated "Blind Spots" section in `findings.md`. They receive a minimum evidence tier of T2 if they cite a specific file:line, T3 otherwise. They are not given severity ranks by Wave B researchers — the consolidation agent assigns severity based on the description, at the evidence-tier-capped maximum.
 
+## 3.2.5 Question-Review Findings
+
+Skip this step unless Phase 2 recorded `question_review: full`. With `unanswered` or `ungraded`, raise no findings: the Design Questions section of the report lists the questions as `INFO`. Read `<PROJECT_ROOT>/.mz/task/<task_name>/question_review/grades.md` and apply the severity rule of `<PLUGIN_ROOT>/shared/question_review.md`; you have the last word over the grader's proposal. Each `### Finding` block maps onto the lattice of `<PLUGIN_ROOT>/shared/severity-lattice.md` with lens `question_review`:
+
+| Grade                                                    | Severity         | Evidence tier                     |
+| -------------------------------------------------------- | ---------------- | --------------------------------- |
+| not optimal, naming an alternative, a cost and file:line | `HIGH`           | T1                                |
+| not optimal, missing any of the three                    | at most `MEDIUM` | T2 with a file:line, T3 otherwise |
+| unclear                                                  | at most `MEDIUM` | T2 with a file:line, T3 otherwise |
+
+- A complete not-optimal finding stands on its own: `HIGH` leaves the audit as `Critical:` under the lattice's mapping, because it names a location and a concrete cost. The skeptic pass in §3.6 doesn't lower its confidence for lack of corroboration, and `CRITICAL` stays reserved for T0 proof, as for every lens.
+- An unclear finding is missing rationale, not a defect, so it never goes above `MEDIUM`, the `Optional:` level.
+- Match each finding against the merged list from §3.1 and §3.2 (same file:line, an overlapping line range, or the same behavior in the same file). A match is reported once, as the existing finding: add `question_review` to its `corroborated_by` list, keep the higher of the two severities, and apply no tier boost. Unmatched findings join the list with their own `F<n>` IDs.
+- Record each question's finding ID (or `none`) for the Design Questions section of the report.
+
 ## 3.3 Evidence-Tiered Severity Cap
 
 Read `<SKILL_DIR>/references/evidence-tier-rules.md` for the full tier definitions and capping rules.
@@ -53,7 +68,7 @@ After capping, apply per-tier limits (read from SKILL.md constants):
 - Medium: top `MEDIUM_CAP` (10 in deep mode) by confidence
 - Low / Advisory: `LOW_CAP` is 0, so record the count in the report body; the findings themselves go to the appendix
 
-Within each severity tier, sort by confidence (high > medium > low), breaking ties by lens priority: correctness > security > reliability > stride_delta > performance > maintainability.
+Within each severity tier, sort by confidence (high > medium > low), breaking ties by lens priority: correctness > security > reliability > stride_delta > performance > maintainability > question_review.
 
 Findings over a cap are not dropped. Write them to `<PROJECT_ROOT>/.mz/task/<task_name>/findings_capped.md`, next to `findings.md`, in rank order and in the same finding format. Skip the file when nothing is over a cap. The "Deferred" section of `findings.md` gives the counts and names the appendix.
 
@@ -132,7 +147,7 @@ This estimate helps reviewers prioritize which findings to request fixes for mos
 
 For each finding in the merged list where `severity_capped ∈ {critical, high}` (after §3.3 capping and §3.5 cognitive-load scoring), apply all three checks independently. Each check records a separate property of the finding — none short-circuits the others:
 
-1. **Single-lens, no corroboration**: Is `corroborated_by` unset AND did only one Wave A lens flag this finding? If yes → lower `confidence` to `medium` unless `evidence_tier` is T0 or T1.
+1. **Single-lens, no corroboration**: Is `corroborated_by` unset AND did only one Wave A lens flag this finding? If yes → lower `confidence` to `medium` unless `evidence_tier` is T0 or T1. A complete not-optimal finding from §3.2.5 is exempt.
 1. **Missing file:line reference**: Does the finding fail to cite a specific `file:line`? If yes → demote `evidence_tier` to T3, then re-apply §3.3 severity capping with the new tier.
 1. **Vague proposed fix**: Is `proposed_fix` generic (no file, function, symbol, or concrete action mentioned)? If yes → annotate `[FIX_UNCLEAR]` on the finding. Do not demote — this is advisory only.
 
@@ -158,7 +173,8 @@ Write `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md`:
 - BLOCKING findings (rollback analysis): R
 - Cognitive-load score: S [SPLIT RECOMMENDED if >40]
 - Skeptic pass: <challenged> challenged, <downgraded> downgraded, <verified> verified, <fix_unclear> FIX_UNCLEAR
-- Lenses run: correctness, security, performance, maintainability, reliability, stride_delta, blinded_production, blinded_security, blinded_ops
+- Lenses run: correctness, security, performance, maintainability, reliability, stride_delta, blinded_production, blinded_security, blinded_ops, question_review
+- Design questions: questions: N, sound: N, unclear: N, not_optimal: N, question_review: full | unanswered | ungraded | unavailable
 - Files with findings: K (of N scanned)
 
 ## BLOCKING Findings (always in report, cannot be deferred)
@@ -204,6 +220,9 @@ Write `<PROJECT_ROOT>/.mz/task/<task_name>/findings.md`:
 - **Evidence tier**: T2 / T3
 - **Description**: <what the blinded researcher found>
 - **Severity assigned**: <based on evidence tier cap>
+
+## Design Questions
+<one entry per question: the question, its anchor, the answer with its source, the grade, and the finding ID from §3.2.5 or "none">
 
 ## Deferred (listed in findings_capped.md)
 - M additional medium findings (below cap)

@@ -2,7 +2,7 @@
 name: polish
 description: 'Removes dead code, unused imports, nesting and AI comments, behavior unchanged, or gets code past tests and CI gates. Use when the user says "clean up", "strip AI comments" or "fix failing tests". Not for one bug (use debug) or speed (use optimize).'
 argument-hint: '[scope:branch|global|working] <completion criteria — what must pass, what to clean up, what must work>'
-allowed-tools: Agent, Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git log *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
+allowed-tools: Agent, Bash(git branch --show-current *), Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(git merge-base *), Bash(git diff *), Bash(git ls-files *), Bash(git log *), Bash(mkdir *), Bash(date *), Bash(printf *), Bash(printenv MZ_DEV_PIPE_AUTO_APPROVE *), Bash(${CLAUDE_PLUGIN_ROOT}/shared/journal-artifact.sh *), Read, Write, Edit, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, AskUserQuestion, WebFetch, WebSearch
 ---
 
 # Code Polishing Pipeline
@@ -64,18 +64,18 @@ See `<PLUGIN_ROOT>/shared/scope-parameter.md` for the canonical scope modes (`br
 
 ### Phase Overview
 
-| Phase | Goal                   | Details                             |
-| ----- | ---------------------- | ----------------------------------- |
-| 0     | Setup                  | Inline below                        |
-| 1     | Initial Assessment     | `phases/assess_and_fix.md`          |
-| 1.5   | User Approval Gate     | Inline below                        |
-| 2     | Quick Fixes            | `phases/assess_and_fix.md`          |
-| 3     | Research (if needed)   | `phases/assess_and_fix.md`          |
-| 4     | Fix-Test-Review Loop   | `phases/fix_review_and_finalize.md` |
-| 5     | Optimization & cleanup | `phases/fix_review_and_finalize.md` |
-| 6     | Final Verification     | `phases/fix_review_and_finalize.md` |
+| Phase | Goal                   | Details                           |
+| ----- | ---------------------- | --------------------------------- |
+| 0     | Setup                  | Inline below                      |
+| 1     | Initial Assessment     | `phases/assess_and_fix.md`        |
+| 1.5   | User Approval Gate     | Inline below                      |
+| 2     | Quick Fixes            | `phases/assess_and_fix.md`        |
+| 3     | Research (if needed)   | `phases/assess_and_fix.md`        |
+| 4     | Fix-Test-Review Loop   | `phases/fix_and_review.md`        |
+| 5     | Optimization & cleanup | `phases/optimize_and_finalize.md` |
+| 6     | Final Verification     | `phases/optimize_and_finalize.md` |
 
-Read the relevant phase file when you reach that phase. Do not read both phase files upfront.
+Read the relevant phase file when you reach that phase. Do not read the phase files upfront.
 
 ### Phase 0: Setup
 
@@ -83,7 +83,7 @@ Read the relevant phase file when you reach that phase. Do not read both phase f
 1. **Resolve scope** — if `scope:` extracted, resolve to a concrete file list; the task-dir step saves it. Otherwise all project files eligible.
 1. **Parse criteria** — break input into a checklist of discrete, verifiable criteria (e.g. "all tests pass", "pre-commit clean", "no debug prints in src/"). Mark each one `check` (verified by a command), `cleanup` or `residue`; the last two carry a scope (glob, directory, git range or description) that Phase 1 resolves.
 1. **Task name** — `<YYYY_MM_DD>_polish_<slug>` where `<YYYY_MM_DD>` is today's date (underscores) and slug is snake_case of criteria (max 20 chars); on same-day collision append `_v2`, `_v3`.
-1. **Task dir & state** — **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist as a skill-specific key. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. In worker mode, follow `worker-mode.md`, "Setup", instead of the resume gate and the `printenv` check. Save the resolved scope list, if any, to `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`.
+1. **Task dir & state** — **Resume check** (before creating the task directory): follow `<PLUGIN_ROOT>/shared/resume-protocol.md`, "On entry". A `complete`, `completed` or `aborted_by_user` file starts a `_vN`. A `pending`, `running`, `blocked` or `failed` file gets the resume gate. When the run is unattended or nobody can answer, report the path, `Status` and `what_remains`, and stop. For a fresh task, run `mkdir -p "<PROJECT_ROOT>/.mz/task/<task_name>"` and write `state.md` per `<PLUGIN_ROOT>/shared/state-schema.md` — first line must be `schema_version: 2`, followed by required keys (`Status`, `Phase`, `Started`, `Iteration` (0), `FilesWritten`, `phase_complete: false`, `what_remains: []`) plus the parsed criteria checklist, `Branch:` (`git branch --show-current`, or `detached` when it prints nothing) and `StartCommit:` (`git rev-parse HEAD`) as skill-specific keys; a later `/review-branch` uses the last two to find this task's `decisions.md`. Run `printenv MZ_DEV_PIPE_AUTO_APPROVE` once and record `unattended: true` or `unattended: false` in `state.md`. In worker mode, follow `worker-mode.md`, "Setup", instead of the resume gate and the `printenv` check. Save the resolved scope list, if any, to `<PROJECT_ROOT>/.mz/task/<task_name>/scope_files.txt`.
 1. **Task tracking** — TaskCreate per pipeline phase. Then read `phases/assess_and_fix.md` and proceed to Phase 1.
 
 ### Phase 1.5: User Approval Gate
@@ -109,7 +109,7 @@ See `<PLUGIN_ROOT>/shared/approval-gate.md` for the canonical two-surface patter
 Approve cost (estimated): <N> agents × ~20k tokens ≈ ~$<Y.YY> on mixed Sonnet+Opus
 ```
 
-Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop budget (`MAX_FIX_ITERATIONS × (1 fix + 1 test + 1 review)`), plus two agents per chunk (optimizer and reviewer) when there are cleanup or residue criteria. Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula to convert to a dollar estimate.
+Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop budget (`MAX_FIX_ITERATIONS × (1 fix + 1 test + 1 review)`), plus two agents per chunk (optimizer and reviewer) when there are cleanup or residue criteria, plus 3 for question review (questioner, answerer, grader) when there are failing criteria. Use the `<PLUGIN_ROOT>/shared/approval-gate.md` formula to convert to a dollar estimate.
 
 **Surface 2 — call AskUserQuestion.** A short selector — do not re-embed the assessment in the question body, it lives in the plan message above:
 
@@ -143,7 +143,7 @@ Compute `<N>` from `assessment.md` quick-fix count plus the maximum review-loop 
 
 ## Verification
 
-Output the final criteria checklist with every item checked, along with the test run status, lint status, and iteration count. Any unchecked item blocks completion.
+Output the final criteria checklist with every item checked, along with the test run status, lint status, iteration count, and the question-review telemetry line (`questions: N, sound: N, unclear: N, not_optimal: N, question_review: <outcome>`). Any unchecked item blocks completion.
 
 In worker mode, end as `<PLUGIN_ROOT>/shared/worker-mode.md`, "Final message", describes, with the `STATUS:` line last.
 

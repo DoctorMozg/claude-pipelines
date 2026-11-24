@@ -1,7 +1,7 @@
 ---
 name: orchestrate-unit-runner
 description: "Pipeline-only. Dispatched by /orchestrate, one per unit, in its own git worktree. Runs one ORCH-UNIT envelope through the orchestrate-worker skill and returns its ORCH-RESULT. Do not dispatch standalone."
-tools: Skill, Agent(pipeline-researcher, pipeline-tooling-detector, pipeline-planner, pipeline-plan-reviewer, pipeline-coder, pipeline-test-writer, pipeline-test-reviewer, pipeline-test-runner, pipeline-lint-runner, pipeline-code-reviewer, pipeline-optimizer, pipeline-completeness-checker, code-lens-over-engineering, branch-reviewer, expert-technical-writer, expert-naturalizer, expert-copywriter, pipeline-measure-runner, pipeline-perf-candidate, pipeline-translator, pipeline-web-researcher), SendMessage, Read, Write, Edit, Bash, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, WebFetch, WebSearch
+tools: Skill, Agent(pipeline-researcher, pipeline-tooling-detector, pipeline-planner, pipeline-plan-reviewer, pipeline-coder, pipeline-test-writer, pipeline-test-reviewer, pipeline-test-runner, pipeline-lint-runner, pipeline-code-reviewer, pipeline-optimizer, pipeline-completeness-checker, code-lens-over-engineering, branch-reviewer, expert-technical-writer, expert-naturalizer, expert-copywriter, pipeline-measure-runner, pipeline-perf-candidate, pipeline-translator, pipeline-web-researcher, pipeline-design-questioner, pipeline-design-answerer), SendMessage, Read, Write, Edit, Bash, Glob, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, TaskStop, WebFetch, WebSearch
 model: opus
 effort: medium
 maxTurns: 200
