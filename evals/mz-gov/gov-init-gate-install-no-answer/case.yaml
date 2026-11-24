@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: gov-init-gate-install-no-answer
 description: 'gov-init shows the governance block it would append to CLAUDE.md and stops at the change gate, because nobody can answer: CLAUDE.md stays byte for byte as it was.'
 tags: [track-d, gate]
-plugins: ["../../../plugins/mz-gov"]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh

@@ -1,0 +1,61 @@
+schema_version: "1.1"
+name: govern-behavior-web-option-research
+description: 'An option that names outside technology gets web research: govern finds the related record, researches the code, dispatches pipeline-web-researcher for the outside option, routes the help-me-choose question to an ADR, and writes nothing to docs/ without a sign-off.'
+tags: [behavior, routing-type, web]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-gov:govern we now run three API instances, so the login sessions in src/session.py have to move out of the process: Redis, or a table in the Postgres we already run?
+  # No AskUserQuestion: the interview falls back to assumptions and the sign-off gate can't pass.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch]
+  max_turns: 90
+  timeout_seconds: 2400
+graders:
+  - name: govern-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_govern_[^"]*/state\.md"'
+  # The record on the same subject belongs in the brief, here as an assumption since nobody can answer.
+  - name: brief-names-the-related-record
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/brief\.md")(?=[\s\S]*0001)'
+  - name: code-researched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-researcher"'
+    min: 1
+  - name: outside-option-researched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-web-researcher"'
+    min: 1
+    max: 3
+  - name: research-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/research\.md"'
+  - name: adr-template-read
+    type: tool_used
+    tool: Read
+    input_match: '"file_path"\s*:\s*"[^"]*/references/adr-(?:nygard|madr)-template\.md"'
+    min: 1
+  - name: draft-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/draft\.md"'
+  - name: no-artifact-writer
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-artifact-writer"'
+    min: 0
+    max: 0
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0

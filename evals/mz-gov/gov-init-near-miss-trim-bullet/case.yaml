@@ -3,13 +3,16 @@ name: gov-init-near-miss-trim-bullet
 description: Shortening one bullet of the governance section by hand is a small manual edit that needs no skill.
 tags: [routing, near-miss]
 plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-base"]
+context:
+  scaffold_script: fixture.sh
 execution:
   prompt: >-
     Small thing in CLAUDE.md. The governance section has a bullet about exempting
     throwaway spikes and it runs three lines for no reason. Cut it down to one
     line, same meaning. I'll reword it properly later.
-  allowed_tools: [Skill]
-  max_turns: 2
+  # The fix is an ordinary edit, so the session can make it; only a gov-init call fails the case.
+  allowed_tools: [Skill, Read, Grep, Edit]
+  max_turns: 4
   timeout_seconds: 180
 graders:
   - name: gov-init-not-fired
@@ -19,3 +22,8 @@ graders:
     min: 0
     max: 0
     arm: both
+  # The bullet ends up on one line, right before the closing paragraph of the block.
+  - name: bullet-trimmed-in-place
+    type: regex
+    pattern: '(?m)^- [^\n]*spike[^\n]*\n\nAn agent proposes'
+    target: { source: file, path: CLAUDE.md }

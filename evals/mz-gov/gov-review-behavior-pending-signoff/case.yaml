@@ -1,15 +1,15 @@
 schema_version: "1.1"
 name: gov-review-behavior-pending-signoff
 description: 'One ADR accepted with its human sign-off still pending is audited read-only: the report names the file and the sign-off gap, and no record or source file changes.'
-tags: [track-d, behavior]
-plugins: ["../../../plugins/mz-gov"]
+tags: [track-d, behavior, needs-bash]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh
 execution:
   prompt: >-
     /mz-gov:gov-review
-  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
   max_turns: 25
   timeout_seconds: 600
 graders:
@@ -18,6 +18,14 @@ graders:
     type: tool_used
     tool: Write
     input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_gov[-_]review_[^"]*/state\.md"'
+  - name: mechanical-check-ran
+    type: tool_used
+    tool: Bash
+    input_match: 'gov-check\.sh[^"]*0001-session-store\.md'
+  - name: facts-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/facts\.md"'
   - name: reviewer-dispatched
     type: tool_used
     tool: Agent

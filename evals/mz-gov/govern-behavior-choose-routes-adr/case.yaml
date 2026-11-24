@@ -1,0 +1,74 @@
+schema_version: "1.1"
+name: govern-behavior-choose-routes-adr
+description: 'An open question govern is asked to help settle is an ADR, not an RFD: the run interviews (assumptions when nobody can answer), researches the code, routes twice, reads an ADR template, runs the heavy panel because the choice is made in this run, and writes nothing to docs/ without a sign-off.'
+tags: [behavior, routing-type]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-gov:govern should the webhook signature checks move into one middleware in webhooks/app.py, or stay in each handler in webhooks/handlers.py?
+  # No AskUserQuestion: the interview falls back to assumptions and the sign-off gate can't pass.
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep]
+  max_turns: 90
+  timeout_seconds: 2400
+graders:
+  - name: govern-ran
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/\d{4}_\d{2}_\d{2}_govern_[^"]*/state\.md"'
+  # The Phase 1 screen and the Phase 2 routing.
+  - name: router-screens-then-routes
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-router"'
+    min: 2
+    max: 4
+  - name: brief-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/brief\.md"'
+  - name: code-researched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-researcher"'
+    min: 1
+  - name: research-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/research\.md"'
+  # Phase 2 reads only the template the router picked.
+  - name: adr-template-read
+    type: tool_used
+    tool: Read
+    input_match: '"file_path"\s*:\s*"[^"]*/references/adr-(?:nygard|madr)-template\.md"'
+    min: 1
+  - name: rfd-template-not-read
+    type: tool_used
+    tool: Read
+    input_match: '"file_path"\s*:\s*"[^"]*/references/rfd-template\.md"'
+    min: 0
+    max: 0
+  - name: draft-written
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"[^"]*/\.mz/task/[^"]*/draft\.md"'
+  - name: heavy-panel-dispatched
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-critic-alternatives"'
+    min: 1
+  # Nobody can sign off in a headless run, so no durable record is written.
+  - name: no-artifact-writer
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-artifact-writer"'
+    min: 0
+    max: 0
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0

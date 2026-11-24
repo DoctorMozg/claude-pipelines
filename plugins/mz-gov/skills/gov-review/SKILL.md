@@ -2,14 +2,14 @@
 name: gov-review
 description: 'Audits ADRs, RFDs and design docs into a read-only findings report. Use when the user wants existing decision records checked ("review our ADRs", "audit decision records", "check governance docs"). Not for reviewing code changes (use review-branch).'
 argument-hint: '[path-or-glob] [docs/decisions|docs/rfcs|docs/design]'
-allowed-tools: Agent(gov-audit-reviewer), Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), AskUserQuestion
+allowed-tools: Agent(gov-audit-reviewer), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/gov-check.sh *), Read, Write, Grep, Glob, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), AskUserQuestion
 ---
 
 # Governance Artifact Review (read-only)
 
 ## Overview
 
-Audits already-written governance artifacts — ADRs, RFDs, and design docs — against a six-axis quality rubric and reports where they fall short. Globs the artifact directories (or a user-supplied path/glob), fans `gov-audit-reviewer` out one-per-artifact, collects each `VERDICT:`, and writes a single ranked review report with a per-artifact table plus an aggregate roll-up. This skill reads and reports only — it never edits an artifact. Hand the report to `govern` (to re-decide a failing record) or fix the artifact by hand.
+Audits already-written governance artifacts — ADRs, RFDs, and design docs — against a six-axis quality rubric and reports where they fall short. Globs the artifact directories (or a user-supplied path/glob), runs `scripts/gov-check.sh` for the mechanical facts (status validity, provenance and sign-off, missing sections, supersede links, numbering), fans `gov-audit-reviewer` out one-per-artifact with its record's facts, collects each `VERDICT:`, and writes a single ranked review report with a per-artifact table plus an aggregate roll-up. This skill reads and reports only — it never edits an artifact. Hand the report to `govern` (to re-decide a failing record) or fix the artifact by hand.
 
 ## When to Use
 
@@ -58,7 +58,7 @@ None. This skill is read-only — it scores artifacts and writes a report under 
 
 ### Phase 1: Audit
 
-List the files in the artifact source, dispatch `gov-audit-reviewer` per artifact (parallel up to **MAX_REVIEWERS**, sequential overflow waves, each wave with a pre-dispatch manifest and a post-wave rollup), collect every `VERDICT:`, and write the review report to **REPORT_DIR**. See `phases/audit.md`. If zero artifacts are found, report that clearly and stop — do not fabricate findings.
+List the files in the artifact source, run `gov-check.sh` on them into `facts.md`, dispatch `gov-audit-reviewer` per artifact with its facts block (parallel up to **MAX_REVIEWERS**, sequential overflow waves, each wave with a pre-dispatch manifest and a post-wave rollup), collect every `VERDICT:`, and write the review report to **REPORT_DIR**, with the script's repository findings in their own section. See `phases/audit.md`. If zero artifacts are found, report that clearly and stop — do not fabricate findings.
 
 ## Red Flags
 

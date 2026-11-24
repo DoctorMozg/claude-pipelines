@@ -1,8 +1,8 @@
 schema_version: "1.1"
 name: govern-behavior-exempt-rename
-description: 'A pure rename of a private helper is exempt: govern routes it to no artifact, notes the exemption and stops at Phase 1, with no critics, no writer and nothing under docs/.'
+description: 'A pure rename of a private helper is exempt: govern routes it to no artifact, notes the exemption and stops at Phase 1, with no interview, no research, no critics, no writer and nothing under docs/.'
 tags: [track-d, behavior]
-plugins: ["../../../plugins/mz-gov"]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh
@@ -30,11 +30,17 @@ graders:
     input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-router"'
     min: 1
     max: 2
-  # Exempt means Phase 1 is the last phase: no panel, no synthesis, no durable record.
+  # Exempt means the Phase 1 screen is the last step: no panel, no synthesis, no durable record.
   - name: nothing-after-routing-dispatched
     type: tool_used
     tool: Agent
     input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-(?:critic-[\w-]+|discussion-synthesizer|artifact-writer)"'
+    min: 0
+    max: 0
+  - name: no-interview-research
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?pipeline-(?:web-)?researcher"'
     min: 0
     max: 0
   # The orchestrator appends this heading only on the exemption path; matching tool_use lines keeps propose.md's text out.

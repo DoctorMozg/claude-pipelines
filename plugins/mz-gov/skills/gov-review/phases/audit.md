@@ -5,11 +5,12 @@ Resolve the artifact set, fan `gov-audit-reviewer` out across it in bounded para
 ## Contents
 
 - [1.1 Resolve the artifact set](#11-resolve-the-artifact-set)
-- [1.2 Batch into waves](#12-batch-into-waves)
-- [1.3 Dispatch each wave](#13-dispatch-each-wave)
-- [1.4 Collect verdicts](#14-collect-verdicts)
-- [1.5 Write the report](#15-write-the-report)
-- [1.6 Report to the user](#16-report-to-the-user)
+- [1.2 Run the mechanical check](#12-run-the-mechanical-check)
+- [1.3 Batch into waves](#13-batch-into-waves)
+- [1.4 Dispatch each wave](#14-dispatch-each-wave)
+- [1.5 Collect verdicts](#15-collect-verdicts)
+- [1.6 Write the report](#16-write-the-report)
+- [1.7 Report to the user](#17-report-to-the-user)
 
 ______________________________________________________________________
 
@@ -34,7 +35,19 @@ Update `state.md` (`Status: complete`, `phase_complete: true`, `what_remains: []
 
 Record the resolved count in `state.md` as `artifacts_found: <N>` before dispatching.
 
-## 1.2 Batch into waves
+## 1.2 Run the mechanical check
+
+Run the script on the whole list in one call, with every path absolute:
+
+```bash
+<PLUGIN_ROOT>/scripts/gov-check.sh <artifact> <artifact> ...
+```
+
+It reads the records and writes nothing. Write its output verbatim to `<PROJECT_ROOT>/.mz/task/<task_name>/facts.md` and append that to `FilesWritten`. The output has one `## <path>` block per record (type, status and its class, decided or not, provenance fence and sign-off, missing sections, options listed, supersede links, findings) and a closing `## Repository` block with what no single reviewer can see: duplicate numbers, numbering gaps, and records that another one supersedes but that still read as live.
+
+Its findings follow the rubric's Axis 6 table, so they are the mechanical part of that axis; the reviewers judge the rest. If the script can't run (no Bash in your tool list, or the call is denied) or exits non-zero, add the reason under `## Lessons` in `state.md` as a failure, say so in the report, and dispatch the reviewers without facts.
+
+## 1.3 Batch into waves
 
 `gov-audit-reviewer` reviews **exactly one artifact per dispatch**. Split the file list into waves of at most **MAX_REVIEWERS** (6) agents:
 
@@ -43,7 +56,7 @@ Record the resolved count in `state.md` as `artifacts_found: <N>` before dispatc
 
 Number the waves `1..K` so the per-wave manifest and rollup can be told apart.
 
-## 1.3 Dispatch each wave
+## 1.4 Dispatch each wave
 
 For **every** wave (including a lone wave of one or more), follow this loop. The manifest and rollup are required whenever a wave carries two or more agents; for a single-artifact run (one agent total) the manifest/rollup may be collapsed to a one-line "Reviewing `<path>`" note.
 
@@ -66,6 +79,8 @@ Audit this governance artifact against the six-axis review rubric.
 
 Artifact:      <absolute path to the one artifact>
 Rubric:        <SKILL_DIR>/references/review-rubric.md
+Mechanical facts (from gov-check.sh; take them as given):
+<this artifact's ## block from facts.md, verbatim>
 Status vocab:  <PLUGIN_ROOT>/skills/govern/references/status-vocabularies.md  (for Axis 6 status validity)
 
 Read the rubric in full, score all six axes against the artifact's own text, and return your per-axis table, severity-labeled findings, the VERDICT: line, and STATUS:. Keep findings concrete and self-contained — they are collected into an aggregate report. Be concise.
@@ -84,7 +99,7 @@ The `<returned>/<dispatched>` ratio is exact. A reviewer that returns no `VERDIC
 
 **Empty / failed dispatch**: if a reviewer returns nothing usable, no `VERDICT:`, `BLOCKED`, or `NEEDS_CONTEXT`, retry that single dispatch **once**. If the retry also fails, mark that artifact `unscored` (with the reason) and move on — one bad reviewer does not sink the wave. When this step fails or hits its retry cap, add a `- (failure) WHEN <situation> → <what to do> — WHY <cause>` line under `## Lessons` in `state.md`.
 
-## 1.4 Collect verdicts
+## 1.5 Collect verdicts
 
 From each reviewer's response capture, per artifact:
 
@@ -96,7 +111,7 @@ Compute the aggregate: `N` artifacts reviewed, `M` failing (one or more `Critica
 
 Do **not** re-derive or second-guess a reviewer's verdict — the rubric's rule is mechanical (`PASS` iff zero `Critical:`), and the reviewer already applied it. The orchestrator aggregates; it does not re-judge.
 
-## 1.5 Write the report
+## 1.6 Write the report
 
 Write the report to **REPORT_DIR** using the leading-date convention: `<PROJECT_ROOT>/.mz/reviews/<YYYY_MM_DD>_gov_review_<slug>.md`, where `<YYYY_MM_DD>` is today's date with underscores and `<slug>` matches the task-name slug. On same-day collision append `_v2`, `_v3`.
 
@@ -110,8 +125,13 @@ Use this structure:
 - Passing: <N − M − unscored>
 - Failing (≥1 Critical): <M>
 - Unscored (reviewer error): <U>
+- Repository findings: <R> (<C> Critical)
 - Source: <the path/glob or "default ARTIFACT_DIRS">
 - Rubric: in-house 6-axis governance heuristic (not an industry standard)
+
+## Repository
+
+<the ## Repository block of facts.md verbatim: duplicate numbers, numbering gaps, records superseded but still live; "none" when clean>
 
 ## Per-Artifact
 
@@ -143,12 +163,12 @@ Keep each finding to one or two sentences and quote or cite the artifact's own t
 
 Append the report path to `state.md` (`FilesWritten`), set `Status: complete`, `phase_complete: true`, `what_remains: []`, and record `artifacts_reviewed: <N>`, `artifacts_failing: <M>`.
 
-## 1.6 Report to the user
+## 1.7 Report to the user
 
 Do **not** dump the full report into chat. Emit a compact closing block and point at the file:
 
 ```
-Governance review complete — <N> artifacts reviewed, <M> failing, <U> unscored.
+Governance review complete — <N> artifacts reviewed, <M> failing, <U> unscored, <C> Critical repository findings.
 Report: .mz/reviews/<YYYY_MM_DD>_gov_review_<slug>.md
 
 Failing:

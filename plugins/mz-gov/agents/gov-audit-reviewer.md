@@ -48,11 +48,11 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/gov-review/references/review-rubric.md` with 
 
 ### Step 2 — Read the artifact in full
 
-Read the target artifact end to end. Identify its type (ADR / RFD / design doc), its declared status, and locate its provenance block. If you need the status vocabulary to judge validity, read `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/status-vocabularies.md`.
+Read the target artifact end to end. The dispatch carries a **Mechanical facts** block that `gov-check.sh` computed for this record: type, number, status and its class against the vocabulary, whether the record counts as decided, the provenance fence and sign-off, missing template sections, the number of options listed, supersede links, and findings. Take those facts as given and don't recount them; spend your reading on what a script can't judge. Without a facts block, identify the type, status and provenance block yourself, and read `${CLAUDE_PLUGIN_ROOT}/skills/govern/references/status-vocabularies.md` if you need the vocabulary.
 
 ### Step 3 — Score each axis
 
-Walk the six axes in order. For each, decide pass or fail against the rubric and write a finding only where the artifact falls short, citing the artifact's own text (or its conspicuous absence). On the provenance axis specifically, check that the block exists, names model and trigger, and carries a `human_signoff` that is a real signature — `pending`, blank, or missing is a Critical finding.
+Walk the six axes in order. For each, decide pass or fail against the rubric and write a finding only where the artifact falls short, citing the artifact's own text (or its conspicuous absence). Axis 6 starts from the facts block: carry each of its findings over verbatim with its severity, and add only what the script can't see, such as a later record that clearly replaces this one without a supersede link. Without a facts block, check that the provenance block exists, names model and trigger, and carries a real `human_signoff`; `pending`, blank or missing is Critical only on a record whose status presents it as decided. For Axes 1 and 5, the facts' `options listed` and `sections missing` are where to start, not the verdict: judge whether the options present are real and actually weighed.
 
 ### Step 4 — Assign severity and compute the verdict
 

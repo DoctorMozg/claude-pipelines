@@ -1,18 +1,18 @@
-# Phase 4: Record — Write the Durable Artifact
+# Phase 5: Record — Write the Durable Artifact
 
-The human signed off. Commit the approved decision to the project's durable record under `docs/` — the right directory, the next sequential number with no collision, the AI-provenance fence embedded in the header, and a valid initial status. This phase only runs after Phase 3 stamped a real `human_signoff`.
+The human signed off. Commit the approved decision to the project's durable record under `docs/` — the right directory, the next sequential number with no collision, the AI-provenance fence embedded in the header, and a valid initial status. This phase only runs after Phase 4 stamped a real `human_signoff`.
 
 ## Precondition
 
-`<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` must carry a real `human_signoff: <user>@<ISO>` — not `pending`. If it still reads `pending`, the sign-off gate did not pass; stop and return to Phase 3. `gov-artifact-writer` will itself refuse to write an unsigned decision, but do not even dispatch it without the signature.
+`<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` must carry a real `human_signoff: <user>@<ISO>` — not `pending`. If it still reads `pending`, the sign-off gate did not pass; stop and return to Phase 4. `gov-artifact-writer` will itself refuse to write an unsigned decision, but do not even dispatch it without the signature.
 
-## Inputs (from Phase 3)
+## Inputs (from Phase 4)
 
 - `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the approved artifact body.
 - `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` — `human_signoff` now set to a real signature.
 - The artifact type (`adr` / `rfd` / `design`) and `STATUS_VOCAB`, recorded in `state.md`.
 
-## Step 4.1 — Resolve the target directory
+## Step 5.1 — Resolve the target directory
 
 Map the artifact type to its directory:
 
@@ -24,7 +24,7 @@ Map the artifact type to its directory:
 
 These are the user's project `docs/` paths — a deliberate departure from the `.mz/` scratch convention. ADRs, RFDs, and design docs are durable project memory and follow the long-standing sequential-numbering convention, not the leading-date scratch naming.
 
-## Step 4.2 — Dispatch the artifact writer
+## Step 5.2 — Dispatch the artifact writer
 
 Dispatch `gov-artifact-writer` (sonnet). It computes the next `NNNN` by globbing the target dir, re-checks the exact path at write time to survive a concurrent run, embeds the provenance fence from `provenance.md` verbatim, and initializes status from `<SKILL_DIR>/references/status-vocabularies.md`. Single-agent dispatch. Your prompt carries the pointers and the resolved dir — not the writer's own numbering or status logic:
 
@@ -57,17 +57,17 @@ Append the written path to <PROJECT_ROOT>/.mz/task/<task_name>/state.md FilesWri
 Report the absolute path, the number, and the initialized status, then STATUS:.
 ```
 
-## Step 4.3 — Handle the writer's status
+## Step 5.3 — Handle the writer's status
 
 - `DONE` / `DONE_WITH_CONCERNS` → record the returned `docs/` path and initialized status in `state.md` (log any concern, e.g. the number was bumped past a collision). Append the path to `FilesWritten` if the writer did not.
 - `NEEDS_CONTEXT` → a required input was missing (draft, template, provenance, or target dir). Supply it and re-dispatch.
-- `BLOCKED` → a hard obstacle — `provenance.md` still `pending` (return to Phase 3), the collision bound exhausted, an unreadable status vocabulary, or an unwritable target path. Escalate via AskUserQuestion; do not retry the same operation blindly.
+- `BLOCKED` → a hard obstacle — `provenance.md` still `pending` (return to Phase 4), the collision bound exhausted, an unreadable status vocabulary, or an unwritable target path. Escalate via AskUserQuestion; do not retry the same operation blindly.
 
 The writer must **create** a new file, never clobber an existing numbered artifact. If it reports an overwrite risk it could not resolve, treat that as `BLOCKED`.
 
-## Step 4.4 — Update state, promote to recall, advance
+## Step 5.4 — Update state, promote to recall, advance
 
-Record in `state.md`: the durable artifact path, its number, and its initialized status. Set `Phase: 5`, `phase_complete: true` for Phase 4, refresh `what_remains` (e.g. "link commit/PR", "recommend next skill").
+Record in `state.md`: the durable artifact path, its number, and its initialized status. Set `Phase: 6`, `phase_complete: true` for Phase 5, refresh `what_remains` (e.g. "link commit/PR", "recommend next skill").
 
 **Promote the decision into recall memory.** Add (or append to) a `## Decisions` section in `state.md` with a one-line summary of what was decided and where it landed:
 

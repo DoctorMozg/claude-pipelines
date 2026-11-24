@@ -38,7 +38,7 @@ flowchart LR
     classDef pipe fill:#dafbe1,stroke:#1a7f37,color:#1a7f37
 ```
 
-1. **`/govern`** — route the decision to an ADR/RFD/design doc, run the critic panel, record it behind a human sign-off
+1. **`/govern`** — interview you about the decision, research the code and the options, route it to an ADR/RFD/design doc, run the critic panel, record it behind a human sign-off
 1. **`/build`** — implement the approved decision: plan → code → review → test
 1. **`/gov-review`** — audit the decision record for completeness before it ages
 
@@ -214,7 +214,7 @@ claude plugin install mz-gov            # Development governance
 claude plugin install mz-orchestrate    # Run a plan across parallel workers
 ```
 
-Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`; `mz-orchestrate` brings in `mz-base`, `mz-dev-pipe`, `mz-dev-git` and `mz-creative`.
+Installing a plugin also installs the plugins it declares as dependencies: `mz-dev-pipe`, `mz-dev-git` and `mz-creative` bring in `mz-base`; `mz-research-pipe` brings in `mz-base` and `mz-dev-pipe`; `mz-gov` brings in `mz-base`; `mz-orchestrate` brings in `mz-base`, `mz-dev-pipe`, `mz-dev-git` and `mz-creative`.
 
 After installation, skills are available as slash commands:
 
@@ -313,13 +313,13 @@ ______________________________________________________________________
 
 Lightweight governance for AI-assisted development: turn a substantial design decision into a durable, reviewed artifact (ADR, RFC/RFD, or design doc) carrying an AI-provenance block and an explicit human sign-off. An agent proposes the decision, a critic panel pressure-tests it, and a human approves it before anything lands in `docs/`.
 
-| Skill          | Command                       | What it does                                                                     |
-| -------------- | ----------------------------- | -------------------------------------------------------------------------------- |
-| **govern**     | `/govern <decision>`          | Route artifact → critic panel → human sign-off gate → numbered record in `docs/` |
-| **gov-init**   | `/gov-init [project\|global]` | Installs a concise governance policy block into `CLAUDE.md` (sentinel-wrapped)   |
-| **gov-review** | `/gov-review [path]`          | Audits existing ADRs/RFDs/design docs against a synthesized 6-axis rubric        |
+| Skill          | Command                       | What it does                                                                                       |
+| -------------- | ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| **govern**     | `/govern <decision>`          | Interview → research → route artifact → critic panel → human sign-off → numbered record in `docs/` |
+| **gov-init**   | `/gov-init [project\|global]` | Installs a concise governance policy block into `CLAUDE.md` (sentinel-wrapped)                     |
+| **gov-review** | `/gov-review [path]`          | Mechanical checks by script, then audits existing ADRs/RFDs/design docs against a 6-axis rubric    |
 
-10 agents: gov-router (artifact selection via a substantial-vs-ambiguous gate), gov-provenance-recorder, a 4-lens critic panel (alternatives, reversibility, blast-radius, assumptions) scaled by decision weight, gov-critic-quick for the light path, gov-discussion-synthesizer, gov-artifact-writer, and gov-audit-reviewer. Durable artifacts are committed to `docs/`; transient state stays in `.mz/task/`.
+10 agents: gov-router (artifact selection via a substantial-vs-ambiguous gate), gov-provenance-recorder, a 4-lens critic panel (alternatives, reversibility, blast-radius, assumptions) scaled by decision weight, gov-critic-quick for the light path, gov-discussion-synthesizer, gov-artifact-writer, and gov-audit-reviewer. `/govern` also dispatches `pipeline-researcher` and `pipeline-web-researcher` from `mz-base` after its interview. Durable artifacts are committed to `docs/`; transient state stays in `.mz/task/`.
 
 **[Full documentation →](plugins/mz-gov/)**
 

@@ -1,6 +1,6 @@
 ---
 name: gov-init
-description: 'Installs, updates or removes the governance policy in CLAUDE.md. Use when the user wants governance set up ("gov init", "install governance policy", "set up governance"). Not for running a decision (use govern) or auditing records (use gov-review).'
+description: 'Writes the shipped mz-gov policy block into CLAUDE.md or removes it; never edits text already in it. Use when the user wants governance set up or removed ("gov init", "install governance policy"). Not for decisions (govern) or audits (gov-review).'
 argument-hint: '[project|global] [--force] [--uninstall]'
 allowed-tools: Read, Write, Edit, Bash(git rev-parse *), Bash(mkdir *), Bash(date *), Glob, Grep, AskUserQuestion
 ---
@@ -19,7 +19,7 @@ Installing, updating or removing the governance policy block in `CLAUDE.md`, for
 
 - The user wants to run a governance decision on a change — use `govern`.
 - The user wants to audit existing artifacts — use `gov-review`.
-- The user wants to edit the policy text itself — open the injected block in `CLAUDE.md` directly, or re-run with `--force` after editing the source.
+- The user wants wording changed in a block that is already installed (shorter, merged, rephrased) — that is an ordinary edit to `CLAUDE.md`; make it directly. This skill only writes the shipped policy text, or the source after editing it with `--force`.
 - `CLAUDE.md` is managed by another tool and must not be touched.
 
 ## Arguments

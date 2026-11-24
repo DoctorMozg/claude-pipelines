@@ -1,13 +1,13 @@
-# Phase 5: Enforce — Link the Artifact, Recommend the Next Step
+# Phase 6: Enforce — Link the Artifact, Recommend the Next Step
 
 Tie the durable artifact to where the work actually lands — the commit, the branch, the PR — and point the user at the next skill. This phase reads git state, appends a links section to the committed artifact, advances status where it makes sense, and **recommends** the follow-on skill without ever invoking it. The accepted decision is the input a human feeds to the next pipeline, not a trigger that auto-fires one.
 
-## Inputs (from Phase 4)
+## Inputs (from Phase 5)
 
 - The durable artifact path under `docs/` (e.g. `docs/decisions/0001-use-redis.md`), its number, and status.
 - `<PROJECT_ROOT>/.mz/task/<task_name>/provenance.md` with the recorded `human_signoff`.
 
-## Step 5.1 — Detect git context
+## Step 6.1 — Detect git context
 
 Run read-only git probes (the working dir may not be a repo — handle that gracefully):
 
@@ -17,9 +17,9 @@ git rev-parse HEAD 2>/dev/null                     # current commit
 git rev-parse --abbrev-ref HEAD 2>/dev/null        # current branch
 ```
 
-If the directory is not a git repo, skip straight to the "implementation pending" path in Step 5.3 — no commit, no branch, no PR to link.
+If the directory is not a git repo, skip straight to the "implementation pending" path in Step 6.3 — no commit, no branch, no PR to link.
 
-## Step 5.2 — Detect an open PR (read-only, tiered fallback)
+## Step 6.2 — Detect an open PR (read-only, tiered fallback)
 
 Look for an open PR on the current branch, read-only. Use the fallback chain — never block on the first failure:
 
@@ -28,9 +28,9 @@ Look for an open PR on the current branch, read-only. Use the fallback chain —
 
 If both tiers fail, there is simply no PR link to add — that is not an error. Record "no open PR found" and continue. This step is strictly read-only — never open, edit, or comment on a PR.
 
-## Step 5.3 — Append the Provenance / Links section
+## Step 6.3 — Append the Provenance / Links section
 
-Append a `## Provenance / Links` section to the committed artifact (the `docs/` file from Phase 4). Use the Read tool to load the file, then append — do not rewrite the body, do not touch the AgDR fence.
+Append a `## Provenance / Links` section to the committed artifact (the `docs/` file from Phase 5). Use the Read tool to load the file, then append — do not rewrite the body, do not touch the AgDR fence.
 
 When git context exists:
 
@@ -56,7 +56,7 @@ When there is no repo or no implementation yet:
 
 The sign-off line restates the human signature on the durable artifact itself, so the accountability record lives with the decision, not only in the scratch dir.
 
-## Step 5.4 — Advance status where appropriate
+## Step 6.4 — Advance status where appropriate
 
 Advance the artifact's status only when the git context warrants it and the vocabulary allows it:
 
@@ -65,7 +65,7 @@ Advance the artifact's status only when the git context warrants it and the voca
 
 Edit the status field in the committed artifact (and its frontmatter, for MADR/RFD) if you advance it. If nothing warrants advancing, leave it as recorded — that is the correct outcome.
 
-## Step 5.5 — Recommend the next skill (never auto-invoke)
+## Step 6.5 — Recommend the next skill (never auto-invoke)
 
 Recommend, do not run. Pick the recommendation from the artifact type:
 
@@ -74,7 +74,7 @@ Recommend, do not run. Pick the recommendation from the artifact type:
 
 State it as a recommendation the user chooses to act on. **Never invoke the next skill yourself** — the human decides when to start the build, and the accepted artifact is the input they hand it, not an automatic trigger.
 
-## Step 5.6 — Final verification block and complete
+## Step 6.6 — Final verification block and complete
 
 Emit a visible final block:
 
@@ -88,7 +88,7 @@ Git links:    <commit / branch / PR, or "implementation pending">
 Recommended:  <the /build … line, or the circulate-RFD line>
 ```
 
-Then mark `state.md`: `Status: complete`, `Phase: 5`, `phase_complete: true`, `what_remains: []`, stamp `last_verified: <ISO>`, and confirm the `docs/` artifact path is in `FilesWritten`. `what_remains` must be `[]` at completion.
+Then mark `state.md`: `Status: complete`, `Phase: 6`, `phase_complete: true`, `what_remains: []`, stamp `last_verified: <ISO>`, and confirm the `docs/` artifact path is in `FilesWritten`. `what_remains` must be `[]` at completion.
 
 ## Notes
 

@@ -1,10 +1,11 @@
-# Phase 2: Discuss — Weight-Scaled Critic Panel
+# Phase 3: Discuss — Weight-Scaled Critic Panel
 
 Subject the draft to adversarial review, scaled to the decision's weight. A `heavy` decision earns the full four-lens opus panel plus a synthesizer, looped until it converges; a `light` decision gets one consolidated quick critic whose verdict stands alone. An exempt change (`ARTIFACT: none`) never reaches this phase.
 
-## Inputs (from Phase 1)
+## Inputs (from Phase 2)
 
-- `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the populated artifact, the single thing critics read.
+- `<PROJECT_ROOT>/.mz/task/<task_name>/draft.md` — the populated artifact, the single thing critics judge.
+- `brief.md` and `research.md` from Phase 1 — the user's answers and the facts the critics check the draft against.
 - `WEIGHT` (`light` | `heavy`) and the resolved artifact type, recorded in `state.md`.
 - `routing.md`, `provenance.md` — available as discussion context.
 
@@ -14,7 +15,7 @@ Subject the draft to adversarial review, scaled to the decision's weight. A `hea
 
 ## Branch on weight
 
-Read `WEIGHT` from `state.md`. `heavy` → run the panel loop (Step H). `light` → run the single quick critic (Step L). Nothing else is valid here — `none` stopped at Phase 1.
+Read `WEIGHT` from `state.md`. `heavy` → run the panel loop (Step H). `light` → run the single quick critic (Step L). Nothing else is valid here — `none` stopped at Phase 2.
 
 ______________________________________________________________________
 
@@ -36,6 +37,8 @@ Run the fast governance review on this light-weight decision draft.
 ## Read
 - <PROJECT_ROOT>/.mz/task/<task_name>/draft.md
 - <PROJECT_ROOT>/.mz/task/<task_name>/routing.md   (discussion context)
+- <PROJECT_ROOT>/.mz/task/<task_name>/brief.md     (the user's stage, options and priorities)
+- <PROJECT_ROOT>/.mz/task/<task_name>/research.md  (facts gathered for this decision; check claims against it before searching yourself)
 
 ## Output
 Write your consolidated four-lens review to <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_quick.md.
@@ -44,7 +47,7 @@ End with VERDICT: PASS|FAIL then STATUS:.
 
 Read the returned `VERDICT:` and `STATUS:`:
 
-- `VERDICT: PASS` → record `LastVerdict: PASS (light)`, append `discuss_<N>_quick.md` to `FilesWritten`, advance to Phase 3. The gate reads this last iteration's file as the verdict of record.
+- `VERDICT: PASS` → record `LastVerdict: PASS (light)`, append `discuss_<N>_quick.md` to `FilesWritten`, advance to Phase 4. The gate reads this last iteration's file as the verdict of record.
 - `VERDICT: FAIL` → revise `draft.md` against the critic's findings (Step R revision rules), `iteration += 1`, and re-dispatch the quick critic — writing a fresh `discuss_<N>_quick.md` so earlier iterations are preserved — capped at `MAX_DISCUSS_ITERATIONS`. At the cap without PASS, escalate (Step E).
 - `STATUS: NEEDS_CONTEXT` / `BLOCKED` → escalate via AskUserQuestion; do not invent a verdict.
 
@@ -62,7 +65,7 @@ loop:
   H.2  Post-wave rollup
   H.3  Dispatch gov-discussion-synthesizer                        → discussion_<N>.md
   H.4  Read AGGREGATE
-  H.5  AGGREGATE PASS → exit loop, go to Phase 3
+  H.5  AGGREGATE PASS → exit loop, go to Phase 4
   H.6  FAIL and iteration < MAX → revise draft.md, iteration += 1, go to H.1
   H.7  FAIL and iteration == MAX → escalate via AskUserQuestion (Step E)
 ```
@@ -96,6 +99,8 @@ Critique this decision draft from the considered-options lens only.
 ## Read
 - <PROJECT_ROOT>/.mz/task/<task_name>/draft.md
 - <PROJECT_ROOT>/.mz/task/<task_name>/routing.md   (discussion context)
+- <PROJECT_ROOT>/.mz/task/<task_name>/brief.md     (the user's stage, options and priorities)
+- <PROJECT_ROOT>/.mz/task/<task_name>/research.md  (facts gathered for this decision; check claims against it before searching yourself)
 
 ## Output
 Write findings to <PROJECT_ROOT>/.mz/task/<task_name>/discuss_<N>_alternatives.md.
@@ -172,7 +177,7 @@ Append `discuss_<N>_*.md` and `discussion_<N>.md` to `FilesWritten`; record the 
 
 ### H.5 — AGGREGATE PASS
 
-All four critics passed. Record `phase_complete: true` for Phase 2, save the iteration count, advance to Phase 3.
+All four critics passed. Record `phase_complete: true` for Phase 3, save the iteration count, advance to Phase 4.
 
 ### H.6 — AGGREGATE FAIL, iteration < MAX
 
@@ -220,9 +225,9 @@ Two named options; guidance rides the free-text reply field.
 
 **Response handling:**
 
-- **Accept with unresolved** → record `LastVerdict` as `accepted_with_unresolved`, carry the open findings forward as caveats into Phase 3, advance.
+- **Accept with unresolved** → record `LastVerdict` as `accepted_with_unresolved`, carry the open findings forward as caveats into Phase 4, advance.
 - **Abort** → `Status: aborted_by_user`, stop. Leave all files on disk.
-- **Any other reply (guidance)** → take the user's text as the action list, revise `draft.md` once (Step R), then go straight to Phase 3 — no further critique round; the user's word is final.
+- **Any other reply (guidance)** → take the user's text as the action list, revise `draft.md` once (Step R), then go straight to Phase 4 — no further critique round; the user's word is final.
 
 ## Notes
 
@@ -230,4 +235,4 @@ Two named options; guidance rides the free-text reply field.
 - Critics emit `VERDICT:` (not the four-status `STATUS:` protocol for their verdict line, though they close with `STATUS:` too). The synthesizer and quick-critic verdicts both fail closed: a missing `VERDICT:` line counts as FAIL, never an assumed PASS.
 - The draft is revised by the orchestrator between iterations; the critics write only their own review files and never modify `draft.md`. One `draft.md`, overwritten in place each round.
 - Convergence is zero `Critical:` across all lenses — `Nit:`/`Optional:`/`FYI:` never block the loop.
-- On resume into Phase 2, the discuss loop restarts from iteration 1 — earlier `discuss_<N>_*.md` files are left on disk, but a fresh wave is dispatched (the draft may have changed since). A heavy decision therefore re-spends its critic panel on resume; this is intentional and stays bounded by `MAX_DISCUSS_ITERATIONS`.
+- On resume into Phase 3, the discuss loop restarts from iteration 1 — earlier `discuss_<N>_*.md` files are left on disk, but a fresh wave is dispatched (the draft may have changed since). A heavy decision therefore re-spends its critic panel on resume; this is intentional and stays bounded by `MAX_DISCUSS_ITERATIONS`.

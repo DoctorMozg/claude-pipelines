@@ -34,6 +34,7 @@ _EXPECTED_DEPENDENCIES = {
     "mz-research-pipe": ("mz-base", "mz-dev-pipe"),
     "mz-dev-git": ("mz-base",),
     "mz-creative": ("mz-base",),
+    "mz-gov": ("mz-base",),
 }
 
 

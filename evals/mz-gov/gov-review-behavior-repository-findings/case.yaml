@@ -1,0 +1,41 @@
+schema_version: "1.1"
+name: gov-review-behavior-repository-findings
+description: 'Problems no single record shows are reported at repository level: two records share number 0002, and 0001 still reads accepted after 0002 superseded it. The audit stays read-only.'
+tags: [behavior, needs-bash]
+plugins: ["../../../plugins/mz-gov", "../../../plugins/mz-base"]
+runs: 1
+context:
+  scaffold_script: fixture.sh
+execution:
+  prompt: >-
+    /mz-gov:gov-review docs/decisions
+  allowed_tools: [Skill, Agent, Read, Write, Edit, Glob, Grep, Bash]
+  max_turns: 30
+  timeout_seconds: 900
+graders:
+  - name: mechanical-check-ran
+    type: tool_used
+    tool: Bash
+    input_match: 'gov-check\.sh'
+  - name: one-reviewer-per-record
+    type: tool_used
+    tool: Agent
+    input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?gov-audit-reviewer"'
+    min: 3
+    max: 4
+  - name: report-has-repository-findings
+    type: tool_used
+    tool: Write
+    input_match: '^(?=[\s\S]*"file_path"\s*:\s*"[^"]*/\.mz/reviews/\d{4}_\d{2}_\d{2}_gov_review_[^"]*\.md")(?=[\s\S]*## Repository)(?=[\s\S]*0002-rate-limits\.md)(?=[\s\S]*0002-sessions-in-redis\.md)(?=[\s\S]*0001-sessions-in-memory\.md[^\n]*(?:accepted|superseded))'
+  - name: nothing-written-outside-mz
+    type: tool_used
+    tool: Write
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
+  - name: nothing-edited-outside-mz
+    type: tool_used
+    tool: Edit
+    input_match: '"file_path"\s*:\s*"(?![^"]*/\.mz/)'
+    min: 0
+    max: 0
