@@ -3,13 +3,16 @@ name: obsidian-cli-near-miss-closed-app-grep
 description: With Obsidian not running the CLI is unusable, and counting matches in a folder of markdown files is a plain grep that needs no skill.
 tags: [routing, near-miss]
 plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+context:
+  scaffold_script: fixture.sh
 execution:
   prompt: >-
-    Obsidian is closed. This is a headless box over SSH and my vault is just a
-    folder at ~/notes. How many of the .md files in there mention the word
+    Obsidian is closed. This is a headless box over SSH and my vault is just the
+    notes/ folder here. How many of the .md files in there mention the word
     invoice? Plain grep is fine.
-  allowed_tools: [Skill]
-  max_turns: 2
+  # The right move is the job itself, so the session has the file and the tools for it; a skill call still fails the case.
+  allowed_tools: [Skill, Read, Grep, Glob]
+  max_turns: 6
   timeout_seconds: 180
 graders:
   - name: obsidian-cli-not-fired
@@ -19,3 +22,6 @@ graders:
     min: 0
     max: 0
     arm: both
+  - name: reports-three-files
+    type: regex
+    pattern: '\b(?:3|three)\b'

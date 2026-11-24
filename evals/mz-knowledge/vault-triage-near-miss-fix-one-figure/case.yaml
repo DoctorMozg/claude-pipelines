@@ -3,12 +3,15 @@ name: vault-triage-near-miss-fix-one-figure
 description: Correcting one number in a single named note is a direct edit that needs no skill, even though the note sits in the inbox.
 tags: [routing, near-miss]
 plugins: ["../../../plugins/mz-knowledge", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe"]
+context:
+  scaffold_script: fixture.sh
 execution:
   prompt: >-
     In inbox/2026-10-30 sourdough hydration.md the second paragraph says 85
     percent hydration. It should be 75. Fix that.
-  allowed_tools: [Skill]
-  max_turns: 2
+  # The right move is the job itself, so the session has the file and the tools for it; a skill call still fails the case.
+  allowed_tools: [Skill, Read, Grep, Glob, Edit]
+  max_turns: 6
   timeout_seconds: 180
 graders:
   - name: vault-triage-not-fired
@@ -18,3 +21,7 @@ graders:
     min: 0
     max: 0
     arm: both
+  - name: figure-fixed
+    type: regex
+    pattern: 'At 75 percent hydration'
+    target: { source: file, path: "inbox/2026-10-30 sourdough hydration.md" }

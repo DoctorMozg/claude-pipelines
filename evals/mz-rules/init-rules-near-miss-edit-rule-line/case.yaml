@@ -3,11 +3,14 @@ name: init-rules-near-miss-edit-rule-line
 description: Changing one number in an existing rule file is a direct edit that needs no skill, since init-rules installs rules and does not edit their content.
 tags: [routing, near-miss]
 plugins: ["../../../plugins/mz-rules", "../../../plugins/mz-base", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-knowledge"]
+context:
+  scaffold_script: fixture.sh
 execution:
   prompt: >-
     Bump the line length in .claude/rules/python-conventions.md from 88 to 100.
-  allowed_tools: [Skill]
-  max_turns: 2
+  # The right move is the job itself, so the session has the file and the tools for it; a skill call still fails the case.
+  allowed_tools: [Skill, Read, Grep, Glob, Edit]
+  max_turns: 6
   timeout_seconds: 180
 graders:
   - name: init-rules-not-fired
@@ -17,3 +20,7 @@ graders:
     min: 0
     max: 0
     arm: both
+  - name: line-length-bumped
+    type: regex
+    pattern: 'line length 100\.'
+    target: { source: file, path: ".claude/rules/python-conventions.md" }
