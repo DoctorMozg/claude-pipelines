@@ -4,7 +4,7 @@ description: "Researches technical questions on the web and reports what primary
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: opus
 effort: medium
-maxTurns: 40
+maxTurns: 100
 color: cyan
 ---
 

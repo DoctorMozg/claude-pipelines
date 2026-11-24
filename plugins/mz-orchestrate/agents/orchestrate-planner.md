@@ -4,7 +4,7 @@ description: "Pipeline-only. Dispatched by /orchestrate-plan. Turns a goal, the 
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
 effort: high
-maxTurns: 50
+maxTurns: 100
 color: green
 ---
 

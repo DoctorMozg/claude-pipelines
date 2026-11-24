@@ -4,7 +4,7 @@ description: Pipeline-only. Dispatched by /ask, /audit, /build, /combine, /debug
 tools: Read, Grep, Glob, WebFetch, WebSearch
 model: sonnet
 effort: medium
-maxTurns: 40
+maxTurns: 100
 color: cyan
 ---
 

@@ -4,7 +4,7 @@ description: "Pipeline-only. Dispatched by /orchestrate. Compiles an approved pl
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
 effort: high
-maxTurns: 40
+maxTurns: 100
 color: green
 ---
 
