@@ -315,6 +315,17 @@ class TestScheduling:
             2,
         )
 
+    def test_mark_extended_leaves_the_session_note_alone(self, run: Run, dag_path: Path) -> None:
+        run("mark", "A", "running", "note=ab12cd34 uds:/x.sock", "deadline=2026-01-01T00:00:00Z")
+        run("mark", "A", "running", "deadline=2026-01-01T00:22:30Z", "extended=yes")
+
+        a = json.loads(dag_path.read_text())["units"][0]
+        assert (a["note"], a["deadline"], a["extended"]) == (
+            "ab12cd34 uds:/x.sock",
+            "2026-01-01T00:22:30Z",
+            "yes",
+        )
+
     @pytest.mark.parametrize(
         ("args", "message"),
         [

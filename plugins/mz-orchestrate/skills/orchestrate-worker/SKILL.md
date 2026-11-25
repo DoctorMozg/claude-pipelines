@@ -71,6 +71,7 @@ Parse the envelope type and fields. A malformed envelope (no `END` line, a missi
 
 1. **Run.** A peer sends `ORCH-PROGRESS stage: skill-started`.
 
+   - The envelope's `deadline` is a check-in time, not a budget: don't skip a phase or an agent to meet it, and past it keep going.
    - `skill: <plugin:skill>`: invoke it with the Skill tool and the argument `unit:<BRIEF>`. Its last line is a `STATUS:` line (worker mode, "Final message"). A skill missing from this session gives `REFUSED` with note `skill not installed`.
    - `skill: direct`: make the change yourself, inside `owns` only, then go on.
    - `kind: review` or `kind: context`: the skill only reads. Its findings or summary go in `notes`, the path it names under `## Report` in `report` with the file's full text in `--- report ---`, and steps 6 and 7 are skipped.

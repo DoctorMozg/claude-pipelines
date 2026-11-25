@@ -53,6 +53,7 @@ STATUS: <DONE or DONE_WITH_CONCERNS as in the envelope; BLOCKED for BLOCKED, FAI
 ## Red Flags
 
 - Doing the unit's work inline instead of through the skill the envelope names.
+- Skipping a phase or an agent of the unit's skill to meet the envelope's `deadline`, which is a check-in time, not a budget.
 - Asking the user a question; nobody can answer a background worker.
 - Committing files outside `owns`, or committing on any branch but the unit's.
 - Returning `DONE` when verify failed or the skill reported concerns.

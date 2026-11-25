@@ -53,10 +53,13 @@ A peer whose `ORCH-RESULT` says `REFUSED` with `not attached` lost its attachmen
 
 ## Liveness
 
-Every dispatch records `deadline=<UTC ISO time>`, now plus `UNIT_DEADLINE`. While any unit runs on a session or a peer, keep one watchdog: a Bash `sleep WATCHDOG_SECONDS` with `run_in_background: true`. Start one when none is pending; each time it fires:
+Every dispatch records `deadline=<UTC ISO time>`, now plus `UNIT_DEADLINE`. While any unit runs on a session, a Codex run or a peer, keep one watchdog: a Bash `sleep WATCHDOG_SECONDS` with `run_in_background: true`. Start one when none is pending; each time it fires:
 
+- Write one line per running unit, whatever its state: `<id> — <skill>: <phase>, state <age> old, <changed> files, <commit or "no commit">, due <deadline>`. For a session or a Codex run the phase, age, files and commit come from `session.sh progress <worktree> <base_commit>`, which reads the worktree's skill `state.md` (`worker_unit:` line) and `git status`; a peer's phase is its `note`, and a subagent's worktree path is only known when it returns, so it gets the phase `unknown`. Add nothing else unless a unit changed state: extended, gated or finished.
 - For every running unit past its `deadline`:
   - peer: if its `note` isn't `status-asked`, send `ORCH-STATUS` and `dag.sh DAG mark <id> running note=status-asked`; when it already is, the peer stayed silent: go to the out-of-plan gate with reason `silent past deadline`.
-  - session, Codex run or subagent: go to the out-of-plan gate with reason `past deadline`; stop a `--bg` session first with `session.sh stop`. The worker keeps running; its result, if one comes later, is handled as usual unless the gate's answer already re-dispatched or skipped the unit, in which case say so and drop it.
+  - session or Codex run: look at the `progress` output just taken. The unit is still active when `state_age` is under 2 × WATCHDOG_SECONDS, or `changed` or `last_commit` differs from the previous fire's line. An active unit whose `extended` isn't `yes` gets half of `UNIT_DEADLINE` more, once: `dag.sh DAG mark <id> running deadline=<old deadline plus half of UNIT_DEADLINE> extended=yes` (not `note`, which holds a `--bg` session's id and address), and tell the user in one line. A stalled unit, or an active one already extended, goes to the out-of-plan gate with reason `past deadline`; the gate's text includes the progress lines (`phase`, `what_remains`, `state_age`). Stop a `--bg` session first with `session.sh stop`.
+  - subagent: go to the out-of-plan gate with reason `past deadline`; there is no progress to read before it returns.
+  - After a gate, the worker keeps running; its result, if one comes later, is handled as usual unless the gate's answer already re-dispatched or skipped the unit, in which case say so and drop it.
 - For every unit running on a `--bg` session, run `session.sh state <session id>`. `idle` or `gone` with no `ORCH-RESULT` yet means the session ended its turn without replying; when that holds at two fires in a row, go to the out-of-plan gate with reason `session ended without a result`, and tell the user `claude logs <session id>` shows its output.
-- Start the next watchdog if units are still running on a session or a peer.
+- Start the next watchdog if units are still running on a session, a Codex run or a peer.

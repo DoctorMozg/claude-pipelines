@@ -10,6 +10,7 @@ usage: session.sh bg <repo> <name> <skill|direct> <envelope-file>
        session.sh result <out-json>
        session.sh state <session-id>
        session.sh stop <session-id>
+       session.sh progress <worktree> <base-commit>
 EOF
   exit 2
 }
@@ -44,6 +45,47 @@ address_of() {
 session_field() {
   "$claude" agents --json 2>/dev/null | jq -r --arg k "$1" --arg v "$2" --arg f "$3" \
     'first(.[] | select(.[$k] == $v) | .[$f]) // empty'
+}
+
+# Seconds since a file changed; GNU stat takes -c, BSD stat takes -f (and GNU -f means something else).
+age_of() {
+  local mtime
+  mtime=$(stat -c %Y "$1" 2>/dev/null || stat -f %m "$1")
+  echo $(($(date +%s) - mtime))
+}
+
+# The unit's skill state is the newest state.md with a worker_unit line; the worker's own has none.
+unit_state() {
+  local file
+  while IFS= read -r file; do
+    if grep -q '^worker_unit:' "$file"; then
+      echo "$file"
+      return 0
+    fi
+  done < <(ls -t "$1"/.mz/task/*/state.md 2>/dev/null)
+  return 1
+}
+
+# A YAML list under or after the key, flattened to one line.
+what_remains_of() {
+  local line items=() inside=0
+  while IFS= read -r line; do
+    if [ $inside -eq 0 ]; then
+      [[ $line == what_remains:* ]] || continue
+      inside=1
+      line=${line#what_remains:}
+      line=${line# }
+      [ -z "$line" ] || [ "$line" = "[]" ] || items+=("$line")
+    elif [[ $line =~ ^[[:space:]]*-[[:space:]]+(.*)$ ]]; then
+      items+=("${BASH_REMATCH[1]}")
+    else
+      break
+    fi
+  done <"$1"
+  [ ${#items[@]} -gt 0 ] || items=(none)
+  local joined=${items[0]} item
+  for item in "${items[@]:1}"; do joined+="; $item"; done
+  echo "$joined"
 }
 
 # A wrapper that sets its account's env itself, such as gnai-claude, can stand in for claude.
@@ -125,6 +167,28 @@ result)
     fail "the session ended without a result: $(jq -r '"\(.subtype // "unknown"): \(.result // .error // "no text")"' "$1")"
   fi
   jq -r '.result' "$1"
+  ;;
+progress)
+  [ $# -eq 2 ] || usage
+  worktree=$1 base=$2
+  [ -d "$worktree" ] || fail "no worktree at $worktree"
+  if state=$(unit_state "$worktree"); then
+    phase=$(sed -n '/^Phase: */{s///p;q}' "$state")
+    phase_name=$(sed -n '/^PhaseName: */{s///p;q}' "$state")
+    echo "state: $state"
+    echo "phase: ${phase:-unknown}${phase_name:+ $phase_name}"
+    echo "what_remains: $(what_remains_of "$state")"
+    echo "state_age: $(age_of "$state")"
+  else
+    echo "state: none"
+  fi
+  echo "changed: $(git -C "$worktree" status --porcelain | wc -l | tr -d ' ')"
+  head=$(git -C "$worktree" rev-parse HEAD) || fail "$worktree is not a git worktree"
+  if [ "$head" = "$(git -C "$worktree" rev-parse "$base^{commit}")" ]; then
+    echo "last_commit: none"
+  else
+    echo "last_commit: $(git -C "$worktree" log -1 --format='%h %s')"
+  fi
   ;;
 *)
   usage

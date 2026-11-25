@@ -35,7 +35,7 @@ For each unit:
 
 1. Its base is the current `tip` of its repository's integration worktree (`git -C <integration worktree> rev-parse HEAD`). Its branch is `orch/<task_name>/<id>` on the first attempt and `orch/<task_name>/<id>.<attempt>` on a retry, so a failed attempt's branch and worktree stay for inspection.
 
-1. `dag.sh DAG mark <id> running base_commit=<base> branch=<branch> deadline=<now plus UNIT_DEADLINE>`.
+1. `dag.sh DAG mark <id> running base_commit=<base> branch=<branch> deadline=<now plus UNIT_DEADLINE> extended=no`.
 
 1. Build the envelope from the unit, in the `ORCH-UNIT` format of `<PLUGIN_ROOT>/skills/orchestrate-worker/references/protocol.md`: `owns` comma-separated, `deadline` now plus `UNIT_DEADLINE`, and the unit's `spec` after `--- spec ---`. For each `depends_on` unit of `kind: context`, append `## Context from <dep id>: <dep title>` and the full text of `<TASK_DIR>/units/<dep id>.md` to the spec, since the worker never reads `.mz/`. On a retry, append a `## Previous attempt` section to the spec with the last result's notes and any guidance the user gave.
 

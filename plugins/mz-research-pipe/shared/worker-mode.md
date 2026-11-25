@@ -35,6 +35,10 @@ A `review` unit returns findings for the orchestrator's final summary, and a `co
 
 Worker mode changes who answers the gates, nothing else. Run every phase the skill defines and dispatch every agent it names, even for a small unit. The orchestrator chose this skill for its tests, reviews and checks, and the user approved the plan on the understanding that they would run. Doing the work inline skips the reviews that a merge relies on. If a phase truly doesn't apply, such as no linter detected, say so in the final message the way the skill already does.
 
+## Deadline
+
+The envelope's `deadline` is when the orchestrator checks in, not a time budget. Never skip a phase or an agent to meet it. Past it, keep going and keep `state.md` current: the orchestrator reads `Phase` and `what_remains` there to tell a unit that is still working from one that is stuck.
+
 ## Gates
 
 - **Approve/Reject gates** (plan, diagnosis, assessment, research): write state, emit Surface 1, skip Surface 2 and continue as on Approve. Log the gate the way unattended mode does, in chat, under `## Auto-approvals`, in the journal and in the final report, with `outcome: auto-approved (worker)` and `authority: mz-orchestrate DAG gate, unit <id>`.

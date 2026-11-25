@@ -73,6 +73,8 @@ deadline: <UTC ISO time>
 END ORCH-UNIT
 ```
 
+`deadline` is when the orchestrator checks in on the unit, not a budget. The worker never skips a phase or an agent to meet it, and past it keeps going with `state.md` current.
+
 ### ORCH-PROGRESS (worker → orchestrator; handled by `orchestrate`)
 
 ```text
@@ -84,7 +86,7 @@ note: <one line>
 END ORCH-PROGRESS
 ```
 
-Peers and `--bg` workers send one at each stage. Subagent and `-p` workers send none.
+Peers and `--bg` workers send one at each stage. Subagent and `-p` workers send none; the orchestrator reads a `-p` worker's progress from the skill's `state.md` in its worktree (`session.sh progress`), and a subagent's only when it returns.
 
 ### ORCH-RESULT (worker → orchestrator; handled by `orchestrate`)
 

@@ -307,3 +307,91 @@ class TestResult:
         out.write_text(body)
 
         assert message in run("result", out, code=1).stderr
+
+
+GIT = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false"]
+UNIT_STATE = """schema_version: 2
+Status: running
+Phase: 3
+PhaseName: implementation
+worker_unit: .mz/orchestrate/units/WU-1.md
+phase_complete: false
+what_remains:
+  - write the tests
+  - run the review
+"""
+
+
+def write_state(worktree: Path, name: str, body: str) -> Path:
+    path = worktree / ".mz" / "task" / name / "state.md"
+    path.parent.mkdir(parents=True)
+    path.write_text(body)
+    return path
+
+
+class TestProgress:
+    @pytest.fixture
+    def worktree(self, repo: Path) -> Path:
+        (repo / "a.txt").write_text("a\n")
+        (repo / ".gitignore").write_text(".mz/\n")
+        subprocess.run([*GIT, "-C", str(repo), "add", "a.txt", ".gitignore"], check=True)
+        subprocess.run([*GIT, "-C", str(repo), "commit", "-qm", "base"], check=True)
+        return repo
+
+    @pytest.fixture
+    def base(self, worktree: Path) -> str:
+        return subprocess.run(
+            ["git", "-C", str(worktree), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+
+    def progress(self, run: Run, worktree: Path, base: str) -> dict[str, str]:
+        lines = run("progress", worktree, base).stdout.splitlines()
+        return dict(line.split(": ", 1) for line in lines)
+
+    def test_reads_the_skill_state_that_names_a_worker_unit(
+        self, run: Run, worktree: Path, base: str
+    ) -> None:
+        state = write_state(worktree, "2026_11_25_build_wu_1", UNIT_STATE)
+        # The worker's own state has no worker_unit line and must not be picked.
+        write_state(worktree, "2026_11_25_orchestrate_worker_wu_1", "Status: running\nPhase: x\n")
+        os.utime(state, (1, 1))
+
+        got = self.progress(run, worktree, base)
+
+        assert got["state"] == str(state)
+        assert got["phase"] == "3 implementation"
+        assert got["what_remains"] == "write the tests; run the review"
+        assert int(got["state_age"]) > 1_000_000
+
+    def test_a_worktree_without_a_unit_state_reports_none(
+        self, run: Run, worktree: Path, base: str
+    ) -> None:
+        write_state(worktree, "2026_11_25_orchestrate_worker_wu_1", "Status: running\n")
+
+        got = self.progress(run, worktree, base)
+
+        assert got == {"state": "none", "changed": "0", "last_commit": "none"}
+
+    def test_counts_changed_files(self, run: Run, worktree: Path, base: str) -> None:
+        (worktree / "a.txt").write_text("edited\n")
+        (worktree / "b.txt").write_text("new\n")
+
+        assert self.progress(run, worktree, base)["changed"] == "2"
+
+    def test_names_the_head_commit_once_it_moves_past_the_base(
+        self, run: Run, worktree: Path, base: str
+    ) -> None:
+        (worktree / "a.txt").write_text("edited\n")
+        subprocess.run([*GIT, "-C", str(worktree), "commit", "-qam", "unit: edit a"], check=True)
+
+        last = self.progress(run, worktree, base)["last_commit"]
+
+        assert last.split(" ", 1)[1] == "unit: edit a"
+
+    def test_a_missing_worktree_fails_loudly(self, run: Run, tmp_path: Path) -> None:
+        result = run("progress", tmp_path / "gone", "abc", code=1)
+
+        assert "no worktree at" in result.stderr

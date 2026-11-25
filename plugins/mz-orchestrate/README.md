@@ -254,14 +254,14 @@ If a skill needs a file outside `owns`, it makes the smallest edit and reports i
 
 ## Limits and costs
 
-| Limit             | Value      | Meaning                                                                                     |
-| ----------------- | ---------- | ------------------------------------------------------------------------------------------- |
-| Parallel workers  | 3          | Subagents plus fresh sessions at once. Peers are extra, one unit each                       |
-| DAG review rounds | 3          | A DAG still failing review after three revisions is shown at the gate with its findings     |
-| Auto retries      | 1          | A failed unit is retried once with the failure in its spec. A second failure goes to you    |
-| Final rounds      | 2          | The final review runs at most twice, so one round of fixes is checked before the final gate |
-| Checkpoint every  | 3 merges   | Merges into one repository between full-suite checkpoints                                   |
-| Unit deadline     | 45 minutes | A unit past it goes to the out-of-plan gate, and a silent peer gets one `ORCH-STATUS` first |
+| Limit             | Value      | Meaning                                                                                                                                               |
+| ----------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parallel workers  | 3          | Subagents plus fresh sessions at once. Peers are extra, one unit each                                                                                 |
+| DAG review rounds | 3          | A DAG still failing review after three revisions is shown at the gate with its findings                                                               |
+| Auto retries      | 1          | A failed unit is retried once with the failure in its spec. A second failure goes to you                                                              |
+| Final rounds      | 2          | The final review runs at most twice, so one round of fixes is checked before the final gate                                                           |
+| Checkpoint every  | 3 merges   | Merges into one repository between full-suite checkpoints                                                                                             |
+| Unit deadline     | 45 minutes | A unit past it that is still working gets 22 minutes more once; otherwise it goes to the out-of-plan gate. A silent peer gets one `ORCH-STATUS` first |
 
 Rough cost per unit on small units, shown at the DAG gate: `build` about $2.50, `debug` about $1, `polish` about $0.50, a review about $1, `direct` about $0.20. Each `build`, `debug` and `polish` unit runs that skill's full pipeline of agents, so large units cost more. The final review adds one review unit per repository. Each checkpoint costs one suite run, plus up to two more when it has to bisect, and the baseline adds one suite run per repository at the start.
 

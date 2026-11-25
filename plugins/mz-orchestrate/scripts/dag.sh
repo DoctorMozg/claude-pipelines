@@ -38,7 +38,7 @@ jq -e 'type == "object" and (.units | type == "array")' "$dag" >/dev/null 2>&1 |
 }
 
 statuses='pending running done merged blocked failed skipped'
-mark_keys='base_commit branch head_commit worktree worktree_branch backend_used deadline result note'
+mark_keys='base_commit branch head_commit worktree worktree_branch backend_used deadline extended result note'
 
 # Shared jq definitions. A glob's literal prefix is everything before its first wildcard; two
 # globs may overlap when one prefix starts with the other, which errs toward reporting a clash.
