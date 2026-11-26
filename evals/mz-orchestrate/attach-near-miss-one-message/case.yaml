@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: attach-near-miss-one-message
 description: Passing one note to another session is a single message, not making it a worker, so neither attach nor detach should fire.
 tags: [routing, near-miss]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 execution:
   prompt: >-
     Tell my other Claude session that the staging deploy finished, that's all.

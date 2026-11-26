@@ -28,7 +28,7 @@
 
 | Field                                                                                | Set by        | Value                                                                                                                                      |
 | ------------------------------------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `id`                                                                                 | compiler      | `WU-1`, `WU-2`, …; a build plan's own ids are kept                                                                                         |
+| `id`                                                                                 | compiler      | the plan's reference for the unit and a short name, such as `WU-2_Invoice_Api` or `Q8a1a_Calendar_Facts`; see "Naming a unit"              |
 | `title`                                                                              | compiler      | a few words                                                                                                                                |
 | `kind`                                                                               | compiler      | `change` (commits on its own branch), `review` (read-only, returns findings) or `context` (read-only, returns a report its dependents get) |
 | `repo`                                                                               | compiler      | absolute path of the repository the unit works in                                                                                          |
@@ -42,11 +42,13 @@
 | `status`                                                                             | `dag.sh`      | `pending`, `running`, `done`, `merged`, `blocked`, `failed` or `skipped`                                                                   |
 | `attempts`                                                                           | `dag.sh`      | how many times the unit was dispatched                                                                                                     |
 | `base_commit`, `branch`, `head_commit`, `worktree`, `backend_used`, `result`, `note` | `dag.sh mark` | set while the unit runs                                                                                                                    |
+| `started_at`, `ended_at`                                                             | `dag.sh mark` | epoch seconds when the last attempt started and stopped running; `dag.sh summary` estimates the time left from them                        |
 
 A `review` or `context` unit counts as satisfied for its dependents once it is `done`; a `change` unit once it is `merged`. When a unit is dispatched, the report of each `context` unit it depends on is pasted into its spec under `## Context from <id>`, so a context unit is useful only with a dependent, and `dag.sh lint` rejects one without.
 
 ## Writing a good unit
 
+- **Naming a unit.** The id names the unit's branch, its worktree and every status line, so it says what the unit is: the plan's own reference for it, then `_` and two or three words in title case, such as `WU-2_Invoice_Api`, `Q3a_Vector_Lookup` or `Q8a1a_Calendar_Facts`. A plan without references numbers its units `U1`, `U2`, …. The reference holds letters, digits and `-`; the words hold letters and digits; the whole id is at most 32 characters. `dag.sh lint` rejects any other shape.
 - **One worker context.** A unit is what one `build` or `debug` run finishes well: about 10 files and 400 changed lines at most. Split anything larger along a seam the plan already names.
 - **The spec stands alone.** The worker sees only `spec`, never the plan. Include the goal, the decisions from the plan that bind this unit, the files and interfaces it touches, what its dependencies provide (names, signatures, paths), acceptance criteria, and what is out of scope.
 - **`owns` is exact.** List every path the unit changes, including tests, fixtures and shared files such as a router, a registry, a manifest or a lockfile. Two units that could run at the same time may not own overlapping paths in one repo: `dag.sh lint` rejects that, and the fix is a `depends_on` edge or a split. Globs overlap when one's literal prefix starts with the other's, so `src/api/*` and `src/api/v2.py` clash but `src/api/*` and `src/apiv2/*` don't.
@@ -61,14 +63,14 @@ A `review` or `context` unit counts as satisfied for its dependents once it is `
 
 ```json
 {
-  "id": "WU-2",
+  "id": "WU-2_Invoice_Api",
   "title": "Invoice API endpoint",
   "kind": "change",
   "repo": "/home/me/work/app",
   "skill": "mz-dev-pipe:build",
-  "spec": "## Goal\nAdd `POST /invoices` ...\n\n## Given by WU-1\n`Invoice` model in `app/models/invoice.py` ...\n\n## Acceptance\n- 201 with the invoice id ...\n\n## Out of scope\nPDF rendering (WU-4).",
+  "spec": "## Goal\nAdd `POST /invoices` ...\n\n## Given by WU-1_Invoice_Model\n`Invoice` model in `app/models/invoice.py` ...\n\n## Acceptance\n- 201 with the invoice id ...\n\n## Out of scope\nPDF rendering (WU-4_Invoice_Pdf).",
   "owns": ["app/api/invoices.py", "app/api/__init__.py", "tests/api/test_invoices.py"],
-  "depends_on": ["WU-1"],
+  "depends_on": ["WU-1_Invoice_Model"],
   "verify": "uv run pytest tests/api/test_invoices.py -q",
   "backend": "auto",
   "status": "pending"

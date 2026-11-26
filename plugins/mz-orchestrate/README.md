@@ -105,20 +105,21 @@ The compiler turns the plan into `dag.json`. Each unit is one piece of work a si
 
 ```json
 {
-  "id": "WU-2",
+  "id": "WU-2_Invoice_Api",
   "title": "Invoice API endpoint",
   "kind": "change",
   "repo": "/home/me/work/app",
   "skill": "mz-dev-pipe:build",
-  "spec": "## Goal\nAdd `POST /invoices` ...\n\n## Given by WU-1\n`Invoice` model in `app/models/invoice.py` ...\n\n## Acceptance\n- 201 with the invoice id ...\n\n## Out of scope\nPDF rendering (WU-4).",
+  "spec": "## Goal\nAdd `POST /invoices` ...\n\n## Given by WU-1_Invoice_Model\n`Invoice` model in `app/models/invoice.py` ...\n\n## Acceptance\n- 201 with the invoice id ...\n\n## Out of scope\nPDF rendering (WU-4_Invoice_Pdf).",
   "owns": ["app/api/invoices.py", "app/api/__init__.py", "tests/api/test_invoices.py"],
-  "depends_on": ["WU-1"],
+  "depends_on": ["WU-1_Invoice_Model"],
   "verify": "uv run pytest tests/api/test_invoices.py -q",
   "backend": "auto",
   "status": "pending"
 }
 ```
 
+- `id` is the plan's reference for the unit and a short name, such as `WU-2_Invoice_Api` or `Q8a1a_Calendar_Facts`, so a branch, a worktree or a status line says what the unit is. `dag.sh lint` rejects a bare reference.
 - `kind` is `change` (commits on its own branch), `review` (read-only, returns findings, and `owns` is `[]`) or `context` (read-only, returns a report). A context unit's report is pasted into the spec of every unit that depends on it, so research or a code walkthrough reaches the units that need it.
 - `spec` is all the worker sees. It never reads the plan, so the spec carries the goal, binding decisions, interfaces from dependencies, acceptance criteria and what is out of scope. When the plan left a choice open, the spec tells the worker to stop with `STATUS: BLOCKED` before writing code.
 - `owns` lists every path the unit may create or change, tests and shared files included. Two units that can run at the same time may not own overlapping paths in one repository. `dag.sh lint` rejects that, and the fix is a dependency edge or a split.
@@ -128,6 +129,14 @@ The compiler turns the plan into `dag.json`. Each unit is one piece of work a si
 - `status` is written only by `dag.sh`: `pending`, `running`, `done`, `merged`, `blocked`, `failed` or `skipped`.
 
 The full field list and the rules for a good unit are in `skills/orchestrate/references/dag-schema.md`.
+
+Every status message the orchestrator posts while units run ends with one line from `dag.sh summary`:
+
+```text
+Run: 3 of 20 units done, 1 running, 16 waiting; 15 waves left, about 9h40m to go (a unit has taken 38m on average over 3)
+```
+
+A wave is one step of the dependency chain: units in one wave can run side by side, subject to the 3 worker slots. The time left assumes each unit takes as long as the finished ones did on average, or the 45-minute deadline before any has finished, and doesn't include the final review.
 
 ## Backends
 

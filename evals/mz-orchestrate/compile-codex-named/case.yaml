@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: compile-codex-named
 description: 'A plan that names Codex for one step compiles that unit, and only that unit, to backend codex; the others stay auto.'
 tags: [compile, needs-bash]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh
@@ -24,11 +24,11 @@ graders:
   # dag.sh render prints Unit | Title | Kind | Skill | Repo | Backend; the docs row carries codex.
   - name: docs-unit-on-codex
     type: regex
-    pattern: '\| [A-Z]+-\d+ \| [^|\n]*(?:[Dd]oc|README|Tags)[^|\n]* \|(?:[^|\n]*\|){3} codex \|'
+    pattern: '\| [A-Za-z0-9-]+_\w+ \| [^|\n]*(?:[Dd]oc|README|Tags)[^|\n]* \|(?:[^|\n]*\|){3} codex \|'
     target: trace
   # The plan keeps everything else on Claude, so no other row may name codex.
   - name: only-docs-on-codex
     type: regex
-    pattern: '\| [A-Z]+-\d+ \| (?![^|\n]*(?:[Dd]oc|README|Tags))[^|\n]* \|(?:[^|\n]*\|){3} codex \|'
+    pattern: '\| [A-Za-z0-9-]+_\w+ \| (?![^|\n]*(?:[Dd]oc|README|Tags))[^|\n]* \|(?:[^|\n]*\|){3} codex \|'
     match: not_contains
     target: trace

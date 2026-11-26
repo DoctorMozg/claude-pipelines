@@ -15,6 +15,7 @@ usage: dag.sh <dag.json> lint [peers.json]
        dag.sh <dag.json> skip <unit>
        dag.sh <dag.json> requeue <unit>
        dag.sh <dag.json> render
+       dag.sh <dag.json> summary <unit-deadline-minutes> <max-workers>
 EOF
   exit 2
 }
@@ -98,6 +99,9 @@ lint() {
     | (if (.task // "") == "" then "dag: missing task" else empty end),
       (if ((.project // "") | startswith("/")) then empty else "dag: project must be an absolute path" end),
       ($ids | group_by(.) | map(select(length > 1) | .[0]) | .[] | "\(.): duplicate id"),
+      # The id names branches, worktrees and every status line, so it has to say what the unit is.
+      ($ids[] | strings | select(test("^[A-Za-z0-9-]+(_[A-Za-z0-9]+)+$") and length <= 32 | not)
+        | "\(.): id must be a plan reference and a name, like Q3a_Vector_Lookup: letters, digits and - then _Words, at most 32 characters"),
       (.units[] | . as $u | .id as $id
         | ((["id", "title", "repo", "skill", "spec"][] | select(($u[.] // "") == "") | "\($id): missing \(.)"),
            (if ($u.kind | IN("change", "review", "context")) then empty else "\($id): kind must be change, review or context" end),
@@ -224,7 +228,10 @@ mark)
   done
   update --arg id "$id" --arg s "$status" --argjson f "$fields" '
     .units |= map(if .id == $id
-      then (if $s == "running" and .status != "running" then .attempts = ((.attempts // 0) + 1) else . end) | . + $f | .status = $s
+      then (if $s == "running" and .status != "running"
+          then .attempts = ((.attempts // 0) + 1) | .started_at = (now | floor) | del(.ended_at) else . end)
+        | (if .status == "running" and $s != "running" then .ended_at = (now | floor) else . end)
+        | . + $f | .status = $s
       else . end)'
   ;;
 requeue)
@@ -259,6 +266,52 @@ render)
     (.units[] | "  \(.id | node)[\"\(.id): \(.title | gsub("\""; "'"'"'"))\"]"),
     (.units[] | .id as $id | (.depends_on // [])[] | "  \(node) --> \($id | node)"),
     "```"' "$dag"
+  ;;
+summary)
+  # One line for every status post: what is left, in units, dependency waves and time.
+  [ $# -eq 2 ] || usage
+  [[ $1 =~ ^[1-9][0-9]*$ && $2 =~ ^[1-9][0-9]*$ ]] || {
+    echo "dag.sh: summary needs the unit deadline in minutes and the worker count, both whole numbers" >&2
+    exit 2
+  }
+  jq -r --argjson fallback "$(($1 * 60))" --argjson slots "$2" '
+    def st: .status // "pending";
+    def hm: (. / 60 | floor) as $m
+      | if $m < 60 then "\($m)m" else "\($m / 60 | floor)h\($m % 60 | tostring | if length < 2 then "0" + . else . end)m" end;
+    # A unit'"'"'s wave is one more than the deepest unfinished unit it waits on.
+    def waves($open):
+      [$open[].id] as $ids
+      | def go($lv):
+          [$open[] | select(.id as $i | $lv | has($i) | not)
+           | select(all((.depends_on // [])[]; . as $d | ($lv | has($d)) or ($d | IN($ids[]) | not)))] as $free
+          | if ($free | length) == 0 then $lv
+            else go(reduce $free[] as $u ($lv; .[$u.id] = 1 + ([($u.depends_on // [])[] | $lv[.] // 0] | max // 0)))
+            end;
+        go({});
+    (now | floor) as $now
+    | .units as $all
+    | [$all[] | select(st | IN("pending", "running"))] as $open
+    | waves($open) as $lv
+    | ([$lv[]] | max // 0) as $left
+    | [$all[] | select(st | IN("done", "merged")) | select(.started_at and .ended_at) | .ended_at - .started_at] as $took
+    | (if ($took | length) > 0 then ($took | add / length | floor) else $fallback end) as $avg
+    # Each wave takes as many rounds as the worker slots need; an exclusive unit takes a round alone.
+    | ([range(1; $left + 1) as $w | [$open[] | select($lv[.id] == $w)]
+        | ([.[] | select(.exclusive != true)] | length) as $n
+        | (($n + $slots - 1) / $slots | floor) + ([.[] | select(.exclusive == true)] | length)] | add // 0) as $rounds
+    | [$open[] | select(st == "running") | [$avg - ($now - (.started_at // $now)), 0] | max] as $rest
+    | (if $rounds == 0 then 0 else ([$rest | max // $avg, 0] | max) + ($rounds - 1) * $avg end) as $eta
+    | ([$all[] | select(st | IN("done", "merged"))] | length) as $done
+    | ([$all[] | select(st == "running")] | length) as $running
+    | ([$all[] | select(st == "pending")] | length) as $waiting
+    | ([$all[] | select(st | IN("blocked", "failed", "skipped")) | st] | group_by(.) | map("\(length) \(.[0])") | join(", ")) as $off
+    | "Run: \($done) of \($all | length) units done, \($running) running, \($waiting) waiting"
+      + (if $off == "" then "" else ", \($off)" end)
+      + (if $left == 0 then "; nothing left to run"
+         else "; \($left) wave\(if $left == 1 then "" else "s" end) left, about \($eta | hm) to go ("
+           + (if ($took | length) > 0 then "a unit has taken \($avg | hm) on average over \($took | length)"
+              else "no unit has finished yet, so \($fallback | hm) each" end)
+           + ")" end)' "$dag"
   ;;
 *)
   usage

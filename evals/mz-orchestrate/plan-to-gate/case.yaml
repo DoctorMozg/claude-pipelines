@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: plan-to-gate
 description: 'Planning a goal for parallel workers researches the code, has the planner write a plan document and a DAG that lints, has the DAG reviewed, and stops at the plan gate without running any unit.'
 tags: [behavior, needs-bash]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 context:
   scaffold_script: fixture.sh
 execution:

@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: compile-adr
 description: 'An accepted ADR compiles into units that keep its decision: the token bucket and the handler change, with the handler unit depending on the bucket unit, and no Redis.'
 tags: [compile, needs-bash]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh
@@ -54,5 +54,5 @@ graders:
     max: 0
   - name: handler-waits-for-bucket
     type: regex
-    pattern: '\| [A-Z]+-\d+ \| [^|\n]*(?:[Hh]andler|[Ll]imit)[^|\n]* \|(?:[^|\n]*\|){4} [A-Z]+-\d+ \|'
+    pattern: '\| [A-Za-z0-9-]+_\w+ \| [^|\n]*(?:[Hh]andler|[Ll]imit)[^|\n]* \|(?:[^|\n]*\|){4} [A-Za-z0-9-]+_\w+ \|'
     target: trace

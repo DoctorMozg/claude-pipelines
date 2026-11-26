@@ -27,7 +27,7 @@ git worktree add -q -b "orchestrate/$task" "$wt" main
 printf 'def mul(a: int, b: int) -> int:\n    return a * b\n' >"$wt/calc/mul.py"
 printf 'import unittest\n\nfrom calc.mul import mul\n\n\nclass MulTest(unittest.TestCase):\n    def test_mul(self) -> None:\n        self.assertEqual(mul(2, 3), 6)\n' >"$wt/tests/test_mul.py"
 git -C "$wt" add -A
-git -C "$wt" commit -q -m "orch merge WU-1: multiply"
+git -C "$wt" commit -q -m "orch merge WU-1_Multiply: multiply"
 
 printf '# calc\n\nSmall arithmetic helpers.\n' >README.md
 git add README.md
@@ -38,7 +38,7 @@ mkdir -p "$dir"
 printf '# Plan\n\n1. Add calc/mul.py with mul(a, b) and a unittest test.\n' >"$dir/source_plan.md"
 cat >"$dir/dag.json" <<EOF
 {"task": "$task", "project": "$root", "source": {"path": "$dir/source_plan.md", "kind": "markdown"},
- "units": [{"id": "WU-1", "title": "Multiply", "kind": "change", "repo": "$root", "skill": "mz-dev-pipe:build",
+ "units": [{"id": "WU-1_Multiply", "title": "Multiply", "kind": "change", "repo": "$root", "skill": "mz-dev-pipe:build",
   "spec": "Add calc/mul.py with mul(a, b) and tests/test_mul.py.", "owns": ["calc/mul.py", "tests/test_mul.py"],
   "depends_on": [], "verify": "make test", "backend": "auto", "status": "merged", "attempts": 1}]}
 EOF

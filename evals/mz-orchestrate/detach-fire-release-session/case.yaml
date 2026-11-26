@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: detach-fire-release-session
 description: Asking for an attached worker session back so it stops taking units is detaching it, which belongs to orchestrate-detach.
 tags: [routing, fire]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 execution:
   prompt: >-
     Release the reviewer session from orchestration, I need it back for my own work and it shouldn't get any more units.

@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: plan-near-miss-existing-plan
 description: A plan that already exists only needs running, which is orchestrate, so orchestrate-plan should not fire.
 tags: [routing, near-miss]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 execution:
   prompt: >-
     The plan in docs/PLAN.md is final. Split it across parallel agents and run it.

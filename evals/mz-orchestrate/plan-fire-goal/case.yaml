@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: plan-fire-goal
 description: A goal with no plan yet that the user wants split across parallel agents needs planning into units first, which belongs to orchestrate-plan.
 tags: [routing, fire]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 execution:
   prompt: >-
     I want rate limiting and audit logging added to our API. There's no plan yet. Work out a plan that several agents can build in parallel, then get them going.

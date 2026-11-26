@@ -4,6 +4,8 @@ Expand `<PROJECT_ROOT>`, `<SKILL_DIR>`, `<PLUGIN_ROOT>` and `<TASK_DIR>` before 
 
 You orchestrate only. Workers write the code; the resolver resolves conflicts; you dispatch, merge, verify and ask.
 
+Every status message you post, whether a watchdog check, a merge, a wave rollup, a result or a gate, ends with the line `dag.sh DAG summary <UNIT_DEADLINE in minutes> <MAX_WORKERS>` prints, quoted as it is. It counts the units done, running and waiting, the dependency waves left, and the time left, from how long the finished units took. Refer to a unit by its id, which already carries its name.
+
 Read `<SKILL_DIR>/phases/backends.md` before the first dispatch: it says how each backend is dispatched, how its result comes back, and how silent units are caught.
 
 ## Step 0: Reconcile after a restart
@@ -54,6 +56,7 @@ Don't wait for the batch. Each result arrives on its own, as a notification or a
 ```text
 Wave complete (units, batch <b>) — <returned>/<dispatched> agents returned
 - <worker>: <STATUS> — <id> <merged|gate|retry>
+<dag.sh DAG summary line>
 ```
 
 ## Step 3: Handle a result
@@ -88,7 +91,7 @@ A unit's own `verify` passing on the merged tree doesn't show that the other uni
 1. `integrate.sh probe <repo> <probe> <tip>`, record `checkpoint_running: <tip>` for the repository, and dispatch `mz-dev-pipe:pipeline-test-runner` with `test_command: cd <probe> && <test command>` and `output_path: <TASK_DIR>/checkpoints/<repo basename>/<tip short sha>.md`. Say in chat `Checkpoint <repo basename> at <tip short sha>: <n> merges`.
 1. When it returns, read its artifact. Every failing test also in `baseline_failures` is not this run's: green means none other fails. Green: set `checkpoint: <that tip>` and remove `checkpoint_running`.
 1. Red: find the merge that broke it. The candidates are the merges between `checkpoint` and the checked tip, from `integrate.sh merges`. Bisect them: probe the middle merge, run the suite there the same way, and keep the half that holds the first merge whose suite has a new failure, until one merge is left. Its subject names the unit. Each step is one dispatch, so three merges need at most two more suite runs.
-1. Dispatch `orchestrate-plan-compiler` (model: **opus**, as pinned) with the Phase 1 compile prompt plus `Checkpoint fix: add one change unit with id CK<n>-<repo basename> and exclusive: true that makes these tests pass again: <the new failures, verbatim>. They broke at the merge of unit <id> (<title>); its diff is git -C <repo> show <merge sha>. Use mz-dev-pipe:debug, and a verify that runs the repository's full suite. Make every pending unit that owns a file it needs depend on it. Keep every other unit unchanged.` Run `dag.sh DAG lint <REGISTRY>` and show `dag.sh DAG render` in chat. Because the fix unit is `exclusive`, `ready` starts nothing else until it has run, so no other unit builds on the broken tree. Remove `checkpoint_running`; `checkpoint` stays at the last green tip, so the fix unit's merge brings the next checkpoint.
+1. Dispatch `orchestrate-plan-compiler` (model: **opus**, as pinned) with the Phase 1 compile prompt plus `Checkpoint fix: add one change unit with an id of CK<n> followed by a name for the broken tests, such as CK1_Search_Tests, and exclusive: true that makes these tests pass again: <the new failures, verbatim>. They broke at the merge of unit <id> (<title>); its diff is git -C <repo> show <merge sha>. Use mz-dev-pipe:debug, and a verify that runs the repository's full suite. Make every pending unit that owns a file it needs depend on it. Keep every other unit unchanged.` Run `dag.sh DAG lint <REGISTRY>` and show `dag.sh DAG render` in chat. Because the fix unit is `exclusive`, `ready` starts nothing else until it has run, so no other unit builds on the broken tree. Remove `checkpoint_running`; `checkpoint` stays at the last green tip, so the fix unit's merge brings the next checkpoint.
 1. When the fix unit itself fails, Step 3 handles it like any unit, and its second failure reaches Step 5.
 
 Add a `## Lessons` line when the culprit's `owns` or `verify` should have covered the broken tests.
@@ -109,6 +112,7 @@ Reason: <reason>
 
 Downstream: <ids that depend on it, directly or not>
 Still running: <ids, or none>
+<dag.sh DAG summary line>
 
 <output of dag.sh DAG render>
 

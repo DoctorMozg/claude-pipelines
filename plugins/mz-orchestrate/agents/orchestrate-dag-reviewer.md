@@ -39,11 +39,11 @@ The review file at the path the dispatch names:
 # DAG review, round <n>
 
 ## Findings
-- Critical: WU-3 — owns leaves out `app/api/__init__.py`, which the spec registers the router in. Add it to owns, and order WU-3 after WU-2, which also edits it.
-- Optional: WU-5 — depends on WU-4 but uses nothing from it; drop the edge.
+- Critical: WU-3_Refund_Api — owns leaves out `app/api/__init__.py`, which the spec registers the router in. Add it to owns, and order WU-3_Refund_Api after WU-2_Invoice_Api, which also edits it.
+- Optional: WU-5_Invoice_Email — depends on WU-4_Invoice_Pdf but uses nothing from it; drop the edge.
 
 ## Low confidence
-- FYI: (possible Critical, 60) WU-2 — `make test-api` may not exist; the Makefile defines `test` only.
+- FYI: (possible Critical, 60) WU-2_Invoice_Api — `make test-api` may not exist; the Makefile defines `test` only.
 
 VERDICT: PASS | FAIL
 ```

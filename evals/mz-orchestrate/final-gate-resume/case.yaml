@@ -2,7 +2,7 @@ schema_version: "1.1"
 name: final-gate-resume
 description: 'A resumed run in its final phase syncs the moved start branch into the integration branch, runs the full suite, reviews the branch as an added review unit and stops at the final gate without moving main.'
 tags: [final, needs-bash]
-plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-base"]
+plugins: ["../../../plugins/mz-orchestrate", "../../../plugins/mz-dev-pipe", "../../../plugins/mz-dev-git", "../../../plugins/mz-creative", "../../../plugins/mz-research-pipe", "../../../plugins/mz-base"]
 runs: 1
 context:
   scaffold_script: fixture.sh
