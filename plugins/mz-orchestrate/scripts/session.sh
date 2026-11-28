@@ -11,6 +11,7 @@ usage: session.sh bg <repo> <name> <skill|direct> <envelope-file>
        session.sh state <session-id>
        session.sh stop <session-id>
        session.sh progress <worktree> <base-commit>
+       session.sh forget <worktree>
 EOF
   exit 2
 }
@@ -188,6 +189,21 @@ progress)
     echo "last_commit: none"
   else
     echo "last_commit: $(git -C "$worktree" log -1 --format='%h %s')"
+  fi
+  ;;
+forget)
+  [ $# -eq 1 ] || usage
+  worktree=${1%/}
+  # purge deletes every transcript of the path it gets, so only a worker's own worktree may be named.
+  [[ ${worktree%/*} == */.claude/worktrees && ${worktree##*/} =~ ^orch-[A-Za-z0-9._-]+$ ]] ||
+    fail "'$1' is not a worker worktree (<repo>/.claude/worktrees/orch-...)"
+  # Each worktree is a project of its own to Claude Code, so its transcript would stay in /resume.
+  if out=$("$claude" purge -y "$worktree" </dev/null 2>&1); then
+    echo "forgot $worktree"
+  elif [[ $out == *"No Claude Code project data found"* ]]; then
+    echo "nothing to forget for $worktree"
+  else
+    fail "could not purge the sessions of $worktree: $out"
   fi
   ;;
 *)

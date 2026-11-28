@@ -14,11 +14,12 @@ SCRIPT = (
 )
 BASH = shutil.which("bash") or "/bin/bash"
 
-# Records the arguments, working directory and stdin of a run; answers agents and stop from env.
+# Records a run's arguments, working directory and stdin; answers agents, stop and purge from env.
 FAKE_CLAUDE = """#!/usr/bin/env bash
 case $1 in
 agents) printf '%s' "${FAKE_AGENTS:-[]}"; exit 0 ;;
 stop) echo "$2" >> "$FAKE_LOG.stopped"; exit "${FAKE_STOP_EXIT:-0}" ;;
+purge) echo "$*" >> "$FAKE_LOG.purged"; echo "${FAKE_PURGE_OUT:-}"; exit "${FAKE_PURGE_EXIT:-0}" ;;
 esac
 printf '%s\\n' "$@" > "$FAKE_LOG.args"
 pwd > "$FAKE_LOG.cwd"
@@ -254,6 +255,37 @@ class TestStateAndStop:
         assert "could not stop session ab12cd34" in run("stop", "ab12cd34", code=1, env=env).stderr
 
 
+class TestForget:
+    WORKTREE = "/r/app/.claude/worktrees/orch-t-WU-1_Add.2"
+
+    def test_purges_the_sessions_of_a_worker_worktree(self, run: Run, log: Path) -> None:
+        assert run("forget", f"{self.WORKTREE}/").stdout == f"forgot {self.WORKTREE}\n"
+        assert log.with_suffix(".purged").read_text() == f"purge -y {self.WORKTREE}\n"
+
+    def test_a_worktree_with_no_sessions_is_not_an_error(self, run: Run) -> None:
+        env = {"FAKE_PURGE_EXIT": "1", "FAKE_PURGE_OUT": "No Claude Code project data found for x"}
+
+        assert run("forget", self.WORKTREE, env=env).stdout.startswith("nothing to forget")
+
+    def test_any_other_purge_failure_is_loud(self, run: Run) -> None:
+        env = {"FAKE_PURGE_EXIT": "1", "FAKE_PURGE_OUT": "permission denied"}
+
+        assert "permission denied" in run("forget", self.WORKTREE, code=1, env=env).stderr
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/r/app",
+            "/r/app/.claude/worktrees/feature",
+            "/r/app/.claude/worktrees/orch-t-WU-1/..",
+            "/r/app/.claude/worktrees/orch-t-WU-1/sub",
+        ],
+    )
+    def test_refuses_any_path_but_a_worker_worktree(self, run: Run, log: Path, path: str) -> None:
+        assert "is not a worker worktree" in run("forget", path, code=1).stderr
+        assert not log.with_suffix(".purged").exists()
+
+
 class TestClaudeBinary:
     @pytest.fixture
     def wrapper(self, tmp_path: Path, log: Path) -> Path:
@@ -268,8 +300,9 @@ class TestClaudeBinary:
         env = {"MZ_ORCHESTRATE_CLAUDE": str(wrapper), "FAKE_AGENTS": "[]"}
         run("run", repo, "n", "direct", envelope, tmp_path / "out.json", env=env)
         run("stop", "ab12cd34", env=env)
+        run("forget", "/r/app/.claude/worktrees/orch-t-WU-1", env=env)
 
-        assert log.with_suffix(".wrapped").read_text().splitlines() == ["-p", "stop"]
+        assert log.with_suffix(".wrapped").read_text().splitlines() == ["-p", "stop", "purge"]
 
     def test_a_missing_wrapper_fails_before_starting_anything(
         self, run: Run, repo: Path, envelope: Path, log: Path, tmp_path: Path
